@@ -42,4 +42,19 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
+
+    public function publishedMaterials()
+    {
+        return $this->hasMany(Material::class)->where('state', 'published');
+    }
+
+    public function draftMaterials()
+    {
+        return $this->hasMany(Material::class)->where('state', 'draft');
+    }
+
+    public function trashMaterials()
+    {
+        return $this->hasMany(Material::class)->where('state', 'trash');
+    }
 }

@@ -16,7 +16,7 @@
                     <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">МАТЕРИАЛЫ</div>
                     <SidebarLink href="#" icon="plus">Создать материал</SidebarLink>
                     <SidebarLink href="/admin/materials" icon="list">Менеджер материалов</SidebarLink>
-                    <SidebarLink href="#" icon="category">Категории</SidebarLink>
+                    <SidebarLink href="/admin/categories" icon="category">Категории</SidebarLink>
                     <SidebarLink href="#" icon="image">Медиа-менеджер</SidebarLink>
                 </div>
 

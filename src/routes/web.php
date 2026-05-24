@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MaterialController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,4 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/materials/empty-trash', [MaterialController::class, 'emptyTrash'])->name('admin.materials.empty-trash');
     Route::post('/admin/materials/bulk-publish', [MaterialController::class, 'bulkPublish'])->name('admin.materials.bulk-publish');
     Route::post('/admin/materials/bulk-unpublish', [MaterialController::class, 'bulkUnpublish'])->name('admin.materials.bulk-unpublish');
+
+    Route::resource('/admin/categories', CategoryController::class)->names('admin.categories');
+
 });
