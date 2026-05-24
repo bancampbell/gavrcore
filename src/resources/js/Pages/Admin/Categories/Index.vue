@@ -142,7 +142,7 @@
             <div class="fixed inset-0 bg-black/50" @click="modalOpen = false"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900">{{ modalTitle }}</h3>
+                    <h3 class="text-xl font-bold text-gray-900">{{ editingId ? 'Редактировать категорию' : 'Создать категорию' }}</h3>
                 </div>
                 <form @submit.prevent="submitForm" class="p-6 space-y-4">
                     <div>
@@ -217,206 +217,80 @@
     </AdminLayout>
 </template>
 
-<script setup>
-import { ref, watch, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
-import axios from 'axios';
+<script setup lang="ts">
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
 import Toast from '../../../components/shared/Toast.vue';
+import { useCategories } from '@/composables/useCategories';
 
-const props = defineProps({
-    user: Object,
-    categories: Object,
-    parentOptions: Object,
-    filters: Object
-});
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
 
-const filters = ref({
-    search: props.filters?.search || ''
-});
+interface Category {
+    id: number;
+    name: string;
+    alias: string;
+    description: string | null;
+    parent_id: number | null;
+    depth: number;
+    published_count: number;
+    draft_count: number;
+    trash_count: number;
+}
 
-const selectedCategories = ref([]);
-const allSelected = ref(false);
-const notification = ref({ show: false, message: '', type: 'success' });
-const modalOpen = ref(false);
-const editingId = ref(null);
-const loading = ref(false);
-const deleteModalOpen = ref(false);
-const categoryToDelete = ref(null);
-const deleteLoading = ref(false);
+interface CategoriesData {
+    data: Category[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+}
 
-const deleteMessage = computed(() => {
-    if (categoryToDelete.value) {
-        return `Вы уверены, что хотите удалить категорию «${categoryToDelete.value.name}»? Все подкатегории также будут удалены.`;
-    }
-    if (selectedCategories.value.length > 0) {
-        return `Вы уверены, что хотите удалить ${selectedCategories.value.length} выбранных категорий? Все подкатегории также будут удалены.`;
-    }
-    return '';
-});
+interface ParentOptions {
+    [key: number]: string;
+}
 
-const form = ref({
-    name: '',
-    alias: '',
-    description: '',
-    parent_id: null
-});
+interface Filters {
+    search?: string;
+}
 
-let notificationTimeout = null;
-let searchTimeout = null;
+const props = defineProps<{
+    user: User;
+    categories: CategoriesData;
+    parentOptions: ParentOptions;
+    filters?: Filters;
+}>();
 
-const showNotification = (message, type = 'success') => {
-    if (notificationTimeout) clearTimeout(notificationTimeout);
-    notification.value = { show: true, message, type };
-    notificationTimeout = setTimeout(() => {
-        notification.value.show = false;
-    }, 5000);
-};
-
-const getIndent = (category) => {
-    let indent = '';
-    if (category.depth > 0) {
-        indent = '— '.repeat(category.depth);
-    }
-    return indent;
-};
-
-const selectAll = () => {
-    if (allSelected.value) {
-        selectedCategories.value = props.categories.data.map(c => c.id);
-    } else {
-        selectedCategories.value = [];
-    }
-};
-
-watch(selectedCategories, (val) => {
-    allSelected.value = val.length === props.categories.data?.length;
-});
-
-const applyFilters = () => {
-    router.get('/admin/categories', filters.value, {
-        preserveState: true,
-        preserveScroll: true
-    });
-};
-
-const debounceSearch = () => {
-    if (searchTimeout) clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 300);
-};
-
-const resetFilters = () => {
-    filters.value = { search: '' };
-    applyFilters();
-};
-
-const prevPage = () => {
-    if (props.categories.current_page > 1) {
-        router.get(`/admin/categories?page=${props.categories.current_page - 1}`, filters.value);
-    }
-};
-
-const nextPage = () => {
-    if (props.categories.current_page < props.categories.last_page) {
-        router.get(`/admin/categories?page=${props.categories.current_page + 1}`, filters.value);
-    }
-};
-
-const openCreateModal = () => {
-    editingId.value = null;
-    form.value = {
-        name: '',
-        alias: '',
-        description: '',
-        parent_id: null
-    };
-    modalOpen.value = true;
-};
-
-const openEditModal = (category) => {
-    editingId.value = category.id;
-    form.value = {
-        name: category.name,
-        alias: category.alias || '',
-        description: category.description || '',
-        parent_id: category.parent_id || null
-    };
-    modalOpen.value = true;
-};
-
-const submitForm = async () => {
-    loading.value = true;
-
-    try {
-        if (editingId.value) {
-            await axios.post(`/admin/categories/${editingId.value}`, {
-                _method: 'PUT',
-                ...form.value
-            }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            showNotification('Категория обновлена', 'success');
-        } else {
-            await axios.post('/admin/categories', form.value, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            showNotification('Категория создана', 'success');
-        }
-        modalOpen.value = false;
-        applyFilters();
-    } catch (error) {
-        showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-const openDeleteModal = (category) => {
-    categoryToDelete.value = category;
-    deleteModalOpen.value = true;
-};
-const openEditSelectedModal = () => {
-    if (selectedCategories.value.length !== 1) return;
-    const category = props.categories.data.find(c => c.id === selectedCategories.value[0]);
-    if (category) {
-        openEditModal(category);
-    }
-};
-
-const bulkDelete = () => {
-    if (selectedCategories.value.length === 0) return;
-    deleteModalOpen.value = true;
-};
-
-
-const confirmDeleteHandler = async () => {
-    deleteLoading.value = true;
-
-    try {
-        if (categoryToDelete.value) {
-            await axios.delete(`/admin/categories/${categoryToDelete.value.id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            showNotification('Категория удалена', 'success');
-            categoryToDelete.value = null;
-        } else if (selectedCategories.value.length > 0) {
-            for (const id of selectedCategories.value) {
-                await axios.delete(`/admin/categories/${id}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-            }
-            showNotification(`${selectedCategories.value.length} категорий удалено`, 'success');
-            selectedCategories.value = [];
-        }
-        deleteModalOpen.value = false;
-        applyFilters();
-    } catch (error) {
-        showNotification('Ошибка при удалении', 'error');
-    } finally {
-        deleteLoading.value = false;
-    }
-};
+const {
+    filters,
+    selectedCategories,
+    allSelected,
+    notification,
+    modalOpen,
+    editingId,
+    loading,
+    deleteModalOpen,
+    categoryToDelete,
+    deleteLoading,
+    form,
+    deleteMessage,
+    getIndent,
+    selectAll,
+    applyFilters,
+    debounceSearch,
+    resetFilters,
+    prevPage,
+    nextPage,
+    openCreateModal,
+    openEditModal,
+    openEditSelectedModal,
+    submitForm,
+    openDeleteModal,
+    bulkDelete,
+    confirmDeleteHandler
+} = useCategories(props);
 </script>

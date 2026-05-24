@@ -42,10 +42,12 @@
     </aside>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import SidebarLink from './SidebarLink.vue';
 
-defineProps({
-    isOpen: Boolean
-});
+interface Props {
+    isOpen: boolean;
+}
+
+defineProps<Props>();
 </script>

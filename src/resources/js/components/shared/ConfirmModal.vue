@@ -39,17 +39,22 @@
     </Teleport>
 </template>
 
-<script setup>
-const props = defineProps({
-    isOpen: Boolean,
-    title: String,
-    message: String,
-    confirmText: String,
-    type: String,
-    loading: Boolean
-});
+<script setup lang="ts">
+interface Props {
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText: string;
+    type: 'danger' | 'warning';
+    loading: boolean;
+}
 
-const emit = defineEmits(['close', 'confirm']);
+defineProps<Props>();
+
+const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'confirm'): void;
+}>();
 
 const close = () => emit('close');
 const confirm = () => emit('confirm');

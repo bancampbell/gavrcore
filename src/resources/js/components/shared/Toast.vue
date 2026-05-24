@@ -26,10 +26,12 @@
     </Teleport>
 </template>
 
-<script setup>
-defineProps({
-    show: Boolean,
-    message: String,
-    type: String
-});
+<script setup lang="ts">
+interface Props {
+    show: boolean;
+    message: string;
+    type: 'success' | 'error';
+}
+
+defineProps<Props>();
 </script>

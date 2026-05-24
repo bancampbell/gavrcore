@@ -26,33 +26,44 @@
     </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import DropdownMenu from './DropdownMenu.vue';
 import UserMenu from './UserMenu.vue';
+import type { User } from '../../types';
 
-defineProps({
-    user: Object
-});
+interface Props {
+    user: User;
+}
 
-defineEmits(['toggleSidebar', 'logout']);
+defineProps<Props>();
 
-const systemItems = [
+defineEmits<{
+    (e: 'toggleSidebar'): void;
+    (e: 'logout'): void;
+}>();
+
+interface MenuItem {
+    name: string;
+    href: string;
+}
+
+const systemItems: MenuItem[] = [
     { name: 'Панель управления', href: '/admin/dashboard' },
     { name: 'Общие настройки', href: '#' }
 ];
 
-const userItems = [
+const userItems: MenuItem[] = [
     { name: 'Менеджер пользователей', href: '#' },
     { name: 'Создать пользователя', href: '#' }
 ];
 
-const menuItems = [
+const menuItems: MenuItem[] = [
     { name: 'Менеджер меню', href: '#' },
     { name: 'Все пункты меню', href: '#' }
 ];
 
-const materialsItems = [
-    { name: 'Менеджер материалов', href: '#' },
-    { name: 'Категории', href: '#' }
+const materialsItems: MenuItem[] = [
+    { name: 'Менеджер материалов', href: '/admin/materials' },
+    { name: 'Категории', href: '/admin/categories' }
 ];
 </script>

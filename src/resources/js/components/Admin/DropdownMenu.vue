@@ -14,7 +14,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {ref} from 'vue';
 import {Link} from '@inertiajs/vue3';
 

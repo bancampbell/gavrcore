@@ -158,154 +158,34 @@
     </AdminLayout>
 </template>
 
-<script setup>
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
-import axios from 'axios';
+<script setup lang="ts">
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
+import { useMaterials } from '../../../composables/useMaterials';
+import type { User, Category, MaterialsData, MaterialFilters } from '../../../types';
 
-const props = defineProps({
-    user: Object,
-    materials: Object,
-    categories: Array,
-    authors: Array,
-    filters: Object
-});
+const props = defineProps<{
+    user: User;
+    materials: MaterialsData;
+    categories: Category[];
+    authors: User[];
+    filters?: MaterialFilters;
+}>();
 
-const filters = ref({
-    search: props.filters?.search || '',
-    state: props.filters?.state || '',
-    category_id: props.filters?.category_id || '',
-    author: props.filters?.author || ''
-});
-
-const selectedMaterials = ref([]);
-const allSelected = ref(false);
-const notification = ref({ show: false, message: '', type: 'success' });
-
-let searchTimeout = null;
-let notificationTimeout = null;
-
-const showNotification = (message, type = 'success') => {
-    if (notificationTimeout) clearTimeout(notificationTimeout);
-    notification.value = { show: true, message, type };
-    notificationTimeout = setTimeout(() => {
-        notification.value.show = false;
-    }, 5000);
-};
-
-const formatDate = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear().toString().slice(-2)} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-};
-
-const selectAll = () => {
-    if (allSelected.value) {
-        selectedMaterials.value = props.materials.data.map(m => m.id);
-    } else {
-        selectedMaterials.value = [];
-    }
-};
-
-watch(selectedMaterials, (val) => {
-    allSelected.value = val.length === props.materials.data?.length;
-});
-
-const applyFilters = () => {
-    router.get('/admin/materials', filters.value, {
-        preserveState: true,
-        preserveScroll: true
-    });
-};
-
-const debounceSearch = () => {
-    if (searchTimeout) clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        applyFilters();
-    }, 300);
-};
-
-const resetFilters = () => {
-    filters.value = {
-        search: '',
-        state: '',
-        category_id: '',
-        author: ''
-    };
-    applyFilters();
-};
-
-const prevPage = () => {
-    if (props.materials.current_page > 1) {
-        router.get(`/admin/materials?page=${props.materials.current_page - 1}`, filters.value, {
-            preserveState: true,
-            preserveScroll: true
-        });
-    }
-};
-
-const nextPage = () => {
-    if (props.materials.current_page < props.materials.last_page) {
-        router.get(`/admin/materials?page=${props.materials.current_page + 1}`, filters.value, {
-            preserveState: true,
-            preserveScroll: true
-        });
-    }
-};
-
-const moveToTrash = async () => {
-    if (selectedMaterials.value.length === 0) return;
-
-    try {
-        const response = await axios.post('/admin/materials/bulk-trash', {
-            ids: selectedMaterials.value
-        }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-
-        showNotification(response.data.message, 'success');
-        selectedMaterials.value = [];
-        applyFilters();
-    } catch (error) {
-        showNotification('Ошибка при перемещении в корзину', 'error');
-    }
-};
-
-const publishSelected = async () => {
-    if (selectedMaterials.value.length === 0) return;
-
-    try {
-        const response = await axios.post('/admin/materials/bulk-publish', {
-            ids: selectedMaterials.value
-        }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-
-        showNotification(response.data.message, 'success');
-        selectedMaterials.value = [];
-        applyFilters();
-    } catch (error) {
-        showNotification('Ошибка при публикации', 'error');
-    }
-};
-
-const unpublishSelected = async () => {
-    if (selectedMaterials.value.length === 0) return;
-
-    try {
-        const response = await axios.post('/admin/materials/bulk-unpublish', {
-            ids: selectedMaterials.value
-        }, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-
-        showNotification(response.data.message, 'success');
-        selectedMaterials.value = [];
-        applyFilters();
-    } catch (error) {
-        showNotification('Ошибка при снятии с публикации', 'error');
-    }
-};
+const {
+    filters,
+    selectedMaterials,
+    allSelected,
+    notification,
+    formatDate,
+    selectAll,
+    applyFilters,
+    debounceSearch,
+    resetFilters,
+    prevPage,
+    nextPage,
+    moveToTrash,
+    publishSelected,
+    unpublishSelected
+} = useMaterials(props);
 </script>

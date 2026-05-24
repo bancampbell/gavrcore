@@ -24,7 +24,10 @@ class CategoryRepository implements CategoryRepositoryInterface
         ]);
 
         if (!empty($filters['search'])) {
-            $query->where('name', 'like', '%' . $filters['search'] . '%');
+            $query->where(function($q) use ($filters) {
+                $q->where('name', 'ilike', '%' . $filters['search'] . '%')
+                    ->orWhere('alias', 'ilike', '%' . $filters['search'] . '%');
+            });
         }
 
         return $query->orderBy('lft')->paginate(20);

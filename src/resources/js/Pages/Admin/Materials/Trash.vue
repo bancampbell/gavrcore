@@ -76,8 +76,7 @@
                         <td class="px-4 py-3 text-gray-600">Все</td>
                         <td class="px-4 py-3 text-gray-600">{{ formatDate(material.created_at) }}</td>
                         <td class="px-4 py-3 text-gray-600">{{ material.views }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ material.id }}
-                            </td>
+                        <td class="px-4 py-3 text-gray-600">{{ material.id }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -123,146 +122,39 @@
         />
 
         <!-- Toast уведомление -->
-        <Toast :show="notification.show" :message="notification.message" :type="notification.type"/>
+        <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
-<script setup>
-import {ref, watch} from 'vue';
-import {router, Link} from '@inertiajs/vue3';
-import axios from 'axios';
+<script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
 import Toast from '../../../components/shared/Toast.vue';
+import { useMaterials } from '../../../composables/useMaterials';
+import type { User, MaterialsData } from '../../../types';
 
-const props = defineProps({
-    user: Object,
-    materials: Object
-});
+const props = defineProps<{
+    user: User;
+    materials: MaterialsData;
+}>();
 
-const selectedMaterials = ref([]);
-const allSelected = ref(false);
-const notification = ref({show: false, message: '', type: 'success'});
-const modalOpen = ref(false);
-const modalTitle = ref('');
-const modalMessage = ref('');
-const modalConfirmText = ref('');
-const modalLoading = ref(false);
-let pendingAction = null;
-
-let notificationTimeout = null;
-
-const showNotification = (message, type = 'success') => {
-    if (notificationTimeout) clearTimeout(notificationTimeout);
-    notification.value = {show: true, message, type};
-    notificationTimeout = setTimeout(() => {
-        notification.value.show = false;
-    }, 5000);
-};
-
-const formatDate = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear().toString().slice(-2)} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-};
-
-const selectAll = () => {
-    if (allSelected.value) {
-        selectedMaterials.value = props.materials.data.map(m => m.id);
-    } else {
-        selectedMaterials.value = [];
-    }
-};
-
-watch(selectedMaterials, (val) => {
-    allSelected.value = val.length === props.materials.data?.length;
-});
-
-const applyFilters = () => {
-    router.get('/admin/materials/trash');
-};
-
-const prevPage = () => {
-    if (props.materials.current_page > 1) {
-        router.get(`/admin/materials/trash?page=${props.materials.current_page - 1}`);
-    }
-};
-
-const nextPage = () => {
-    if (props.materials.current_page < props.materials.last_page) {
-        router.get(`/admin/materials/trash?page=${props.materials.current_page + 1}`);
-    }
-};
-
-const restoreSelected = async () => {
-    if (selectedMaterials.value.length === 0) return;
-
-    try {
-        const response = await axios.post('/admin/materials/restore', {
-            ids: selectedMaterials.value
-        }, {
-            headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
-        });
-
-        showNotification(response.data.message, 'success');
-        selectedMaterials.value = [];
-
-        setTimeout(() => {
-            router.reload({preserveState: true});
-        }, 1500);
-    } catch (error) {
-        showNotification('Ошибка при восстановлении', 'error');
-    }
-};
-
-const openDeleteModal = () => {
-    const count = selectedMaterials.value.length;
-    modalTitle.value = 'Удаление материалов';
-    modalMessage.value = count === 1
-        ? 'Вы уверены, что хотите удалить выбранный материал навсегда? Это действие нельзя отменить.'
-        : `Вы уверены, что хотите удалить ${count} материалов навсегда? Это действие нельзя отменить.`;
-    modalConfirmText.value = 'Удалить навсегда';
-    pendingAction = 'delete';
-    modalOpen.value = true;
-};
-
-const openEmptyTrashModal = () => {
-    modalTitle.value = 'Очистка корзины';
-    modalMessage.value = 'Вы уверены, что хотите очистить корзину? Все материалы будут удалены навсегда.';
-    modalConfirmText.value = 'Очистить корзину';
-    pendingAction = 'empty';
-    modalOpen.value = true;
-};
-
-const confirmAction = async () => {
-    modalLoading.value = true;
-
-    try {
-        let response;
-        if (pendingAction === 'delete') {
-            response = await axios.post('/admin/materials/force-delete', {
-                ids: selectedMaterials.value
-            }, {
-                headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
-            });
-        } else if (pendingAction === 'empty') {
-            response = await axios.post('/admin/materials/empty-trash', {}, {
-                headers: {Authorization: `Bearer ${localStorage.getItem('token')}`}
-            });
-        }
-
-        showNotification(response.data.message, 'success');
-        selectedMaterials.value = [];
-        modalOpen.value = false;
-
-        setTimeout(() => {
-            router.reload({preserveState: true});
-        }, 1500);
-    } catch (error) {
-        showNotification('Ошибка при выполнении операции', 'error');
-    } finally {
-        modalLoading.value = false;
-        pendingAction = null;
-    }
-};
+const {
+    selectedMaterials,
+    allSelected,
+    notification,
+    modalOpen,
+    modalTitle,
+    modalMessage,
+    modalConfirmText,
+    modalLoading,
+    formatDate,
+    selectAll,
+    prevPage,
+    nextPage,
+    restoreSelected,
+    openDeleteModal,
+    openEmptyTrashModal,
+    confirmAction
+} = useMaterials(props);
 </script>

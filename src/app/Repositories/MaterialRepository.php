@@ -14,7 +14,10 @@ class MaterialRepository implements MaterialRepositoryInterface
         $query = Material::with(['category', 'user'])->where('state', '!=', 'trash');
 
         if (!empty($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%');
+            $query->where(function($q) use ($filters) {
+                $q->where('title', 'ilike', '%' . $filters['search'] . '%')
+                    ->orWhere('alias', 'ilike', '%' . $filters['search'] . '%');
+            });
         }
 
         if (!empty($filters['state'])) {
