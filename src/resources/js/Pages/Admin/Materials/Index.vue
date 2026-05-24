@@ -10,13 +10,25 @@
                     <button class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
                         Изменить
                     </button>
-                    <button class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
+                    <button
+                        @click="publishSelected"
+                        :disabled="selectedMaterials.length === 0"
+                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         Опубликовать
                     </button>
-                    <button class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
+                    <button
+                        @click="unpublishSelected"
+                        :disabled="selectedMaterials.length === 0"
+                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         Снять с публикации
                     </button>
-                    <button class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
+                    <button
+                        @click="moveToTrash"
+                        :disabled="selectedMaterials.length === 0"
+                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         В корзину
                     </button>
                 </div>
@@ -40,7 +52,7 @@
                         <select v-model="filters.state" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
                             <option value="">Все</option>
                             <option value="published">Опубликовано</option>
-                            <option value="draft">Черновик</option>
+                            <option value="draft">Не опубликовано</option>
                             <option value="archived">Архив</option>
                         </select>
                     </div>
@@ -49,15 +61,6 @@
                         <select v-model="filters.category_id" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
                             <option value="">Все категории</option>
                             <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                        </select>
-                    </div>
-                    <div class="w-32">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Доступ</label>
-                        <select v-model="filters.access" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
-                            <option value="">Все</option>
-                            <option value="public">Public</option>
-                            <option value="registered">Registered</option>
-                            <option value="special">Special</option>
                         </select>
                     </div>
                     <div class="w-40">
@@ -82,7 +85,7 @@
                             <input type="checkbox" @change="selectAll" v-model="allSelected" class="rounded border-gray-300">
                         </th>
                         <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Заголовок</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Доступ</th>
+                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Статус</th>
                         <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Автор</th>
                         <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Язык</th>
                         <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Дата создания</th>
@@ -106,11 +109,11 @@
                         </td>
                         <td class="px-4 py-3">
                                 <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium" :class="{
-                                    'bg-green-100 text-green-800': material.access === 'public',
-                                    'bg-yellow-100 text-yellow-800': material.access === 'registered',
-                                    'bg-red-100 text-red-800': material.access === 'special'
+                                    'bg-green-100 text-green-800': material.state === 'published',
+                                    'bg-red-100 text-red-800': material.state === 'draft',
+                                    'bg-gray-100 text-gray-800': material.state === 'archived'
                                 }">
-                                    {{ material.access }}
+                                    {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
                                 </span>
                         </td>
                         <td class="px-4 py-3 text-gray-600">{{ material.user?.name }}</td>
@@ -149,13 +152,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- Toast уведомление -->
+        <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import Toast from '../../../components/shared/Toast.vue';
 
 const props = defineProps({
     user: Object,
@@ -169,14 +177,23 @@ const filters = ref({
     search: props.filters?.search || '',
     state: props.filters?.state || '',
     category_id: props.filters?.category_id || '',
-    access: props.filters?.access || '',
     author: props.filters?.author || ''
 });
 
 const selectedMaterials = ref([]);
 const allSelected = ref(false);
+const notification = ref({ show: false, message: '', type: 'success' });
 
 let searchTimeout = null;
+let notificationTimeout = null;
+
+const showNotification = (message, type = 'success') => {
+    if (notificationTimeout) clearTimeout(notificationTimeout);
+    notification.value = { show: true, message, type };
+    notificationTimeout = setTimeout(() => {
+        notification.value.show = false;
+    }, 5000);
+};
 
 const formatDate = (date) => {
     if (!date) return '';
@@ -215,7 +232,6 @@ const resetFilters = () => {
         search: '',
         state: '',
         category_id: '',
-        access: '',
         author: ''
     };
     applyFilters();
@@ -236,6 +252,60 @@ const nextPage = () => {
             preserveState: true,
             preserveScroll: true
         });
+    }
+};
+
+const moveToTrash = async () => {
+    if (selectedMaterials.value.length === 0) return;
+
+    try {
+        const response = await axios.post('/admin/materials/bulk-trash', {
+            ids: selectedMaterials.value
+        }, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        showNotification(response.data.message, 'success');
+        selectedMaterials.value = [];
+        applyFilters();
+    } catch (error) {
+        showNotification('Ошибка при перемещении в корзину', 'error');
+    }
+};
+
+const publishSelected = async () => {
+    if (selectedMaterials.value.length === 0) return;
+
+    try {
+        const response = await axios.post('/admin/materials/bulk-publish', {
+            ids: selectedMaterials.value
+        }, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        showNotification(response.data.message, 'success');
+        selectedMaterials.value = [];
+        applyFilters();
+    } catch (error) {
+        showNotification('Ошибка при публикации', 'error');
+    }
+};
+
+const unpublishSelected = async () => {
+    if (selectedMaterials.value.length === 0) return;
+
+    try {
+        const response = await axios.post('/admin/materials/bulk-unpublish', {
+            ids: selectedMaterials.value
+        }, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        showNotification(response.data.message, 'success');
+        selectedMaterials.value = [];
+        applyFilters();
+    } catch (error) {
+        showNotification('Ошибка при снятии с публикации', 'error');
     }
 };
 </script>

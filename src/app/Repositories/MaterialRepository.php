@@ -11,7 +11,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 {
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $query = Material::with(['category', 'user']);
+        $query = Material::with(['category', 'user'])->where('state', '!=', 'trash');
 
         if (!empty($filters['search'])) {
             $query->where('title', 'like', '%' . $filters['search'] . '%');

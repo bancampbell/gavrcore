@@ -18,4 +18,13 @@ Route::middleware('auth:sanctum')->group(function () {
     })->name('dashboard');
 
     Route::get('/admin/materials', [MaterialController::class, 'index'])->name('admin.materials.index');
+
+    // Корзина и операции с ней
+    Route::get('/admin/materials/trash', [MaterialController::class, 'trash'])->name('admin.materials.trash');
+    Route::post('/admin/materials/bulk-trash', [MaterialController::class, 'bulkTrash'])->name('admin.materials.bulk-trash');
+    Route::post('/admin/materials/restore', [MaterialController::class, 'restore'])->name('admin.materials.restore');
+    Route::post('/admin/materials/force-delete', [MaterialController::class, 'forceDelete'])->name('admin.materials.force-delete');
+    Route::post('/admin/materials/empty-trash', [MaterialController::class, 'emptyTrash'])->name('admin.materials.empty-trash');
+    Route::post('/admin/materials/bulk-publish', [MaterialController::class, 'bulkPublish'])->name('admin.materials.bulk-publish');
+    Route::post('/admin/materials/bulk-unpublish', [MaterialController::class, 'bulkUnpublish'])->name('admin.materials.bulk-unpublish');
 });

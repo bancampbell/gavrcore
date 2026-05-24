@@ -35,6 +35,7 @@
                 <div class="px-3">
                     <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">НАСТРОЙКИ</div>
                     <SidebarLink href="#" icon="settings">Общие настройки</SidebarLink>
+                    <SidebarLink href="/admin/materials/trash" icon="trash">Корзина</SidebarLink>
                 </div>
             </nav>
         </div>
