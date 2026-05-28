@@ -46,69 +46,17 @@
 
         <!-- Блок с редактором и правой колонкой -->
         <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <!-- Основная колонка -->
+            <!-- Основная колонка с редактором -->
             <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full flex flex-col">
-                    <div class="border-b border-gray-200 bg-gray-50 flex justify-end">
-                        <div class="flex">
-                            <button
-                                @click="activeTab = 'editor'"
-                                :class="[
-                                    'px-4 py-2 text-sm font-medium transition',
-                                    activeTab === 'editor'
-                                        ? 'bg-white text-blue-600 border-b-2 border-blue-600 -mb-px'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                ]"
-                            >
-                                Editor
-                            </button>
-                            <button
-                                @click="activeTab = 'code'"
-                                :class="[
-                                    'px-4 py-2 text-sm font-medium transition',
-                                    activeTab === 'code'
-                                        ? 'bg-white text-blue-600 border-b-2 border-blue-600 -mb-px'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                ]"
-                            >
-                                Code
-                            </button>
-                            <button
-                                @click="activeTab = 'preview'"
-                                :class="[
-                                    'px-4 py-2 text-sm font-medium transition',
-                                    activeTab === 'preview'
-                                        ? 'bg-white text-blue-600 border-b-2 border-blue-600 -mb-px'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                ]"
-                            >
-                                Preview
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 p-4">
-                        <div v-show="activeTab === 'editor'" class="h-full">
-                            <textarea
-                                v-model="form.content"
-                                class="w-full h-full focus:outline-none resize-none"
-                                placeholder="Введите содержимое..."
-                            ></textarea>
-                        </div>
-                        <div v-show="activeTab === 'code'" class="h-full overflow-auto">
-                            <pre class="text-sm font-mono bg-gray-50 p-4 rounded h-full">{{ form.content || '<!-- HTML код будет здесь -->' }}</pre>
-                        </div>
-                        <div v-show="activeTab === 'preview'" class="h-full overflow-auto prose max-w-none">
-                            <div v-html="form.content || '<p class=\'text-gray-400\'>Предпросмотр содержимого...</p>'"></div>
-                        </div>
-                    </div>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full">
+                    <Editor v-model="form.content" />
                 </div>
             </div>
 
             <!-- Правая колонка -->
             <div class="w-80">
-                <div class="p-4 space-y-4">
-                    <div>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Состояние</h3>
                         <select
                             v-model="form.state"
@@ -125,7 +73,7 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Категория *</h3>
                         <select v-model="form.category_id" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option :value="null">Выберите категорию</option>
@@ -133,7 +81,7 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Избранные</h3>
                         <select v-model="form.featured" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option value="0">Нет</option>
@@ -141,7 +89,7 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Доступ</h3>
                         <select v-model="form.access" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option value="public">Public</option>
@@ -150,7 +98,7 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Метки</h3>
                         <input
                             type="text"
@@ -174,6 +122,7 @@ import axios from 'axios';
 import EmptyLayout from '../../../layouts/EmptyLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category, Material } from '../../../types';
+import Editor from '../../../components/shared/Editor.vue';
 
 const props = defineProps<{
     user: User;
@@ -181,7 +130,6 @@ const props = defineProps<{
     categories: Category[];
 }>();
 
-const activeTab = ref('editor');
 const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
@@ -243,7 +191,8 @@ const save = async () => {
             content: form.value.content,
             category_id: form.value.category_id,
             state: form.value.state,
-            access: form.value.access
+            access: form.value.access,
+            featured: form.value.featured
         };
 
         await axios({
@@ -280,7 +229,8 @@ const saveAndClose = async () => {
             content: form.value.content,
             category_id: form.value.category_id,
             state: form.value.state,
-            access: form.value.access
+            access: form.value.access,
+            featured: form.value.featured
         };
 
         await axios({
