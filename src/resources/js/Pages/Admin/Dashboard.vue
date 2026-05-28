@@ -27,7 +27,7 @@
 </template>
 
 <script setup>
-import AdminLayout from '../../Layouts/AdminLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 
 defineProps({
     user: Object,

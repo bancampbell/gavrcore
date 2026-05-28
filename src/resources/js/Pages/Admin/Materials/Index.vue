@@ -4,9 +4,9 @@
             <!-- Фиксированная панель с кнопками -->
             <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
                 <div class="flex flex-wrap gap-2">
-                    <button class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition">
+                    <Link href="/admin/materials/create" class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition">
                         + Создать материал
-                    </button>
+                    </Link>
                     <button class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
                         Изменить
                     </button>
@@ -103,7 +103,9 @@
                             <input type="checkbox" v-model="selectedMaterials" :value="material.id" class="rounded border-gray-300">
                         </td>
                         <td class="px-4 py-3">
-                            <div class="font-medium text-[#3071a9] hover:text-[#3071a9] hover:underline cursor-pointer">{{ material.title }}</div>
+                            <Link :href="`/admin/materials/${material.id}/edit`" class="font-medium text-[#3071a9] hover:text-[#3071a9] hover:underline cursor-pointer">
+                                {{ material.title }}
+                            </Link>
                             <div class="text-xs text-gray-400 mt-0.5">Алиас: {{ material.alias }}</div>
                             <div class="text-xs text-[#3071a9] hover:underline mt-0.5 cursor-pointer">Категория: {{ material.category?.name || 'Uncategorized' }}</div>
                         </td>
@@ -159,7 +161,8 @@
 </template>
 
 <script setup lang="ts">
-import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import { Link } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import { useMaterials } from '../../../composables/useMaterials';
 import type { User, Category, MaterialsData, MaterialFilters } from '../../../types';

@@ -128,7 +128,7 @@
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import { useMaterials } from '../../../composables/useMaterials';

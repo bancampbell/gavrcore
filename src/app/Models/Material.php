@@ -18,7 +18,8 @@ class Material extends Model
         'state',
         'access',
         'views',
-        'published_at'
+        'published_at',
+        'featured'
     ];
 
     protected $casts = [

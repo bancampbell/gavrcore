@@ -6,6 +6,8 @@ use App\DTO\MaterialData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Material\BulkTrashRequest;
 use App\Http\Requests\Admin\Material\MaterialIndexRequest;
+use App\Http\Requests\Admin\Material\StoreMaterialRequest;
+use App\Http\Requests\Admin\Material\UpdateMaterialRequest;
 use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
@@ -94,6 +96,50 @@ class MaterialController extends Controller
 
         $message = $count === 1 ? 'Материал снят с публикации' : 'Материалы сняты с публикации';
         return response()->json(['message' => $message]);
+    }
+
+
+    public function create()
+    {
+        return Inertia::render('Admin/Materials/Create', [
+            'categories' => Category::all(),
+            'user' => auth()->user(),
+        ]);
+    }
+
+    public function store(StoreMaterialRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = auth()->id();
+        $data['alias'] = $data['alias'] ?? \Illuminate\Support\Str::slug($data['title']);
+
+        Material::create($data);
+
+        return redirect()->route('admin.materials.index')
+            ->with('success', 'Материал создан');
+    }
+
+    public function edit(Material $material)
+    {
+        return Inertia::render('Admin/Materials/Edit', [
+            'material' => $material,
+            'categories' => Category::all(),
+            'user' => auth()->user(),
+        ]);
+    }
+
+    public function update(UpdateMaterialRequest $request, Material $material)
+    {
+        $data = $request->validated();
+        $data['alias'] = $data['alias'] ?? \Illuminate\Support\Str::slug($data['title']);
+
+        $material->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Материал обновлён']);
+        }
+
+        return redirect()->route('admin.materials.index')->with('success', 'Материал обновлён');
     }
 
 }

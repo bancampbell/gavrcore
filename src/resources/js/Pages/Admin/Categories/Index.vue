@@ -218,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-import AdminLayout from '../../../Layouts/AdminLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import { useCategories } from '@/composables/useCategories';

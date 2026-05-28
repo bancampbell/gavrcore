@@ -31,4 +31,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::resource('/admin/categories', CategoryController::class)->names('admin.categories');
 
+    Route::get('/admin/materials/create', [App\Http\Controllers\Admin\MaterialController::class, 'create'])->name('admin.materials.create');
+    Route::post('/admin/materials', [App\Http\Controllers\Admin\MaterialController::class, 'store'])->name('admin.materials.store');
+    Route::get('/admin/materials/{material}/edit', [App\Http\Controllers\Admin\MaterialController::class, 'edit'])->name('admin.materials.edit');
+    Route::put('/admin/materials/{material}', [App\Http\Controllers\Admin\MaterialController::class, 'update'])->name('admin.materials.update');
+
 });
