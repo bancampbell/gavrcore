@@ -19,14 +19,26 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <button @click="openCreateFolderModal" class="px-4 py-1.5 text-sm bg-gray-100 text-gray-700 rounded border border-gray-300 hover:bg-gray-200 transition">
-                            Новая папка
+                        <button @click="openCreateFolderModal" class="rounded transition p-0.5 flex items-center gap-2" title="Новая папка">
+                            <svg class="w-8 h-8 transition-colors" fill="#D2B073" stroke="#D2B073" stroke-width="1.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
+                            <span class="text-sm text-gray-700">Новая папка</span>
                         </button>
-                        <button class="px-4 py-1.5 text-sm bg-gray-100 text-gray-700 rounded border border-gray-300 hover:bg-gray-200 transition">
-                            Загрузить
+                        <button @click="openUploadModal" class="p-1.5 rounded transition flex items-center gap-2 group" title="Загрузить">
+                            <svg class="w-5 h-5 text-gray-600 transition-colors group-hover:text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span class="text-sm text-gray-700">Загрузить</span>
                         </button>
-                        <button class="px-4 py-1.5 text-sm bg-gray-100 text-gray-700 rounded border border-gray-300 hover:bg-gray-200 transition">
-                            Справка
+
+                        <button class="p-1.5 rounded transition flex items-center gap-2 group" title="Справка">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" class="transition-colors group-hover:stroke-amber-700 group-hover:fill-amber-100" />
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" class="transition-colors group-hover:stroke-amber-700" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" class="transition-colors group-hover:stroke-amber-700" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            <span class="text-sm text-gray-700">Справка</span>
                         </button>
                     </div>
                 </div>
@@ -56,26 +68,80 @@
 
                 <!-- Центральная колонка - список файлов -->
                 <div class="flex-1 bg-white flex flex-col overflow-hidden">
-                    <div class="px-4 py-1.5 border-b border-gray-200 bg-gray-50 flex items-center gap-2">
-                        <button
-                            @click="goHome"
-                            class="p-1 rounded hover:bg-gray-100 transition"
-                            title="В корень"
-                        >
-                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-                        <button
-                            @click="goBack"
-                            :disabled="!canGoBack"
-                            class="p-1 rounded hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed"
-                            title="Назад"
-                        >
-                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
+                    <div class="px-4 py-1.5 border-b border-gray-200 bg-gray-50">
+                        <!-- Кнопки в обычном режиме -->
+                        <div v-if="!showSearch" class="flex items-center gap-2">
+                            <button
+                                @click="goHome"
+                                class="p-1 rounded hover:bg-gray-100 transition"
+                                title="В корень"
+                            >
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                            </button>
+                            <button
+                                @click="goBack"
+                                :disabled="!canGoBack"
+                                class="p-1 rounded hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed"
+                                title="Назад"
+                            >
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <!-- Иконки сортировки -->
+                            <button
+                                @click="sortOrder = 'asc'"
+                                class="p-1 rounded hover:bg-gray-100 transition"
+                                :class="{ 'text-blue-500': sortOrder === 'asc' }"
+                                title="Сортировка А-Я"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                </svg>
+                            </button>
+                            <button
+                                @click="sortOrder = 'desc'"
+                                class="p-1 rounded hover:bg-gray-100 transition"
+                                :class="{ 'text-blue-500': sortOrder === 'desc' }"
+                                title="Сортировка Я-А"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4 4m0 0l4-4m-4 4V4" />
+                                </svg>
+                            </button>
+                            <div class="flex-1"></div>
+                            <button
+                                @click="showSearch = true"
+                                class="p-1 rounded hover:bg-gray-100 transition"
+                                title="Поиск"
+                            >
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Поле поиска -->
+                        <div v-else class="flex items-center gap-2 bg-blue-50 -my-1.5 -mx-4 px-4 py-1.5">
+                            <input
+                                v-model="searchQuery"
+                                type="text"
+                                placeholder="Поиск..."
+                                class="flex-1 text-sm bg-transparent focus:outline-none"
+                                autofocus
+                            />
+                            <button
+                                @click="clearSearch"
+                                class="p-1 rounded hover:bg-gray-100 transition flex-shrink-0"
+                                title="Закрыть"
+                            >
+                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="flex-1 overflow-y-auto p-2">
                         <div v-if="loadingContents" class="text-center py-8">
@@ -85,7 +151,7 @@
                         <div v-else class="space-y-0.5">
                             <!-- Папки -->
                             <div
-                                v-for="item in folders"
+                                v-for="item in sortedFilteredFolders"
                                 :key="item.path"
                                 class="flex items-center py-1 px-2 rounded-md transition-colors hover:bg-[#e6f0fa] group cursor-pointer"
                                 :class="{ 'bg-[#e6f0fa]': selectedItems.includes(item.path) }"
@@ -106,7 +172,7 @@
 
                             <!-- Файлы -->
                             <div
-                                v-for="item in files"
+                                v-for="item in sortedFilteredFiles"
                                 :key="item.path"
                                 class="flex items-center py-1 px-2 rounded-md transition-colors hover:bg-[#e6f0fa] group cursor-pointer"
                                 :class="{ 'bg-[#e6f0fa]': selectedItems.includes(item.path) }"
@@ -121,12 +187,14 @@
                                 />
                                 <span class="text-base mr-2 flex-shrink-0">{{ getFileIcon(item.name) }}</span>
                                 <span class="text-sm flex-1" :class="selectedItems.includes(item.path) ? 'text-[#333] font-medium' : 'text-gray-700'">{{ item.name }}</span>
-                                <span class="text-xs text-gray-400 flex-shrink-0">{{ formatFileSize(item.size) }}</span>
                             </div>
                         </div>
 
-                        <div v-if="!loadingContents && contents.length === 0" class="text-center py-12 text-gray-400">
+                        <div v-if="!loadingContents && filteredContents.length === 0 && !showSearch" class="text-center py-12 text-gray-400">
                             Папка пуста
+                        </div>
+                        <div v-if="showSearch && filteredContents.length === 0 && !loadingContents" class="text-center py-12 text-gray-400">
+                            Ничего не найдено
                         </div>
                     </div>
                 </div>
@@ -178,7 +246,7 @@
             </div>
         </div>
 
-        <!-- Модалка создания папки -->
+        <!-- Модалки (без изменений) -->
         <div v-if="showCreateModal" class="modal-overlay">
             <div class="modal-content">
                 <h2 class="text-lg font-semibold mb-4">Создать новую папку</h2>
@@ -196,7 +264,6 @@
             </div>
         </div>
 
-        <!-- Модалка переименования -->
         <div v-if="showRenameModal" class="modal-overlay">
             <div class="modal-content">
                 <h2 class="text-lg font-semibold mb-4">Переименовать</h2>
@@ -214,7 +281,6 @@
             </div>
         </div>
 
-        <!-- Модалка подтверждения удаления -->
         <div v-if="showDeleteModal" class="modal-overlay">
             <div class="modal-content">
                 <h2 class="text-lg font-semibold mb-4">Подтверждение удаления</h2>
@@ -228,6 +294,55 @@
                     </button>
                     <button @click="confirmDelete" class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700">
                         Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showUploadModal" class="modal-overlay">
+            <div class="upload-modal">
+                <div class="upload-modal-header">
+                    <h2 class="upload-modal-title">Загрузить</h2>
+                    <button @click="showUploadModal = false" class="upload-modal-close">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="upload-modal-body">
+                    <div class="upload-dropzone" @click="$refs.fileInput.click()">
+                        <svg class="upload-dropzone-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="upload-dropzone-text">Перетащите файлы сюда</p>
+                    </div>
+
+                    <input ref="fileInput" type="file" multiple class="hidden" @change="handleFileSelect" />
+
+                    <div v-if="uploadFiles && uploadFiles.length > 0" class="upload-files-list">
+                        <div class="upload-files-header">Выбрано файлов: {{ uploadFiles.length }}</div>
+                        <div class="upload-files-items">
+                            <div v-for="i in Array.from(uploadFiles)" :key="i.name" class="upload-file-item">
+                                {{ i.name }} ({{ formatFileSize(i.size) }})
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-modal-footer">
+                    <button @click="$refs.fileInput.click()" class="upload-btn upload-btn-browse">
+                        Обзор
+                    </button>
+                    <button
+                        @click="uploadFile"
+                        :disabled="!uploadFiles || uploadFiles.length === 0 || uploadLoading"
+                        class="upload-btn upload-btn-upload"
+                    >
+                        {{ uploadLoading ? 'Загрузка...' : 'Загрузить' }}
+                    </button>
+                    <button @click="showUploadModal = false" class="upload-btn upload-btn-close">
+                        Закрыть
                     </button>
                 </div>
             </div>
@@ -268,8 +383,14 @@ const currentPath = ref('');
 const showCreateModal = ref(false);
 const showRenameModal = ref(false);
 const showDeleteModal = ref(false);
+const showUploadModal = ref(false);
+const showSearch = ref(false);
+const searchQuery = ref('');
+const sortOrder = ref<'asc' | 'desc'>('asc');
 const renameItem = ref<MediaItem | null>(null);
 const deleteItem = ref<MediaItem | null>(null);
+const uploadFiles = ref<FileList | null>(null);
+const uploadLoading = ref(false);
 const newItemName = ref('');
 const newFolderName = ref('');
 const selectedItems = ref<string[]>([]);
@@ -288,6 +409,42 @@ const filesCount = computed(() => files.value.length);
 
 const canGoBack = computed(() => {
     return currentPath.value !== '';
+});
+
+const filteredFolders = computed(() => {
+    if (!showSearch.value || !searchQuery.value) return folders.value;
+    return folders.value.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+
+const filteredFiles = computed(() => {
+    if (!showSearch.value || !searchQuery.value) return files.value;
+    return files.value.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
+
+const filteredContents = computed(() => {
+    return [...filteredFolders.value, ...filteredFiles.value];
+});
+
+const sortedFilteredFolders = computed(() => {
+    const items = [...filteredFolders.value];
+    if (sortOrder.value === 'asc') {
+        return items.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+        return items.sort((a, b) => b.name.localeCompare(a.name));
+    }
+});
+
+const sortedFilteredFiles = computed(() => {
+    const items = [...filteredFiles.value];
+    if (sortOrder.value === 'asc') {
+        return items.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+        return items.sort((a, b) => b.name.localeCompare(a.name));
+    }
 });
 
 const formatDate = (timestamp: number): string => {
@@ -309,6 +466,11 @@ const goHome = () => {
     loadContents();
 };
 
+const clearSearch = () => {
+    showSearch.value = false;
+    searchQuery.value = '';
+};
+
 const toggleSelect = (path: string, item: MediaItem) => {
     const index = selectedItems.value.indexOf(path);
     if (index === -1) {
@@ -323,11 +485,18 @@ const toggleSelect = (path: string, item: MediaItem) => {
 };
 
 const selectFolder = (item: MediaItem) => {
-    selectedItem.value = item;
-    if (!selectedItems.value.includes(item.path)) {
-        selectedItems.value.push(item.path);
+    if (!showSearch.value) {
+        selectedItem.value = item;
+        if (!selectedItems.value.includes(item.path)) {
+            selectedItems.value.push(item.path);
+        }
+        navigateToFolder(item.path);
+    } else {
+        selectedItem.value = item;
+        if (!selectedItems.value.includes(item.path)) {
+            selectedItems.value.push(item.path);
+        }
     }
-    navigateToFolder(item.path);
 };
 
 const selectFile = (item: MediaItem) => {
@@ -404,6 +573,45 @@ const copySelectedItem = async () => {
         loadContents();
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка копирования', 'error');
+    }
+};
+
+const openUploadModal = () => {
+    showUploadModal.value = true;
+};
+
+const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    uploadFiles.value = target.files;
+};
+
+const uploadFile = async () => {
+    if (!uploadFiles.value || uploadFiles.value.length === 0) return;
+
+    uploadLoading.value = true;
+    const formData = new FormData();
+
+    for (let i = 0; i < uploadFiles.value.length; i++) {
+        formData.append('files[]', uploadFiles.value[i]);
+    }
+    formData.append('path', currentPath.value);
+
+    try {
+        await axios.post('/admin/media/upload', formData, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        showNotification('Файлы загружены успешно', 'success');
+        showUploadModal.value = false;
+        uploadFiles.value = null;
+        loadContents();
+        loadFolders();
+    } catch (error: any) {
+        showNotification(error.response?.data?.message || 'Ошибка загрузки', 'error');
+    } finally {
+        uploadLoading.value = false;
     }
 };
 
@@ -519,5 +727,150 @@ onMounted(() => {
     padding: 1.5rem;
     width: 24rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.upload-modal {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 0.5rem;
+    width: 700px;
+    max-width: 90vw;
+    min-height: 500px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.upload-modal-body {
+    padding: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.upload-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.upload-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.upload-modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.upload-modal-close {
+    color: #9ca3af;
+    transition: color 0.2s;
+}
+
+.upload-modal-close:hover {
+    color: #4b5563;
+}
+
+.upload-dropzone {
+    border: 2px dashed #d1d5db;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    min-height: 300px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.upload-dropzone:hover {
+    border-color: #3b82f6;
+}
+
+.upload-dropzone-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto 0.75rem;
+    color: #9ca3af;
+}
+
+.upload-dropzone-text {
+    color: #6b7280;
+}
+
+.upload-files-list {
+    margin-top: 1rem;
+}
+
+.upload-files-header {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.upload-files-items {
+    max-height: 8rem;
+    overflow-y: auto;
+}
+
+.upload-files-items > :not(:first-child) {
+    margin-top: 0.25rem;
+}
+
+.upload-file-item {
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+.upload-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.upload-btn-browse {
+    background-color: #5cb85c;
+    color: white;
+    border: 1px solid #d1d5db;
+}
+
+.upload-btn-browse:hover {
+    background-color: #4cae4c;
+    border-color: #9ca3af;
+}
+
+.upload-btn-upload {
+    background-color: #337ab7;
+    color: white;
+}
+
+.upload-btn-upload:hover:not(:disabled) {
+    background-color: #286090;
+}
+
+.upload-btn-upload:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-btn-close {
+    background-color: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.upload-btn-close:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
 }
 </style>

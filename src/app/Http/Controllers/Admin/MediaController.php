@@ -232,6 +232,30 @@ class MediaController extends Controller
         }
     }
 
+    public function uploadFile(Request $request)
+    {
+        $request->validate([
+            'files.*' => 'required|file|max:102400',
+            'path' => 'nullable|string'
+        ]);
+
+        $path = $request->get('path', '');
+        $uploadPath = $this->basePath . ($path ? '/' . $path : '');
+
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+
+        $uploaded = [];
+        foreach ($request->file('files') as $file) {
+            $fileName = $file->getClientOriginalName();
+            $file->move($uploadPath, $fileName);
+            $uploaded[] = $fileName;
+        }
+
+        return response()->json(['message' => 'Загружено файлов: ' . count($uploaded), 'files' => $uploaded]);
+    }
+
 
 
 }

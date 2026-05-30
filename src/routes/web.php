@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/rename', [App\Http\Controllers\Admin\MediaController::class, 'renameItem']);
         Route::delete('/item', [App\Http\Controllers\Admin\MediaController::class, 'deleteItem']);
         Route::post('/copy', [App\Http\Controllers\Admin\MediaController::class, 'copyItem']);
+        Route::post('/upload', [App\Http\Controllers\Admin\MediaController::class, 'uploadFile']);
 
     });
 
