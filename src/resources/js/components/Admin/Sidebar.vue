@@ -14,10 +14,10 @@
             <nav class="space-y-4">
                 <div class="px-3">
                     <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">МАТЕРИАЛЫ</div>
-                    <SidebarLink href="#" icon="plus">Создать материал</SidebarLink>
+                    <SidebarLink href="/admin/materials/create" icon="plus">Создать материал</SidebarLink>
                     <SidebarLink href="/admin/materials" icon="list">Менеджер материалов</SidebarLink>
                     <SidebarLink href="/admin/categories" icon="category">Категории</SidebarLink>
-                    <SidebarLink href="#" icon="image">Медиа-менеджер</SidebarLink>
+                    <SidebarLink href="/admin/media" icon="image">Медиа-менеджер</SidebarLink>
                 </div>
 
                 <div class="px-3">

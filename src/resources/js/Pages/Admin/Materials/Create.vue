@@ -59,16 +59,16 @@
             <!-- Правая колонка -->
             <div class="w-80">
                 <div class="space-y-4">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Состояние</h3>
                         <select
                             v-model="form.state"
                             class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
                             :class="{
-                                'bg-green-600 text-white border-green-700 focus:ring-green-300': form.state === 'published',
-                                'bg-red-600 text-white border-red-700 focus:ring-red-300': form.state === 'draft',
-                                'bg-gray-500 text-white border-gray-600 focus:ring-gray-300': form.state === 'archived'
-                            }"
+                    'bg-green-600 text-white border-green-700 focus:ring-green-300': form.state === 'published',
+                    'bg-red-600 text-white border-red-700 focus:ring-red-300': form.state === 'draft',
+                    'bg-gray-500 text-white border-gray-600 focus:ring-gray-300': form.state === 'archived'
+                }"
                         >
                             <option value="published" class="bg-white text-gray-800">Опубликовано</option>
                             <option value="draft" class="bg-white text-gray-800">Не опубликовано</option>
@@ -76,7 +76,7 @@
                         </select>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Категория *</h3>
                         <select v-model="form.category_id" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option :value="null">Выберите категорию</option>
@@ -84,7 +84,7 @@
                         </select>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Избранные</h3>
                         <select v-model="form.featured" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option value="0">Нет</option>
@@ -92,7 +92,7 @@
                         </select>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Доступ</h3>
                         <select v-model="form.access" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option value="public">Public</option>
@@ -101,7 +101,7 @@
                         </select>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Метки</h3>
                         <input
                             type="text"
@@ -112,6 +112,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />

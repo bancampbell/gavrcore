@@ -146,6 +146,16 @@ export function useMaterials(props: UseMaterialsProps) {
         }
     };
 
+    const editSelected = () => {
+        if (selectedMaterials.value.length === 0) {
+            showNotification('Выберите материал для редактирования', 'error');
+        } else if (selectedMaterials.value.length === 1) {
+            router.visit(`/admin/materials/${selectedMaterials.value[0]}/edit`);
+        } else {
+            showNotification('Выберите только один материал для редактирования', 'error');
+        }
+    };
+
     const openDeleteModal = () => {
         const count = selectedMaterials.value.length;
         modalTitle.value = 'Удаление материалов';
@@ -213,6 +223,7 @@ export function useMaterials(props: UseMaterialsProps) {
         moveToTrash,
         publishSelected,
         unpublishSelected,
+        editSelected,
         openDeleteModal,
         openEmptyTrashModal,
         confirmAction,

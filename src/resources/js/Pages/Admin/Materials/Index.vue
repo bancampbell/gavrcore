@@ -7,7 +7,11 @@
                     <Link href="/admin/materials/create" class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition">
                         + Создать материал
                     </Link>
-                    <button class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition">
+                    <button
+                        @click="editSelected"
+                        :disabled="selectedMaterials.length !== 1"
+                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         Изменить
                     </button>
                     <button
@@ -96,7 +100,7 @@
                     <tbody>
                     <tr v-for="(material, index) in materials.data" :key="material.id"
                         :class="[
-                                'border-b border-gray-100 hover:bg-gray-100 cursor-pointer',
+                                'border-b border-gray-100 hover:bg-gray-50',
                                 index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                             ]">
                         <td class="px-4 py-3">
@@ -189,6 +193,7 @@ const {
     nextPage,
     moveToTrash,
     publishSelected,
-    unpublishSelected
+    unpublishSelected,
+    editSelected
 } = useMaterials(props);
 </script>

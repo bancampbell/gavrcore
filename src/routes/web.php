@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MaterialController;
+use App\Http\Controllers\Admin\MediaController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -35,5 +36,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/materials', [App\Http\Controllers\Admin\MaterialController::class, 'store'])->name('admin.materials.store');
     Route::get('/admin/materials/{material}/edit', [App\Http\Controllers\Admin\MaterialController::class, 'edit'])->name('admin.materials.edit');
     Route::put('/admin/materials/{material}', [App\Http\Controllers\Admin\MaterialController::class, 'update'])->name('admin.materials.update');
+
+
+    Route::prefix('admin/media')->name('admin.media.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\MediaController::class, 'index'])->name('index');
+        Route::get('/contents', [App\Http\Controllers\Admin\MediaController::class, 'getContents']);
+        Route::post('/folder', [App\Http\Controllers\Admin\MediaController::class, 'createFolder']);
+        Route::get('/folders', [App\Http\Controllers\Admin\MediaController::class, 'getFolders']);
+
+    });
 
 });
