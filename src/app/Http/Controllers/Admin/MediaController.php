@@ -48,6 +48,7 @@ class MediaController extends Controller
                 'type' => $isDir ? 'folder' : 'file',
                 'size' => $isDir ? null : filesize($itemPath),
                 'mime_type' => $isDir ? null : mime_content_type($itemPath),
+                'modified' => filemtime($itemPath), // Добавь эту строку
             ];
         }
 
@@ -113,6 +114,122 @@ class MediaController extends Controller
         }
 
         return $folders;
+    }
+
+
+    public function renameItem(Request $request)
+    {
+        $request->validate([
+            'old_path' => 'required|string',
+            'new_name' => 'required|string|max:255|regex:/^[a-zA-Zа-яА-Я0-9_\-\.]+$/u',
+        ]);
+
+        $oldPath = $request->old_path;
+        $newName = $request->new_name;
+
+        $fullOldPath = $this->basePath . '/' . $oldPath;
+        $dirname = dirname($fullOldPath);
+        $newPath = $dirname . '/' . $newName;
+
+        if (!file_exists($fullOldPath)) {
+            return response()->json(['message' => 'Файл или папка не найдены'], 404);
+        }
+
+        if (file_exists($newPath)) {
+            return response()->json(['message' => 'Элемент с таким именем уже существует'], 400);
+        }
+
+        if (!rename($fullOldPath, $newPath)) {
+            return response()->json(['message' => 'Не удалось переименовать'], 500);
+        }
+
+        return response()->json(['message' => 'Переименовано успешно', 'success' => true]);
+    }
+
+    public function deleteItem(Request $request)
+    {
+        $request->validate([
+            'path' => 'required|string',
+        ]);
+
+        $path = $request->path;
+        $fullPath = $this->basePath . '/' . $path;
+
+        if (!file_exists($fullPath)) {
+            return response()->json(['message' => 'Файл или папка не найдены'], 404);
+        }
+
+        if (is_dir($fullPath)) {
+            $this->deleteDirectory($fullPath);
+        } else {
+            unlink($fullPath);
+        }
+
+        return response()->json(['message' => 'Удалено успешно', 'success' => true]);
+    }
+
+    public function copyItem(Request $request)
+    {
+        $request->validate([
+            'path' => 'required|string',
+        ]);
+
+        $path = $request->path;
+        $fullPath = $this->basePath . '/' . $path;
+
+        if (!file_exists($fullPath)) {
+            return response()->json(['message' => 'Файл или папка не найдены'], 404);
+        }
+
+        $dirname = dirname($fullPath);
+        $basename = basename($fullPath);
+        $extension = pathinfo($basename, PATHINFO_EXTENSION);
+        $nameWithoutExt = pathinfo($basename, PATHINFO_FILENAME);
+
+        $counter = 1;
+        $newBasename = $basename;
+        while (file_exists($dirname . '/' . $newBasename)) {
+            $newBasename = $nameWithoutExt . '_копия_' . $counter . ($extension ? '.' . $extension : '');
+            $counter++;
+        }
+        $newPath = $dirname . '/' . $newBasename;
+
+        if (is_dir($fullPath)) {
+            $this->copyDirectory($fullPath, $newPath);
+        } else {
+            copy($fullPath, $newPath);
+        }
+
+        return response()->json(['message' => 'Скопировано успешно', 'success' => true]);
+    }
+
+    private function deleteDirectory(string $dir): void
+    {
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . '/' . $file;
+            is_dir($path) ? $this->deleteDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
+    }
+
+    private function copyDirectory(string $source, string $dest): void
+    {
+        if (!is_dir($dest)) {
+            mkdir($dest, 0777, true);
+        }
+
+        $files = array_diff(scandir($source), ['.', '..']);
+        foreach ($files as $file) {
+            $srcPath = $source . '/' . $file;
+            $destPath = $dest . '/' . $file;
+
+            if (is_dir($srcPath)) {
+                $this->copyDirectory($srcPath, $destPath);
+            } else {
+                copy($srcPath, $destPath);
+            }
+        }
     }
 
 

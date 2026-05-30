@@ -44,6 +44,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/folder', [App\Http\Controllers\Admin\MediaController::class, 'createFolder']);
         Route::get('/folders', [App\Http\Controllers\Admin\MediaController::class, 'getFolders']);
 
+        Route::post('/rename', [App\Http\Controllers\Admin\MediaController::class, 'renameItem']);
+        Route::delete('/item', [App\Http\Controllers\Admin\MediaController::class, 'deleteItem']);
+        Route::post('/copy', [App\Http\Controllers\Admin\MediaController::class, 'copyItem']);
+
     });
+
+
 
 });
