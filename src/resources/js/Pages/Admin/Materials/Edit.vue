@@ -1,5 +1,3 @@
-<!-- resources/js/Pages/Admin/Materials/Edit.vue -->
-
 <template>
     <EmptyLayout :user="user">
         <div class="bg-white border-b border-gray-200">
@@ -52,6 +50,7 @@
                         ref="editorRef"
                         v-model="form.content"
                         @open-link-modal="openLinkModal"
+                        @open-image-manager="openImageManager"
                         @edit-link="handleEditLink"
                     />
                 </div>
@@ -125,6 +124,15 @@
             @insert="insertLink"
             @edit="updateLink"
         />
+
+        <MediaManagerModal
+            :show="showImageManager"
+            :user="user"
+            :selected-url="editImageData?.url"
+            mode="image"
+            @close="closeImageManager"
+            @select="onImageSelect"
+        />
     </EmptyLayout>
 </template>
 
@@ -137,6 +145,7 @@ import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category, Material } from '../../../types';
 import Editor from '../../../components/shared/Editor.vue';
 import LinkModal from './components/LinkModal.vue';
+import MediaManagerModal from './components/MediaManagerModal.vue';
 
 const props = defineProps<{
     user: User;
@@ -146,8 +155,10 @@ const props = defineProps<{
 
 const loading = ref(false);
 const showLinkModal = ref(false);
+const showImageManager = ref(false);
 const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
+const editImageData = ref<any>(null);
 const editorRef = ref<any>(null);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
@@ -184,6 +195,46 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
 const openLinkModal = () => {
     editLinkData.value = null;
     showLinkModal.value = true;
+};
+
+const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+    editImageData.value = imageData || null;
+    showImageManager.value = true;
+};
+
+const closeImageManager = () => {
+    showImageManager.value = false;
+    editImageData.value = null;
+};
+
+const onImageSelect = (file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }) => {
+    if (editImageData.value) {
+        let style = '';
+        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
+        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
+
+        editorRef.value?.updateImage(editImageData.value.url, {
+            url: file.url,
+            alt: file.options?.alt || file.name,
+            title: '',
+            width: file.options?.width || '',
+            height: file.options?.height || '',
+            align: ''
+        });
+    } else {
+        let style = '';
+        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
+        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
+
+        let imgHtml = `<img src="${file.url}" alt="${file.options?.alt || file.name}"`;
+        if (style) {
+            imgHtml += ` style="${style.trim()}"`;
+        }
+        imgHtml += ` />`;
+
+        editorRef.value?.insertContent(imgHtml);
+    }
+    closeImageManager();
 };
 
 const handleEditLink = (data: { oldText: string; url: string; text: string; target: string; title: string }) => {
@@ -297,7 +348,6 @@ const saveAndClose = async () => {
                 'Accept': 'application/json'
             }
         });
-        // Передаём сообщение через query параметр
         router.visit('/admin/materials?message=Материал+обновлён');
     } catch (error: any) {
         console.error('Save and close error:', error);

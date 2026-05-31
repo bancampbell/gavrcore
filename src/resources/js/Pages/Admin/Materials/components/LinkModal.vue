@@ -144,11 +144,11 @@
         </div>
     </div>
 
-    <!-- Модалка файлового менеджера -->
     <MediaManagerModal
         :show="showMediaManager"
         :user="user"
         :selected-url="linkUrl"
+        mode="file"
         @close="showMediaManager = false"
         @select="onMediaSelect"
     />
@@ -601,7 +601,7 @@ const updateLink = insertLink;
 }
 
 .btn-primary:hover {
-    background: #3688d1;
+    background: #286090;
 }
 
 .tab-placeholder {

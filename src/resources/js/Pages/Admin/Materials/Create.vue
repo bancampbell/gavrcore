@@ -1,5 +1,3 @@
-<!-- resources/js/Pages/Admin/Materials/Create.vue -->
-
 <template>
     <EmptyLayout :user="user">
         <div class="bg-white border-b border-gray-200">
@@ -55,6 +53,7 @@
                         ref="editorRef"
                         v-model="form.content"
                         @open-link-modal="openLinkModal"
+                        @open-image-manager="openImageManager"
                         @edit-link="handleEditLink"
                     />
                 </div>
@@ -128,6 +127,15 @@
             @insert="insertLink"
             @edit="updateLink"
         />
+
+        <MediaManagerModal
+            :show="showImageManager"
+            :user="user"
+            :selected-url="editImageData?.url"
+            mode="image"
+            @close="closeImageManager"
+            @select="onImageSelect"
+        />
     </EmptyLayout>
 </template>
 
@@ -140,6 +148,7 @@ import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category } from '../../../types';
 import Editor from '../../../components/shared/Editor.vue';
 import LinkModal from './components/LinkModal.vue';
+import MediaManagerModal from './components/MediaManagerModal.vue';
 
 const props = defineProps<{
     user: User;
@@ -148,8 +157,10 @@ const props = defineProps<{
 
 const loading = ref(false);
 const showLinkModal = ref(false);
+const showImageManager = ref(false);
 const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
+const editImageData = ref<any>(null);
 const editorRef = ref<any>(null);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
@@ -186,6 +197,56 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
 const openLinkModal = () => {
     editLinkData.value = null;
     showLinkModal.value = true;
+};
+
+const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+    console.log('openImageManager вызван, imageData:', imageData);
+    editImageData.value = imageData || null;
+    showImageManager.value = true;
+};
+
+const closeImageManager = () => {
+    console.log('closeImageManager вызван');
+    showImageManager.value = false;
+    editImageData.value = null;
+};
+
+const onImageSelect = (file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }) => {
+    console.log('=== onImageSelect ===');
+    console.log('file.options:', file.options);
+    console.log('width:', file.options?.width);
+    console.log('height:', file.options?.height);
+
+    if (editImageData.value) {
+        console.log('Режим: редактирование');
+        let style = '';
+        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
+        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
+
+        editorRef.value?.updateImage(editImageData.value.url, {
+            url: file.url,
+            alt: file.options?.alt || file.name,
+            title: '',
+            width: file.options?.width || '',
+            height: file.options?.height || '',
+            align: ''
+        });
+    } else {
+        console.log('Режим: вставка нового');
+        let style = '';
+        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
+        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
+
+        let imgHtml = `<img src="${file.url}" alt="${file.options?.alt || file.name}"`;
+        if (style) {
+            imgHtml += ` style="${style.trim()}"`;
+        }
+        imgHtml += ` />`;
+
+        console.log('Сгенерированный HTML:', imgHtml);
+        editorRef.value?.insertContent(imgHtml);
+    }
+    closeImageManager();
 };
 
 const handleEditLink = (data: { oldText: string; url: string; text: string; target: string; title: string }) => {
@@ -264,7 +325,6 @@ const saveAndClose = async () => {
         await axios.post('/admin/materials', form.value, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        // Передаём сообщение через query параметр
         router.visit('/admin/materials?message=Материал+создан');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');

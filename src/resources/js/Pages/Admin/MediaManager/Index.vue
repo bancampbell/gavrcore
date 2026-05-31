@@ -214,6 +214,7 @@ const props = defineProps<{
     user: User;
     mode?: 'full' | 'picker';
     selectedUrl?: string;
+    acceptedFiles?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -274,7 +275,7 @@ const {
     clearSelectedFile,
     selectedFileForPicker,
     contents
-} = useMediaManager(props.mode || 'full');
+} = useMediaManager(props.mode || 'full', props.acceptedFiles);
 
 const scrollToSelectedFile = () => {
     if (!selectedFileForPicker.value?.path) return;

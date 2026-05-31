@@ -7,7 +7,7 @@ import { useSorting } from './useSorting';
 import { useSelection } from './useSelection';
 import type { MediaItem } from './useSelection';
 
-export function useMediaManager(mode: 'full' | 'picker' = 'full') {
+export function useMediaManager(mode: 'full' | 'picker' = 'full', acceptedFiles?: string[]) {
     // State
     const allFolders = ref<MediaItem[]>([]);
     const contents = ref<MediaItem[]>([]);
@@ -22,10 +22,8 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
     const newFolderName = ref('');
     const uploadFileInput = ref<HTMLInputElement | null>(null);
 
-    // Для режима picker
     const selectedFileForPicker = ref<{ url: string; name: string; path: string } | null>(null);
 
-    // Notification
     const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
     let notificationTimeout: number | null = null;
 
@@ -37,7 +35,6 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
         }, 3000);
     };
 
-    // Composables
     const {
         loadingFolders,
         loadingContents,
@@ -77,10 +74,21 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
         clearSelection
     } = useSelection();
 
-    // Computed
     const rootFolders = computed(() => allFolders.value.filter(f => f && f.path && !f.path.includes('/')));
     const folders = computed(() => contents.value.filter(i => i && i.type === 'folder'));
-    const files = computed(() => contents.value.filter(i => i && i.type === 'file'));
+
+    const files = computed(() => {
+        let allFiles = contents.value.filter(i => i && i.type === 'file');
+
+        if (acceptedFiles && acceptedFiles.length > 0 && mode === 'picker') {
+            allFiles = allFiles.filter(file => {
+                const extension = file.name.split('.').pop()?.toLowerCase() || '';
+                return acceptedFiles.includes(extension);
+            });
+        }
+
+        return allFiles;
+    });
 
     const filteredFolders = computed(() => {
         const filtered = filterItems(folders.value, searchQuery.value);
@@ -109,7 +117,6 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
     const filesCount = computed(() => files.value.length);
     const canGoBack = computed(() => currentPath.value !== '');
 
-    // Methods
     const loadData = async () => {
         allFolders.value = await loadFolders();
         contents.value = await loadContents(currentPath.value);
@@ -270,9 +277,7 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
         clearSelection();
     };
 
-    // Return - ВОТ ЗДЕСЬ ДОБАВЬ selectedFileForPicker
     return {
-        // State
         allFolders,
         contents,
         currentPath,
@@ -295,9 +300,7 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
         loadingContents,
         uploadFileInput,
         notification,
-        selectedFileForPicker, // <--- ДОБАВЬ ЭТУ СТРОКУ
-
-        // Computed
+        selectedFileForPicker,
         rootFolders,
         sortedFilteredFolders,
         sortedFilteredFiles,
@@ -308,8 +311,6 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full') {
         canGoBack,
         isAscActive,
         isDescActive,
-
-        // Methods
         loadData,
         navigateToFolder,
         goBack,

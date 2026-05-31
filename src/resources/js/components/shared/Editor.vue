@@ -1,6 +1,5 @@
 <template>
     <div class="border border-gray-200 rounded-lg overflow-hidden bg-white flex flex-col h-full">
-        <!-- Панель инструментов -->
         <div class="border-b border-gray-200 bg-gray-50 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
             <button
                 @click="editor?.chain().focus().toggleBold().run()"
@@ -113,15 +112,15 @@
             </button>
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
             <button
-                @click="emit('openLinkModal')"
-                :class="{ 'bg-gray-200': editor?.isActive('link') }"
+                @click="openLinkModal"
+                :class="{ 'bg-blue-100 text-blue-700': selectedLinkData !== null }"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
                 title="Ссылка"
             >
                 🔗
             </button>
             <button
-                @click="addImage"
+                @click="openImageModal"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
                 title="Изображение"
             >
@@ -201,6 +200,35 @@ import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 
+const CustomImage = Image.extend({
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            src: {
+                default: null,
+            },
+            alt: {
+                default: null,
+            },
+            title: {
+                default: null,
+            },
+            style: {
+                default: null,
+                parseHTML: element => element.getAttribute('style'),
+                renderHTML: attributes => {
+                    if (!attributes.style) {
+                        return {};
+                    }
+                    return {
+                        style: attributes.style,
+                    };
+                },
+            },
+        };
+    },
+});
+
 const props = defineProps<{
     modelValue: string;
 }>();
@@ -208,6 +236,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
     (e: 'openLinkModal'): void;
+    (e: 'openImageManager', imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }): void;
     (e: 'editLink', data: { oldText: string; url: string; text: string; target: string; title: string }): void;
 }>();
 
@@ -215,8 +244,9 @@ const editorElement = ref<HTMLElement>();
 const showHtml = ref(false);
 const htmlContent = ref('');
 let editor: Editor | null = null;
+let selectedImageData: { url: string; alt: string; title: string; width?: string; height?: string; align?: string } | null = null;
+const selectedLinkData = ref<{ oldText: string; url: string; text: string; target: string; title: string } | null>(null);
 
-// Публичный метод для вставки ссылки на выделение
 const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
     if (!editor) return;
 
@@ -224,7 +254,6 @@ const setLinkOnSelection = (url: string, linkText: string, target: string, title
     const hasSelection = from !== to;
 
     if (hasSelection) {
-        // Сохраняем выделенный текст
         const selectedText = editor.state.doc.textBetween(from, to);
         const linkHtml = `<a href="${url}" target="${target}" title="${title}">${selectedText}</a>`;
         editor.commands.insertContent(linkHtml);
@@ -234,10 +263,88 @@ const setLinkOnSelection = (url: string, linkText: string, target: string, title
     }
 };
 
-// Открываем функцию наружу
+const insertContent = (html: string) => {
+    if (editor) {
+        editor.commands.insertContent(html);
+        const updatedHtml = editor.getHTML();
+        emit('update:modelValue', updatedHtml);
+    }
+};
+
+const updateImage = (oldUrl: string, newData: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+    if (!editor) return;
+
+    let style = '';
+    if (newData.width && newData.width !== '') style += `width: ${newData.width}px; `;
+    if (newData.height && newData.height !== '') style += `height: ${newData.height}px; `;
+
+    const styleAttr = style ? ` style="${style.trim()}"` : '';
+    const newImgHtml = `<img src="${newData.url}" alt="${newData.alt}" title="${newData.title}"${styleAttr} />`;
+
+    const currentHtml = editor.getHTML();
+    const oldImgRegex = new RegExp(`<img[^>]*src="${oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`, 'g');
+    const updatedHtml = currentHtml.replace(oldImgRegex, newImgHtml);
+    editor.commands.setContent(updatedHtml);
+    emit('update:modelValue', updatedHtml);
+};
+
+const openLinkModal = () => {
+    if (selectedLinkData.value) {
+        emit('editLink', selectedLinkData.value);
+    } else {
+        emit('openLinkModal');
+    }
+};
+
+const openImageModal = () => {
+    if (selectedImageData) {
+        emit('openImageManager', selectedImageData);
+    } else {
+        emit('openImageManager');
+    }
+};
+
+const openFileManager = () => {
+    console.log('Открыть файловый менеджер');
+    alert('Файловый менеджер будет здесь');
+};
+
 defineExpose({
-    setLinkOnSelection
+    setLinkOnSelection,
+    insertContent,
+    updateImage
 });
+
+const getImageData = (img: HTMLImageElement) => {
+    let align = '';
+    const style = img.getAttribute('style') || '';
+    if (style.includes('display: block') && style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
+        align = 'center';
+    } else if (style.includes('float: left')) {
+        align = 'left';
+    } else if (style.includes('float: right')) {
+        align = 'right';
+    }
+
+    let width = '';
+    let height = '';
+
+    if (style) {
+        const widthMatch = style.match(/width:\s*(\d+)px/);
+        if (widthMatch) width = widthMatch[1];
+        const heightMatch = style.match(/height:\s*(\d+)px/);
+        if (heightMatch) height = heightMatch[1];
+    }
+
+    return {
+        url: img.getAttribute('src') || '',
+        alt: img.getAttribute('alt') || '',
+        title: img.getAttribute('title') || '',
+        width: width,
+        height: height,
+        align: align
+    };
+};
 
 const getLinkData = (link: HTMLAnchorElement) => {
     return {
@@ -249,13 +356,42 @@ const getLinkData = (link: HTMLAnchorElement) => {
     };
 };
 
+const handleImageClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const img = target.closest('img');
+    if (img) {
+        e.preventDefault();
+        e.stopPropagation();
+        selectedImageData = getImageData(img);
+        document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
+        img.classList.add('selected-image');
+        if (selectedLinkData.value) {
+            document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
+            selectedLinkData.value = null;
+        }
+    } else {
+        document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
+        selectedImageData = null;
+    }
+};
+
 const handleLinkMouseDown = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     const link = target.closest('a');
     if (link) {
         e.preventDefault();
         e.stopPropagation();
-        emit('editLink', getLinkData(link));
+        e.stopImmediatePropagation();
+        selectedLinkData.value = getLinkData(link);
+        document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
+        link.classList.add('selected-link');
+        if (selectedImageData) {
+            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
+            selectedImageData = null;
+        }
+    } else {
+        document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
+        selectedLinkData.value = null;
     }
 };
 
@@ -271,7 +407,7 @@ onMounted(async () => {
         element: editorElement.value,
         extensions: [
             StarterKit,
-            Image,
+            CustomImage,
             Link.configure({
                 openOnClick: false,
                 HTMLAttributes: {
@@ -294,7 +430,8 @@ onMounted(async () => {
 
     const editorContainer = document.querySelector('.tiptap');
     if (editorContainer) {
-        editorContainer.addEventListener('mousedown', handleLinkMouseDown);
+        editorContainer.addEventListener('mousedown', handleLinkMouseDown, true);
+        editorContainer.addEventListener('click', handleImageClick, true);
     }
 });
 
@@ -303,18 +440,6 @@ watch(() => props.modelValue, (newValue) => {
         editor.commands.setContent(newValue || '<p></p>');
     }
 });
-
-const addImage = () => {
-    const url = window.prompt('Введите URL изображения:');
-    if (url && editor) {
-        editor.chain().focus().setImage({ src: url }).run();
-    }
-};
-
-const openFileManager = () => {
-    console.log('Открыть файловый менеджер');
-    alert('Файловый менеджер будет здесь');
-};
 
 const toggleHtml = () => {
     if (!showHtml.value) {
@@ -340,7 +465,8 @@ const cancelHtml = () => {
 onBeforeUnmount(() => {
     const editorContainer = document.querySelector('.tiptap');
     if (editorContainer) {
-        editorContainer.removeEventListener('mousedown', handleLinkMouseDown);
+        editorContainer.removeEventListener('mousedown', handleLinkMouseDown, true);
+        editorContainer.removeEventListener('click', handleImageClick, true);
     }
     editor?.destroy();
 });
@@ -359,12 +485,24 @@ onBeforeUnmount(() => {
 .tiptap img {
     max-width: 100%;
     height: auto;
+    cursor: pointer;
+    transition: outline 0.2s;
+}
+
+.tiptap img.selected-image {
+    outline: 3px solid #4f46e5;
+    outline-offset: 2px;
 }
 
 .tiptap a {
     color: #2563eb;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.tiptap a.selected-link {
+    outline: 2px solid #4f46e5;
+    background-color: rgba(79, 70, 229, 0.1);
 }
 
 .tiptap ul,
