@@ -1,3 +1,5 @@
+<!-- resources/js/Pages/Admin/Materials/Create.vue -->
+
 <template>
     <EmptyLayout :user="user">
         <div class="bg-white border-b border-gray-200">
@@ -20,7 +22,6 @@
             </div>
         </div>
 
-        <!-- Поля Заголовок и Алиас -->
         <div class="bg-white border-b border-gray-200">
             <div class="px-6 py-4">
                 <div class="flex items-center gap-6">
@@ -47,16 +48,18 @@
             </div>
         </div>
 
-        <!-- Блок с редактором и правой колонкой -->
         <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <!-- Основная колонка с редактором -->
             <div class="flex-1">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full">
-                    <Editor v-model="form.content" />
+                    <Editor
+                        ref="editorRef"
+                        v-model="form.content"
+                        @open-link-modal="openLinkModal"
+                        @edit-link="handleEditLink"
+                    />
                 </div>
             </div>
 
-            <!-- Правая колонка -->
             <div class="w-80">
                 <div class="space-y-4">
                     <div>
@@ -65,10 +68,10 @@
                             v-model="form.state"
                             class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
                             :class="{
-                    'bg-green-600 text-white border-green-700 focus:ring-green-300': form.state === 'published',
-                    'bg-red-600 text-white border-red-700 focus:ring-red-300': form.state === 'draft',
-                    'bg-gray-500 text-white border-gray-600 focus:ring-gray-300': form.state === 'archived'
-                }"
+                                'bg-green-600 text-white border-green-700 focus:ring-green-300': form.state === 'published',
+                                'bg-red-600 text-white border-red-700 focus:ring-red-300': form.state === 'draft',
+                                'bg-gray-500 text-white border-gray-600 focus:ring-gray-300': form.state === 'archived'
+                            }"
                         >
                             <option value="published" class="bg-white text-gray-800">Опубликовано</option>
                             <option value="draft" class="bg-white text-gray-800">Не опубликовано</option>
@@ -112,21 +115,31 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
+
+        <LinkModal
+            :show="showLinkModal"
+            :categories="categories"
+            :materials="materials"
+            :edit-data="editLinkData"
+            @close="closeLinkModal"
+            @insert="insertLink"
+            @edit="updateLink"
+        />
     </EmptyLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import EmptyLayout from '../../../layouts/EmptyLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category } from '../../../types';
 import Editor from '../../../components/shared/Editor.vue';
+import LinkModal from './components/LinkModal.vue';
 
 const props = defineProps<{
     user: User;
@@ -134,6 +147,10 @@ const props = defineProps<{
 }>();
 
 const loading = ref(false);
+const showLinkModal = ref(false);
+const materials = ref<any[]>([]);
+const editLinkData = ref<any>(null);
+const editorRef = ref<any>(null);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
 
@@ -147,6 +164,17 @@ const form = ref({
     featured: '0'
 });
 
+const loadMaterials = async () => {
+    try {
+        const response = await axios.get('/admin/materials/list', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        materials.value = response.data;
+    } catch (error) {
+        console.error('Error loading materials:', error);
+    }
+};
+
 const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     if (notificationTimeout) clearTimeout(notificationTimeout);
     notification.value = { show: true, message, type };
@@ -155,7 +183,31 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
-// Простая генерация алиаса
+const openLinkModal = () => {
+    editLinkData.value = null;
+    showLinkModal.value = true;
+};
+
+const handleEditLink = (data: { oldText: string; url: string; text: string; target: string; title: string }) => {
+    editLinkData.value = data;
+    showLinkModal.value = true;
+};
+
+const closeLinkModal = () => {
+    showLinkModal.value = false;
+    editLinkData.value = null;
+};
+
+const insertLink = (data: { url: string; text: string; target: string; title: string }) => {
+    editorRef.value?.setLinkOnSelection(data.url, data.text, data.target, data.title);
+};
+
+const updateLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
+    const oldLinkRegex = new RegExp(`<a[^>]*>${data.oldText}</a>`, 'g');
+    const newLinkHtml = `<a href="${data.newUrl}" target="${data.newTarget}" title="${data.newTitle}">${data.newText}</a>`;
+    form.value.content = form.value.content.replace(oldLinkRegex, newLinkHtml);
+};
+
 const updateAlias = () => {
     if (!form.value.title) {
         form.value.alias = '';
@@ -167,7 +219,6 @@ const updateAlias = () => {
         .replace(/[^a-zа-яё0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
 
-    // Простая замена русских букв
     const ruMap: Record<string, string> = {
         'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
         'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
@@ -213,7 +264,8 @@ const saveAndClose = async () => {
         await axios.post('/admin/materials', form.value, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        router.visit('/admin/materials');
+        // Передаём сообщение через query параметр
+        router.visit('/admin/materials?message=Материал+создан');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
         loading.value = false;
@@ -248,4 +300,8 @@ const saveAndCreate = async () => {
         loading.value = false;
     }
 };
+
+onMounted(() => {
+    loadMaterials();
+});
 </script>

@@ -1,3 +1,5 @@
+<!-- resources/js/Pages/Admin/Materials/Index.vue -->
+
 <template>
     <AdminLayout :user="user">
         <div class="bg-white rounded-lg shadow">
@@ -159,13 +161,13 @@
             </div>
         </div>
 
-        <!-- Toast уведомление -->
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import { useMaterials } from '../../../composables/useMaterials';
@@ -178,6 +180,9 @@ const props = defineProps<{
     authors: User[];
     filters?: MaterialFilters;
 }>();
+
+const urlParams = new URLSearchParams(window.location.search);
+const message = urlParams.get('message');
 
 const {
     filters,
@@ -194,6 +199,17 @@ const {
     moveToTrash,
     publishSelected,
     unpublishSelected,
-    editSelected
+    editSelected,
+    showNotification
 } = useMaterials(props);
+
+onMounted(() => {
+    if (message) {
+        showNotification(decodeURIComponent(message), 'success');
+        // Убираем параметр из URL без перезагрузки
+        const url = new URL(window.location.href);
+        url.searchParams.delete('message');
+        window.history.replaceState({}, '', url.toString());
+    }
+});
 </script>

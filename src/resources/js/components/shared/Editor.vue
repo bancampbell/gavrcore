@@ -2,7 +2,6 @@
     <div class="border border-gray-200 rounded-lg overflow-hidden bg-white flex flex-col h-full">
         <!-- Панель инструментов -->
         <div class="border-b border-gray-200 bg-gray-50 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
-            <!-- Жирный -->
             <button
                 @click="editor?.chain().focus().toggleBold().run()"
                 :class="{ 'bg-gray-200': editor?.isActive('bold') }"
@@ -11,8 +10,6 @@
             >
                 <span class="font-bold">B</span>
             </button>
-
-            <!-- Курсив -->
             <button
                 @click="editor?.chain().focus().toggleItalic().run()"
                 :class="{ 'bg-gray-200': editor?.isActive('italic') }"
@@ -21,8 +18,6 @@
             >
                 <span class="italic">I</span>
             </button>
-
-            <!-- Подчёркнутый -->
             <button
                 @click="editor?.chain().focus().toggleUnderline().run()"
                 :class="{ 'bg-gray-200': editor?.isActive('underline') }"
@@ -31,8 +26,6 @@
             >
                 <span class="underline">U</span>
             </button>
-
-            <!-- Зачёркнутый -->
             <button
                 @click="editor?.chain().focus().toggleStrike().run()"
                 :class="{ 'bg-gray-200': editor?.isActive('strike') }"
@@ -41,10 +34,7 @@
             >
                 <span class="line-through">S</span>
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Заголовки -->
             <button
                 @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
                 :class="{ 'bg-gray-200': editor?.isActive('heading', { level: 1 }) }"
@@ -69,10 +59,7 @@
             >
                 H3
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Выравнивание -->
             <button
                 @click="editor?.chain().focus().setTextAlign('left').run()"
                 :class="{ 'bg-gray-200': editor?.isActive({ textAlign: 'left' }) }"
@@ -103,10 +90,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M10 12h10M4 18h16" />
                 </svg>
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Списки -->
             <button
                 @click="editor?.chain().focus().toggleBulletList().run()"
                 :class="{ 'bg-gray-200': editor?.isActive('bulletList') }"
@@ -115,9 +99,6 @@
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    <circle cx="8" cy="6" r="1.5" fill="currentColor" />
-                    <circle cx="8" cy="12" r="1.5" fill="currentColor" />
-                    <circle cx="8" cy="18" r="1.5" fill="currentColor" />
                 </svg>
             </button>
             <button
@@ -128,17 +109,11 @@
             >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6h14M7 12h14M7 18h14" />
-                    <text x="3" y="7" class="text-xs" fill="currentColor">1</text>
-                    <text x="3" y="13" class="text-xs" fill="currentColor">2</text>
-                    <text x="3" y="19" class="text-xs" fill="currentColor">3</text>
                 </svg>
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Ссылка и изображение -->
             <button
-                @click="setLink"
+                @click="emit('openLinkModal')"
                 :class="{ 'bg-gray-200': editor?.isActive('link') }"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
                 title="Ссылка"
@@ -152,10 +127,7 @@
             >
                 🖼️
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Отменить/Вернуть -->
             <button
                 @click="editor?.chain().focus().undo().run()"
                 :disabled="!editor?.can().undo()"
@@ -172,10 +144,7 @@
             >
                 ↪️
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Очистка форматирования -->
             <button
                 @click="editor?.chain().focus().clearNodes().unsetAllMarks().run()"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
@@ -183,8 +152,6 @@
             >
                 ✖️
             </button>
-
-            <!-- HTML код -->
             <button
                 @click="toggleHtml"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
@@ -192,10 +159,7 @@
             >
                 &lt;/&gt;
             </button>
-
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
-
-            <!-- Файловый менеджер -->
             <button
                 @click="openFileManager"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
@@ -205,12 +169,10 @@
             </button>
         </div>
 
-        <!-- Редактор -->
         <div v-show="!showHtml" class="flex-1 overflow-auto">
             <div class="tiptap p-4 h-full" ref="editorElement"></div>
         </div>
 
-        <!-- HTML редактор -->
         <div v-show="showHtml" class="flex-1 p-4">
             <textarea
                 v-model="htmlContent"
@@ -245,6 +207,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
+    (e: 'openLinkModal'): void;
+    (e: 'editLink', data: { oldText: string; url: string; text: string; target: string; title: string }): void;
 }>();
 
 const editorElement = ref<HTMLElement>();
@@ -252,10 +216,51 @@ const showHtml = ref(false);
 const htmlContent = ref('');
 let editor: Editor | null = null;
 
+// Публичный метод для вставки ссылки на выделение
+const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
+    if (!editor) return;
+
+    const { from, to } = editor.state.selection;
+    const hasSelection = from !== to;
+
+    if (hasSelection) {
+        // Сохраняем выделенный текст
+        const selectedText = editor.state.doc.textBetween(from, to);
+        const linkHtml = `<a href="${url}" target="${target}" title="${title}">${selectedText}</a>`;
+        editor.commands.insertContent(linkHtml);
+    } else {
+        const linkHtml = `<a href="${url}" target="${target}" title="${title}">${linkText || url}</a>`;
+        editor.commands.insertContent(linkHtml);
+    }
+};
+
+// Открываем функцию наружу
+defineExpose({
+    setLinkOnSelection
+});
+
+const getLinkData = (link: HTMLAnchorElement) => {
+    return {
+        oldText: link.innerText,
+        url: link.getAttribute('href') || '',
+        text: link.innerText,
+        target: link.getAttribute('target') || '',
+        title: link.getAttribute('title') || ''
+    };
+};
+
+const handleLinkMouseDown = (e: MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const link = target.closest('a');
+    if (link) {
+        e.preventDefault();
+        e.stopPropagation();
+        emit('editLink', getLinkData(link));
+    }
+};
+
 onMounted(async () => {
     await nextTick();
-
-    console.log('editorElement.value:', editorElement.value); // Для отладки
 
     if (!editorElement.value) {
         console.error('Editor element not found!');
@@ -287,21 +292,17 @@ onMounted(async () => {
         },
     });
 
-    console.log('Editor created:', editor); // Для отладки
+    const editorContainer = document.querySelector('.tiptap');
+    if (editorContainer) {
+        editorContainer.addEventListener('mousedown', handleLinkMouseDown);
+    }
 });
 
-watch(() => props.modelValue, (newValue, oldValue) => {
+watch(() => props.modelValue, (newValue) => {
     if (editor && !showHtml.value && newValue !== editor.getHTML()) {
         editor.commands.setContent(newValue || '<p></p>');
     }
 });
-
-const setLink = () => {
-    const url = window.prompt('Введите URL:');
-    if (url && editor) {
-        editor.chain().focus().setLink({ href: url }).run();
-    }
-};
 
 const addImage = () => {
     const url = window.prompt('Введите URL изображения:');
@@ -337,6 +338,10 @@ const cancelHtml = () => {
 };
 
 onBeforeUnmount(() => {
+    const editorContainer = document.querySelector('.tiptap');
+    if (editorContainer) {
+        editorContainer.removeEventListener('mousedown', handleLinkMouseDown);
+    }
     editor?.destroy();
 });
 </script>
@@ -359,6 +364,7 @@ onBeforeUnmount(() => {
 .tiptap a {
     color: #2563eb;
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .tiptap ul,

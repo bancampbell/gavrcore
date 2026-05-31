@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/materials', [App\Http\Controllers\Admin\MaterialController::class, 'store'])->name('admin.materials.store');
     Route::get('/admin/materials/{material}/edit', [App\Http\Controllers\Admin\MaterialController::class, 'edit'])->name('admin.materials.edit');
     Route::put('/admin/materials/{material}', [App\Http\Controllers\Admin\MaterialController::class, 'update'])->name('admin.materials.update');
+    Route::get('/admin/materials/list', [App\Http\Controllers\Admin\MaterialController::class, 'list']);
 
 
     Route::prefix('admin/media')->name('admin.media.')->group(function () {
@@ -48,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/item', [App\Http\Controllers\Admin\MediaController::class, 'deleteItem']);
         Route::post('/copy', [App\Http\Controllers\Admin\MediaController::class, 'copyItem']);
         Route::post('/upload', [App\Http\Controllers\Admin\MediaController::class, 'uploadFile']);
+
 
     });
 

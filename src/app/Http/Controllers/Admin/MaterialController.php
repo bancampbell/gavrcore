@@ -142,4 +142,11 @@ class MaterialController extends Controller
         return redirect()->route('admin.materials.index')->with('success', 'Материал обновлён');
     }
 
+    public function list()
+    {
+        $materials = Material::select('id', 'title', 'category_id', 'slug')->get();
+        return response()->json($materials);
+    }
+
+
 }
