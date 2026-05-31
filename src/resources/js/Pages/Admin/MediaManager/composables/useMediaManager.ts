@@ -7,7 +7,7 @@ import { useSorting } from './useSorting';
 import { useSelection } from './useSelection';
 import type { MediaItem } from './useSelection';
 
-export function useMediaManager() {
+export function useMediaManager(mode: 'full' | 'picker' = 'full') {
     // State
     const allFolders = ref<MediaItem[]>([]);
     const contents = ref<MediaItem[]>([]);
@@ -21,6 +21,9 @@ export function useMediaManager() {
     const newItemName = ref('');
     const newFolderName = ref('');
     const uploadFileInput = ref<HTMLInputElement | null>(null);
+
+    // Для режима picker
+    const selectedFileForPicker = ref<{ url: string; name: string; path: string } | null>(null);
 
     // Notification
     const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
@@ -75,14 +78,30 @@ export function useMediaManager() {
     } = useSelection();
 
     // Computed
-    const rootFolders = computed(() => allFolders.value.filter(f => !f.path.includes('/')));
-    const folders = computed(() => contents.value.filter(i => i.type === 'folder'));
-    const files = computed(() => contents.value.filter(i => i.type === 'file'));
+    const rootFolders = computed(() => allFolders.value.filter(f => f && f.path && !f.path.includes('/')));
+    const folders = computed(() => contents.value.filter(i => i && i.type === 'folder'));
+    const files = computed(() => contents.value.filter(i => i && i.type === 'file'));
 
-    const filteredFolders = computed(() => filterItems(folders.value, searchQuery.value));
-    const filteredFiles = computed(() => filterItems(files.value, searchQuery.value));
-    const sortedFilteredFolders = computed(() => sortItems(filteredFolders.value));
-    const sortedFilteredFiles = computed(() => sortItems(filteredFiles.value));
+    const filteredFolders = computed(() => {
+        const filtered = filterItems(folders.value, searchQuery.value);
+        return filtered.filter(f => f && f.name);
+    });
+
+    const filteredFiles = computed(() => {
+        const filtered = filterItems(files.value, searchQuery.value);
+        return filtered.filter(f => f && f.name);
+    });
+
+    const sortedFilteredFolders = computed(() => {
+        const sorted = sortItems(filteredFolders.value);
+        return sorted.filter(f => f && f.name);
+    });
+
+    const sortedFilteredFiles = computed(() => {
+        const sorted = sortItems(filteredFiles.value);
+        return sorted.filter(f => f && f.name);
+    });
+
     const filteredContents = computed(() => [...filteredFolders.value, ...filteredFiles.value]);
 
     const currentPathDisplay = computed(() => currentPath.value || '/');
@@ -95,12 +114,18 @@ export function useMediaManager() {
         allFolders.value = await loadFolders();
         contents.value = await loadContents(currentPath.value);
         clearSelection();
+        if (mode === 'picker') {
+            selectedFileForPicker.value = null;
+        }
     };
 
     const navigateToFolder = async (path: string) => {
         currentPath.value = path;
         contents.value = await loadContents(path);
         clearSelection();
+        if (mode === 'picker') {
+            selectedFileForPicker.value = null;
+        }
     };
 
     const goBack = async () => {
@@ -110,12 +135,18 @@ export function useMediaManager() {
         currentPath.value = parts.join('');
         contents.value = await loadContents(currentPath.value);
         clearSelection();
+        if (mode === 'picker') {
+            selectedFileForPicker.value = null;
+        }
     };
 
     const goHome = async () => {
         currentPath.value = '';
         contents.value = await loadContents('');
         clearSelection();
+        if (mode === 'picker') {
+            selectedFileForPicker.value = null;
+        }
     };
 
     const openCreateFolderModal = () => {
@@ -142,7 +173,6 @@ export function useMediaManager() {
     const handleRename = async (newName: string) => {
         if (!renameItemData.value || !newName.trim()) return;
 
-        // Если имя не изменилось, просто закрываем модалку
         if (newName === renameItemData.value.name) {
             showNotification('Имя не изменено', 'error');
             showRenameModal.value = false;
@@ -204,18 +234,43 @@ export function useMediaManager() {
     };
 
     const selectFolder = (item: MediaItem) => {
+        if (!item) return;
         if (!showSearch.value) {
-            selectItem(item);
-            navigateToFolder(item.path);
+            if (mode === 'picker') {
+                navigateToFolder(item.path);
+            } else {
+                selectItem(item);
+                navigateToFolder(item.path);
+            }
         } else {
             selectItem(item);
         }
     };
 
     const selectFileItem = (item: MediaItem) => {
-        selectItem(item);
+        if (!item) return;
+        if (mode === 'picker') {
+            selectedFileForPicker.value = {
+                url: `/storage/uploads/${item.path}`,
+                name: item.name,
+                path: item.path
+            };
+            selectItem(item);
+        } else {
+            selectItem(item);
+        }
     };
 
+    const getSelectedFile = () => {
+        return selectedFileForPicker.value;
+    };
+
+    const clearSelectedFile = () => {
+        selectedFileForPicker.value = null;
+        clearSelection();
+    };
+
+    // Return - ВОТ ЗДЕСЬ ДОБАВЬ selectedFileForPicker
     return {
         // State
         allFolders,
@@ -240,6 +295,7 @@ export function useMediaManager() {
         loadingContents,
         uploadFileInput,
         notification,
+        selectedFileForPicker, // <--- ДОБАВЬ ЭТУ СТРОКУ
 
         // Computed
         rootFolders,
@@ -273,6 +329,8 @@ export function useMediaManager() {
         setSortOrder,
         toggleSelect,
         selectFolder,
-        selectFileItem
+        selectFileItem,
+        getSelectedFile,
+        clearSelectedFile
     };
 }

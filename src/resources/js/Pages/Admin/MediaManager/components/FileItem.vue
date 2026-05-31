@@ -1,5 +1,6 @@
 <template>
     <div
+        :data-file-path="!isFolder ? item.path : undefined"
         class="flex items-center py-1 px-2 rounded-md transition-colors hover:bg-[#e6f0fa] group cursor-pointer"
         :class="{ 'bg-[#e6f0fa]': isSelected }"
         @click="onClick"

@@ -140,15 +140,24 @@
             <div class="link-modal-footer">
                 <button @click="close" class="btn-cancel">Отмена</button>
                 <button @click="insertLink" class="btn-primary">Вставить ссылку</button>
-                <button @click="updateLink" v-if="isEditMode" class="btn-primary">Обновить ссылку</button>
             </div>
         </div>
     </div>
+
+    <!-- Модалка файлового менеджера -->
+    <MediaManagerModal
+        :show="showMediaManager"
+        :user="user"
+        :selected-url="linkUrl"
+        @close="showMediaManager = false"
+        @select="onMediaSelect"
+    />
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, inject } from 'vue';
 import ContentTree from './ContentTree.vue';
+import MediaManagerModal from './MediaManagerModal.vue';
 
 const props = defineProps<{
     show: boolean;
@@ -169,6 +178,8 @@ const emit = defineEmits<{
     (e: 'edit', data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }): void;
 }>();
 
+const user = inject('user') as any;
+
 const activeTab = ref('link');
 const linkUrl = ref('');
 const linkText = ref('');
@@ -181,8 +192,8 @@ const selectedType = ref<string | null>(null);
 const isEditMode = ref(false);
 const originalLinkText = ref('');
 const expandedCategories = ref<number[]>([]);
+const showMediaManager = ref(false);
 
-// Найти материал по URL и раскрыть его в дереве
 const expandToMaterial = (url: string) => {
     if (!url || !props.materials) return;
 
@@ -243,7 +254,15 @@ const close = () => {
 };
 
 const openFileManager = () => {
-    console.log('Open file manager');
+    showMediaManager.value = true;
+};
+
+const onMediaSelect = (file: { url: string; name: string; path: string }) => {
+    linkUrl.value = file.url;
+    if (!linkText.value) {
+        linkText.value = file.name;
+    }
+    showMediaManager.value = false;
 };
 
 const searchMaterials = () => {
@@ -573,7 +592,7 @@ const updateLink = insertLink;
 
 .btn-primary {
     padding: 0.5rem 1rem;
-    background: #4f46e5;
+    background: #337ab7;
     color: white;
     border-radius: 0.375rem;
     border: none;
@@ -582,7 +601,7 @@ const updateLink = insertLink;
 }
 
 .btn-primary:hover {
-    background: #4338ca;
+    background: #3688d1;
 }
 
 .tab-placeholder {
