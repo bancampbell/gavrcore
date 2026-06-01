@@ -60,8 +60,8 @@
             </button>
             <div class="w-px h-6 bg-gray-300 mx-1"></div>
             <button
-                @click="editor?.chain().focus().setTextAlign('left').run()"
-                :class="{ 'bg-gray-200': editor?.isActive({ textAlign: 'left' }) }"
+                @click="alignImageLeft"
+                :class="{ 'bg-blue-100 text-blue-700': selectedImageAlign === 'left' }"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
                 title="По левому краю"
             >
@@ -70,8 +70,8 @@
                 </svg>
             </button>
             <button
-                @click="editor?.chain().focus().setTextAlign('center').run()"
-                :class="{ 'bg-gray-200': editor?.isActive({ textAlign: 'center' }) }"
+                @click="centerImage"
+                :class="{ 'bg-blue-100 text-blue-700': selectedImageAlign === 'center' }"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
                 title="По центру"
             >
@@ -80,8 +80,8 @@
                 </svg>
             </button>
             <button
-                @click="editor?.chain().focus().setTextAlign('right').run()"
-                :class="{ 'bg-gray-200': editor?.isActive({ textAlign: 'right' }) }"
+                @click="alignImageRight"
+                :class="{ 'bg-blue-100 text-blue-700': selectedImageAlign === 'right' }"
                 class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
                 title="По правому краю"
             >
@@ -200,31 +200,140 @@ import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 
-const CustomImage = Image.extend({
+// Кастомное расширение для ресайза изображений
+const ResizableImage = Image.extend({
     addAttributes() {
         return {
             ...this.parent?.(),
-            src: {
+            width: {
                 default: null,
-            },
-            alt: {
-                default: null,
-            },
-            title: {
-                default: null,
-            },
-            style: {
-                default: null,
-                parseHTML: element => element.getAttribute('style'),
+                parseHTML: element => element.getAttribute('width'),
                 renderHTML: attributes => {
-                    if (!attributes.style) {
-                        return {};
-                    }
-                    return {
-                        style: attributes.style,
-                    };
+                    if (!attributes.width) return {};
+                    return { width: attributes.width };
                 },
             },
+            height: {
+                default: null,
+                parseHTML: element => element.getAttribute('height'),
+                renderHTML: attributes => {
+                    if (!attributes.height) return {};
+                    return { height: attributes.height };
+                },
+            },
+        };
+    },
+
+    addNodeView() {
+        return ({ editor, node, getPos }) => {
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            container.style.display = 'inline-block';
+
+            const img = document.createElement('img');
+            img.src = node.attrs.src;
+            img.alt = node.attrs.alt || '';
+            img.title = node.attrs.title || '';
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+
+            if (node.attrs.width) {
+                img.style.width = `${node.attrs.width}px`;
+            }
+            if (node.attrs.height) {
+                img.style.height = `${node.attrs.height}px`;
+            }
+
+            const resizeHandle = document.createElement('div');
+            resizeHandle.style.position = 'absolute';
+            resizeHandle.style.width = '12px';
+            resizeHandle.style.height = '12px';
+            resizeHandle.style.backgroundColor = '#3b82f6';
+            resizeHandle.style.borderRadius = '50%';
+            resizeHandle.style.border = '2px solid white';
+            resizeHandle.style.cursor = 'nw-resize';
+            resizeHandle.style.zIndex = '10';
+            resizeHandle.style.opacity = '0';
+            resizeHandle.style.transition = 'opacity 0.2s';
+
+            const updateHandlePosition = () => {
+                const imgRect = img.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                resizeHandle.style.right = `${containerRect.right - imgRect.right}px`;
+                resizeHandle.style.bottom = `${containerRect.bottom - imgRect.bottom}px`;
+            };
+
+            container.addEventListener('mouseenter', () => {
+                resizeHandle.style.opacity = '1';
+                updateHandlePosition();
+            });
+            container.addEventListener('mouseleave', () => {
+                resizeHandle.style.opacity = '0';
+            });
+
+            let isResizing = false;
+            let startX = 0;
+            let startWidth = 0;
+
+            const onMouseMove = (e: MouseEvent) => {
+                if (!isResizing) return;
+                const dx = e.clientX - startX;
+                const newWidth = Math.max(50, startWidth + dx);
+                img.style.width = `${newWidth}px`;
+                img.style.height = 'auto';
+
+                if (getPos) {
+                    editor.commands.updateAttributes(node.type, {
+                        width: newWidth,
+                        height: null,
+                    });
+                }
+                updateHandlePosition();
+            };
+
+            const onMouseUp = () => {
+                isResizing = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+
+            resizeHandle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = img.offsetWidth;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            container.appendChild(img);
+            container.appendChild(resizeHandle);
+
+            window.addEventListener('resize', updateHandlePosition);
+
+            const observer = new MutationObserver(updateHandlePosition);
+            observer.observe(container, { attributes: true, attributeFilter: ['style'] });
+
+            return {
+                dom: container,
+                update: (updatedNode) => {
+                    if (updatedNode.type !== node.type) return false;
+                    img.src = updatedNode.attrs.src;
+                    img.alt = updatedNode.attrs.alt || '';
+                    img.title = updatedNode.attrs.title || '';
+                    if (updatedNode.attrs.width) {
+                        img.style.width = `${updatedNode.attrs.width}px`;
+                    }
+                    img.style.height = 'auto';
+                    updateHandlePosition();
+                    return true;
+                },
+                destroy: () => {
+                    window.removeEventListener('resize', updateHandlePosition);
+                    observer.disconnect();
+                },
+            };
         };
     },
 });
@@ -246,6 +355,7 @@ const htmlContent = ref('');
 let editor: Editor | null = null;
 let selectedImageData: { url: string; alt: string; title: string; width?: string; height?: string; align?: string } | null = null;
 const selectedLinkData = ref<{ oldText: string; url: string; text: string; target: string; title: string } | null>(null);
+const selectedImageAlign = ref<string>('');
 
 const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
     if (!editor) return;
@@ -288,6 +398,114 @@ const updateImage = (oldUrl: string, newData: { url: string; alt: string; title:
     emit('update:modelValue', updatedHtml);
 };
 
+const alignImageLeft = () => {
+    if (!editor) return;
+
+    const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
+
+    if (selectedImg) {
+        selectedImageAlign.value = 'left';
+        const container = selectedImg.parentElement;
+        if (container) {
+            container.style.display = 'block';
+            container.style.textAlign = 'left';
+        }
+
+        selectedImg.style.display = 'block';
+        selectedImg.style.marginLeft = '0';
+        selectedImg.style.marginRight = 'auto';
+
+        const { state } = editor;
+        const { tr } = state;
+
+        state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
+                tr.setNodeMarkup(pos, undefined, {
+                    ...node.attrs,
+                    style: `display: block; margin-left: 0; margin-right: auto; width: ${selectedImg.style.width || 'auto'}; height: auto;`,
+                });
+            }
+        });
+
+        editor.view.dispatch(tr);
+    } else {
+        selectedImageAlign.value = '';
+        editor.chain().focus().setTextAlign('left').run();
+    }
+};
+
+const centerImage = () => {
+    if (!editor) return;
+
+    const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
+
+    if (selectedImg) {
+        selectedImageAlign.value = 'center';
+        const container = selectedImg.parentElement;
+        if (container) {
+            container.style.display = 'block';
+            container.style.textAlign = 'center';
+        }
+
+        selectedImg.style.display = 'block';
+        selectedImg.style.marginLeft = 'auto';
+        selectedImg.style.marginRight = 'auto';
+
+        const { state } = editor;
+        const { tr } = state;
+
+        state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
+                tr.setNodeMarkup(pos, undefined, {
+                    ...node.attrs,
+                    style: `display: block; margin-left: auto; margin-right: auto; width: ${selectedImg.style.width || 'auto'}; height: auto;`,
+                });
+            }
+        });
+
+        editor.view.dispatch(tr);
+    } else {
+        selectedImageAlign.value = '';
+        editor.chain().focus().setTextAlign('center').run();
+    }
+};
+
+const alignImageRight = () => {
+    if (!editor) return;
+
+    const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
+
+    if (selectedImg) {
+        selectedImageAlign.value = 'right';
+        const container = selectedImg.parentElement;
+        if (container) {
+            container.style.display = 'block';
+            container.style.textAlign = 'right';
+        }
+
+        selectedImg.style.display = 'block';
+        selectedImg.style.marginLeft = 'auto';
+        selectedImg.style.marginRight = '0';
+
+        const { state } = editor;
+        const { tr } = state;
+
+        state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
+                tr.setNodeMarkup(pos, undefined, {
+                    ...node.attrs,
+                    style: `display: block; margin-left: auto; margin-right: 0; width: ${selectedImg.style.width || 'auto'}; height: auto;`,
+                });
+            }
+        });
+
+        editor.view.dispatch(tr);
+    } else {
+        selectedImageAlign.value = '';
+        editor.chain().focus().setTextAlign('right').run();
+    }
+};
+
 const openLinkModal = () => {
     if (selectedLinkData.value) {
         emit('editLink', selectedLinkData.value);
@@ -318,20 +536,22 @@ defineExpose({
 const getImageData = (img: HTMLImageElement) => {
     let align = '';
     const style = img.getAttribute('style') || '';
-    if (style.includes('display: block') && style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
+    if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
         align = 'center';
-    } else if (style.includes('float: left')) {
+    } else if (style.includes('margin-left: 0')) {
         align = 'left';
-    } else if (style.includes('float: right')) {
+    } else if (style.includes('margin-right: 0')) {
         align = 'right';
     }
+    selectedImageAlign.value = align;
 
-    let width = '';
-    let height = '';
-
-    if (style) {
+    let width = img.getAttribute('width') || '';
+    let height = img.getAttribute('height') || '';
+    if (!width && style) {
         const widthMatch = style.match(/width:\s*(\d+)px/);
         if (widthMatch) width = widthMatch[1];
+    }
+    if (!height && style) {
         const heightMatch = style.match(/height:\s*(\d+)px/);
         if (heightMatch) height = heightMatch[1];
     }
@@ -372,6 +592,7 @@ const handleImageClick = (e: MouseEvent) => {
     } else {
         document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
         selectedImageData = null;
+        selectedImageAlign.value = '';
     }
 };
 
@@ -388,6 +609,7 @@ const handleLinkMouseDown = (e: MouseEvent) => {
         if (selectedImageData) {
             document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
             selectedImageData = null;
+            selectedImageAlign.value = '';
         }
     } else {
         document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
@@ -407,7 +629,7 @@ onMounted(async () => {
         element: editorElement.value,
         extensions: [
             StarterKit,
-            CustomImage,
+            ResizableImage,
             Link.configure({
                 openOnClick: false,
                 HTMLAttributes: {
