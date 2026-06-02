@@ -146,7 +146,7 @@ import axios from 'axios';
 import EmptyLayout from '../../../layouts/EmptyLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category } from '../../../types';
-import Editor from '../../../components/shared/Editor.vue';
+import Editor from '../../../components/shared/Editor/Index.vue';
 import LinkModal from './components/LinkModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
 
