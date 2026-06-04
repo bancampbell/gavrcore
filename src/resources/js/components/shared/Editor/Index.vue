@@ -130,8 +130,8 @@ onMounted(async () => {
     });
     const editorContainer = document.querySelector('.tiptap');
     if (editorContainer) {
-        editorContainer.addEventListener('mousedown', handleLinkMouseDown, true);
-        editorContainer.addEventListener('click', handleImageClick, true);
+        editorContainer.addEventListener('mousedown', (e) => handleLinkMouseDown(e as MouseEvent), true);
+        editorContainer.addEventListener('click', (e) => handleImageClick(e as MouseEvent), true);
     }
 });
 

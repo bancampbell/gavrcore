@@ -3,6 +3,9 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuTypeController;
+use App\Http\Controllers\Admin\MenuItemController;
+use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -38,7 +41,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/materials/{material}', [App\Http\Controllers\Admin\MaterialController::class, 'update'])->name('admin.materials.update');
     Route::get('/admin/materials/list', [App\Http\Controllers\Admin\MaterialController::class, 'list']);
 
-
     Route::prefix('admin/media')->name('admin.media.')->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\MediaController::class, 'index'])->name('index');
         Route::get('/contents', [App\Http\Controllers\Admin\MediaController::class, 'getContents']);
@@ -49,10 +51,57 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/item', [App\Http\Controllers\Admin\MediaController::class, 'deleteItem']);
         Route::post('/copy', [App\Http\Controllers\Admin\MediaController::class, 'copyItem']);
         Route::post('/upload', [App\Http\Controllers\Admin\MediaController::class, 'uploadFile']);
-
-
     });
 
+    // Menu Manager Pages (Inertia) - СНАЧАЛА
+    Route::get('/admin/menu', [MenuTypeController::class, 'index'])->name('admin.menu.index');
 
+    // Create and Edit pages for menu items
+    Route::get('/admin/menu/types/{menuTypeId}/items/create', function ($menuTypeId) {
+        $menuType = MenuType::findOrFail($menuTypeId);
+        return Inertia::render('Admin/Menu/Create', [
+            'user' => auth()->user(),
+            'menuTypeId' => $menuTypeId,
+        ]);
+    })->name('admin.menu.items.create');
 
+    Route::get('/admin/menu/items/{id}/edit', function ($id) {
+        $menuItem = App\Models\MenuItem::with('menuType')->findOrFail($id);
+        return Inertia::render('Admin/Menu/Edit', [
+            'user' => auth()->user(),
+            'menuItem' => $menuItem,
+            'menuTypeId' => $menuItem->menu_type_id,
+        ]);
+    })->name('admin.menu.items.edit');
+
+    Route::get('/admin/menu/types/{menuTypeId}/items', function ($menuTypeId) {
+        $menuType = MenuType::findOrFail($menuTypeId);
+        return Inertia::render('Admin/Menu/MenuItems', [
+            'user' => auth()->user(),
+            'menuTypeId' => $menuTypeId,
+            'menuTypeTitle' => $menuType->title,
+        ]);
+    })->name('admin.menu.items');
+
+    // Menu Manager API Routes - ПОТОМ
+    Route::prefix('admin/menu')->name('admin.menu.')->group(function () {
+        // Menu Types
+        Route::get('types', [MenuTypeController::class, 'index'])->name('types.index');
+        Route::post('types', [MenuTypeController::class, 'store'])->name('types.store');
+        Route::get('types/{id}', [MenuTypeController::class, 'show'])->name('types.show');
+        Route::put('types/{id}', [MenuTypeController::class, 'update'])->name('types.update');
+        Route::delete('types/{id}', [MenuTypeController::class, 'destroy'])->name('types.destroy');
+        Route::post('types/ordering/update', [MenuTypeController::class, 'updateOrdering'])->name('types.ordering');
+
+        // Menu Items - ВАЖНО: items/all ДОЛЖЕН БЫТЬ ПЕРВЫМ!
+        Route::get('items/all', [MenuItemController::class, 'getAllItems'])->name('items.all');
+        Route::get('types/{menuTypeId}/items/tree', [MenuItemController::class, 'tree'])->name('items.tree');
+        Route::post('types/{menuTypeId}/items', [MenuItemController::class, 'store'])->name('items.store');
+        Route::get('items/{id}', [MenuItemController::class, 'show'])->name('items.show');
+        Route::put('items/{id}', [MenuItemController::class, 'update'])->name('items.update');
+        Route::delete('items/{id}', [MenuItemController::class, 'destroy'])->name('items.destroy');
+        Route::get('types/{menuTypeId}/items', [MenuItemController::class, 'index'])->name('items.index');
+        Route::post('items/{id}/status', [MenuItemController::class, 'updateStatus'])->name('items.status');
+        Route::post('items/ordering/update', [MenuItemController::class, 'updateOrdering'])->name('items.ordering');
+    });
 });

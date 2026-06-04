@@ -2,11 +2,11 @@
     <Link
         :href="href"
         :class="[
-    'flex items-center px-3 py-2 text-sm rounded-md transition-colors group mt-1',
-    isActive
-       ? 'bg-blue-50 text-[#3071a9] font-medium'
-        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-]"
+            'flex items-center px-3 py-2 text-sm rounded-md transition-colors group mt-1',
+            isActive
+                ? 'bg-blue-50 text-[#3071a9] font-medium'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+        ]"
     >
         <svg v-if="icon === 'plus'" class="w-5 h-5 mr-3 transition-colors" :class="isActive ? 'text-gray-600' : 'text-gray-400 group-hover:text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -56,28 +56,55 @@ const page = usePage();
 const isActive = computed(() => {
     const currentUrl = page.url;
 
-    // Точное совпадение для главной страницы
-    if (props.href === '/admin/materials' && currentUrl === '/admin/materials') {
+    // Точное совпадение
+    if (currentUrl === props.href) {
         return true;
     }
 
-    // Для "Создать материал" - подсвечивается только когда точно на этой странице
-    if (props.href === '/admin/materials/create' && currentUrl === '/admin/materials/create') {
+    // Для менеджера материалов - подсветка на всех страницах материалов (кроме create/edit? или включая)
+    if (props.href === '/admin/materials' && currentUrl.startsWith('/admin/materials')) {
         return true;
     }
 
-    // Для "Корзина"
+    // Для категорий
+    if (props.href === '/admin/categories' && currentUrl.startsWith('/admin/categories')) {
+        return true;
+    }
+
+    // Для медиа
+    if (props.href === '/admin/media' && currentUrl.startsWith('/admin/media')) {
+        return true;
+    }
+
+    // Для менеджера меню - только точное совпадение
+    if (props.href === '/admin/menu' && currentUrl === '/admin/menu') {
+        return true;
+    }
+
+    // Для страниц "Все меню" (пункты конкретного типа)
+    if (props.href.includes('/admin/menu/types/') && props.href.includes('/items')) {
+        if (currentUrl.includes('/admin/menu/types/') && currentUrl.includes('/items')) {
+            return true;
+        }
+    }
+
+    // Для корзины
     if (props.href === '/admin/materials/trash' && currentUrl === '/admin/materials/trash') {
         return true;
     }
 
-    // Для "Категории"
-    if (props.href === '/admin/categories' && currentUrl === '/admin/categories') {
+    // Для создания материала
+    if (props.href === '/admin/materials/create' && currentUrl === '/admin/materials/create') {
         return true;
     }
 
-    // Для других пунктов - если URL начинается с href (для вложенных страниц)
-    if (props.href !== '/' && props.href !== '/admin/materials' && currentUrl.startsWith(props.href)) {
+    // Для редактирования материала
+    if (props.href === '/admin/materials' && currentUrl.includes('/admin/materials/') && currentUrl.includes('/edit')) {
+        return true;
+    }
+
+    // Для редактирования категории
+    if (props.href === '/admin/categories' && currentUrl.includes('/admin/categories/') && currentUrl.includes('/edit')) {
         return true;
     }
 

@@ -9,7 +9,9 @@
                         </svg>
                     </button>
                     <div class="flex-shrink-0">
-                        <span class="text-lg font-semibold text-white">GavrCore CMS</span>
+                        <Link href="/admin/dashboard" class="text-lg font-semibold text-white hover:text-gray-300 transition">
+                            GavrCore CMS
+                        </Link>
                     </div>
 
                     <div class="hidden md:flex md:ml-4 space-x-1">
@@ -27,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import DropdownMenu from './DropdownMenu.vue';
 import UserMenu from './UserMenu.vue';
 import type { User } from '../../types';
@@ -58,8 +61,8 @@ const userItems: MenuItem[] = [
 ];
 
 const menuItems: MenuItem[] = [
-    { name: 'Менеджер меню', href: '#' },
-    { name: 'Все пункты меню', href: '#' }
+    { name: 'Менеджер меню', href: '/admin/menu' },
+    { name: 'Все меню', href: '/admin/menu/types/1/items' }
 ];
 
 const materialsItems: MenuItem[] = [

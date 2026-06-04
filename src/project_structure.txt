@@ -1,0 +1,115 @@
+.
+├── Admin,
+├── admin@example.com,
+├── app
+│   ├── Actions
+│   │   ├── Auth
+│   │   └── FileManager
+│   ├── Contracts
+│   │   ├── CategoryRepositoryInterface.php
+│   │   └── MaterialRepositoryInterface.php
+│   ├── DTO
+│   │   ├── CategoryData.php
+│   │   └── MaterialData.php
+│   ├── Http
+│   │   ├── Controllers
+│   │   ├── Middleware
+│   │   ├── Requests
+│   │   └── Resources
+│   ├── Models
+│   │   ├── Category.php
+│   │   ├── Material.php
+│   │   ├── Media.php
+│   │   └── User.php
+│   ├── Providers
+│   │   └── AppServiceProvider.php
+│   ├── Repositories
+│   │   ├── CategoryRepository.php
+│   │   └── MaterialRepository.php
+│   ├── Services
+│   │   ├── CategoryService.php
+│   │   ├── CategoryTreeService.php
+│   │   └── MaterialService.php
+│   └── Support
+│       ├── Enums
+│       └── Traits
+├── artisan
+├── bootstrap
+│   ├── app.php
+│   ├── cache
+│   │   ├── packages.php
+│   │   └── services.php
+│   └── providers.php
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   └── session.php
+├── database
+│   ├── database.sqlite
+│   ├── factories
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2026_05_23_142538_create_personal_access_tokens_table.php
+│   │   ├── 2026_05_23_181841_create_categories_table.php
+│   │   ├── 2026_05_23_181905_create_materials_table.php
+│   │   ├── 2026_05_23_194341_add_trash_to_materials_state_enum.php
+│   │   ├── 2026_05_24_165234_add_cascade_delete_to_categories.php
+│   │   └── 2026_05_30_185531_add_slug_to_materials_table.php
+│   └── seeders
+│       ├── CategorySeeder.php
+│       ├── DatabaseSeeder.php
+│       └── MaterialSeeder.php
+├── package.json
+├── package-lock.json
+├── phpunit.xml
+├── postcss.config.js
+├── project_structure.txt
+├── public
+│   ├── build
+│   │   ├── assets
+│   │   └── manifest.json
+│   ├── favicon.ico
+│   ├── index.php
+│   └── robots.txt
+├── README.md
+├── resources
+│   ├── css
+│   │   └── app.css
+│   ├── js
+│   │   ├── api
+│   │   ├── app.ts
+│   │   ├── components
+│   │   ├── composables
+│   │   ├── layouts
+│   │   ├── Pages
+│   │   └── types
+│   └── views
+│       ├── app.blade.php
+│       └── welcome.blade.php
+├── routes
+│   ├── api.php
+│   ├── console.php
+│   └── web.php
+├── tailwind.config.js
+├── tests
+│   ├── Feature
+│   │   └── ExampleTest.php
+│   ├── TestCase.php
+│   └── Unit
+│       └── ExampleTest.php
+├── tsconfig.json
+└── vite.config.js
+
+43 directories, 70 files
