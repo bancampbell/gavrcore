@@ -18,14 +18,14 @@
                         Редактировать выбранный
                     </button>
                     <button
-                        @click="bulkPublish"
+                        @click="openBulkPublishModal"
                         :disabled="selectedItems.length === 0"
                         class="px-4 py-2 rounded-md text-sm bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50"
                     >
                         Опубликовать
                     </button>
                     <button
-                        @click="bulkUnpublish"
+                        @click="openBulkUnpublishModal"
                         :disabled="selectedItems.length === 0"
                         class="px-4 py-2 rounded-md text-sm border border-red-500 bg-white text-red-600 hover:bg-red-50 transition disabled:opacity-50"
                     >
@@ -131,10 +131,9 @@
 
                     <div class="flex items-center justify-center">
                         <span
-                            @click="toggleStatus(item.id, !item.status)"
                             :class="[
-                                'px-2 py-1 text-xs rounded-full font-medium cursor-pointer transition',
-                                item.status ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                'px-2 py-1 text-xs rounded-full font-medium',
+                                item.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
                             ]"
                         >
                             {{ item.status ? 'Опубликовано' : 'Не опубликовано' }}
@@ -161,9 +160,8 @@
                                     {{ item.menu_type?.title || '—' }}
                                 </span>
                                 <span
-                                    @click="toggleStatus(item.id, !item.status)"
                                     :class="[
-                                        'ml-2 px-2 py-1 text-xs rounded-full font-medium cursor-pointer',
+                                        'ml-2 px-2 py-1 text-xs rounded-full font-medium',
                                         item.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
                                     ]"
                                 >
@@ -201,6 +199,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- Модальное окно для смены статуса (одиночное) -->
+        <ConfirmModal
+            :is-open="toggleStatusModalOpen"
+            title="Изменение статуса"
+            :message="toggleStatusMessage"
+            confirm-text="Подтвердить"
+            type="warning"
+            :loading="loading"
+            @close="toggleStatusModalOpen = false"
+            @confirm="confirmToggleStatus"
+        />
+
+        <!-- Модальное окно для массовой публикации -->
+        <ConfirmModal
+            :is-open="bulkPublishModalOpen"
+            title="Массовая публикация"
+            :message="bulkPublishMessage"
+            confirm-text="Опубликовать"
+            type="success"
+            :loading="loading"
+            @close="bulkPublishModalOpen = false"
+            @confirm="confirmBulkPublish"
+        />
+
+        <!-- Модальное окно для массового снятия с публикации -->
+        <ConfirmModal
+            :is-open="bulkUnpublishModalOpen"
+            title="Массовое снятие с публикации"
+            :message="bulkUnpublishMessage"
+            confirm-text="Снять с публикации"
+            type="danger"
+            :loading="loading"
+            @close="bulkUnpublishModalOpen = false"
+            @confirm="confirmBulkUnpublish"
+        />
 
         <!-- Модальное окно подтверждения удаления (одиночное) -->
         <ConfirmModal
@@ -295,6 +329,7 @@ const filters = ref({
 });
 
 const notification = ref({ show: false, message: '', type: 'success' });
+const loading = ref(false);
 const deleteModalOpen = ref(false);
 const deleteLoading = ref(false);
 const itemToDelete = ref<MenuItem | null>(null);
@@ -303,6 +338,17 @@ const deleteMessage = ref('');
 const bulkDeleteModalOpen = ref(false);
 const bulkDeleteLoading = ref(false);
 const bulkDeleteMessage = ref('');
+
+// Модалки для статуса
+const toggleStatusModalOpen = ref(false);
+const toggleStatusMessage = ref('');
+const toggleStatusData = ref<{ id: number; status: boolean } | null>(null);
+
+const bulkPublishModalOpen = ref(false);
+const bulkPublishMessage = ref('');
+
+const bulkUnpublishModalOpen = ref(false);
+const bulkUnpublishMessage = ref('');
 
 let searchTimeout: any = null;
 
@@ -355,24 +401,6 @@ const flattenTree = (items: MenuItem[], level = 0): (MenuItem & { level: number 
     return result;
 };
 
-const buildTreeFromItems = (items: MenuItem[], menuTypeId: number): (MenuItem & { level: number })[] => {
-    const typeItems = items.filter(item => item.menu_type_id === menuTypeId);
-
-    const buildTree = (parentId: number | null = null, level: number = 0): (MenuItem & { level: number })[] => {
-        const result: (MenuItem & { level: number })[] = [];
-        const children = typeItems.filter(item => item.parent_id === parentId);
-
-        for (const child of children) {
-            result.push({ ...child, level });
-            const grandchildren = buildTree(child.id, level + 1);
-            result.push(...grandchildren);
-        }
-        return result;
-    };
-
-    return buildTree(null);
-};
-
 const loadAllItems = async () => {
     try {
         const params: any = {
@@ -383,54 +411,27 @@ const loadAllItems = async () => {
 
         const response = await menuItemsApi.getAllItems(params);
 
-        let items: MenuItem[] = [];
-        let paginationData = {};
+        const items = response.data.data || [];
+        const paginationData = {
+            current_page: response.data.current_page || 1,
+            last_page: response.data.last_page || 1,
+            from: response.data.from || 0,
+            to: response.data.to || 0,
+            total: response.data.total || 0
+        };
 
-        if (response.data && response.data.data) {
-            items = response.data.data;
-            paginationData = {
-                current_page: response.data.current_page || 1,
-                last_page: response.data.last_page || 1,
-                from: response.data.from || 0,
-                to: response.data.to || 0,
-                total: response.data.total || 0
-            };
-        } else if (Array.isArray(response.data)) {
-            items = response.data;
-            paginationData = {
-                current_page: 1,
-                last_page: 1,
-                from: 1,
-                to: items.length,
-                total: items.length
-            };
-        } else {
-            items = [];
-            paginationData = {
-                current_page: 1,
-                last_page: 1,
-                from: 0,
-                to: 0,
-                total: 0
-            };
-        }
-
-        const menuTypeIds = [...new Set(items.map(item => item.menu_type_id))];
-        const allTreeItems: (MenuItem & { level: number; menu_type?: { title: string } })[] = [];
-
-        for (const menuTypeId of menuTypeIds) {
-            const menuType = menuTypes.value.find(t => t.id === menuTypeId);
-            const menuTypeTitle = menuType?.title || '—';
-            const treeItems = buildTreeFromItems(items, menuTypeId);
-
-            allTreeItems.push(...treeItems.map(item => ({
+        // Плоский список всех пунктов
+        const allItems = items.map((item: MenuItem) => {
+            const menuType = menuTypes.value.find(t => t.id === item.menu_type_id);
+            return {
                 ...item,
-                menu_type: { title: menuTypeTitle }
-            })));
-        }
+                level: 0,
+                menu_type: { title: menuType?.title || '—' }
+            };
+        });
 
-        flatItems.value = allTreeItems;
-        pagination.value = paginationData as any;
+        flatItems.value = allItems;
+        pagination.value = paginationData;
     } catch (error) {
         console.error('Error loading all items:', error);
         flatItems.value = [];
@@ -528,44 +529,102 @@ const openEditSelected = () => {
     }
 };
 
-const toggleStatus = async (id: number, status: boolean) => {
+const updateLocalStatus = (ids: number[], status: boolean) => {
+    flatItems.value.forEach(item => {
+        if (ids.includes(item.id)) {
+            item.status = status;
+        }
+    });
+};
+
+// Одиночное изменение статуса с модалкой
+const openToggleStatusModal = (id: number, status: boolean, title?: string) => {
+    toggleStatusData.value = { id, status };
+    toggleStatusMessage.value = `Вы уверены, что хотите ${status ? 'опубликовать' : 'снять с публикации'} пункт "${title || 'меню'}"?`;
+    toggleStatusModalOpen.value = true;
+};
+
+const confirmToggleStatus = async () => {
+    if (!toggleStatusData.value) return;
+    loading.value = true;
     try {
-        await menuItemsApi.updateStatus(id, status);
-        showNotification(`Пункт меню ${status ? 'опубликован' : 'скрыт'}`);
-        await loadData();
+        await menuItemsApi.updateStatus(toggleStatusData.value.id, toggleStatusData.value.status);
+        updateLocalStatus([toggleStatusData.value.id], toggleStatusData.value.status);
+        showNotification(`Пункт меню ${toggleStatusData.value.status ? 'опубликован' : 'скрыт'}`);
+        toggleStatusModalOpen.value = false;
+        toggleStatusData.value = null;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
+    } finally {
+        loading.value = false;
     }
 };
 
-const bulkPublish = async () => {
+// Массовая публикация
+const openBulkPublishModal = () => {
     if (selectedItems.value.length === 0) return;
+
+    if (selectedItems.value.length === 1) {
+        const item = flatItems.value.find(i => i.id === selectedItems.value[0]);
+        if (item) {
+            openToggleStatusModal(item.id, true, item.title);
+        }
+    } else {
+        bulkPublishMessage.value = `Вы уверены, что хотите опубликовать ${selectedItems.value.length} пункт(ов) меню?`;
+        bulkPublishModalOpen.value = true;
+    }
+};
+
+const confirmBulkPublish = async () => {
+    loading.value = true;
     try {
         for (const id of selectedItems.value) {
             await menuItemsApi.updateStatus(id, true);
         }
+        updateLocalStatus(selectedItems.value, true);
         showNotification(`${selectedItems.value.length} пункт(ов) меню опубликовано`);
         selectedItems.value = [];
-        await loadData();
+        bulkPublishModalOpen.value = false;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
+    } finally {
+        loading.value = false;
     }
 };
 
-const bulkUnpublish = async () => {
+// Массовое снятие с публикации
+const openBulkUnpublishModal = () => {
     if (selectedItems.value.length === 0) return;
+
+    if (selectedItems.value.length === 1) {
+        const item = flatItems.value.find(i => i.id === selectedItems.value[0]);
+        if (item) {
+            openToggleStatusModal(item.id, false, item.title);
+        }
+    } else {
+        bulkUnpublishMessage.value = `Вы уверены, что хотите снять с публикации ${selectedItems.value.length} пункт(ов) меню?`;
+        bulkUnpublishModalOpen.value = true;
+    }
+};
+
+const confirmBulkUnpublish = async () => {
+    loading.value = true;
     try {
         for (const id of selectedItems.value) {
             await menuItemsApi.updateStatus(id, false);
         }
+        updateLocalStatus(selectedItems.value, false);
         showNotification(`${selectedItems.value.length} пункт(ов) меню снято с публикации`);
         selectedItems.value = [];
-        await loadData();
+        bulkUnpublishModalOpen.value = false;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
+    } finally {
+        loading.value = false;
     }
 };
 
+// Удаление
 const openDeleteModal = (item: MenuItem) => {
     itemToDelete.value = item;
     deleteMessage.value = `Вы уверены, что хотите удалить пункт "${item.title}"? Все дочерние пункты также будут удалены.`;
@@ -633,7 +692,17 @@ onMounted(async () => {
     await loadMenuTypes();
 
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('all') === '1') {
+    const message = urlParams.get('message');
+    if (message) {
+        showNotification(decodeURIComponent(message), 'success');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('message');
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    const isAllMode = urlParams.get('all') === '1' || !props.menuTypeId;
+
+    if (isAllMode) {
         selectedMenuTypeId.value = null;
         await loadAllItems();
     } else if (props.menuTypeId && menuTypes.value.length > 0) {

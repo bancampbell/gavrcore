@@ -16,7 +16,7 @@ class LoginController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $user = $this->loginAction->execute($request->only('email', 'password'));
+        $user = $this->loginAction->execute($request->only('email', 'password'), $request);
 
         return response()->json([
             'success' => true,
@@ -40,5 +40,4 @@ class LoginController extends Controller
             'message' => 'Выход выполнен успешно',
         ]);
     }
-
 }

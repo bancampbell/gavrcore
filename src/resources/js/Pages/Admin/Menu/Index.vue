@@ -72,7 +72,6 @@
 
             <!-- Grid таблица -->
             <div class="hidden lg:block overflow-x-auto">
-                <!-- Заголовки -->
                 <div class="grid bg-gray-50 border-b border-gray-200 px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider"
                      style="grid-template-columns: 40px 60px 1fr 1.5fr 80px 120px">
                     <div class="flex items-center">
@@ -85,7 +84,6 @@
                     <div class="text-center">Статус</div>
                 </div>
 
-                <!-- Строки -->
                 <div v-for="(type, index) in menuTypes.data" :key="type.id"
                      class="grid px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
                      :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
@@ -127,7 +125,7 @@
                 </div>
             </div>
 
-            <!-- Мобильная версия - карточки -->
+            <!-- Мобильная версия -->
             <div class="lg:hidden divide-y divide-gray-100">
                 <div v-for="type in menuTypes.data" :key="type.id" class="p-4 hover:bg-gray-50">
                     <div class="flex items-start gap-3">
@@ -143,9 +141,7 @@
                             <div class="flex flex-wrap gap-4 mt-2 text-xs">
                                 <span class="text-gray-500">ID: {{ type.id }}</span>
                                 <span class="text-blue-600">Пунктов: {{ type.items_count || 0 }}</span>
-                                <span
-                                    :class="type.status ? 'text-green-600' : 'text-red-600'"
-                                >
+                                <span :class="type.status ? 'text-green-600' : 'text-red-600'">
                                     {{ type.status ? 'Опубликовано' : 'Не опубликовано' }}
                                 </span>
                             </div>
@@ -181,69 +177,15 @@
             </div>
         </div>
 
-        <!-- Модальное окно создания/редактирования -->
-        <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-            <div class="fixed inset-0 bg-black/50" @click="modalOpen = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900">{{ editingId ? 'Редактировать тип меню' : 'Создать тип меню' }}</h3>
-                </div>
-                <form @submit.prevent="submitForm" class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Название *</label>
-                        <input
-                            v-model="form.title"
-                            type="text"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Алиас</label>
-                        <input
-                            v-model="form.alias"
-                            type="text"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="останется пустым - сгенерируется автоматически"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Описание</label>
-                        <textarea
-                            v-model="form.description"
-                            rows="3"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        ></textarea>
-                    </div>
-                    <div>
-                        <label class="flex items-center gap-2">
-                            <input
-                                v-model="form.status"
-                                type="checkbox"
-                                class="h-4 w-4 text-indigo-600 rounded border-gray-300"
-                            />
-                            <span class="text-gray-700">Активно</span>
-                        </label>
-                    </div>
-                    <div class="flex gap-3 pt-4">
-                        <button
-                            type="submit"
-                            :disabled="loading"
-                            class="flex-1 bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50"
-                        >
-                            {{ loading ? 'Сохранение...' : (editingId ? 'Обновить' : 'Создать') }}
-                        </button>
-                        <button
-                            type="button"
-                            @click="modalOpen = false"
-                            class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-xl font-medium hover:bg-gray-300"
-                        >
-                            Отмена
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <!-- Модальное окно создания/редактирования типа меню -->
+        <MenuTypeModal
+            :show="modalOpen"
+            :is-edit="!!editingId"
+            :menu-type-data="editingMenuType"
+            :loading="loading"
+            @close="closeMenuTypeModal"
+            @save="handleMenuTypeSave"
+        />
 
         <!-- Модальное окно подтверждения удаления -->
         <ConfirmModal
@@ -257,6 +199,18 @@
             @confirm="confirmDeleteHandler"
         />
 
+        <!-- Модальное окно для массовых операций -->
+        <ConfirmModal
+            :is-open="bulkModalOpen"
+            :title="bulkModalTitle"
+            :message="bulkModalMessage"
+            confirm-text="Подтвердить"
+            type="danger"
+            :loading="loading"
+            @close="bulkModalOpen = false"
+            @confirm="confirmBulkAction"
+        />
+
         <!-- Toast уведомление -->
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
@@ -268,6 +222,8 @@ import ConfirmModal from '@/components/shared/ConfirmModal.vue';
 import Toast from '@/components/shared/Toast.vue';
 import { useMenuTypes } from '@/composables/useMenuTypes';
 import { router } from '@inertiajs/vue3';
+import MenuTypeModal from './components/MenuTypeModal.vue';
+import { menuTypesApi } from '@/api/menu';
 
 interface User {
     id: number;
@@ -318,22 +274,50 @@ const {
     notification,
     modalOpen,
     editingId,
+    editingMenuType,
     loading,
     deleteModalOpen,
     deleteLoading,
     form,
     deleteMessage,
+    bulkModalOpen,
+    bulkModalTitle,
+    bulkModalMessage,
     applyFilters,
     debounceSearch,
     resetFilters,
     prevPage,
     nextPage,
     openCreateModal,
+    openEditModal,
     openEditSelectedModal,
     submitForm,
+    openDeleteModal,
     bulkDelete,
     bulkPublish,
     bulkUnpublish,
-    confirmDeleteHandler
+    confirmDeleteHandler,
+    confirmBulkAction,
+    showNotification,
 } = useMenuTypes(props);
+
+const closeMenuTypeModal = () => {
+    modalOpen.value = false;
+};
+
+const handleMenuTypeSave = async (data: any) => {
+    try {
+        if (editingId.value) {
+            await menuTypesApi.update(editingId.value, data);
+            showNotification('Тип меню обновлён', 'success');
+        } else {
+            await menuTypesApi.create(data);
+            showNotification('Тип меню создан', 'success');
+        }
+        closeMenuTypeModal();
+        applyFilters();
+    } catch (error: any) {
+        showNotification(error.response?.data?.message || 'Ошибка', 'error');
+    }
+};
 </script>

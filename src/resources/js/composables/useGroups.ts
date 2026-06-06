@@ -1,24 +1,24 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { menuTypesApi } from '@/api/menu';
+import { groupsApi } from '@/api/groups';
 
-export function useMenuTypes(props: any) {
+export function useGroups(props: any) {
     const filters = ref({
         search: props.filters?.search || '',
         status: props.filters?.status as boolean | undefined,
     });
 
-    const selectedMenuTypes = ref<number[]>([]);
+    const selectedGroups = ref<number[]>([]);
     const allSelected = computed({
         get: () => {
-            if (!props.menuTypes?.data?.length) return false;
-            return selectedMenuTypes.value.length === props.menuTypes.data.length;
+            if (!props.groups?.data?.length) return false;
+            return selectedGroups.value.length === props.groups.data.length;
         },
         set: (val: boolean) => {
             if (val) {
-                selectedMenuTypes.value = props.menuTypes.data.map((t: any) => t.id);
+                selectedGroups.value = props.groups.data.map((g: any) => g.id);
             } else {
-                selectedMenuTypes.value = [];
+                selectedGroups.value = [];
             }
         },
     });
@@ -26,23 +26,24 @@ export function useMenuTypes(props: any) {
     const notification = ref({ show: false, message: '', type: 'success' });
     const modalOpen = ref(false);
     const editingId = ref<number | null>(null);
-    const editingMenuType = ref<any>(null);
     const loading = ref(false);
     const deleteModalOpen = ref(false);
     const deleteLoading = ref(false);
-    const categoryToDelete = ref<any>(null);
+    const groupToDelete = ref<any>(null);
     const deleteMessage = ref('');
 
+    // Модалка для массовых операций
     const bulkModalOpen = ref(false);
     const bulkModalTitle = ref('');
     const bulkModalMessage = ref('');
     const bulkAction = ref<null | (() => Promise<void>)>(null);
 
     const form = ref({
-        title: '',
+        name: '',
         alias: '',
         description: '',
         status: true,
+        ordering: 0,
     });
 
     let searchTimeout: any = null;
@@ -55,7 +56,7 @@ export function useMenuTypes(props: any) {
     };
 
     const applyFilters = () => {
-        router.get('/admin/menu', filters.value, {
+        router.get('/admin/groups', filters.value, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -74,8 +75,8 @@ export function useMenuTypes(props: any) {
     };
 
     const prevPage = () => {
-        if (props.menuTypes?.current_page > 1) {
-            router.get('/admin/menu', { ...filters.value, page: props.menuTypes.current_page - 1 }, {
+        if (props.groups?.current_page > 1) {
+            router.get('/admin/groups', { ...filters.value, page: props.groups.current_page - 1 }, {
                 preserveState: true,
                 preserveScroll: true,
             });
@@ -83,8 +84,8 @@ export function useMenuTypes(props: any) {
     };
 
     const nextPage = () => {
-        if (props.menuTypes?.current_page < props.menuTypes?.last_page) {
-            router.get('/admin/menu', { ...filters.value, page: props.menuTypes.current_page + 1 }, {
+        if (props.groups?.current_page < props.groups?.last_page) {
+            router.get('/admin/groups', { ...filters.value, page: props.groups.current_page + 1 }, {
                 preserveState: true,
                 preserveScroll: true,
             });
@@ -93,27 +94,26 @@ export function useMenuTypes(props: any) {
 
     const openCreateModal = () => {
         editingId.value = null;
-        editingMenuType.value = null;
-        form.value = { title: '', alias: '', description: '', status: true };
+        form.value = { name: '', alias: '', description: '', status: true, ordering: 0 };
         modalOpen.value = true;
     };
 
-    const openEditModal = (type: any) => {
-        editingId.value = type.id;
-        editingMenuType.value = type;
+    const openEditModal = (group: any) => {
+        editingId.value = group.id;
         form.value = {
-            title: type.title,
-            alias: type.alias || '',
-            description: type.description || '',
-            status: type.status,
+            name: group.name,
+            alias: group.alias || '',
+            description: group.description || '',
+            status: group.status,
+            ordering: group.ordering || 0,
         };
         modalOpen.value = true;
     };
 
     const openEditSelectedModal = () => {
-        if (selectedMenuTypes.value.length === 1) {
-            const type = props.menuTypes.data.find((t: any) => t.id === selectedMenuTypes.value[0]);
-            if (type) openEditModal(type);
+        if (selectedGroups.value.length === 1) {
+            const group = props.groups.data.find((g: any) => g.id === selectedGroups.value[0]);
+            if (group) openEditModal(group);
         }
     };
 
@@ -121,9 +121,10 @@ export function useMenuTypes(props: any) {
         loading.value = true;
         try {
             const submitData: any = {
-                title: form.value.title,
+                name: form.value.name,
                 description: form.value.description,
                 status: form.value.status,
+                ordering: form.value.ordering,
             };
 
             if (form.value.alias && form.value.alias.trim() !== '') {
@@ -131,11 +132,11 @@ export function useMenuTypes(props: any) {
             }
 
             if (editingId.value) {
-                await menuTypesApi.update(editingId.value, submitData);
-                showNotification('Тип меню обновлен');
+                await groupsApi.update(editingId.value, submitData);
+                showNotification('Группа обновлена');
             } else {
-                await menuTypesApi.create(submitData);
-                showNotification('Тип меню создан');
+                await groupsApi.create(submitData);
+                showNotification('Группа создана');
             }
             modalOpen.value = false;
             applyFilters();
@@ -146,25 +147,25 @@ export function useMenuTypes(props: any) {
         }
     };
 
-    const openDeleteModal = (type: any) => {
-        categoryToDelete.value = type;
-        deleteMessage.value = `Вы уверены, что хотите удалить тип меню "${type.title}"? Все пункты меню также будут удалены.`;
+    const openDeleteModal = (group: any) => {
+        groupToDelete.value = group;
+        deleteMessage.value = `Вы уверены, что хотите удалить группу "${group.name}"?`;
         deleteModalOpen.value = true;
     };
 
     const confirmDeleteHandler = async () => {
-        if (!categoryToDelete.value) return;
+        if (!groupToDelete.value) return;
         deleteLoading.value = true;
         try {
-            await menuTypesApi.delete(categoryToDelete.value.id);
-            showNotification('Тип меню удален');
+            await groupsApi.delete(groupToDelete.value.id);
+            showNotification('Группа удалена');
             deleteModalOpen.value = false;
             applyFilters();
         } catch (error: any) {
             showNotification(error.response?.data?.message || 'Ошибка удаления', 'error');
         } finally {
             deleteLoading.value = false;
-            categoryToDelete.value = null;
+            groupToDelete.value = null;
         }
     };
 
@@ -183,29 +184,19 @@ export function useMenuTypes(props: any) {
         bulkAction.value = null;
     };
 
-    const updateLocalStatus = (ids: number[], status: boolean) => {
-        if (props.menuTypes?.data) {
-            props.menuTypes.data.forEach((item: any) => {
-                if (ids.includes(item.id)) {
-                    item.status = status;
-                }
-            });
-        }
-    };
-
     const bulkDelete = () => {
-        if (selectedMenuTypes.value.length === 0) return;
+        if (selectedGroups.value.length === 0) return;
         showBulkModal(
-            'Удаление типов меню',
-            `Вы уверены, что хотите удалить ${selectedMenuTypes.value.length} тип(ов) меню? Все пункты меню также будут удалены.`,
+            'Удаление групп',
+            `Вы уверены, что хотите удалить ${selectedGroups.value.length} группу(ы)?`,
             async () => {
                 loading.value = true;
                 try {
-                    for (const id of selectedMenuTypes.value) {
-                        await menuTypesApi.delete(id);
+                    for (const id of selectedGroups.value) {
+                        await groupsApi.delete(id);
                     }
-                    showNotification(`${selectedMenuTypes.value.length} тип(ов) меню удалено`);
-                    selectedMenuTypes.value = [];
+                    showNotification(`${selectedGroups.value.length} групп(ы) удалено`);
+                    selectedGroups.value = [];
                     applyFilters();
                 } catch (error: any) {
                     showNotification(error.response?.data?.message || 'Ошибка удаления', 'error');
@@ -217,31 +208,22 @@ export function useMenuTypes(props: any) {
     };
 
     const bulkPublish = () => {
-        if (selectedMenuTypes.value.length === 0) return;
+        if (selectedGroups.value.length === 0) return;
         showBulkModal(
-            'Публикация типов меню',
-            `Вы уверены, что хотите опубликовать ${selectedMenuTypes.value.length} тип(ов) меню?`,
+            'Публикация групп',
+            `Вы уверены, что хотите опубликовать ${selectedGroups.value.length} группу(ы)?`,
             async () => {
                 loading.value = true;
                 try {
-                    for (const id of selectedMenuTypes.value) {
-                        const type = props.menuTypes.data.find((t: any) => t.id === id);
-                        if (type) {
-                            await menuTypesApi.update(id, {
-                                title: type.title,
-                                alias: type.alias,
-                                description: type.description,
-                                status: true,
-                                ordering: type.ordering,
-                            });
-                        }
+                    for (const id of selectedGroups.value) {
+                        await groupsApi.updateStatus(id, true);
                     }
-                    updateLocalStatus(selectedMenuTypes.value, true);
-                    showNotification(`${selectedMenuTypes.value.length} тип(ов) меню опубликовано`);
-                    selectedMenuTypes.value = [];
-                    loading.value = false;
+                    showNotification(`${selectedGroups.value.length} групп(ы) опубликовано`);
+                    selectedGroups.value = [];
+                    applyFilters();
                 } catch (error: any) {
                     showNotification(error.response?.data?.message || 'Ошибка', 'error');
+                } finally {
                     loading.value = false;
                 }
             }
@@ -249,31 +231,22 @@ export function useMenuTypes(props: any) {
     };
 
     const bulkUnpublish = () => {
-        if (selectedMenuTypes.value.length === 0) return;
+        if (selectedGroups.value.length === 0) return;
         showBulkModal(
             'Снятие с публикации',
-            `Вы уверены, что хотите снять с публикации ${selectedMenuTypes.value.length} тип(ов) меню?`,
+            `Вы уверены, что хотите снять с публикации ${selectedGroups.value.length} группу(ы)?`,
             async () => {
                 loading.value = true;
                 try {
-                    for (const id of selectedMenuTypes.value) {
-                        const type = props.menuTypes.data.find((t: any) => t.id === id);
-                        if (type) {
-                            await menuTypesApi.update(id, {
-                                title: type.title,
-                                alias: type.alias,
-                                description: type.description,
-                                status: false,
-                                ordering: type.ordering,
-                            });
-                        }
+                    for (const id of selectedGroups.value) {
+                        await groupsApi.updateStatus(id, false);
                     }
-                    updateLocalStatus(selectedMenuTypes.value, false);
-                    showNotification(`${selectedMenuTypes.value.length} тип(ов) меню снято с публикации`);
-                    selectedMenuTypes.value = [];
-                    loading.value = false;
+                    showNotification(`${selectedGroups.value.length} групп(ы) снято с публикации`);
+                    selectedGroups.value = [];
+                    applyFilters();
                 } catch (error: any) {
                     showNotification(error.response?.data?.message || 'Ошибка', 'error');
+                } finally {
                     loading.value = false;
                 }
             }
@@ -282,12 +255,11 @@ export function useMenuTypes(props: any) {
 
     return {
         filters,
-        selectedMenuTypes,
+        selectedGroups,
         allSelected,
         notification,
         modalOpen,
         editingId,
-        editingMenuType,
         loading,
         deleteModalOpen,
         deleteLoading,

@@ -31,13 +31,48 @@
                     </SidebarLink>
                 </nav>
 
-                <!-- Показываем только когда выбран конкретный тип меню (не "все пункты") -->
                 <div v-if="currentMenuTypeTitle && isMenuItemsPage && currentMenuTypeId !== null" class="mt-6 px-3 pt-4 border-t border-gray-200">
                     <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Текущее меню</div>
                     <div class="text-sm text-gray-700 bg-gray-50 rounded-lg p-2">
                         {{ currentMenuTypeTitle }}
                     </div>
                 </div>
+            </template>
+
+            <!-- Для страниц менеджера пользователей -->
+            <template v-else-if="isUserManagerPage">
+                <div class="px-3 mb-4">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Менеджер пользователей</div>
+                        <div class="text-sm text-gray-700">Управление пользователями и правами</div>
+                    </div>
+                </div>
+
+                <nav class="space-y-2">
+                    <SidebarLink
+                        href="/admin/users"
+                        icon="users"
+                        :active="currentUrl === '/admin/users' || currentUrl.startsWith('/admin/users/')"
+                    >
+                        Пользователи
+                    </SidebarLink>
+
+                    <SidebarLink
+                        href="/admin/groups"
+                        icon="users"
+                        :active="currentUrl === '/admin/groups' || currentUrl.startsWith('/admin/groups/')"
+                    >
+                        Группы пользователей
+                    </SidebarLink>
+
+                    <SidebarLink
+                        href="#"
+                        icon="users"
+                        :active="false"
+                    >
+                        Уровни доступа
+                    </SidebarLink>
+                </nav>
             </template>
 
             <!-- Для всех остальных страниц (обычное меню) -->
@@ -66,7 +101,8 @@
 
                     <div class="px-3">
                         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">ПОЛЬЗОВАТЕЛИ</div>
-                        <SidebarLink href="#" icon="users">Менеджер пользователей</SidebarLink>
+                        <SidebarLink href="/admin/users" icon="users">Менеджер пользователей</SidebarLink>
+                        <SidebarLink href="/admin/groups" icon="users">Группы пользователей</SidebarLink>
                         <div class="px-3 py-2 text-xs text-gray-400 mt-1">Срочных запросов нет.</div>
                     </div>
 
@@ -95,25 +131,25 @@ defineProps<Props>();
 const page = usePage();
 const currentUrl = computed(() => window.location.pathname);
 
-// ID текущего типа меню (из пропсов страницы MenuItems)
 const currentMenuTypeId = computed(() => {
     const props = page.props as any;
     return props.menuTypeId || null;
 });
 
-// Название текущего типа меню
 const currentMenuTypeTitle = computed(() => {
     const props = page.props as any;
     return props.menuTypeTitle || null;
 });
 
-// Является ли текущая страница страницей пунктов меню
 const isMenuItemsPage = computed(() => {
     return currentUrl.value.includes('/admin/menu/types/') && currentUrl.value.includes('/items');
 });
 
-// Проверяем, находимся ли мы на страницах менеджера меню
 const isMenuManagerPage = computed(() => {
     return currentUrl.value.startsWith('/admin/menu');
+});
+
+const isUserManagerPage = computed(() => {
+    return currentUrl.value.startsWith('/admin/users') || currentUrl.value.startsWith('/admin/groups');
 });
 </script>

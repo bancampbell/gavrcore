@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\MenuItemController;
+use App\Http\Controllers\Admin\UserController;
 use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -104,4 +105,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('items/{id}/status', [MenuItemController::class, 'updateStatus'])->name('items.status');
         Route::post('items/ordering/update', [MenuItemController::class, 'updateOrdering'])->name('items.ordering');
     });
+
+    // User Manager
+    Route::prefix('admin')->name('admin.')->group(function () {
+        // Users
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        Route::post('/users/bulk-block', [UserController::class, 'bulkBlock'])->name('users.bulk-block');
+        Route::post('/users/bulk-unblock', [UserController::class, 'bulkUnblock'])->name('users.bulk-unblock');
+
+        // Groups
+        Route::get('/groups', [App\Http\Controllers\Admin\GroupController::class, 'index'])->name('groups.index');
+        Route::get('/groups/create', [App\Http\Controllers\Admin\GroupController::class, 'create'])->name('groups.create');
+        Route::get('/groups/{id}/edit', [App\Http\Controllers\Admin\GroupController::class, 'edit'])->name('groups.edit');
+
+        Route::post('/groups', [App\Http\Controllers\Admin\GroupController::class, 'store'])->name('groups.store');
+        Route::put('/groups/{id}', [App\Http\Controllers\Admin\GroupController::class, 'update'])->name('groups.update');
+        Route::delete('/groups/{id}', [App\Http\Controllers\Admin\GroupController::class, 'destroy'])->name('groups.destroy');
+        Route::post('/groups/{id}/status', [App\Http\Controllers\Admin\GroupController::class, 'updateStatus'])->name('groups.status');
+    });
+
 });

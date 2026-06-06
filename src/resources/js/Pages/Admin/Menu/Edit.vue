@@ -278,7 +278,7 @@ const saveAndClose = async () => {
     loading.value = true;
     try {
         await menuItemsApi.update(menuItemId, form.value);
-        router.visit(`/admin/menu/types/${form.value.menu_type_id}/items`);
+        router.visit(`/admin/menu/types/${form.value.menu_type_id}/items?message=Пункт+меню+обновлён`);
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
         loading.value = false;

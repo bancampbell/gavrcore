@@ -47,7 +47,6 @@
         </div>
 
         <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <!-- Левая колонка - основные параметры -->
             <div class="flex-1">
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                     <div class="p-6 space-y-6">
@@ -99,7 +98,6 @@
                 </div>
             </div>
 
-            <!-- Правая колонка - параметры -->
             <div class="w-80">
                 <div class="space-y-4">
                     <div>
@@ -287,6 +285,10 @@ const save = async () => {
             language: 'all',
         });
         showNotification('Пункт меню сохранён', 'success');
+        form.value.title = '';
+        form.value.alias = '';
+        form.value.link_value = '';
+        form.value.parent_id = null;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
@@ -315,7 +317,7 @@ const saveAndClose = async () => {
         };
 
         await menuItemsApi.create(form.value.menu_type_id, submitData);
-        router.visit(`/admin/menu/types/${form.value.menu_type_id}/items`);
+        router.visit(`/admin/menu/types/${form.value.menu_type_id}/items?message=Пункт+меню+создан`);
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
         loading.value = false;

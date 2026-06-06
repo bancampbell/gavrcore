@@ -4,11 +4,12 @@ namespace App\Actions\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class LoginUserAction
 {
-    public function execute(array $credentials): User
+    public function execute(array $credentials, Request $request = null): User
     {
         if (!Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
@@ -16,6 +17,14 @@ class LoginUserAction
             ]);
         }
 
-        return Auth::user();
+        $user = Auth::user();
+
+        // Обновляем время последнего входа и IP
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request ? $request->ip() : request()->ip(),
+        ]);
+
+        return $user->fresh();
     }
 }
