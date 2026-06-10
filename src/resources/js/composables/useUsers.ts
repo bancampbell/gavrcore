@@ -248,6 +248,37 @@ export function useUsers(props: any) {
         );
     };
 
+    const openDeleteModalForSelected = () => {
+        if (selectedUsers.value.length === 0) return;
+
+        if (selectedUsers.value.length === 1) {
+            const user = props.users.data.find((u: any) => u.id === selectedUsers.value[0]);
+            if (user) {
+                openDeleteModal(user);
+            }
+        } else {
+            showBulkModal(
+                'Массовое удаление',
+                `Вы уверены, что хотите удалить ${selectedUsers.value.length} пользователя(ей)?`,
+                async () => {
+                    loading.value = true;
+                    try {
+                        for (const id of selectedUsers.value) {
+                            await usersApi.delete(id);
+                        }
+                        showNotification(`${selectedUsers.value.length} пользователь(ей) удалено`);
+                        selectedUsers.value = [];
+                        applyFilters();
+                    } catch (error: any) {
+                        showNotification(error.response?.data?.message || 'Ошибка', 'error');
+                    } finally {
+                        loading.value = false;
+                    }
+                }
+            );
+        }
+    };
+
     return {
         filters,
         selectedUsers,
@@ -279,5 +310,6 @@ export function useUsers(props: any) {
         confirmDeleteHandler,
         confirmBulkAction,
         showNotification,
+        openDeleteModalForSelected,
     };
 }

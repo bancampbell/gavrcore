@@ -19,6 +19,9 @@ class MenuItemData
         public string $language,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -37,6 +40,9 @@ class MenuItemData
         );
     }
 
+    /**
+     * @return array<string, int|string|bool|null>
+     */
     public function toArray(): array
     {
         return [

@@ -10,7 +10,9 @@ class BulkTrashRequest extends FormRequest
     {
         return true;
     }
-
+    /**
+     * @return array<string, string>
+     */
     public function rules(): array
     {
         return [
@@ -18,7 +20,9 @@ class BulkTrashRequest extends FormRequest
             'ids.*' => 'exists:materials,id'
         ];
     }
-
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

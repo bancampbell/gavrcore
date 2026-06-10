@@ -13,6 +13,10 @@ class GroupService
         protected GroupRepositoryInterface $repository
     ) {}
 
+    /**
+     * @param array<string, mixed> $filters
+     * @return LengthAwarePaginator<int, Group>
+     */
     public function getPaginated(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->repository->paginate($filters, $perPage);
@@ -23,6 +27,9 @@ class GroupService
         return $this->repository->find($id);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): Group
     {
         if (empty($data['alias'])) {
@@ -31,6 +38,9 @@ class GroupService
         return $this->repository->create($data);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): Group
     {
         if (isset($data['alias']) && empty($data['alias'])) {
@@ -49,6 +59,9 @@ class GroupService
         return $this->repository->updateStatus($id, $status);
     }
 
+    /**
+     * @param array<int, array{id: int, ordering: int}> $order
+     */
     public function updateOrdering(array $order): bool
     {
         return $this->repository->updateOrdering($order);

@@ -17,6 +17,9 @@ class CategoryData
         public readonly bool $is_active,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -31,6 +34,9 @@ class CategoryData
         );
     }
 
+    /**
+     * @return array<string, string|int|bool|null>
+     */
     public function toArray(): array
     {
         return [

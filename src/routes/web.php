@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin\AccessLevelController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\GroupController;
+use App\Http\Controllers\Admin\PermissionController;
 use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,11 +21,7 @@ Route::get('/', function () {
 Route::get('/admin/login', fn() => Inertia::render('Auth/Login'))->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('Admin/Dashboard', [
-            'user' => auth()->user(),
-        ]);
-    })->name('dashboard');
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/admin/materials', [MaterialController::class, 'index'])->name('admin.materials.index');
 
@@ -106,7 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('items/ordering/update', [MenuItemController::class, 'updateOrdering'])->name('items.ordering');
     });
 
-    // User Manager
+    // User, Group, Permission, AccessLevel Manager
     Route::prefix('admin')->name('admin.')->group(function () {
         // Users
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -121,14 +121,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/users/bulk-unblock', [UserController::class, 'bulkUnblock'])->name('users.bulk-unblock');
 
         // Groups
-        Route::get('/groups', [App\Http\Controllers\Admin\GroupController::class, 'index'])->name('groups.index');
-        Route::get('/groups/create', [App\Http\Controllers\Admin\GroupController::class, 'create'])->name('groups.create');
-        Route::get('/groups/{id}/edit', [App\Http\Controllers\Admin\GroupController::class, 'edit'])->name('groups.edit');
+        Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+        Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
+        Route::get('/groups/{id}/edit', [GroupController::class, 'edit'])->name('groups.edit');
 
-        Route::post('/groups', [App\Http\Controllers\Admin\GroupController::class, 'store'])->name('groups.store');
-        Route::put('/groups/{id}', [App\Http\Controllers\Admin\GroupController::class, 'update'])->name('groups.update');
-        Route::delete('/groups/{id}', [App\Http\Controllers\Admin\GroupController::class, 'destroy'])->name('groups.destroy');
-        Route::post('/groups/{id}/status', [App\Http\Controllers\Admin\GroupController::class, 'updateStatus'])->name('groups.status');
+        Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+        Route::put('/groups/{id}', [GroupController::class, 'update'])->name('groups.update');
+        Route::delete('/groups/{id}', [GroupController::class, 'destroy'])->name('groups.destroy');
+        Route::post('/groups/{id}/status', [GroupController::class, 'updateStatus'])->name('groups.status');
+
+        // Access Levels
+        Route::get('/access-levels', [App\Http\Controllers\Admin\AccessLevelController::class, 'index'])->name('access-levels.index');
+        Route::get('/access-levels/create', [App\Http\Controllers\Admin\AccessLevelController::class, 'create'])->name('access-levels.create');
+        Route::post('/access-levels', [App\Http\Controllers\Admin\AccessLevelController::class, 'store'])->name('access-levels.store');
+        Route::get('/access-levels/{id}/edit', [App\Http\Controllers\Admin\AccessLevelController::class, 'edit'])->name('access-levels.edit');
+        Route::put('/access-levels/{id}', [App\Http\Controllers\Admin\AccessLevelController::class, 'update'])->name('access-levels.update');
+        Route::delete('/access-levels/{id}', [App\Http\Controllers\Admin\AccessLevelController::class, 'destroy'])->name('access-levels.destroy');
+        Route::post('/access-levels/ordering', [App\Http\Controllers\Admin\AccessLevelController::class, 'updateOrdering'])->name('access-levels.ordering');
     });
-
 });

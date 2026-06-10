@@ -16,11 +16,18 @@ class MenuItemService
         $this->repository = $repository;
     }
 
+    /**
+     * @param array<string, mixed> $filters
+     * @return LengthAwarePaginator<int, MenuItem>
+     */
     public function getAll(int $menuTypeId, array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->repository->getAll($menuTypeId, $filters, $perPage);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getTree(int $menuTypeId): array
     {
         return $this->repository->getTree($menuTypeId);
@@ -31,6 +38,9 @@ class MenuItemService
         return $this->repository->findById($id);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(int $menuTypeId, array $data): MenuItem
     {
         if (empty($data['alias'])) {
@@ -42,6 +52,9 @@ class MenuItemService
         return $this->repository->create($data);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): MenuItem
     {
         if (empty($data['alias'])) {
@@ -56,6 +69,9 @@ class MenuItemService
         return $this->repository->delete($id);
     }
 
+    /**
+     * @param array<int, array{id: int, ordering: int}> $order
+     */
     public function updateOrdering(array $order): bool
     {
         return $this->repository->updateOrdering($order);
@@ -66,6 +82,9 @@ class MenuItemService
         return $this->repository->updateStatus($id, $status);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getChildren(int $parentId): array
     {
         return $this->repository->getChildren($parentId);

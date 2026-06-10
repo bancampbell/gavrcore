@@ -10,7 +10,9 @@ class UserIndexRequest extends FormRequest
     {
         return true;
     }
-
+    /**
+     * @return array<string, string>
+     */
     public function rules(): array
     {
         return [
@@ -24,7 +26,6 @@ class UserIndexRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        // Преобразуем строковые значения 'true'/'false' в boolean
         if ($this->has('blocked')) {
             $blocked = $this->input('blocked');
             if ($blocked === 'true' || $blocked === '1' || $blocked === 1) {

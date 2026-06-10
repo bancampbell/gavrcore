@@ -6,6 +6,7 @@ use App\Actions\Auth\LoginUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -14,7 +15,7 @@ class LoginController extends Controller
         protected LoginUserAction $loginAction
     ) {}
 
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         $user = $this->loginAction->execute($request->only('email', 'password'), $request);
 
@@ -28,11 +29,12 @@ class LoginController extends Controller
         ]);
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        $user = $request->user();
-        if ($user && method_exists($user->currentAccessToken(), 'delete')) {
-            $user->currentAccessToken()->delete();
+        $token = $request->user()?->currentAccessToken();
+
+        if ($token) {
+            $token->delete();
         }
 
         return response()->json([

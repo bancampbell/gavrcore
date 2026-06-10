@@ -15,6 +15,9 @@ class MaterialData
         public readonly ?string $published_at,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -29,6 +32,9 @@ class MaterialData
         );
     }
 
+    /**
+     * @return array<string, string|int|null>
+     */
     public function toArray(): array
     {
         return [

@@ -14,6 +14,10 @@ class UserService
         protected UserRepositoryInterface $repository
     ) {}
 
+    /**
+     * @param array<string, mixed> $filters
+     * @return LengthAwarePaginator<int, User>
+     */
     public function getPaginated(array $filters): LengthAwarePaginator
     {
         return $this->repository->paginate($filters);
@@ -24,6 +28,9 @@ class UserService
         return $this->repository->find($id);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): User
     {
         if (!empty($data['password'])) {
@@ -34,6 +41,9 @@ class UserService
         return $this->repository->create($userData);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): User
     {
         $user = $this->repository->find($id);

@@ -16,6 +16,10 @@ class MenuTypeService
         $this->repository = $repository;
     }
 
+    /**
+     * @param array<string, mixed> $filters
+     * @return LengthAwarePaginator<int, MenuType>
+     */
     public function getAll(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         return $this->repository->getAll($filters, $perPage);
@@ -26,6 +30,9 @@ class MenuTypeService
         return $this->repository->findById($id);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): MenuType
     {
         if (empty($data['alias'])) {
@@ -35,19 +42,15 @@ class MenuTypeService
         return $this->repository->create($data);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): MenuType
     {
-        // Получаем существующий тип меню
         $existingMenuType = MenuType::findOrFail($id);
 
-        // Если alias не передан, оставляем старый
-        if (!isset($data['alias']) || empty($data['alias'])) {
+        if (empty($data['alias'])) {
             $data['alias'] = $existingMenuType->alias;
-        }
-
-        // Если alias передан, но пустой, генерируем из заголовка
-        if (isset($data['alias']) && empty($data['alias'])) {
-            $data['alias'] = Str::slug($data['title'] ?? $existingMenuType->title);
         }
 
         return $this->repository->update($id, $data);
@@ -58,6 +61,9 @@ class MenuTypeService
         return $this->repository->delete($id);
     }
 
+    /**
+     * @param array<int, array{id: int, ordering: int}> $order
+     */
     public function updateOrdering(array $order): bool
     {
         return $this->repository->updateOrdering($order);

@@ -24,6 +24,9 @@ class MenuItemRepository implements MenuItemRepositoryInterface
             ->paginate($perPage);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getTree(int $menuTypeId): array
     {
         $items = MenuItem::where('menu_type_id', $menuTypeId)
@@ -45,11 +48,17 @@ class MenuItemRepository implements MenuItemRepositoryInterface
             ->first();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function create(array $data): MenuItem
     {
         return MenuItem::create($data);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function update(int $id, array $data): MenuItem
     {
         $item = MenuItem::findOrFail($id);
@@ -62,6 +71,9 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return MenuItem::destroy($id) > 0;
     }
 
+    /**
+     * @param array<int, array{id: int, ordering: int}> $order
+     */
     public function updateOrdering(array $order): bool
     {
         foreach ($order as $item) {
@@ -76,6 +88,9 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return MenuItem::where('id', $id)->update(['status' => $status]) > 0;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getChildren(int $parentId): array
     {
         $children = MenuItem::where('parent_id', $parentId)
@@ -85,7 +100,11 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return $children->toArray();
     }
 
-    private function buildTree(array $items, int $parentId = null): array
+    /**
+     * @param array<int, array<string, mixed>> $items
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildTree(array $items, ?int $parentId = null): array
     {
         $tree = [];
 

@@ -9,7 +9,10 @@ use Illuminate\Validation\ValidationException;
 
 class LoginUserAction
 {
-    public function execute(array $credentials, Request $request = null): User
+    /**
+     * @param array<string, mixed> $credentials
+     */
+    public function execute(array $credentials, ?Request $request = null): User
     {
         if (!Auth::attempt($credentials)) {
             throw ValidationException::withMessages([

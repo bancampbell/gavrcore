@@ -12,6 +12,9 @@ class MenuTypeRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         $id = $this->route('id');
@@ -30,6 +33,9 @@ class MenuTypeRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

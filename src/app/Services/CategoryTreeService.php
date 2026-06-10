@@ -6,31 +6,42 @@ use App\Models\Category;
 
 class CategoryTreeService
 {
-    public function buildTree($categories, $parentId = null): array
+    /**
+     * @param iterable<Category> $categories
+     * @return array<int, array{id: int, name: string, children: array<int, array<string, mixed>>}>
+     */
+    public function buildTree(iterable $categories, ?int $parentId = null): array
     {
         $tree = [];
 
         foreach ($categories as $category) {
             if ($category->parent_id == $parentId) {
-                $children = $this->buildTree($categories, $category->id);
-                if ($children) {
-                    $category->children = $children;
-                }
-                $tree[] = $category;
+                $node = [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'children' => $this->buildTree($categories, $category->id),
+                ];
+                $tree[] = $node;
             }
         }
 
         return $tree;
     }
 
-    public function getSelectOptions($categories, $prefix = ''): array
+    /**
+     * @param iterable<Category> $categories
+     * @return array<int, string>
+     */
+    public function getSelectOptions(iterable $categories, string $prefix = ''): array
     {
         $options = [];
 
         foreach ($categories as $category) {
             $options[$category->id] = $prefix . $category->name;
-            if ($category->children) {
-                $options += $this->getSelectOptions($category->children, $prefix . '— ');
+            // Здесь нужно получать детей из отношения, а не из свойства
+            $children = $category->children()->get();
+            if ($children->isNotEmpty()) {
+                $options += $this->getSelectOptions($children, $prefix . '— ');
             }
         }
 
@@ -43,7 +54,10 @@ class CategoryTreeService
         $this->rebuildTree($categories);
     }
 
-    private function rebuildTree($categories, $parentId = null, $depth = 0): int
+    /**
+     * @param iterable<Category> $categories
+     */
+    private function rebuildTree(iterable $categories, ?int $parentId = null, int $depth = 0): int
     {
         $lft = 1;
 

@@ -10,7 +10,9 @@ class StoreMaterialRequest extends FormRequest
     {
         return true;
     }
-
+    /**
+     * @return array<string, string>
+     */
     public function rules(): array
     {
         return [
@@ -22,7 +24,9 @@ class StoreMaterialRequest extends FormRequest
             'access' => 'nullable|in:public,registered,special',
         ];
     }
-
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

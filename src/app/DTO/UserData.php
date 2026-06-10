@@ -6,6 +6,10 @@ use Illuminate\Support\Str;
 
 class UserData
 {
+    /**
+     * @param array<int, int>|null $groups
+     * @param array<int, int>|null $permissions
+     */
     public function __construct(
         public readonly string $name,
         public readonly string $username,
@@ -19,6 +23,9 @@ class UserData
         public readonly ?string $last_login_ip,
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -35,6 +42,9 @@ class UserData
         );
     }
 
+    /**
+     * @return array<string, string|bool|array<int>|null>
+     */
     public function toArray(): array
     {
         return array_filter([

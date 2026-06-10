@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Response;
 use Inertia\Inertia;
 
 class MediaController extends Controller
@@ -15,14 +18,14 @@ class MediaController extends Controller
         $this->basePath = storage_path('app/public/uploads');
     }
 
-    public function index()
+    public function index(): Response
     {
         return Inertia::render('Admin/MediaManager/Index', [
             'user' => auth()->user(),
         ]);
     }
 
-    public function getContents(Request $request)
+    public function getContents(Request $request): JsonResponse
     {
         $path = $request->get('path', '');
         $fullPath = $this->basePath . ($path ? '/' . $path : '');
@@ -48,11 +51,10 @@ class MediaController extends Controller
                 'type' => $isDir ? 'folder' : 'file',
                 'size' => $isDir ? null : filesize($itemPath),
                 'mime_type' => $isDir ? null : mime_content_type($itemPath),
-                'modified' => filemtime($itemPath), // Добавь эту строку
+                'modified' => filemtime($itemPath),
             ];
         }
 
-        // Сортируем: папки первые, потом файлы
         usort($contents, function($a, $b) {
             if ($a['type'] === $b['type']) {
                 return strcmp($a['name'], $b['name']);
@@ -63,7 +65,7 @@ class MediaController extends Controller
         return response()->json($contents);
     }
 
-    public function createFolder(Request $request)
+    public function createFolder(Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'required|string|max:255|regex:/^[a-zA-Zа-яА-Я0-9_\-]+$/u',
@@ -84,12 +86,15 @@ class MediaController extends Controller
         return response()->json(['message' => 'Папка создана', 'success' => true]);
     }
 
-    public function getFolders(Request $request)
+    public function getFolders(Request $request): JsonResponse
     {
         $folders = $this->scanFoldersRecursive($this->basePath);
         return response()->json($folders);
     }
 
+    /**
+     * @return array<int, array<string, string>>
+     */
     private function scanFoldersRecursive(string $path, string $relativePath = ''): array
     {
         $folders = [];
@@ -116,8 +121,7 @@ class MediaController extends Controller
         return $folders;
     }
 
-
-    public function renameItem(Request $request)
+    public function renameItem(Request $request): JsonResponse
     {
         $request->validate([
             'old_path' => 'required|string',
@@ -146,7 +150,7 @@ class MediaController extends Controller
         return response()->json(['message' => 'Переименовано успешно', 'success' => true]);
     }
 
-    public function deleteItem(Request $request)
+    public function deleteItem(Request $request): JsonResponse
     {
         $request->validate([
             'path' => 'required|string',
@@ -168,7 +172,7 @@ class MediaController extends Controller
         return response()->json(['message' => 'Удалено успешно', 'success' => true]);
     }
 
-    public function copyItem(Request $request)
+    public function copyItem(Request $request): JsonResponse
     {
         $request->validate([
             'path' => 'required|string',
@@ -232,7 +236,7 @@ class MediaController extends Controller
         }
     }
 
-    public function uploadFile(Request $request)
+    public function uploadFile(Request $request): JsonResponse
     {
         $request->validate([
             'files.*' => 'required|file|max:102400',
@@ -255,7 +259,4 @@ class MediaController extends Controller
 
         return response()->json(['message' => 'Загружено файлов: ' . count($uploaded), 'files' => $uploaded]);
     }
-
-
-
 }

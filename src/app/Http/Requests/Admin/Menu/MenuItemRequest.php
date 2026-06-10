@@ -12,9 +12,8 @@ class MenuItemRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
-        // Если menu_type_id передан как параметр маршрута
         if ($this->route('menuTypeId')) {
             $this->merge([
                 'menu_type_id' => $this->route('menuTypeId'),
@@ -22,6 +21,9 @@ class MenuItemRequest extends FormRequest
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function rules(): array
     {
         $id = $this->route('id');
@@ -57,6 +59,9 @@ class MenuItemRequest extends FormRequest
         return $rules;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

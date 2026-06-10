@@ -9,16 +9,24 @@ use App\Http\Requests\Admin\Category\CategoryStoreRequest;
 use App\Http\Requests\Admin\Category\CategoryUpdateRequest;
 use App\Models\Category;
 use App\Services\CategoryService;
+use Inertia\Response;
 use Inertia\Inertia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(
         protected CategoryService $categoryService
     ) {}
 
-    public function index(CategoryIndexRequest $request)
+    public function index(CategoryIndexRequest $request): Response
     {
+        $this->authorize('viewAny', Category::class);
+
         $filters = $request->validated();
         $categories = $this->categoryService->getPaginated($filters);
         $parentOptions = $this->categoryService->getAllForSelect();
@@ -31,25 +39,31 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function store(CategoryStoreRequest $request)
+    public function store(CategoryStoreRequest $request): RedirectResponse
     {
+        $this->authorize('create', Category::class);
+
         $this->categoryService->create(CategoryData::fromArray($request->validated()));
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Категория создана');
     }
 
-    public function update(CategoryUpdateRequest $request, $id)
+    public function update(CategoryUpdateRequest $request, int $id): RedirectResponse
     {
         $category = $this->categoryService->find($id);
+        $this->authorize('update', $category);
+
         $this->categoryService->update($category, CategoryData::fromArray($request->validated()));
 
         return redirect()->route('admin.categories.index')
             ->with('success', 'Категория обновлена');
     }
 
-    public function destroy(Category $category)
+    public function destroy(Category $category): JsonResponse
     {
+        $this->authorize('delete', $category);
+
         $this->categoryService->delete($category);
 
         return response()->json(['success' => true, 'message' => 'Категория удалена']);

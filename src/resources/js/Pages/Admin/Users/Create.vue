@@ -36,8 +36,8 @@
                         <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Логин *</label>
                         <input
                             v-model="form.username"
-                            type="text"
                             @input="updateUsername"
+                            type="text"
                             class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                             placeholder="Введите логин..."
                         />
@@ -76,17 +76,17 @@
                 <div class="space-y-4">
                     <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Группы</h3>
-                        <select
-                            v-model="form.groups"
-                            multiple
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            size="4"
-                        >
-                            <option v-for="group in groups" :key="group.id" :value="group.id">
-                                {{ group.name }}
-                            </option>
-                        </select>
-                        <p class="text-xs text-gray-400 mt-1">Удерживайте Ctrl для множественного выбора</p>
+                        <div class="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto">
+                            <label v-for="group in groups" :key="group.id" class="flex items-center gap-2 mb-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    :value="group.id"
+                                    v-model="form.groups"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm text-gray-700">{{ group.name }}</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Material;
 
+use App\Models\Material;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMaterialRequest extends FormRequest
@@ -11,9 +12,14 @@ class UpdateMaterialRequest extends FormRequest
         return true;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function rules(): array
     {
+        /** @var Material|null $material */
         $material = $this->route('material');
+
         return [
             'title' => 'required|string|max:255',
             'alias' => 'nullable|string|max:255|unique:materials,alias,' . ($material ? $material->id : 'NULL'),
@@ -24,6 +30,9 @@ class UpdateMaterialRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [

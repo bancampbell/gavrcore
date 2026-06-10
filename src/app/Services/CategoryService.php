@@ -14,11 +14,18 @@ class CategoryService
         protected CategoryTreeService $treeService
     ) {}
 
+    /**
+     * @param array<string, mixed> $filters
+     * @return LengthAwarePaginator<int, Category>
+     */
     public function getPaginated(array $filters): LengthAwarePaginator
     {
         return $this->repository->paginate($filters);
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getAllForSelect(): array
     {
         $categories = Category::orderBy('lft')->get();
@@ -39,6 +46,7 @@ class CategoryService
     {
         $this->repository->delete($category);
     }
+
     public function find(int $id): ?Category
     {
         return $this->repository->find($id);

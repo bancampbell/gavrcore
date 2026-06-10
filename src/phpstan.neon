@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 7
+    paths:
+        - app/
+    bootstrapFiles:
+        - vendor/larastan/larastan/bootstrap.php
+    scanDirectories:
+        - vendor/laravel/framework/src
+    ignoreErrors:
+        - '#uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types: TFactory#'
+    reportUnmatchedIgnoredErrors: false

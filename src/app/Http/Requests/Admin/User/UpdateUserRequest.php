@@ -10,7 +10,9 @@ class UpdateUserRequest extends FormRequest
     {
         return true;
     }
-
+    /**
+     * @return array<string, string>
+     */
     public function rules(): array
     {
         $id = $this->route('id');

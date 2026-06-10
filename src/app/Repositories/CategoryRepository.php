@@ -54,8 +54,42 @@ class CategoryRepository implements CategoryRepositoryInterface
         $category->delete();
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function getAllAsTree(): array
     {
-        return Category::orderBy('lft')->get()->toTree();
+        $categories = Category::orderBy('lft')->get();
+        return $this->buildCategoryTree($categories);
+    }
+
+    /**
+     * @param iterable<Category> $categories
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildCategoryTree(iterable $categories, ?int $parentId = null): array
+    {
+        $tree = [];
+
+        foreach ($categories as $category) {
+            if ($category->parent_id === $parentId) {
+                $node = [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'alias' => $category->alias,
+                    'description' => $category->description,
+                    'depth' => $category->depth,
+                    'lft' => $category->lft,
+                    'rgt' => $category->rgt,
+                    'is_active' => $category->is_active,
+                    'created_at' => $category->created_at?->toISOString(),
+                    'updated_at' => $category->updated_at?->toISOString(),
+                    'children' => $this->buildCategoryTree($categories, $category->id),
+                ];
+                $tree[] = $node;
+            }
+        }
+
+        return $tree;
     }
 }

@@ -11,13 +11,6 @@
                         + Создать пользователя
                     </Link>
                     <button
-                        @click="openEditSelectedModal"
-                        :disabled="selectedUsers.length !== 1"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Редактировать выбранного
-                    </button>
-                    <button
                         @click="bulkBlock"
                         :disabled="selectedUsers.length === 0"
                         class="px-4 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
@@ -30,6 +23,13 @@
                         class="px-4 py-2 rounded-md text-sm border border-green-500 bg-white text-green-600 hover:bg-green-50 transition disabled:opacity-50"
                     >
                         Разблокировать
+                    </button>
+                    <button
+                        @click="openDeleteModalForSelected"
+                        :disabled="selectedUsers.length === 0"
+                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50"
+                    >
+                        Удалить выбранные
                     </button>
                 </div>
             </div>
@@ -95,7 +95,6 @@
 
             <!-- Десктопная версия (Flexbox таблица) -->
             <div class="hidden lg:block overflow-x-auto">
-                <!-- Заголовки -->
                 <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
                     <div class="w-10 flex items-center justify-center">
                         <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
@@ -110,35 +109,28 @@
                     <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
                 </div>
 
-                <!-- Строки -->
                 <div v-for="(user, index) in users.data" :key="user.id"
                      class="flex px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
                      :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-
                     <div class="w-10 flex items-center justify-center">
                         <input type="checkbox" v-model="selectedUsers" :value="user.id" class="rounded border-gray-300">
                     </div>
-
                     <div class="flex-1 flex items-start">
-                        <button @click="openEditModal(user)" class="font-medium text-[#3071a9] hover:underline">
+                        <Link :href="`/admin/users/${user.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
                             {{ user.name }}
-                        </button>
+                        </Link>
                     </div>
-
                     <div class="flex-1 flex items-start text-gray-600">{{ user.username }}</div>
-
                     <div class="flex-1 flex items-center justify-center">
                         <span :class="user.blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-800'" class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
                             {{ user.blocked ? 'Заблокирован' : 'Активен' }}
                         </span>
                     </div>
-
                     <div class="flex-1 flex items-center justify-center">
                         <span :class="user.activated ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'" class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
                             {{ user.activated ? 'Активирован' : 'Не активирован' }}
                         </span>
                     </div>
-
                     <div class="flex-1 flex items-start">
                         <div class="flex flex-wrap gap-1">
                             <span v-for="group in user.groups" :key="group.id" class="inline-flex px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
@@ -147,15 +139,12 @@
                             <span v-if="!user.groups?.length" class="text-gray-400 text-xs">—</span>
                         </div>
                     </div>
-
                     <div class="flex-1 flex items-start text-gray-600 truncate" :title="user.email">
                         {{ user.email }}
                     </div>
-
                     <div class="flex-1 flex items-center justify-center text-gray-600 whitespace-nowrap">
                         {{ formatDate(user.last_login_at) || '—' }}
                     </div>
-
                     <div class="w-16 flex items-center justify-center text-gray-600">{{ user.id }}</div>
                 </div>
             </div>
@@ -211,31 +200,17 @@
             @confirm="confirmBulkAction"
         />
 
-        <!-- Модальное окно создания/редактирования пользователя -->
-        <UserModal
-            :show="modalOpen"
-            :is-edit="!!editingId"
-            :user-data="editingUser"
-            :groups="groups"
-            :loading="loading"
-            @close="closeUserModal"
-            @save="handleUserSave"
-        />
-
-        <!-- Toast уведомление -->
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import ConfirmModal from '@/components/shared/ConfirmModal.vue';
 import Toast from '@/components/shared/Toast.vue';
-import { Link } from '@inertiajs/vue3';
 import { useUsers } from '@/composables/useUsers';
-import UserModal from './components/UserModal.vue';
-import { usersApi } from '@/api/users';
 
 interface User {
     id: number;
@@ -292,13 +267,9 @@ const {
     selectedUsers,
     allSelected,
     notification,
-    modalOpen,
-    editingId,
-    editingUser,
     loading,
     deleteModalOpen,
     deleteLoading,
-    form,
     deleteMessage,
     bulkModalOpen,
     bulkModalTitle,
@@ -308,36 +279,13 @@ const {
     resetFilters,
     prevPage,
     nextPage,
-    openCreateModal,
-    openEditModal,
-    openEditSelectedModal,
-    submitForm,
-    openDeleteModal,
+    openDeleteModalForSelected,
     bulkBlock,
     bulkUnblock,
     confirmDeleteHandler,
     confirmBulkAction,
     showNotification,
 } = useUsers(props);
-
-const handleUserSave = async (data: any) => {
-    try {
-        if (editingId.value) {
-            await usersApi.update(editingId.value, data);
-        } else {
-            await usersApi.create(data);
-        }
-        modalOpen.value = false;
-        applyFilters();
-        showNotification('Пользователь сохранён', 'success');
-    } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка', 'error');
-    }
-};
-
-const closeUserModal = () => {
-    modalOpen.value = false;
-};
 
 onMounted(() => {
     const urlParams = new URLSearchParams(window.location.search);

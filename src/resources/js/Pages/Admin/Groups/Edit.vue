@@ -82,6 +82,28 @@
                             <option :value="false" class="bg-white text-gray-800">Скрыто</option>
                         </select>
                     </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-800 mb-2">Права доступа</h3>
+                        <div class="border border-gray-300 rounded-lg p-3 max-h-64 overflow-y-auto">
+                            <div v-for="(perms, groupName) in groupedPermissions" :key="groupName" class="mb-3">
+                                <div class="font-semibold text-gray-700 text-xs uppercase mb-2">{{ groupName || 'Другие' }}</div>
+                                <div class="space-y-1">
+                                    <label v-for="perm in perms" :key="perm.id" class="flex items-center gap-2 cursor-pointer text-sm">
+                                        <input
+                                            type="checkbox"
+                                            :value="perm.id"
+                                            v-model="form.permissions"
+                                            class="rounded border-gray-300"
+                                        />
+                                        <span>{{ perm.name }}</span>
+                                        <span class="text-xs text-gray-400 font-mono ml-1">({{ perm.key }})</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Выберите действия, которые может выполнять группа</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import EmptyLayout from '@/layouts/EmptyLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
@@ -100,11 +122,23 @@ import { groupsApi } from '@/api/groups';
 const props = defineProps<{
     user: any;
     editGroup: any;
+    permissions: any[];
+    groupPermissions: number[];
 }>();
 
 const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
+
+const groupedPermissions = computed(() => {
+    const grouped: Record<string, any[]> = {};
+    for (const perm of props.permissions || []) {
+        const group = perm.group || 'Другие';
+        if (!grouped[group]) grouped[group] = [];
+        grouped[group].push(perm);
+    }
+    return grouped;
+});
 
 const form = ref({
     name: '',
@@ -112,6 +146,7 @@ const form = ref({
     description: '',
     status: true,
     ordering: 0,
+    permissions: [] as number[],
 });
 
 const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
@@ -172,5 +207,6 @@ onMounted(() => {
     form.value.description = props.editGroup.description || '';
     form.value.status = props.editGroup.status;
     form.value.ordering = props.editGroup.ordering || 0;
+    form.value.permissions = props.groupPermissions || [];
 });
 </script>

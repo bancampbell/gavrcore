@@ -6,6 +6,7 @@ use App\Actions\Auth\RegisterUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
 
 class RegisterController extends Controller
 {
@@ -13,7 +14,7 @@ class RegisterController extends Controller
         protected RegisterUserAction $registerAction
     ) {}
 
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
         $user = $this->registerAction->execute($request->validated());
 

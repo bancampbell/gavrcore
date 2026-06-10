@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Menu\MenuTypeRequest;
 use App\Http\Resources\Admin\Menu\MenuTypeResource;
 use App\Services\MenuTypeService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Inertia\Response;
 use Inertia\Inertia;
 
 class MenuTypeController extends Controller
@@ -18,7 +21,7 @@ class MenuTypeController extends Controller
         $this->service = $service;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): Response|AnonymousResourceCollection
     {
         $filters = $request->only(['search', 'status']);
         $perPage = $request->get('per_page', 20);
@@ -43,13 +46,13 @@ class MenuTypeController extends Controller
         ]);
     }
 
-    public function store(MenuTypeRequest $request)
+    public function store(MenuTypeRequest $request): MenuTypeResource
     {
         $menuType = $this->service->create($request->validated());
         return new MenuTypeResource($menuType);
     }
 
-    public function show(int $id)
+    public function show(int $id): MenuTypeResource|JsonResponse
     {
         $menuType = $this->service->findById($id);
 
@@ -60,13 +63,13 @@ class MenuTypeController extends Controller
         return new MenuTypeResource($menuType);
     }
 
-    public function update(MenuTypeRequest $request, int $id)
+    public function update(MenuTypeRequest $request, int $id): MenuTypeResource
     {
         $menuType = $this->service->update($id, $request->validated());
         return new MenuTypeResource($menuType);
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id): JsonResponse
     {
         $deleted = $this->service->delete($id);
 
@@ -77,7 +80,7 @@ class MenuTypeController extends Controller
         return response()->json(['message' => 'Deleted successfully'], 200);
     }
 
-    public function updateOrdering(Request $request)
+    public function updateOrdering(Request $request): JsonResponse
     {
         $request->validate([
             'order' => 'required|array',

@@ -14,6 +14,10 @@ class MaterialService
         protected MaterialRepositoryInterface $repository
     ) {}
 
+    /**
+     * @param array<string, mixed> $filters
+     * @return LengthAwarePaginator<int, Material>
+     */
     public function getPaginated(array $filters): LengthAwarePaginator
     {
         return $this->repository->paginate($filters);
