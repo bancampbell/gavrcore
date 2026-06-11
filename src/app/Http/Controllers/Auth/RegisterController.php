@@ -12,7 +12,8 @@ class RegisterController extends Controller
 {
     public function __construct(
         protected RegisterUserAction $registerAction
-    ) {}
+    ) {
+    }
 
     public function register(RegisterRequest $request): JsonResponse
     {

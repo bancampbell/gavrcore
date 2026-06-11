@@ -9,11 +9,11 @@ use App\Http\Requests\Admin\Group\UpdateGroupRequest;
 use App\Models\Group;
 use App\Models\Permission;
 use App\Services\GroupService;
-use Inertia\Response;
-use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class GroupController extends Controller
 {
@@ -21,7 +21,8 @@ class GroupController extends Controller
 
     public function __construct(
         protected GroupService $groupService
-    ) {}
+    ) {
+    }
 
     public function index(GroupIndexRequest $request): Response|JsonResponse
     {
@@ -109,6 +110,7 @@ class GroupController extends Controller
         $this->authorize('delete', $group);
 
         $this->groupService->delete($id);
+
         return response()->json(['message' => 'Группа удалена']);
     }
 
@@ -117,7 +119,7 @@ class GroupController extends Controller
         $group = $this->groupService->find($id);
         $this->authorize('update', $group);
 
-        $newStatus = !$group->status;
+        $newStatus = ! $group->status;
         $this->groupService->updateStatus($id, $newStatus);
 
         return response()->json(['message' => 'Статус обновлён']);

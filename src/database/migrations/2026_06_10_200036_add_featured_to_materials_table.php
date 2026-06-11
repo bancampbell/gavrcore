@@ -6,23 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('materials', function (Blueprint $table) {
-            $table->foreignId('access_level_id')->nullable()->constrained('access_levels')->nullOnDelete();
+            $table->boolean('featured')->default(false);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('materials', function (Blueprint $table) {
-            //
+            $table->dropColumn('featured');
         });
     }
 };

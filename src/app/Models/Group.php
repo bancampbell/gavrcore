@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\AccessLevel;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -13,16 +14,19 @@ use App\Models\AccessLevel;
  * @property string|null $description
  * @property bool $status
  * @property int $ordering
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
  * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Permission> $permissions
  * @property-read \Illuminate\Database\Eloquent\Collection<int, AccessLevel> $accessLevels
  */
 class Group extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'name', 'alias', 'description', 'status', 'ordering'
+        'name', 'alias', 'description', 'status', 'ordering',
     ];
 
     protected $casts = [

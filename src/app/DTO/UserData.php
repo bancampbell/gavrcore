@@ -7,8 +7,8 @@ use Illuminate\Support\Str;
 class UserData
 {
     /**
-     * @param array<int, int>|null $groups
-     * @param array<int, int>|null $permissions
+     * @param  array<int, int>|null  $groups
+     * @param  array<int, int>|null  $permissions
      */
     public function __construct(
         public readonly string $name,
@@ -21,10 +21,11 @@ class UserData
         public readonly ?array $permissions,
         public readonly ?string $last_login_at,
         public readonly ?string $last_login_ip,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -56,6 +57,6 @@ class UserData
             'activated' => $this->activated,
             'last_login_at' => $this->last_login_at,
             'last_login_ip' => $this->last_login_ip,
-        ], fn($value) => !is_null($value));
+        ], fn ($value) => ! is_null($value));
     }
 }

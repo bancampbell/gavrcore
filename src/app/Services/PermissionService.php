@@ -11,7 +11,8 @@ class PermissionService
 {
     public function __construct(
         protected PermissionRepositoryInterface $repository
-    ) {}
+    ) {
+    }
 
     /**
      * @return Collection<int, Permission>
@@ -35,20 +36,22 @@ class PermissionService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Permission
     {
         $permissionData = PermissionData::fromArray($data);
+
         return $this->repository->create($permissionData);
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): Permission
     {
         $permissionData = PermissionData::fromArray($data);
+
         return $this->repository->update($id, $permissionData);
     }
 

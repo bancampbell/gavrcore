@@ -12,8 +12,8 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     {
         $query = MenuItem::where('menu_type_id', $menuTypeId);
 
-        if (!empty($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where('title', 'like', '%'.$filters['search'].'%');
         }
 
         if (isset($filters['status'])) {
@@ -49,7 +49,7 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): MenuItem
     {
@@ -57,12 +57,13 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): MenuItem
     {
         $item = MenuItem::findOrFail($id);
         $item->update($data);
+
         return $item->fresh();
     }
 
@@ -72,7 +73,7 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     }
 
     /**
-     * @param array<int, array{id: int, ordering: int}> $order
+     * @param  array<int, array{id: int, ordering: int}>  $order
      */
     public function updateOrdering(array $order): bool
     {
@@ -101,7 +102,8 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     }
 
     /**
-     * @param array<int, array<string, mixed>> $items
+     * @param  array<int, array<string, mixed>>  $items
+     *
      * @return array<int, array<string, mixed>>
      */
     private function buildTree(array $items, ?int $parentId = null): array

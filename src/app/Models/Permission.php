@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -11,15 +13,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $key
  * @property string|null $group
  * @property string|null $description
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, User> $users
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Group> $groups
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @property-read Collection<int, User> $users
+ * @property-read Collection<int, Group> $groups
  */
 class Permission extends Model
 {
     protected $fillable = [
-        'name', 'key', 'group', 'description'
+        'name', 'key', 'group', 'description',
     ];
 
     /**

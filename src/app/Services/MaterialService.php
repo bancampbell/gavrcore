@@ -12,10 +12,12 @@ class MaterialService
 {
     public function __construct(
         protected MaterialRepositoryInterface $repository
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, Material>
      */
     public function getPaginated(array $filters): LengthAwarePaginator
@@ -37,6 +39,7 @@ class MaterialService
                 published_at: $data->published_at,
             );
         }
+
         return $this->repository->create($data);
     }
 
@@ -54,6 +57,7 @@ class MaterialService
                 published_at: $data->published_at,
             );
         }
+
         return $this->repository->update($material, $data);
     }
 

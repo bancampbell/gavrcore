@@ -146,6 +146,31 @@ export function useMaterials(props: UseMaterialsProps) {
         }
     };
 
+    const toggleHomepage = async (material: any) => {
+        try {
+            const newValue = !material.show_on_homepage;
+            const response = await materialsApi.toggleHomepage(material.id, newValue);
+            showNotification(response.message, 'success');
+
+            // Если новый материал становится "на главной", снимаем флаг у всех остальных в списке
+            if (newValue) {
+                props.materials.data.forEach(m => {
+                    if (m.id !== material.id) {
+                        m.show_on_homepage = false;
+                    }
+                });
+            }
+
+            // Обновляем текущий материал
+            const index = props.materials.data.findIndex(m => m.id === material.id);
+            if (index !== -1) {
+                props.materials.data[index].show_on_homepage = newValue;
+            }
+        } catch (error: any) {
+            showNotification('Ошибка при обновлении статуса "На главной"', 'error');
+        }
+    };
+
     const editSelected = () => {
         if (selectedMaterials.value.length === 0) {
             showNotification('Выберите материал для редактирования', 'error');
@@ -227,6 +252,7 @@ export function useMaterials(props: UseMaterialsProps) {
         openDeleteModal,
         openEmptyTrashModal,
         confirmAction,
-        showNotification
+        showNotification,
+        toggleHomepage
     };
 }

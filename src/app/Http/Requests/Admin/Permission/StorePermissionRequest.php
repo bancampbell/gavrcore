@@ -10,6 +10,7 @@ class StorePermissionRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * @return array<string, string>
      */

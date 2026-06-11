@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,15 +14,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $description
  * @property int $ordering
  * @property bool $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, MenuItem> $items
- * @property-read \Illuminate\Database\Eloquent\Collection<int, MenuItem> $activeItems
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @property-read Collection<int, MenuItem> $items
+ * @property-read Collection<int, MenuItem> $activeItems
  */
 class MenuType extends Model
 {
     protected $fillable = [
-        'title', 'alias', 'description', 'ordering', 'status'
+        'title', 'alias', 'description', 'ordering', 'status',
     ];
 
     protected $casts = [

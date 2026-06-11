@@ -10,6 +10,7 @@ class BulkTrashRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * @return array<string, string>
      */
@@ -17,9 +18,10 @@ class BulkTrashRequest extends FormRequest
     {
         return [
             'ids' => 'required|array',
-            'ids.*' => 'exists:materials,id'
+            'ids.*' => 'exists:materials,id',
         ];
     }
+
     /**
      * @return array<string, string>
      */
@@ -28,7 +30,7 @@ class BulkTrashRequest extends FormRequest
         return [
             'ids.required' => 'Выберите хотя бы один материал',
             'ids.array' => 'Некорректный формат данных',
-            'ids.*.exists' => 'Один из материалов не существует'
+            'ids.*.exists' => 'Один из материалов не существует',
         ];
     }
 }

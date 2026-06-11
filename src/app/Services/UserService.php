@@ -12,10 +12,12 @@ class UserService
 {
     public function __construct(
         protected UserRepositoryInterface $repository
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, User>
      */
     public function getPaginated(array $filters): LengthAwarePaginator
@@ -29,32 +31,34 @@ class UserService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): User
     {
-        if (!empty($data['password'])) {
+        if (isset($data['password']) && $data['password'] !== '') {
             $data['password'] = Hash::make($data['password']);
         }
 
         $userData = UserData::fromArray($data);
+
         return $this->repository->create($userData);
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): User
     {
         $user = $this->repository->find($id);
 
-        if (!empty($data['password'])) {
+        if (isset($data['password']) && $data['password'] !== '') {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
 
         $userData = UserData::fromArray($data);
+
         return $this->repository->update($user, $userData);
     }
 

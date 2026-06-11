@@ -13,11 +13,11 @@ class UserRepository implements UserRepositoryInterface
     {
         $query = User::with('groups');
 
-        if (!empty($filters['search'])) {
-            $query->where(function($q) use ($filters) {
-                $q->where('name', 'ilike', '%' . $filters['search'] . '%')
-                    ->orWhere('username', 'ilike', '%' . $filters['search'] . '%')
-                    ->orWhere('email', 'ilike', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('name', 'ilike', '%'.$filters['search'].'%')
+                    ->orWhere('username', 'ilike', '%'.$filters['search'].'%')
+                    ->orWhere('email', 'ilike', '%'.$filters['search'].'%');
             });
         }
 
@@ -41,7 +41,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $user = User::create($data->toArray());
 
-        if (!empty($data->groups)) {
+        if (! empty($data->groups)) {
             $user->groups()->sync($data->groups);
         }
 

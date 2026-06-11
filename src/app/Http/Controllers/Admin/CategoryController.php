@@ -9,11 +9,11 @@ use App\Http\Requests\Admin\Category\CategoryStoreRequest;
 use App\Http\Requests\Admin\Category\CategoryUpdateRequest;
 use App\Models\Category;
 use App\Services\CategoryService;
-use Inertia\Response;
-use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CategoryController extends Controller
 {
@@ -21,7 +21,8 @@ class CategoryController extends Controller
 
     public function __construct(
         protected CategoryService $categoryService
-    ) {}
+    ) {
+    }
 
     public function index(CategoryIndexRequest $request): Response
     {

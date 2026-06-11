@@ -26,10 +26,13 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'blocked' => false,
+            'activated' => true,
         ];
     }
 
@@ -40,6 +43,26 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is blocked.
+     */
+    public function blocked(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'blocked' => true,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is not activated.
+     */
+    public function unactivated(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'activated' => false,
         ]);
     }
 }

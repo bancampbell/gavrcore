@@ -10,6 +10,7 @@ class UpdateGroupRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * @return array<string, string>
      */
@@ -19,7 +20,7 @@ class UpdateGroupRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'alias' => 'nullable|string|max:255|unique:groups,alias,' . $id,
+            'alias' => 'nullable|string|max:255|unique:groups,alias,'.$id,
             'description' => 'nullable|string',
             'status' => 'nullable|boolean',
             'ordering' => 'nullable|integer',

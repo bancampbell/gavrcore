@@ -10,6 +10,7 @@ class StoreMaterialRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * @return array<string, string>
      */
@@ -24,6 +25,7 @@ class StoreMaterialRequest extends FormRequest
             'access' => 'nullable|in:public,registered,special',
         ];
     }
+
     /**
      * @return array<string, string>
      */

@@ -104,6 +104,9 @@
                                 }">
                                     {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
                                 </span>
+                                <span :class="material.show_on_homepage ? 'text-indigo-600 font-medium' : 'text-gray-400'">
+                                    {{ material.show_on_homepage ? 'На главной' : '' }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -123,6 +126,7 @@
                     <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Язык</div>
                     <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Дата создания</div>
                     <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Просмотров</div>
+                    <div class="w-24 flex items-center justify-center font-bold text-[#3071a9]">На главной</div>
                     <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
                 </div>
 
@@ -166,6 +170,15 @@
                     </div>
 
                     <div class="flex-1 flex items-center justify-center text-gray-600">{{ material.views }}</div>
+
+                    <div class="w-24 flex items-center justify-center">
+                        <div class="relative inline-block w-10 h-5 rounded-full cursor-pointer transition-colors"
+                             :class="material.show_on_homepage ? 'bg-indigo-600' : 'bg-gray-300'"
+                             @click="toggleHomepage(material)">
+                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform"
+                                  :class="material.show_on_homepage ? 'translate-x-5' : 'translate-x-0'"></span>
+                        </div>
+                    </div>
 
                     <div class="w-16 flex items-center justify-center text-gray-600">{{ material.id }}</div>
                 </div>
@@ -237,7 +250,8 @@ const {
     publishSelected,
     unpublishSelected,
     editSelected,
-    showNotification
+    showNotification,
+    toggleHomepage
 } = useMaterials(props);
 
 onMounted(() => {

@@ -13,26 +13,26 @@ class MaterialRepository implements MaterialRepositoryInterface
     {
         $query = Material::with(['category', 'user'])->where('state', '!=', 'trash');
 
-        if (!empty($filters['search'])) {
-            $query->where(function($q) use ($filters) {
-                $q->where('title', 'ilike', '%' . $filters['search'] . '%')
-                    ->orWhere('alias', 'ilike', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('title', 'ilike', '%'.$filters['search'].'%')
+                    ->orWhere('alias', 'ilike', '%'.$filters['search'].'%');
             });
         }
 
-        if (!empty($filters['state'])) {
+        if (! empty($filters['state'])) {
             $query->where('state', $filters['state']);
         }
 
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
         }
 
-        if (!empty($filters['access'])) {
+        if (! empty($filters['access'])) {
             $query->where('access', $filters['access']);
         }
 
-        if (!empty($filters['author'])) {
+        if (! empty($filters['author'])) {
             $query->where('user_id', $filters['author']);
         }
 
@@ -44,6 +44,19 @@ class MaterialRepository implements MaterialRepositoryInterface
         return Material::with(['category', 'user'])->find($id);
     }
 
+    public function findBySlug(string $slug): ?Material
+    {
+        return Material::where('alias', $slug)
+            ->where('state', 'published')
+            ->with(['category', 'user'])
+            ->first();
+    }
+
+    public function incrementViews(Material $material): void
+    {
+        $material->increment('views');
+    }
+
     public function create(MaterialData $data): Material
     {
         return Material::create($data->toArray());
@@ -52,6 +65,7 @@ class MaterialRepository implements MaterialRepositoryInterface
     public function update(Material $material, MaterialData $data): Material
     {
         $material->update($data->toArray());
+
         return $material->fresh();
     }
 

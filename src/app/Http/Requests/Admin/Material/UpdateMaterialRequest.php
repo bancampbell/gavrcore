@@ -21,12 +21,14 @@ class UpdateMaterialRequest extends FormRequest
         $material = $this->route('material');
 
         return [
-            'title' => 'required|string|max:255',
-            'alias' => 'nullable|string|max:255|unique:materials,alias,' . ($material ? $material->id : 'NULL'),
+            'title' => 'sometimes|required|string|max:255',
+            'alias' => 'nullable|string|max:255|unique:materials,alias,'.($material ? $material->id : 'NULL'),
             'content' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => 'sometimes|required|exists:categories,id',
             'state' => 'nullable|in:published,draft,archived',
             'access' => 'nullable|in:public,registered,special',
+            'featured' => 'nullable|in:0,1',
+            'show_on_homepage' => 'nullable|in:0,1',
         ];
     }
 

@@ -17,7 +17,8 @@ class MenuItemService
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, MenuItem>
      */
     public function getAll(int $menuTypeId, array $filters = [], int $perPage = 20): LengthAwarePaginator
@@ -39,7 +40,7 @@ class MenuItemService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(int $menuTypeId, array $data): MenuItem
     {
@@ -53,7 +54,7 @@ class MenuItemService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): MenuItem
     {
@@ -70,7 +71,7 @@ class MenuItemService
     }
 
     /**
-     * @param array<int, array{id: int, ordering: int}> $order
+     * @param  array<int, array{id: int, ordering: int}>  $order
      */
     public function updateOrdering(array $order): bool
     {

@@ -20,7 +20,7 @@ return new class extends Migration
 
         // Заполняем username для существующих пользователей
         DB::table('users')->whereNull('username')->update([
-            'username' => DB::raw("CONCAT('user_', id)")
+            'username' => DB::raw("CONCAT('user_', id)"),
         ]);
 
         // Делаем поле username уникальным и not null

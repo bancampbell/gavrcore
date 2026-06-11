@@ -15,10 +15,11 @@ class CategoryData
         public readonly int $rgt,
         public readonly int $depth,
         public readonly bool $is_active,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

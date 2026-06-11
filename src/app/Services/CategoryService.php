@@ -12,10 +12,12 @@ class CategoryService
     public function __construct(
         protected CategoryRepositoryInterface $repository,
         protected CategoryTreeService $treeService
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, Category>
      */
     public function getPaginated(array $filters): LengthAwarePaginator
@@ -29,6 +31,7 @@ class CategoryService
     public function getAllForSelect(): array
     {
         $categories = Category::orderBy('lft')->get();
+
         return $this->treeService->getSelectOptions($categories);
     }
 
@@ -50,5 +53,10 @@ class CategoryService
     public function find(int $id): ?Category
     {
         return $this->repository->find($id);
+    }
+
+    public function findBySlug(string $slug): ?Category
+    {
+        return Category::where('alias', $slug)->first();
     }
 }

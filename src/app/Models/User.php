@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int $id
@@ -20,11 +21,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property string|null $last_login_at
  * @property string|null $last_login_ip
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Group> $groups
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Permission> $permissions
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
+ * @property-read Collection<int, Group> $groups
+ * @property-read Collection<int, Permission> $permissions
  * @property-read array<int, string> $all_permissions
+ *
  * @method static \Illuminate\Database\Eloquent\Factories\Factory<static> factory()
  */
 class User extends Authenticatable

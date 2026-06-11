@@ -9,7 +9,8 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 interface CategoryRepositoryInterface
 {
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, Category>
      */
     public function paginate(array $filters): LengthAwarePaginator;

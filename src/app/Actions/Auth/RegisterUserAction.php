@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 class RegisterUserAction
 {
     /**
-     * @param array<string, string> $data
+     * @param  array<string, string>  $data
      */
     public function execute(array $data): User
     {

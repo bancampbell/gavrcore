@@ -25,7 +25,7 @@ class MenuTypeRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('menu_types', 'alias')->ignore($id)
+                Rule::unique('menu_types', 'alias')->ignore($id),
             ],
             'description' => 'nullable|string',
             'ordering' => 'nullable|integer',

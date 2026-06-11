@@ -34,14 +34,14 @@ class MaterialSeeder extends Seeder
         $users = User::pluck('id')->toArray();
 
         for ($i = 0; $i < 30; $i++) {
-            $title = $titles[array_rand($titles)] . ' ' . ($i + 1);
+            $title = $titles[array_rand($titles)].' '.($i + 1);
             $states = ['published', 'draft', 'archived'];
             $access = ['public', 'registered', 'special'];
 
             Material::create([
                 'title' => $title,
-                'alias' => Str::slug($title) . '-' . ($i + 1),
-                'content' => '<h2>' . $title . '</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>',
+                'alias' => Str::slug($title).'-'.($i + 1),
+                'content' => '<h2>'.$title.'</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>',
                 'category_id' => $categories[array_rand($categories)],
                 'user_id' => $users[array_rand($users)],
                 'state' => $states[array_rand($states)],

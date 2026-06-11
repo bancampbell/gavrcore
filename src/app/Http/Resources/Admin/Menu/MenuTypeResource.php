@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources\Admin\Menu;
 
-use App\Models\MenuType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -14,8 +14,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @property int $ordering
  * @property bool $status
  * @property int $items_count
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class MenuTypeResource extends JsonResource
 {

@@ -8,7 +8,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 interface MenuItemRepositoryInterface
 {
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, MenuItem>
      */
     public function getAll(int $menuTypeId, array $filters = [], int $perPage = 20): LengthAwarePaginator;
@@ -19,22 +20,23 @@ interface MenuItemRepositoryInterface
     public function getTree(int $menuTypeId): array;
 
     public function findById(int $id): ?MenuItem;
+
     public function findByAlias(string $alias, int $menuTypeId): ?MenuItem;
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): MenuItem;
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): MenuItem;
 
     public function delete(int $id): bool;
 
     /**
-     * @param array<int, array{id: int, ordering: int}> $order
+     * @param  array<int, array{id: int, ordering: int}>  $order
      */
     public function updateOrdering(array $order): bool;
 

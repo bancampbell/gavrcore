@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { MaterialsData, MaterialFilters } from '../types';
+import type { MaterialsData, MaterialFilters, Material } from '../types';
 
 const getToken = () => localStorage.getItem('token');
 
@@ -50,6 +50,12 @@ export const materialsApi = {
     // Снять с публикации
     unpublish: async (ids: number[]): Promise<{ message: string }> => {
         const response = await axios.post('/admin/materials/bulk-unpublish', { ids }, headers());
+        return response.data;
+    },
+
+    // Переключить показ на главной
+    toggleHomepage: async (id: number, showOnHomepage: boolean): Promise<{ message: string; material?: Material }> => {
+        const response = await axios.put(`/admin/materials/${id}`, { show_on_homepage: showOnHomepage ? '1' : '0' }, headers());
         return response.data;
     }
 };

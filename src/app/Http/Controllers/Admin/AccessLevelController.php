@@ -5,13 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AccessLevel;
 use App\Models\Group;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Inertia\Response;
 use Inertia\Inertia;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Inertia\Response;
 
 class AccessLevelController extends Controller
 {
@@ -53,7 +53,7 @@ class AccessLevelController extends Controller
             'status' => 'nullable|boolean',
         ]);
 
-        $alias = $request->alias ?: Str::slug($request->title);
+        $alias = $request->alias ? $request->alias : Str::slug($request->title);
 
         $accessLevel = AccessLevel::create([
             'title' => $request->title,
@@ -90,14 +90,14 @@ class AccessLevelController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'alias' => 'nullable|string|max:255|unique:access_levels,alias,' . $id,
+            'alias' => 'nullable|string|max:255|unique:access_levels,alias,'.$id,
             'description' => 'nullable|string',
             'groups' => 'array',
             'groups.*' => 'exists:groups,id',
             'status' => 'nullable|boolean',
         ]);
 
-        $alias = $request->alias ?: Str::slug($request->title);
+        $alias = $request->alias ? $request->alias : Str::slug($request->title);
 
         $accessLevel->update([
             'title' => $request->title,

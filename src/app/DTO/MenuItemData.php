@@ -17,10 +17,11 @@ class MenuItemData
         public bool $status,
         public string $access,
         public string $language,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

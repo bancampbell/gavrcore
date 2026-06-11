@@ -3,22 +3,25 @@
 use App\Http\Controllers\Admin\AccessLevelController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MediaController;
-use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\MenuItemController;
+use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\GroupController;
-use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Web\MaterialController as WebMaterialController;
+use App\Models\MenuItem;
 use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Index');
-});
+// Публичные роуты
+Route::get('/', [WebMaterialController::class, 'index'])->name('home');
+Route::get('/material/{slug}', [WebMaterialController::class, 'show'])->name('material.show');
+Route::get('/category/{slug}', [WebMaterialController::class, 'category'])->name('category.show');
+Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
 
-Route::get('/admin/login', fn() => Inertia::render('Auth/Login'))->name('login');
+Route::get('/admin/login', fn () => Inertia::render('Auth/Login'))->name('login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -36,38 +39,39 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::resource('/admin/categories', CategoryController::class)->names('admin.categories');
 
-    Route::get('/admin/materials/create', [App\Http\Controllers\Admin\MaterialController::class, 'create'])->name('admin.materials.create');
-    Route::post('/admin/materials', [App\Http\Controllers\Admin\MaterialController::class, 'store'])->name('admin.materials.store');
-    Route::get('/admin/materials/{material}/edit', [App\Http\Controllers\Admin\MaterialController::class, 'edit'])->name('admin.materials.edit');
-    Route::put('/admin/materials/{material}', [App\Http\Controllers\Admin\MaterialController::class, 'update'])->name('admin.materials.update');
-    Route::get('/admin/materials/list', [App\Http\Controllers\Admin\MaterialController::class, 'list']);
+    Route::get('/admin/materials/create', [MaterialController::class, 'create'])->name('admin.materials.create');
+    Route::post('/admin/materials', [MaterialController::class, 'store'])->name('admin.materials.store');
+    Route::get('/admin/materials/{material}/edit', [MaterialController::class, 'edit'])->name('admin.materials.edit');
+    Route::put('/admin/materials/{material}', [MaterialController::class, 'update'])->name('admin.materials.update');
+    Route::get('/admin/materials/list', [MaterialController::class, 'list']);
 
     Route::prefix('admin/media')->name('admin.media.')->group(function () {
-        Route::get('/', [App\Http\Controllers\Admin\MediaController::class, 'index'])->name('index');
-        Route::get('/contents', [App\Http\Controllers\Admin\MediaController::class, 'getContents']);
-        Route::post('/folder', [App\Http\Controllers\Admin\MediaController::class, 'createFolder']);
-        Route::get('/folders', [App\Http\Controllers\Admin\MediaController::class, 'getFolders']);
+        Route::get('/', [MediaController::class, 'index'])->name('index');
+        Route::get('/contents', [MediaController::class, 'getContents']);
+        Route::post('/folder', [MediaController::class, 'createFolder']);
+        Route::get('/folders', [MediaController::class, 'getFolders']);
 
-        Route::post('/rename', [App\Http\Controllers\Admin\MediaController::class, 'renameItem']);
-        Route::delete('/item', [App\Http\Controllers\Admin\MediaController::class, 'deleteItem']);
-        Route::post('/copy', [App\Http\Controllers\Admin\MediaController::class, 'copyItem']);
-        Route::post('/upload', [App\Http\Controllers\Admin\MediaController::class, 'uploadFile']);
+        Route::post('/rename', [MediaController::class, 'renameItem']);
+        Route::delete('/item', [MediaController::class, 'deleteItem']);
+        Route::post('/copy', [MediaController::class, 'copyItem']);
+        Route::post('/upload', [MediaController::class, 'uploadFile']);
     });
 
-    // Menu Manager Pages (Inertia) - СНАЧАЛА
+    // Menu Manager Pages (Inertia)
     Route::get('/admin/menu', [MenuTypeController::class, 'index'])->name('admin.menu.index');
 
-    // Create and Edit pages for menu items
+    // Create page for menu items
     Route::get('/admin/menu/types/{menuTypeId}/items/create', function ($menuTypeId) {
-        $menuType = MenuType::findOrFail($menuTypeId);
         return Inertia::render('Admin/Menu/Create', [
             'user' => auth()->user(),
             'menuTypeId' => $menuTypeId,
         ]);
     })->name('admin.menu.items.create');
 
+    // Edit page for menu items
     Route::get('/admin/menu/items/{id}/edit', function ($id) {
-        $menuItem = App\Models\MenuItem::with('menuType')->findOrFail($id);
+        $menuItem = MenuItem::with('menuType')->findOrFail($id);
+
         return Inertia::render('Admin/Menu/Edit', [
             'user' => auth()->user(),
             'menuItem' => $menuItem,
@@ -75,8 +79,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     })->name('admin.menu.items.edit');
 
+    // Menu items list page
     Route::get('/admin/menu/types/{menuTypeId}/items', function ($menuTypeId) {
         $menuType = MenuType::findOrFail($menuTypeId);
+
         return Inertia::render('Admin/Menu/MenuItems', [
             'user' => auth()->user(),
             'menuTypeId' => $menuTypeId,
@@ -84,7 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
     })->name('admin.menu.items');
 
-    // Menu Manager API Routes - ПОТОМ
+    // Menu Manager API Routes
     Route::prefix('admin/menu')->name('admin.menu.')->group(function () {
         // Menu Types
         Route::get('types', [MenuTypeController::class, 'index'])->name('types.index');
@@ -94,7 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('types/{id}', [MenuTypeController::class, 'destroy'])->name('types.destroy');
         Route::post('types/ordering/update', [MenuTypeController::class, 'updateOrdering'])->name('types.ordering');
 
-        // Menu Items - ВАЖНО: items/all ДОЛЖЕН БЫТЬ ПЕРВЫМ!
+        // Menu Items
         Route::get('items/all', [MenuItemController::class, 'getAllItems'])->name('items.all');
         Route::get('types/{menuTypeId}/items/tree', [MenuItemController::class, 'tree'])->name('items.tree');
         Route::post('types/{menuTypeId}/items', [MenuItemController::class, 'store'])->name('items.store');
@@ -131,12 +137,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/groups/{id}/status', [GroupController::class, 'updateStatus'])->name('groups.status');
 
         // Access Levels
-        Route::get('/access-levels', [App\Http\Controllers\Admin\AccessLevelController::class, 'index'])->name('access-levels.index');
-        Route::get('/access-levels/create', [App\Http\Controllers\Admin\AccessLevelController::class, 'create'])->name('access-levels.create');
-        Route::post('/access-levels', [App\Http\Controllers\Admin\AccessLevelController::class, 'store'])->name('access-levels.store');
-        Route::get('/access-levels/{id}/edit', [App\Http\Controllers\Admin\AccessLevelController::class, 'edit'])->name('access-levels.edit');
-        Route::put('/access-levels/{id}', [App\Http\Controllers\Admin\AccessLevelController::class, 'update'])->name('access-levels.update');
-        Route::delete('/access-levels/{id}', [App\Http\Controllers\Admin\AccessLevelController::class, 'destroy'])->name('access-levels.destroy');
-        Route::post('/access-levels/ordering', [App\Http\Controllers\Admin\AccessLevelController::class, 'updateOrdering'])->name('access-levels.ordering');
+        Route::get('/access-levels', [AccessLevelController::class, 'index'])->name('access-levels.index');
+        Route::get('/access-levels/create', [AccessLevelController::class, 'create'])->name('access-levels.create');
+        Route::post('/access-levels', [AccessLevelController::class, 'store'])->name('access-levels.store');
+        Route::get('/access-levels/{id}/edit', [AccessLevelController::class, 'edit'])->name('access-levels.edit');
+        Route::put('/access-levels/{id}', [AccessLevelController::class, 'update'])->name('access-levels.update');
+        Route::delete('/access-levels/{id}', [AccessLevelController::class, 'destroy'])->name('access-levels.destroy');
+        Route::post('/access-levels/ordering', [AccessLevelController::class, 'updateOrdering'])->name('access-levels.ordering');
     });
 });

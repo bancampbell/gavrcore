@@ -12,8 +12,8 @@ class GroupRepository implements GroupRepositoryInterface
     {
         $query = Group::query();
 
-        if (!empty($filters['search'])) {
-            $query->where('name', 'ilike', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where('name', 'ilike', '%'.$filters['search'].'%');
         }
 
         if (isset($filters['status'])) {
@@ -37,6 +37,7 @@ class GroupRepository implements GroupRepositoryInterface
     {
         $group = Group::findOrFail($id);
         $group->update($data);
+
         return $group->fresh();
     }
 
@@ -55,6 +56,7 @@ class GroupRepository implements GroupRepositoryInterface
         foreach ($order as $item) {
             Group::where('id', $item['id'])->update(['ordering' => $item['ordering']]);
         }
+
         return true;
     }
 }

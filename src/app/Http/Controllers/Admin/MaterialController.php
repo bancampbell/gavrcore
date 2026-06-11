@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\DTO\MaterialData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Material\BulkTrashRequest;
 use App\Http\Requests\Admin\Material\MaterialIndexRequest;
@@ -12,11 +11,12 @@ use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
 use App\Services\MaterialService;
-use Inertia\Response;
-use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MaterialController extends Controller
 {
@@ -24,7 +24,8 @@ class MaterialController extends Controller
 
     public function __construct(
         protected MaterialService $materialService
-    ) {}
+    ) {
+    }
 
     public function index(MaterialIndexRequest $request): Response
     {
@@ -74,6 +75,7 @@ class MaterialController extends Controller
         Material::whereIn('id', $request->ids)->update(['state' => 'draft']);
 
         $message = $count === 1 ? 'Материал восстановлен' : 'Материалы восстановлены';
+
         return response()->json(['message' => $message]);
     }
 
@@ -93,6 +95,7 @@ class MaterialController extends Controller
         Material::whereIn('id', $request->ids)->forceDelete();
 
         $message = $count === 1 ? 'Материал удалён навсегда' : 'Материалы удалены навсегда';
+
         return response()->json(['message' => $message]);
     }
 
@@ -122,6 +125,7 @@ class MaterialController extends Controller
         Material::whereIn('id', $request->ids)->update(['state' => 'published']);
 
         $message = $count === 1 ? 'Материал опубликован' : 'Материалы опубликованы';
+
         return response()->json(['message' => $message]);
     }
 
@@ -141,6 +145,7 @@ class MaterialController extends Controller
         Material::whereIn('id', $request->ids)->update(['state' => 'draft']);
 
         $message = $count === 1 ? 'Материал снят с публикации' : 'Материалы сняты с публикации';
+
         return response()->json(['message' => $message]);
     }
 
@@ -160,7 +165,7 @@ class MaterialController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = auth()->id();
-        $data['alias'] = $data['alias'] ?? \Illuminate\Support\Str::slug($data['title']);
+        $data['alias'] = $data['alias'] ?? Str::slug($data['title']);
 
         Material::create($data);
 
@@ -184,7 +189,18 @@ class MaterialController extends Controller
         $this->authorize('update', $material);
 
         $data = $request->validated();
-        $data['alias'] = $data['alias'] ?? \Illuminate\Support\Str::slug($data['title']);
+
+        // Генерируем alias только если есть title
+        if (isset($data['title']) && !empty($data['title'])) {
+            $data['alias'] = $data['alias'] ?? Str::slug($data['title']);
+        }
+
+        // Если материал помечается как "Показывать на главной", снимаем этот флаг с других материалов
+        if (isset($data['show_on_homepage']) && $data['show_on_homepage']) {
+            Material::where('id', '!=', $material->id)
+                ->where('show_on_homepage', true)
+                ->update(['show_on_homepage' => false]);
+        }
 
         $material->update($data);
 
@@ -198,6 +214,7 @@ class MaterialController extends Controller
     public function list(): JsonResponse
     {
         $materials = Material::select('id', 'title', 'category_id', 'slug')->get();
+
         return response()->json($materials);
     }
 }

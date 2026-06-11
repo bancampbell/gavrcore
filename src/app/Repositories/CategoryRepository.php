@@ -12,21 +12,21 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function paginate(array $filters): LengthAwarePaginator
     {
         $query = Category::withCount([
-            'materials as published_count' => function($q) {
+            'materials as published_count' => function ($q) {
                 $q->where('state', 'published');
             },
-            'materials as draft_count' => function($q) {
+            'materials as draft_count' => function ($q) {
                 $q->where('state', 'draft');
             },
-            'materials as trash_count' => function($q) {
+            'materials as trash_count' => function ($q) {
                 $q->where('state', 'trash');
-            }
+            },
         ]);
 
-        if (!empty($filters['search'])) {
-            $query->where(function($q) use ($filters) {
-                $q->where('name', 'ilike', '%' . $filters['search'] . '%')
-                    ->orWhere('alias', 'ilike', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('name', 'ilike', '%'.$filters['search'].'%')
+                    ->orWhere('alias', 'ilike', '%'.$filters['search'].'%');
             });
         }
 
@@ -46,6 +46,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function update(Category $category, CategoryData $data): Category
     {
         $category->update($data->toArray());
+
         return $category->fresh();
     }
 
@@ -60,11 +61,13 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function getAllAsTree(): array
     {
         $categories = Category::orderBy('lft')->get();
+
         return $this->buildCategoryTree($categories);
     }
 
     /**
-     * @param iterable<Category> $categories
+     * @param  iterable<Category>  $categories
+     *
      * @return array<int, array<string, mixed>>
      */
     private function buildCategoryTree(iterable $categories, ?int $parentId = null): array

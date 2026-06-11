@@ -17,7 +17,8 @@ class MenuTypeService
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, MenuType>
      */
     public function getAll(array $filters = [], int $perPage = 20): LengthAwarePaginator
@@ -31,11 +32,11 @@ class MenuTypeService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): MenuType
     {
-        if (empty($data['alias'])) {
+        if (! isset($data['alias']) || $data['alias'] === '') {
             $data['alias'] = Str::slug($data['title']);
         }
 
@@ -43,13 +44,13 @@ class MenuTypeService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): MenuType
     {
         $existingMenuType = MenuType::findOrFail($id);
 
-        if (empty($data['alias'])) {
+        if (! isset($data['alias']) || $data['alias'] === '') {
             $data['alias'] = $existingMenuType->alias;
         }
 
@@ -62,7 +63,7 @@ class MenuTypeService
     }
 
     /**
-     * @param array<int, array{id: int, ordering: int}> $order
+     * @param  array<int, array{id: int, ordering: int}>  $order
      */
     public function updateOrdering(array $order): bool
     {

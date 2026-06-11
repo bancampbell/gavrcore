@@ -11,10 +11,12 @@ class GroupService
 {
     public function __construct(
         protected GroupRepositoryInterface $repository
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed>  $filters
+     *
      * @return LengthAwarePaginator<int, Group>
      */
     public function getPaginated(array $filters = [], int $perPage = 20): LengthAwarePaginator
@@ -28,24 +30,26 @@ class GroupService
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): Group
     {
         if (empty($data['alias'])) {
             $data['alias'] = Str::slug($data['name']);
         }
+
         return $this->repository->create($data);
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function update(int $id, array $data): Group
     {
         if (isset($data['alias']) && empty($data['alias'])) {
             unset($data['alias']);
         }
+
         return $this->repository->update($id, $data);
     }
 
@@ -60,7 +64,7 @@ class GroupService
     }
 
     /**
-     * @param array<int, array{id: int, ordering: int}> $order
+     * @param  array<int, array{id: int, ordering: int}>  $order
      */
     public function updateOrdering(array $order): bool
     {

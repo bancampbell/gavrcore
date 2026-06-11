@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\AccessLevel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -21,12 +20,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property int $views
  * @property string|null $published_at
  * @property bool $featured
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property bool $show_on_homepage
+ * @property Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
  * @property-read Category|null $category
  * @property-read User|null $user
  * @property-read AccessLevel|null $accessLevel
+ *
  * @method static \Illuminate\Database\Eloquent\Factories\Factory<static> factory()
  */
 class Material extends Model
@@ -43,13 +45,15 @@ class Material extends Model
         'access',
         'views',
         'published_at',
-        'featured'
+        'featured',
+        'show_on_homepage',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'views' => 'integer',
         'featured' => 'boolean',
+        'show_on_homepage' => 'boolean',
     ];
 
     /**

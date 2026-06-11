@@ -11,10 +11,11 @@ class MenuTypeData
         public ?string $description,
         public int $ordering,
         public bool $status,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

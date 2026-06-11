@@ -92,6 +92,15 @@
                     </div>
 
                     <div>
+                        <h3 class="text-sm font-medium text-gray-800 mb-2">Показывать на главной</h3>
+                        <select v-model="form.show_on_homepage" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
+                            <option value="0">Нет</option>
+                            <option value="1">Да</option>
+                        </select>
+                        <p class="text-xs text-gray-400 mt-1">Только один материал может быть отмечен. При выборе "Да" у других материалов этот параметр снимется.</p>
+                    </div>
+
+                    <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Доступ</h3>
                         <select v-model="form.access" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
                             <option value="public">Public</option>
@@ -170,7 +179,8 @@ const form = ref({
     category_id: props.material.category_id,
     state: props.material.state,
     access: props.material.access,
-    featured: props.material.featured || '0'
+    featured: props.material.featured ? '1' : '0',
+    show_on_homepage: props.material.show_on_homepage ? '1' : '0'
 });
 
 const loadMaterials = async () => {
@@ -297,7 +307,8 @@ const save = async () => {
             category_id: form.value.category_id,
             state: form.value.state,
             access: form.value.access,
-            featured: form.value.featured
+            featured: form.value.featured,
+            show_on_homepage: form.value.show_on_homepage
         };
 
         await axios({
@@ -335,7 +346,8 @@ const saveAndClose = async () => {
             category_id: form.value.category_id,
             state: form.value.state,
             access: form.value.access,
-            featured: form.value.featured
+            featured: form.value.featured,
+            show_on_homepage: form.value.show_on_homepage
         };
 
         await axios({

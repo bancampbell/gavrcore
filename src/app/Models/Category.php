@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -18,14 +19,16 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property int $rgt
  * @property int $depth
  * @property bool $is_active
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
  * @property-read Category|null $parent
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Category> $children
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Material> $materials
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Material> $publishedMaterials
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Material> $draftMaterials
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Material> $trashMaterials
+ * @property-read Collection<int, Category> $children
+ * @property-read Collection<int, Material> $materials
+ * @property-read Collection<int, Material> $publishedMaterials
+ * @property-read Collection<int, Material> $draftMaterials
+ * @property-read Collection<int, Material> $trashMaterials
+ *
  * @method static \Illuminate\Database\Eloquent\Factories\Factory<static> factory()
  */
 class Category extends Model
@@ -40,7 +43,7 @@ class Category extends Model
         'lft',
         'rgt',
         'depth',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [

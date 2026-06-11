@@ -2,16 +2,17 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Material;
+use App\Models\User;
 
 class MaterialPolicy
 {
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasPermission('admin.access')) {
             return true;
         }
+
         return null;
     }
 

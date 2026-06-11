@@ -12,10 +12,11 @@ class GroupData
         public readonly ?string $description,
         public readonly bool $status,
         public readonly int $ordering,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {

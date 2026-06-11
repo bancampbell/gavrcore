@@ -9,8 +9,8 @@ use App\Services\MenuTypeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Inertia\Response;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MenuTypeController extends Controller
 {
@@ -49,6 +49,7 @@ class MenuTypeController extends Controller
     public function store(MenuTypeRequest $request): MenuTypeResource
     {
         $menuType = $this->service->create($request->validated());
+
         return new MenuTypeResource($menuType);
     }
 
@@ -56,7 +57,7 @@ class MenuTypeController extends Controller
     {
         $menuType = $this->service->findById($id);
 
-        if (!$menuType) {
+        if (! $menuType) {
             return response()->json(['message' => 'Menu type not found'], 404);
         }
 
@@ -66,6 +67,7 @@ class MenuTypeController extends Controller
     public function update(MenuTypeRequest $request, int $id): MenuTypeResource
     {
         $menuType = $this->service->update($id, $request->validated());
+
         return new MenuTypeResource($menuType);
     }
 
@@ -73,7 +75,7 @@ class MenuTypeController extends Controller
     {
         $deleted = $this->service->delete($id);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => 'Menu type not found'], 404);
         }
 
@@ -89,6 +91,7 @@ class MenuTypeController extends Controller
         ]);
 
         $this->service->updateOrdering($request->order);
+
         return response()->json(['message' => 'Ordering updated successfully']);
     }
 }

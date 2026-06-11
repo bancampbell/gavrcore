@@ -13,7 +13,7 @@ class CreateFolderAction
 
     public function execute(string $currentPath, string $folderName): bool
     {
-        $folderPath = $this->basePath . ($currentPath ? '/' . $currentPath . '/' . $folderName : '/' . $folderName);
+        $folderPath = $this->basePath.($currentPath ? '/'.$currentPath.'/'.$folderName : '/'.$folderName);
 
         if (is_dir($folderPath)) {
             return false;

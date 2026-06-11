@@ -13,7 +13,8 @@ class LoginController extends Controller
 {
     public function __construct(
         protected LoginUserAction $loginAction
-    ) {}
+    ) {
+    }
 
     public function login(LoginRequest $request): JsonResponse
     {

@@ -7,7 +7,8 @@ use App\Models\Category;
 class CategoryTreeService
 {
     /**
-     * @param iterable<Category> $categories
+     * @param  iterable<Category>  $categories
+     *
      * @return array<int, array{id: int, name: string, children: array<int, array<string, mixed>>}>
      */
     public function buildTree(iterable $categories, ?int $parentId = null): array
@@ -15,7 +16,7 @@ class CategoryTreeService
         $tree = [];
 
         foreach ($categories as $category) {
-            if ($category->parent_id == $parentId) {
+            if ($category->parent_id === $parentId) {
                 $node = [
                     'id' => $category->id,
                     'name' => $category->name,
@@ -29,7 +30,8 @@ class CategoryTreeService
     }
 
     /**
-     * @param iterable<Category> $categories
+     * @param  iterable<Category>  $categories
+     *
      * @return array<int, string>
      */
     public function getSelectOptions(iterable $categories, string $prefix = ''): array
@@ -37,11 +39,11 @@ class CategoryTreeService
         $options = [];
 
         foreach ($categories as $category) {
-            $options[$category->id] = $prefix . $category->name;
+            $options[$category->id] = $prefix.$category->name;
             // Здесь нужно получать детей из отношения, а не из свойства
             $children = $category->children()->get();
             if ($children->isNotEmpty()) {
-                $options += $this->getSelectOptions($children, $prefix . '— ');
+                $options += $this->getSelectOptions($children, $prefix.'— ');
             }
         }
 
@@ -55,14 +57,14 @@ class CategoryTreeService
     }
 
     /**
-     * @param iterable<Category> $categories
+     * @param  iterable<Category>  $categories
      */
     private function rebuildTree(iterable $categories, ?int $parentId = null, int $depth = 0): int
     {
         $lft = 1;
 
         foreach ($categories as $category) {
-            if ($category->parent_id == $parentId) {
+            if ($category->parent_id === $parentId) {
                 $category->lft = $lft;
                 $category->depth = $depth;
                 $category->save();

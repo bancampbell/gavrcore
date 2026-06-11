@@ -9,10 +9,11 @@ class PermissionData
         public readonly string $key,
         public readonly ?string $group,
         public readonly ?string $description,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
@@ -34,6 +35,6 @@ class PermissionData
             'key' => $this->key,
             'group' => $this->group,
             'description' => $this->description,
-        ], fn($value) => !is_null($value));
+        ], fn ($value) => ! is_null($value));
     }
 }

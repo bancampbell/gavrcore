@@ -10,11 +10,11 @@ use App\Http\Requests\Admin\User\UserIndexRequest;
 use App\Models\Group;
 use App\Models\User;
 use App\Services\UserService;
-use Inertia\Response;
-use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class UserController extends Controller
 {
@@ -22,7 +22,8 @@ class UserController extends Controller
 
     public function __construct(
         protected UserService $userService
-    ) {}
+    ) {
+    }
 
     public function index(UserIndexRequest $request): Response
     {
@@ -53,7 +54,7 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $user = $this->userService->create($request->validated());
+        $this->userService->create($request->validated());
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Пользователь создан');
@@ -73,10 +74,9 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, int $id): RedirectResponse|JsonResponse
     {
-        $user = $this->userService->find($id);
-        $this->authorize('update', $user);
+        $this->authorize('update', $this->userService->find($id));
 
-        $user = $this->userService->update($id, $request->validated());
+        $this->userService->update($id, $request->validated());
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Пользователь обновлён']);
@@ -91,6 +91,7 @@ class UserController extends Controller
         $this->authorize('delete', $user);
 
         $this->userService->delete($id);
+
         return response()->json(['message' => 'Пользователь удалён']);
     }
 
@@ -107,6 +108,7 @@ class UserController extends Controller
         }
 
         $message = $count === 1 ? 'Пользователь заблокирован' : 'Пользователи заблокированы';
+
         return response()->json(['message' => $message]);
     }
 
@@ -123,6 +125,7 @@ class UserController extends Controller
         }
 
         $message = $count === 1 ? 'Пользователь разблокирован' : 'Пользователи разблокированы';
+
         return response()->json(['message' => $message]);
     }
 }

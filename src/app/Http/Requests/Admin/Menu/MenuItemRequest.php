@@ -12,15 +12,6 @@ class MenuItemRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
-        if ($this->route('menuTypeId')) {
-            $this->merge([
-                'menu_type_id' => $this->route('menuTypeId'),
-            ]);
-        }
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -50,7 +41,7 @@ class MenuItemRequest extends FormRequest
                 'max:255',
                 Rule::unique('menu_items', 'alias')
                     ->where('menu_type_id', $menuTypeId)
-                    ->ignore($id)
+                    ->ignore($id),
             ];
         } else {
             $rules['alias'] = 'nullable|string|max:255';
@@ -70,5 +61,14 @@ class MenuItemRequest extends FormRequest
             'title.required' => 'Введите заголовок',
             'alias.unique' => 'Пункт меню с таким алиасом уже существует в этом меню',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->route('menuTypeId')) {
+            $this->merge([
+                'menu_type_id' => $this->route('menuTypeId'),
+            ]);
+        }
     }
 }

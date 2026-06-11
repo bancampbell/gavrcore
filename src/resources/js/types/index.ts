@@ -53,6 +53,8 @@ export interface Material {
     updated_at: string;
     category?: Category;
     user?: User;
+    show_on_homepage?: boolean;
+    featured?: string;
 }
 
 export interface MaterialsData {

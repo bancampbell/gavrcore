@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,8 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $size
  * @property string|null $mime_type
  * @property int|null $parent_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Media extends Model
 {
@@ -25,6 +26,6 @@ class Media extends Model
         'type',
         'size',
         'mime_type',
-        'parent_id'
+        'parent_id',
     ];
 }

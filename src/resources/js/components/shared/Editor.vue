@@ -196,11 +196,9 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
-import Underline from '@tiptap/extension-underline';
-import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 
-// Кастомное расширение для ресайза изображений
+// Расширение для изображений с поддержкой ресайза
 const ResizableImage = Image.extend({
     addAttributes() {
         return {
@@ -523,7 +521,6 @@ const openImageModal = () => {
 };
 
 const openFileManager = () => {
-    console.log('Открыть файловый менеджер');
     alert('Файловый менеджер будет здесь');
 };
 
@@ -630,14 +627,6 @@ onMounted(async () => {
         extensions: [
             StarterKit,
             ResizableImage,
-            Link.configure({
-                openOnClick: false,
-                HTMLAttributes: {
-                    class: 'text-blue-600 underline',
-                },
-            }),
-            Underline,
-            Strike,
             TextAlign.configure({
                 types: ['heading', 'paragraph'],
             }),

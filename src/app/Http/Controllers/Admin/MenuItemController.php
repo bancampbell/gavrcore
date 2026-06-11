@@ -6,13 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Menu\MenuItemRequest;
 use App\Http\Resources\Admin\Menu\MenuItemResource;
 use App\Models\MenuItem;
-use App\Services\MenuItemService;
 use App\Models\MenuType;
+use App\Services\MenuItemService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Inertia\Response;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MenuItemController extends Controller
 {
@@ -55,6 +55,7 @@ class MenuItemController extends Controller
     public function tree(int $menuTypeId): JsonResponse
     {
         $tree = $this->service->getTree($menuTypeId);
+
         return response()->json($tree);
     }
 
@@ -72,7 +73,7 @@ class MenuItemController extends Controller
     {
         $menuItem = $this->service->findById($id);
 
-        if (!$menuItem) {
+        if (! $menuItem) {
             return response()->json(['message' => 'Menu item not found'], 404);
         }
 
@@ -82,6 +83,7 @@ class MenuItemController extends Controller
     public function update(MenuItemRequest $request, int $id): MenuItemResource
     {
         $menuItem = $this->service->update($id, $request->validated());
+
         return new MenuItemResource($menuItem);
     }
 
@@ -93,8 +95,8 @@ class MenuItemController extends Controller
 
         $query = MenuItem::with('menuType')->orderBy('created_at', 'desc');
 
-        if (!empty($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where('title', 'like', '%'.$filters['search'].'%');
         }
 
         if (isset($filters['status'])) {
@@ -117,7 +119,7 @@ class MenuItemController extends Controller
     {
         $deleted = $this->service->delete($id);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => 'Menu item not found'], 404);
         }
 
@@ -131,6 +133,7 @@ class MenuItemController extends Controller
         ]);
 
         $this->service->updateStatus($id, $request->status);
+
         return response()->json(['message' => 'Status updated successfully']);
     }
 
@@ -143,6 +146,7 @@ class MenuItemController extends Controller
         ]);
 
         $this->service->updateOrdering($request->order);
+
         return response()->json(['message' => 'Ordering updated successfully']);
     }
 }

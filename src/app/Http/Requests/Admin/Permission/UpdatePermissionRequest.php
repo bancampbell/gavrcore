@@ -10,6 +10,7 @@ class UpdatePermissionRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * @return array<string, string>
      */
@@ -19,7 +20,7 @@ class UpdatePermissionRequest extends FormRequest
 
         return [
             'name' => 'required|string|max:255',
-            'key' => 'required|string|max:255|unique:permissions,key,' . $id,
+            'key' => 'required|string|max:255|unique:permissions,key,'.$id,
             'group' => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ];

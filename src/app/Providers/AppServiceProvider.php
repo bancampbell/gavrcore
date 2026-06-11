@@ -5,35 +5,31 @@ namespace App\Providers;
 use App\Contracts\CategoryRepositoryInterface;
 use App\Contracts\GroupRepositoryInterface;
 use App\Contracts\MaterialRepositoryInterface;
-use App\Contracts\MediaRepositoryInterface;
 use App\Contracts\MenuItemRepositoryInterface;
 use App\Contracts\MenuTypeRepositoryInterface;
 use App\Contracts\PermissionRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
+use App\Models\AccessLevel;
+use App\Models\Category;
+use App\Models\Group;
+use App\Models\Material;
+use App\Models\User;
+use App\Policies\AccessLevelPolicy;
+use App\Policies\CategoryPolicy;
+use App\Policies\GroupPolicy;
+use App\Policies\MaterialPolicy;
+// Импорт моделей
+use App\Policies\UserPolicy;
 use App\Repositories\CategoryRepository;
 use App\Repositories\GroupRepository;
 use App\Repositories\MaterialRepository;
-use App\Repositories\MediaRepository;
 use App\Repositories\MenuItemRepository;
+// Импорт политик
 use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-
-// Импорт моделей
-use App\Models\User;
-use App\Models\Group;
-use App\Models\Material;
-use App\Models\Category;
-use App\Models\AccessLevel;
-
-// Импорт политик
-use App\Policies\UserPolicy;
-use App\Policies\GroupPolicy;
-use App\Policies\MaterialPolicy;
-use App\Policies\CategoryPolicy;
-use App\Policies\AccessLevelPolicy;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {

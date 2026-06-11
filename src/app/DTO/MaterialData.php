@@ -2,6 +2,8 @@
 
 namespace App\DTO;
 
+use Illuminate\Support\Str;
+
 class MaterialData
 {
     public function __construct(
@@ -13,16 +15,17 @@ class MaterialData
         public readonly string $state,
         public readonly string $access,
         public readonly ?string $published_at,
-    ) {}
+    ) {
+    }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public static function fromArray(array $data): self
     {
         return new self(
             title: $data['title'],
-            alias: $data['alias'] ?? \Illuminate\Support\Str::slug($data['title']),
+            alias: $data['alias'] ?? Str::slug($data['title']),
             content: $data['content'] ?? null,
             category_id: (int) $data['category_id'],
             user_id: (int) ($data['user_id'] ?? auth()->id()),

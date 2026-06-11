@@ -12,8 +12,8 @@ class MenuTypeRepository implements MenuTypeRepositoryInterface
     {
         $query = MenuType::query()->withCount('items');
 
-        if (!empty($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%');
+        if (! empty($filters['search'])) {
+            $query->where('title', 'like', '%'.$filters['search'].'%');
         }
 
         if (isset($filters['status'])) {
@@ -43,6 +43,7 @@ class MenuTypeRepository implements MenuTypeRepositoryInterface
     {
         $menuType = MenuType::findOrFail($id);
         $menuType->update($data);
+
         return $menuType->fresh();
     }
 

@@ -10,6 +10,7 @@ class MaterialIndexRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * @return array<string, string>
      */

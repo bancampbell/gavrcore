@@ -46,6 +46,7 @@ class PermissionRepository implements PermissionRepositoryInterface
     {
         $permission = Permission::findOrFail($id);
         $permission->update($data->toArray());
+
         return $permission->fresh();
     }
 

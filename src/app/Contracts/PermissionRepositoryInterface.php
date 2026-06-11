@@ -19,7 +19,10 @@ interface PermissionRepositoryInterface
     public function getGrouped(): Collection;
 
     public function findById(int $id): ?Permission;
+
     public function create(PermissionData $data): Permission;
+
     public function update(int $id, PermissionData $data): Permission;
+
     public function delete(int $id): bool;
 }
