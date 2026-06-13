@@ -137,7 +137,6 @@
                             </label>
                         </div>
 
-                        <!-- Выбор элемента, после которого вставить -->
                         <select
                             v-if="positionType === 'after'"
                             v-model="form.after_id"
@@ -237,7 +236,6 @@ const form = ref({
     after_id: null as number | null,
 });
 
-// Следим за изменением типа ссылки
 watch(() => form.value.link_type, (newType) => {
     if (newType !== 'material') {
         form.value.link_value = '';
@@ -245,7 +243,6 @@ watch(() => form.value.link_type, (newType) => {
     }
 });
 
-// При смене меню - перезагружаем списки
 const onMenuTypeChange = () => {
     loadParentOptions();
     loadOrderOptions();
@@ -298,7 +295,6 @@ const loadParentOptions = async () => {
     }
 };
 
-// Загружаем опции для выбора порядка (все элементы текущего меню, отсортированные по ordering)
 const loadOrderOptions = async () => {
     if (!form.value.menu_type_id) return;
 
@@ -314,7 +310,6 @@ const loadOrderOptions = async () => {
             }
             return result;
         };
-        // Сортируем по ordering для правильного отображения порядка
         const flat = flatten(response.data || []);
         flat.sort((a, b) => (a.ordering || 0) - (b.ordering || 0));
         orderOptions.value = flat;
@@ -355,12 +350,12 @@ const updateAlias = () => {
     form.value.alias = alias;
 };
 
-const selectMaterial = (material: { id: number; title: string; alias: string }) => {
-    form.value.link_value = material.alias;
+// ИСПРАВЛЕНО: используем slug вместо alias
+const selectMaterial = (material: { id: number; title: string; slug: string }) => {
+    form.value.link_value = material.slug;
     form.value.link_value_display = material.title;
 };
 
-// Подготовка данных для отправки
 const prepareSubmitData = () => {
     const submitData: any = {
         parent_id: form.value.parent_id,
@@ -374,7 +369,6 @@ const prepareSubmitData = () => {
         language: 'all',
     };
 
-    // Добавляем информацию о позиции
     if (positionType.value === 'first') {
         submitData.position = 'first';
     } else if (positionType.value === 'after' && form.value.after_id) {
@@ -395,7 +389,6 @@ const save = async () => {
         await menuItemsApi.create(form.value.menu_type_id, prepareSubmitData());
         showNotification('Пункт меню сохранён', 'success');
 
-        // Очищаем форму
         form.value.title = '';
         form.value.alias = '';
         form.value.link_value = '';
@@ -404,7 +397,6 @@ const save = async () => {
         form.value.after_id = null;
         positionType.value = 'first';
 
-        // Перезагружаем списки
         await loadParentOptions();
         await loadOrderOptions();
     } catch (error: any) {
@@ -440,7 +432,6 @@ const saveAndCreate = async () => {
     try {
         await menuItemsApi.create(form.value.menu_type_id, prepareSubmitData());
 
-        // Очищаем форму
         form.value.title = '';
         form.value.alias = '';
         form.value.link_value = '';

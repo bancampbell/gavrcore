@@ -143,7 +143,6 @@
                             </label>
                         </div>
 
-                        <!-- Выбор элемента, после которого вставить -->
                         <select
                             v-if="positionType === 'after'"
                             v-model="form.after_id"
@@ -200,7 +199,7 @@
 
         <MaterialSelectorModal
             :show="showMaterialModal"
-            :selected-alias="form.link_value"
+            :selected-slug="form.link_value"
             @close="showMaterialModal = false"
             @select="selectMaterial"
         />
@@ -247,7 +246,6 @@ const form = ref({
     after_id: null as number | null,
 });
 
-// Следим за изменением типа ссылки
 watch(() => form.value.link_type, (newType) => {
     if (newType !== 'material') {
         form.value.link_value = '';
@@ -272,11 +270,10 @@ const loadMenuTypes = async () => {
     }
 };
 
-// Загружаем название материала для отображения
 const loadMaterialTitle = async () => {
     if (form.value.link_type === 'material' && form.value.link_value) {
         try {
-            const response = await axios.get(`/api/materials/by-alias/${form.value.link_value}`, {
+            const response = await axios.get(`/api/materials/by-slug/${form.value.link_value}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             if (response.data) {
@@ -313,7 +310,6 @@ const loadParentOptions = async () => {
     }
 };
 
-// Загружаем опции для выбора порядка
 const loadOrderOptions = async () => {
     if (form.value.menu_type_id) {
         try {
@@ -372,12 +368,11 @@ const updateAlias = () => {
     form.value.alias = alias;
 };
 
-const selectMaterial = (material: { id: number; title: string; alias: string }) => {
-    form.value.link_value = material.alias;
+const selectMaterial = (material: { id: number; title: string; slug: string }) => {
+    form.value.link_value = material.slug;
     form.value.link_value_display = material.title;
 };
 
-// Подготовка данных для отправки
 const prepareSubmitData = () => {
     const submitData: any = {
         parent_id: form.value.parent_id,
@@ -391,13 +386,11 @@ const prepareSubmitData = () => {
         language: form.value.language,
     };
 
-    // Добавляем информацию о позиции только если нужно переместить
     if (positionType.value === 'first') {
         submitData.position = 'first';
     } else if (positionType.value === 'after' && form.value.after_id) {
         submitData.after_id = form.value.after_id;
     }
-    // Если 'keep' - не отправляем позицию, оставляем текущий ordering
 
     return submitData;
 };
@@ -413,11 +406,9 @@ const save = async () => {
         await menuItemsApi.update(menuItemId, prepareSubmitData());
         showNotification('Пункт меню сохранён', 'success');
 
-        // После сохранения возвращаем позицию в режим "оставить"
         positionType.value = 'keep';
         form.value.after_id = null;
 
-        // Обновляем опции
         await loadParentOptions();
         await loadOrderOptions();
     } catch (error: any) {

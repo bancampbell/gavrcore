@@ -22,7 +22,7 @@ class UpdateMaterialRequest extends FormRequest
 
         return [
             'title' => 'sometimes|required|string|max:255',
-            'alias' => 'nullable|string|max:255|unique:materials,alias,'.($material ? $material->id : 'NULL'),
+            'slug' => 'nullable|string|max:255|unique:materials,slug,'.($material ? $material->id : 'NULL'),
             'content' => 'nullable|string',
             'category_id' => 'sometimes|required|exists:categories,id',
             'state' => 'nullable|in:published,draft,archived',

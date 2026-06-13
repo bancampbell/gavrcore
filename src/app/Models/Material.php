@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $title
- * @property string $alias
+ * @property string $slug
  * @property string|null $content
  * @property int $category_id
  * @property int $user_id
@@ -37,7 +37,7 @@ class Material extends Model
 
     protected $fillable = [
         'title',
-        'alias',
+        'slug',
         'content',
         'category_id',
         'user_id',

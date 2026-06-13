@@ -7,7 +7,7 @@
             :align-image-left="() => imageHandlers.alignImageLeft(editor!)"
             :center-image="() => imageHandlers.centerImage(editor!)"
             :align-image-right="() => imageHandlers.alignImageRight(editor!)"
-            :open-link-modal="openLinkModal"
+            :open-link-modal="handleOpenLinkModal"
             :open-image-modal="() => imageHandlers.openImageModal(emit)"
             :toggle-html="toggleHtml"
             :open-file-manager="openFileManager"
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, type Ref as VueRef } from 'vue';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -56,26 +56,60 @@ const showHtml = ref(false);
 const htmlContent = ref('');
 let editor: Editor | null = null;
 
+const editorRef = ref(editor) as VueRef<Editor | null>;
+
 const { toggleHtml, applyHtml, cancelHtml } = useHtmlMode(
-    { value: editor },
+    editorRef,
     showHtml,
     htmlContent,
-    emit
+    (event, value) => {
+        if (event === 'update:modelValue') {
+            emit('update:modelValue', value);
+        }
+    }
 );
 
 const {
     selectedLinkData,
     handleLinkMouseDown,
-    openLinkModal,
+    openLinkModal: linkHandlersOpenModal,
     setLinkOnSelection: linkHandlersSetLink,
+    updateExistingLink: linkHandlersUpdateExistingLink,
+    clearSelectedLink,
 } = useLinkHandlers(emit);
 
 const imageHandlers = useImageHandlers();
 const { selectedImageAlign, handleImageClick, updateImage: imageHandlersUpdate } = imageHandlers;
 
+watch(editor, (newEditor) => {
+    editorRef.value = newEditor;
+});
+
+// Функция для открытия модалки с передачей выделенного текста
+const handleOpenLinkModal = () => {
+    if (editor) {
+        const { from, to } = editor.state.selection;
+        const hasSelection = from !== to;
+        if (hasSelection) {
+            const selectedText = editor.state.doc.textBetween(from, to);
+            linkHandlersOpenModal(selectedText);
+        } else {
+            linkHandlersOpenModal('');
+        }
+    } else {
+        linkHandlersOpenModal('');
+    }
+};
+
 const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
     if (editor) {
         linkHandlersSetLink(editor, url, linkText, target, title);
+    }
+};
+
+const updateExistingLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
+    if (editor) {
+        linkHandlersUpdateExistingLink(editor, data.oldText, data.newUrl, data.newText, data.newTarget, data.newTitle);
     }
 };
 
@@ -99,7 +133,8 @@ const openFileManager = () => {
 defineExpose({
     setLinkOnSelection,
     insertContent,
-    updateImage
+    updateImage,
+    updateExistingLink
 });
 
 onMounted(async () => {
@@ -128,6 +163,9 @@ onMounted(async () => {
             }
         },
     });
+
+    editorRef.value = editor;
+
     const editorContainer = document.querySelector('.tiptap');
     if (editorContainer) {
         editorContainer.addEventListener('mousedown', (e) => handleLinkMouseDown(e as MouseEvent), true);

@@ -165,7 +165,7 @@ class MaterialController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = auth()->id();
-        $data['alias'] = $data['alias'] ?? Str::slug($data['title']);
+        $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
 
         Material::create($data);
 
@@ -190,9 +190,9 @@ class MaterialController extends Controller
 
         $data = $request->validated();
 
-        // Генерируем alias только если есть title
+        // Генерируем slug только если есть title
         if (isset($data['title']) && !empty($data['title'])) {
-            $data['alias'] = $data['alias'] ?? Str::slug($data['title']);
+            $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
         }
 
         // Если материал помечается как "Показывать на главной", снимаем этот флаг с других материалов

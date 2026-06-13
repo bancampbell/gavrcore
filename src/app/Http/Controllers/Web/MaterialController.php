@@ -35,7 +35,7 @@ class MaterialController extends Controller
 
     public function show(string $slug): Response
     {
-        $material = Material::where('alias', $slug)
+        $material = Material::where('slug', $slug)
             ->where('state', 'published')
             ->with(['category', 'user'])
             ->firstOrFail();

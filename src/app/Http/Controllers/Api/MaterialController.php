@@ -16,7 +16,7 @@ class MaterialController extends Controller
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'ilike', '%' . $request->search . '%')
-                    ->orWhere('alias', 'ilike', '%' . $request->search . '%');
+                    ->orWhere('slug', 'ilike', '%' . $request->search . '%');
             });
         }
 
@@ -29,9 +29,9 @@ class MaterialController extends Controller
         return response()->json($materials);
     }
 
-    public function getByAlias(string $alias)
+    public function getBySlug(string $slug)
     {
-        $material = Material::where('alias', $alias)->firstOrFail();
+        $material = Material::where('slug', $slug)->firstOrFail();
         return response()->json($material);
     }
 }

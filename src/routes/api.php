@@ -11,5 +11,5 @@ Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:san
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/materials', [MaterialController::class, 'index']);
-    Route::get('/materials/by-alias/{alias}', [MaterialController::class, 'getByAlias']);
+    Route::get('/materials/by-slug/{slug}', [MaterialController::class, 'getBySlug']);
 });

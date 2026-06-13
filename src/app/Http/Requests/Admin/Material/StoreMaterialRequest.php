@@ -18,7 +18,7 @@ class StoreMaterialRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'alias' => 'nullable|string|max:255|unique:materials,alias',
+            'slug' => 'nullable|string|max:255|unique:materials,slug',
             'content' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'state' => 'nullable|in:published,draft,archived',

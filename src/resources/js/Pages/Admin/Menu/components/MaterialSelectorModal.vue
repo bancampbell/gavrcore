@@ -58,7 +58,7 @@
                             <div class="w-16 text-center text-gray-600">{{ material.id }}</div>
                             <div class="flex-1">
                                 <div class="font-medium text-gray-900">{{ material.title }}</div>
-                                <div class="text-xs text-gray-400">Алиас: {{ material.alias }}</div>
+                                <div class="text-xs text-gray-400">Слаг: {{ material.slug }}</div>
                             </div>
                             <div class="w-28 text-center">
                                 <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap" :class="{
@@ -119,12 +119,12 @@ import axios from 'axios';
 
 const props = defineProps<{
     show: boolean;
-    selectedAlias?: string;
+    selectedSlug?: string;
 }>();
 
 const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'select', material: { id: number; title: string; alias: string }): void;
+    (e: 'select', material: { id: number; title: string; slug: string }): void;
 }>();
 
 const loading = ref(false);
@@ -202,7 +202,7 @@ const selectMaterial = (material: any) => {
 const confirmSelect = () => {
     const material = materialList.value.find(m => m.id === selectedId.value);
     if (material) {
-        emit('select', { id: material.id, title: material.title, alias: material.alias });
+        emit('select', { id: material.id, title: material.title, slug: material.slug });
         close();
     }
 };
@@ -219,12 +219,12 @@ watch(() => props.show, async (val) => {
         selectedId.value = null;
         await loadMaterials();
 
-        if (props.selectedAlias) {
-            const found = materialList.value.find(m => m.alias === props.selectedAlias);
+        if (props.selectedSlug) {
+            const found = materialList.value.find(m => m.slug === props.selectedSlug);
             if (found) {
                 selectedId.value = found.id;
                 await nextTick();
-                const selectedRow = document.querySelector('.material-row-selected');
+                const selectedRow = document.querySelector('.bg-indigo-50');
                 if (selectedRow) {
                     selectedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }

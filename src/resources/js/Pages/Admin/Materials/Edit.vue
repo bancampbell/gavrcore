@@ -129,6 +129,7 @@
             :categories="categories"
             :materials="materials"
             :edit-data="editLinkData"
+            :selected-text="selectedLinkText"
             @close="closeLinkModal"
             @insert="insertLink"
             @edit="updateLink"
@@ -169,6 +170,7 @@ const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
 const editImageData = ref<any>(null);
 const editorRef = ref<any>(null);
+const selectedLinkText = ref('');
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
 
@@ -202,8 +204,9 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
-const openLinkModal = () => {
+const openLinkModal = (selectedText?: string) => {
     editLinkData.value = null;
+    selectedLinkText.value = selectedText || '';
     showLinkModal.value = true;
 };
 
@@ -255,6 +258,7 @@ const handleEditLink = (data: { oldText: string; url: string; text: string; targ
 const closeLinkModal = () => {
     showLinkModal.value = false;
     editLinkData.value = null;
+    selectedLinkText.value = '';
 };
 
 const insertLink = (data: { url: string; text: string; target: string; title: string }) => {
@@ -262,9 +266,9 @@ const insertLink = (data: { url: string; text: string; target: string; title: st
 };
 
 const updateLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
-    const oldLinkRegex = new RegExp(`<a[^>]*>${data.oldText}</a>`, 'g');
-    const newLinkHtml = `<a href="${data.newUrl}" target="${data.newTarget}" title="${data.newTitle}">${data.newText}</a>`;
-    form.value.content = form.value.content.replace(oldLinkRegex, newLinkHtml);
+    if (editorRef.value) {
+        editorRef.value.updateExistingLink(data);
+    }
 };
 
 const updateAlias = () => {
@@ -287,7 +291,6 @@ const updateAlias = () => {
     };
 
     alias = alias.split('').map(char => ruMap[char] || char).join('');
-
     form.value.alias = alias;
 };
 

@@ -123,6 +123,7 @@
             :categories="categories"
             :materials="materials"
             :edit-data="editLinkData"
+            :selected-text="selectedLinkText"
             @close="closeLinkModal"
             @insert="insertLink"
             @edit="updateLink"
@@ -162,6 +163,7 @@ const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
 const editImageData = ref<any>(null);
 const editorRef = ref<any>(null);
+const selectedLinkText = ref('');
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
 
@@ -194,31 +196,24 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
-const openLinkModal = () => {
+const openLinkModal = (selectedText?: string) => {
     editLinkData.value = null;
+    selectedLinkText.value = selectedText || '';
     showLinkModal.value = true;
 };
 
 const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
-    console.log('openImageManager вызван, imageData:', imageData);
     editImageData.value = imageData || null;
     showImageManager.value = true;
 };
 
 const closeImageManager = () => {
-    console.log('closeImageManager вызван');
     showImageManager.value = false;
     editImageData.value = null;
 };
 
 const onImageSelect = (file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }) => {
-    console.log('=== onImageSelect ===');
-    console.log('file.options:', file.options);
-    console.log('width:', file.options?.width);
-    console.log('height:', file.options?.height);
-
     if (editImageData.value) {
-        console.log('Режим: редактирование');
         let style = '';
         if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
         if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
@@ -232,7 +227,6 @@ const onImageSelect = (file: { url: string; name: string; path: string; options?
             align: ''
         });
     } else {
-        console.log('Режим: вставка нового');
         let style = '';
         if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
         if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
@@ -243,7 +237,6 @@ const onImageSelect = (file: { url: string; name: string; path: string; options?
         }
         imgHtml += ` />`;
 
-        console.log('Сгенерированный HTML:', imgHtml);
         editorRef.value?.insertContent(imgHtml);
     }
     closeImageManager();
@@ -257,6 +250,7 @@ const handleEditLink = (data: { oldText: string; url: string; text: string; targ
 const closeLinkModal = () => {
     showLinkModal.value = false;
     editLinkData.value = null;
+    selectedLinkText.value = '';
 };
 
 const insertLink = (data: { url: string; text: string; target: string; title: string }) => {
@@ -264,9 +258,9 @@ const insertLink = (data: { url: string; text: string; target: string; title: st
 };
 
 const updateLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
-    const oldLinkRegex = new RegExp(`<a[^>]*>${data.oldText}</a>`, 'g');
-    const newLinkHtml = `<a href="${data.newUrl}" target="${data.newTarget}" title="${data.newTitle}">${data.newText}</a>`;
-    form.value.content = form.value.content.replace(oldLinkRegex, newLinkHtml);
+    if (editorRef.value) {
+        editorRef.value.updateExistingLink(data);
+    }
 };
 
 const updateAlias = () => {
@@ -289,7 +283,6 @@ const updateAlias = () => {
     };
 
     alias = alias.split('').map(char => ruMap[char] || char).join('');
-
     form.value.alias = alias;
 };
 

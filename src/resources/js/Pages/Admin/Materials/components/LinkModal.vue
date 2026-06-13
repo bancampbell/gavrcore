@@ -107,9 +107,8 @@
                     <div class="form-row">
                         <label class="form-label">Цель</label>
                         <select v-model="linkTarget" class="form-select">
-                            <option value="">-- Не выбрано --</option>
-                            <option value="_blank">_blank</option>
-                            <option value="_self">_self</option>
+                            <option value="_self">_self (текущее окно)</option>
+                            <option value="_blank">_blank (новое окно)</option>
                         </select>
                     </div>
 
@@ -170,6 +169,7 @@ const props = defineProps<{
         target: string;
         title: string;
     } | null;
+    selectedText?: string;
 }>();
 
 const emit = defineEmits<{
@@ -183,7 +183,7 @@ const user = inject('user') as any;
 const activeTab = ref('link');
 const linkUrl = ref('');
 const linkText = ref('');
-const linkTarget = ref('');
+const linkTarget = ref('_self');
 const linkTitle = ref('');
 const searchTerm = ref('');
 const searchResults = ref<any[]>([]);
@@ -191,21 +191,31 @@ const selectedMaterialId = ref<number | null>(null);
 const selectedType = ref<string | null>(null);
 const isEditMode = ref(false);
 const originalLinkText = ref('');
+const originalLinkUrl = ref('');
 const expandedCategories = ref<number[]>([]);
 const showMediaManager = ref(false);
+
+const getMaterialUrl = (material: any): string => {
+    if (material.slug) return `/${material.slug}`;
+    if (material.alias) return `/${material.alias}`;
+    return `/materials/${material.id}`;
+};
 
 const expandToMaterial = (url: string) => {
     if (!url || !props.materials) return;
 
-    const material = props.materials.find(m =>
-        (m.slug && url.includes(m.slug)) ||
-        url.includes(`/materials/${m.id}`)
-    );
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+
+    const material = props.materials.find(m => {
+        if (m.slug && (cleanUrl === m.slug || url === `/${m.slug}`)) return true;
+        if (m.alias && (cleanUrl === m.alias || url === `/${m.alias}`)) return true;
+        if (url === `/materials/${m.id}`) return true;
+        return false;
+    });
 
     if (material) {
         selectedMaterialId.value = material.id;
         selectedType.value = 'material';
-        linkText.value = material.title;
 
         const expandCategory = (categoryId: number | null) => {
             if (!categoryId) return;
@@ -232,17 +242,21 @@ watch(() => props.show, (val) => {
             isEditMode.value = true;
             linkUrl.value = props.editData.url;
             linkText.value = props.editData.text;
-            linkTarget.value = props.editData.target;
+            linkTarget.value = props.editData.target === '_blank' ? '_blank' : '_self';
             linkTitle.value = props.editData.title;
             originalLinkText.value = props.editData.oldText;
+            originalLinkUrl.value = props.editData.url;
             expandToMaterial(props.editData.url);
         } else {
             isEditMode.value = false;
             linkUrl.value = '';
-            linkText.value = '';
-            linkTarget.value = '';
+            linkText.value = props.selectedText || '';
+            linkTarget.value = '_self';
             linkTitle.value = '';
             originalLinkText.value = '';
+            originalLinkUrl.value = '';
+            selectedMaterialId.value = null;
+            selectedType.value = null;
         }
         searchTerm.value = '';
         activeTab.value = 'link';
@@ -272,20 +286,28 @@ const searchMaterials = () => {
 const selectMaterial = (material: any) => {
     selectedMaterialId.value = material.id;
     selectedType.value = 'material';
-    linkUrl.value = material.slug || `/materials/${material.id}`;
-    if (!linkText.value) {
-        linkText.value = material.title;
-    }
+    linkUrl.value = getMaterialUrl(material);
+
+    const expandCategory = (categoryId: number | null) => {
+        if (!categoryId) return;
+        const category = props.categories?.find(c => c.id === categoryId);
+        if (category) {
+            if (!expandedCategories.value.includes(category.id)) {
+                expandedCategories.value.push(category.id);
+            }
+            if (category.parent_id) {
+                expandCategory(category.parent_id);
+            }
+        }
+    };
+    expandCategory(material.category_id);
 };
 
 const onSelectContentItem = (item: any, type: 'category' | 'material') => {
     if (type === 'material') {
         selectedMaterialId.value = item.id;
         selectedType.value = 'material';
-        linkUrl.value = item.slug || `/materials/${item.id}`;
-        if (!linkText.value) {
-            linkText.value = item.title;
-        }
+        linkUrl.value = getMaterialUrl(item);
     }
 };
 
@@ -295,19 +317,23 @@ const insertLink = () => {
         return;
     }
 
+    const targetValue = linkTarget.value === '_blank' ? '_blank' : '_self';
+
     if (isEditMode.value) {
         emit('edit', {
             oldText: originalLinkText.value,
             newUrl: linkUrl.value,
             newText: linkText.value || linkUrl.value,
-            newTarget: linkTarget.value,
+            newTarget: targetValue,
             newTitle: linkTitle.value
         });
+        originalLinkText.value = linkText.value || linkUrl.value;
+        originalLinkUrl.value = linkUrl.value;
     } else {
         emit('insert', {
             url: linkUrl.value,
             text: linkText.value || linkUrl.value,
-            target: linkTarget.value,
+            target: targetValue,
             title: linkTitle.value
         });
     }
@@ -316,7 +342,6 @@ const insertLink = () => {
 
 const updateLink = insertLink;
 </script>
-
 <style scoped>
 .modal-overlay {
     position: fixed;

@@ -1,16 +1,17 @@
 import { type Ref } from 'vue';
 import type { Editor } from '@tiptap/core';
-import type { EditorEmits } from '../types/editor';
 
 export function useHtmlMode(
     editor: Ref<Editor | null>,
     showHtml: Ref<boolean>,
     htmlContent: Ref<string>,
-    emit: EditorEmits
+    emit: (e: 'update:modelValue', value: string) => void
 ) {
     const toggleHtml = () => {
         if (!showHtml.value) {
-            htmlContent.value = editor.value?.getHTML() || '';
+            // Загружаем текущий HTML из редактора
+            const currentHtml = editor.value?.getHTML();
+            htmlContent.value = currentHtml || '';
             showHtml.value = true;
         } else {
             showHtml.value = false;
