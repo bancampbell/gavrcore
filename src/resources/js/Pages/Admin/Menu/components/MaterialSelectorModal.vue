@@ -32,7 +32,6 @@
                     </button>
                 </div>
 
-                <!-- Список материалов (Flexbox) -->
                 <div class="material-list-wrapper">
                     <div v-if="loading" class="text-center py-8">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
@@ -40,14 +39,12 @@
                     </div>
 
                     <div v-else>
-                        <!-- Заголовки -->
                         <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-2 text-sm font-medium text-gray-500">
                             <div class="w-16 text-center font-bold text-[#3071a9]">ID</div>
                             <div class="flex-1 font-bold text-[#3071a9]">Заголовок</div>
                             <div class="w-28 text-center font-bold text-[#3071a9]">Статус</div>
                         </div>
 
-                        <!-- Строки -->
                         <div
                             v-for="material in materialList"
                             :key="material.id"
@@ -76,7 +73,6 @@
                     </div>
                 </div>
 
-                <!-- Пагинация -->
                 <div v-if="totalPages > 1" class="pagination-bar">
                     <div class="text-sm text-gray-500">
                         Показано {{ fromCount }} - {{ toCount }} из {{ totalCount }}

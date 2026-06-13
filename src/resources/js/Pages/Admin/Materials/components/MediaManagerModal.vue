@@ -225,12 +225,6 @@ const onHeightChange = () => {
 };
 
 const insertFile = () => {
-
-    console.log('=== insertFile ===');
-    console.log('imageWidth.value:', imageWidth.value);
-    console.log('imageHeight.value:', imageHeight.value);
-
-
     if (selectedFile.value) {
         if (props.mode === 'image') {
             emit('select', {

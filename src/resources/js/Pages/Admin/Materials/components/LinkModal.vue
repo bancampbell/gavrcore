@@ -271,16 +271,19 @@ const openFileManager = () => {
     showMediaManager.value = true;
 };
 
-const onMediaSelect = (file: { url: string; name: string; path: string }) => {
+const onMediaSelect = (file: { url: string; name: string; path: string; options?: any }) => {
     linkUrl.value = file.url;
     if (!linkText.value) {
         linkText.value = file.name;
     }
+    // Сбрасываем выделение материала при выборе файла
+    selectedMaterialId.value = null;
+    selectedType.value = null;
     showMediaManager.value = false;
 };
 
 const searchMaterials = () => {
-    console.log('Search materials:', searchTerm.value);
+
 };
 
 const selectMaterial = (material: any) => {

@@ -9,6 +9,7 @@ interface EditorEmits {
 
 export function useLinkHandlers(emit: EditorEmits) {
     const selectedLinkData = ref<LinkData | null>(null);
+    let savedLinkPosition: { from: number; to: number } | null = null;
 
     const getLinkData = (link: HTMLAnchorElement): LinkData => ({
         oldText: link.innerText,
@@ -40,6 +41,20 @@ export function useLinkHandlers(emit: EditorEmits) {
         } else {
             emit('openLinkModal', selectedText || '');
         }
+    };
+
+    const saveLinkPosition = (editor: Editor, linkText: string): void => {
+        const { state } = editor;
+        state.doc.descendants((node, pos) => {
+            if (node.isText && node.text === linkText && node.marks) {
+                const hasLink = node.marks.some((mark: any) => mark.type.name === 'link');
+                if (hasLink) {
+                    savedLinkPosition = { from: pos, to: pos + node.text.length };
+                    return false;
+                }
+            }
+            return true;
+        });
     };
 
     const setLinkOnSelection = (
@@ -79,18 +94,44 @@ export function useLinkHandlers(emit: EditorEmits) {
         if (!editor) return;
 
         const linkTarget = newTarget === '_blank' ? '_blank' : '_self';
-        const content = editor.getHTML();
+        const linkTitle = newTitle || '';
 
-        const oldLinkRegex = new RegExp(`<a[^>]*>${oldText}</a>`, 'g');
-        const newLinkHtml = `<a href="${newUrl}" target="${linkTarget}" title="${newTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${newText}</a>`;
-        const newContent = content.replace(oldLinkRegex, newLinkHtml);
+        if (savedLinkPosition) {
+            const { from, to } = savedLinkPosition;
+            editor.commands.setTextSelection({ from, to });
+            editor.commands.unsetLink();
 
-        editor.commands.setContent(newContent);
+            if (newText && newText !== oldText) {
+                editor.commands.insertContent(newText);
+                const newFrom = editor.state.selection.from - newText.length;
+                editor.commands.setTextSelection({ from: newFrom, to: editor.state.selection.from });
+            }
+
+            editor.commands.setLink({
+                href: newUrl,
+                target: linkTarget,
+                title: linkTitle,
+                rel: 'noopener noreferrer nofollow'
+            });
+            savedLinkPosition = null;
+            return;
+        }
+
+        // Fallback: замена по регулярному выражению
+        const escapedOldText = oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const oldLinkRegex = new RegExp(`<a[^>]*>${escapedOldText}</a>`, 'g');
+        const newLinkHtml = `<a href="${newUrl}" target="${linkTarget}" title="${linkTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${newText}</a>`;
+        const newContent = editor.getHTML().replace(oldLinkRegex, newLinkHtml);
+
+        if (newContent !== editor.getHTML()) {
+            editor.commands.setContent(newContent);
+        }
     };
 
     const clearSelectedLink = (): void => {
         document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
         selectedLinkData.value = null;
+        savedLinkPosition = null;
     };
 
     return {
@@ -100,5 +141,6 @@ export function useLinkHandlers(emit: EditorEmits) {
         setLinkOnSelection,
         updateExistingLink,
         clearSelectedLink,
+        saveLinkPosition,
     };
 }

@@ -72,10 +72,11 @@ const { toggleHtml, applyHtml, cancelHtml } = useHtmlMode(
 const {
     selectedLinkData,
     handleLinkMouseDown,
-    openLinkModal: linkHandlersOpenModal,
+    openLinkModal,
     setLinkOnSelection: linkHandlersSetLink,
     updateExistingLink: linkHandlersUpdateExistingLink,
     clearSelectedLink,
+    saveLinkPosition,
 } = useLinkHandlers(emit);
 
 const imageHandlers = useImageHandlers();
@@ -85,19 +86,21 @@ watch(editor, (newEditor) => {
     editorRef.value = newEditor;
 });
 
-// Функция для открытия модалки с передачей выделенного текста
 const handleOpenLinkModal = () => {
-    if (editor) {
+    if (editor && selectedLinkData.value) {
+        saveLinkPosition(editor, selectedLinkData.value.oldText);
+        openLinkModal();
+    } else if (editor) {
         const { from, to } = editor.state.selection;
         const hasSelection = from !== to;
         if (hasSelection) {
             const selectedText = editor.state.doc.textBetween(from, to);
-            linkHandlersOpenModal(selectedText);
+            openLinkModal(selectedText);
         } else {
-            linkHandlersOpenModal('');
+            openLinkModal('');
         }
     } else {
-        linkHandlersOpenModal('');
+        openLinkModal('');
     }
 };
 
@@ -146,7 +149,11 @@ onMounted(async () => {
     editor = new Editor({
         element: editorElement.value,
         extensions: [
-            StarterKit,
+            StarterKit.configure({
+                link: false,
+                underline: false,
+                strike: false,
+            }),
             ResizableImage,
             Link.configure({
                 openOnClick: false,
