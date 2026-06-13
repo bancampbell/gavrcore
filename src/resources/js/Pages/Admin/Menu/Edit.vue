@@ -65,16 +65,17 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ссылка</label>
                             <div class="flex gap-2 max-w-md">
                                 <input
-                                    v-model="form.link_value"
+                                    v-model="form.link_value_display"
                                     type="text"
                                     class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    :placeholder="form.link_type === 'material' ? 'ID материала' : 'https://...'"
+                                    :placeholder="form.link_type === 'material' ? 'Выберите материал' : 'https://...'"
+                                    :readonly="form.link_type === 'material'"
                                 />
                                 <button
                                     v-if="form.link_type === 'material'"
-                                    @click="openMaterialModal"
+                                    @click="showMaterialModal = true"
                                     type="button"
-                                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+                                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm whitespace-nowrap"
                                 >
                                     Выбрать
                                 </button>
@@ -101,11 +102,56 @@
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Меню</h3>
                         <select
                             v-model="form.menu_type_id"
-                            @change="loadParentOptions"
+                            @change="onMenuTypeChange"
                             class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             <option v-for="type in menuTypes" :key="type.id" :value="type.id">
                                 {{ type.title }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-800 mb-2">Позиция</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="first"
+                                    v-model="positionType"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm text-gray-700">Первым (в начало списка)</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="after"
+                                    v-model="positionType"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm text-gray-700">После элемента</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="keep"
+                                    v-model="positionType"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm text-gray-700">Оставить текущую позицию</span>
+                            </label>
+                        </div>
+
+                        <!-- Выбор элемента, после которого вставить -->
+                        <select
+                            v-if="positionType === 'after'"
+                            v-model="form.after_id"
+                            class="mt-2 w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                            <option :value="null">— Выберите элемент —</option>
+                            <option v-for="item in orderOptions" :key="item.id" :value="item.id" :disabled="item.id === menuItemId">
+                                {{ '—'.repeat(item.level || 0) }} {{ item.title }}
                             </option>
                         </select>
                     </div>
@@ -151,14 +197,23 @@
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
+
+        <MaterialSelectorModal
+            :show="showMaterialModal"
+            :selected-alias="form.link_value"
+            @close="showMaterialModal = false"
+            @select="selectMaterial"
+        />
     </EmptyLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import EmptyLayout from '@/layouts/EmptyLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
+import MaterialSelectorModal from './components/MaterialSelectorModal.vue';
 import { menuTypesApi, menuItemsApi, type MenuType, type MenuItem } from '@/api/menu';
 
 const props = defineProps<{
@@ -171,7 +226,10 @@ const menuItemId = props.menuItem.id;
 const loading = ref(false);
 const menuTypes = ref<MenuType[]>([]);
 const parentOptions = ref<(MenuItem & { level: number })[]>([]);
+const orderOptions = ref<(MenuItem & { level: number })[]>([]);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
+const showMaterialModal = ref(false);
+const positionType = ref<'first' | 'after' | 'keep'>('keep');
 let notificationTimeout: number | null = null;
 
 const form = ref({
@@ -181,18 +239,52 @@ const form = ref({
     alias: props.menuItem.alias,
     link_type: props.menuItem.link_type,
     link_value: props.menuItem.link_value || '',
+    link_value_display: '',
     target: props.menuItem.target,
     status: props.menuItem.status,
     access: props.menuItem.access,
     language: props.menuItem.language,
+    after_id: null as number | null,
 });
+
+// Следим за изменением типа ссылки
+watch(() => form.value.link_type, (newType) => {
+    if (newType !== 'material') {
+        form.value.link_value = '';
+        form.value.link_value_display = '';
+    }
+});
+
+const onMenuTypeChange = () => {
+    loadParentOptions();
+    loadOrderOptions();
+};
 
 const loadMenuTypes = async () => {
     try {
         const response = await menuTypesApi.getAll();
         menuTypes.value = response.data.data;
+        await loadMaterialTitle();
+        await loadParentOptions();
+        await loadOrderOptions();
     } catch (error) {
         console.error('Error loading menu types:', error);
+    }
+};
+
+// Загружаем название материала для отображения
+const loadMaterialTitle = async () => {
+    if (form.value.link_type === 'material' && form.value.link_value) {
+        try {
+            const response = await axios.get(`/api/materials/by-alias/${form.value.link_value}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (response.data) {
+                form.value.link_value_display = response.data.title;
+            }
+        } catch (error) {
+            form.value.link_value_display = form.value.link_value;
+        }
     }
 };
 
@@ -217,6 +309,34 @@ const loadParentOptions = async () => {
             parentOptions.value = flatten(response.data);
         } catch (error) {
             console.error('Error loading parent options:', error);
+        }
+    }
+};
+
+// Загружаем опции для выбора порядка
+const loadOrderOptions = async () => {
+    if (form.value.menu_type_id) {
+        try {
+            const response = await menuItemsApi.getTree(form.value.menu_type_id);
+            const flatten = (items: MenuItem[], level = 0): (MenuItem & { level: number })[] => {
+                let result: (MenuItem & { level: number })[] = [];
+                for (const item of items) {
+                    if (item.id === menuItemId) continue;
+                    result.push({ ...item, level });
+                    if (item.children?.length) {
+                        const children = flatten(item.children, level + 1).filter(
+                            child => child.id !== menuItemId
+                        );
+                        result = [...result, ...children];
+                    }
+                }
+                return result;
+            };
+            const flat = flatten(response.data);
+            flat.sort((a, b) => (a.ordering || 0) - (b.ordering || 0));
+            orderOptions.value = flat;
+        } catch (error) {
+            console.error('Error loading order options:', error);
         }
     }
 };
@@ -252,6 +372,36 @@ const updateAlias = () => {
     form.value.alias = alias;
 };
 
+const selectMaterial = (material: { id: number; title: string; alias: string }) => {
+    form.value.link_value = material.alias;
+    form.value.link_value_display = material.title;
+};
+
+// Подготовка данных для отправки
+const prepareSubmitData = () => {
+    const submitData: any = {
+        parent_id: form.value.parent_id,
+        title: form.value.title,
+        alias: form.value.alias,
+        link_type: form.value.link_type,
+        link_value: form.value.link_value,
+        target: form.value.target,
+        status: form.value.status,
+        access: form.value.access,
+        language: form.value.language,
+    };
+
+    // Добавляем информацию о позиции только если нужно переместить
+    if (positionType.value === 'first') {
+        submitData.position = 'first';
+    } else if (positionType.value === 'after' && form.value.after_id) {
+        submitData.after_id = form.value.after_id;
+    }
+    // Если 'keep' - не отправляем позицию, оставляем текущий ordering
+
+    return submitData;
+};
+
 const save = async () => {
     if (!form.value.title) {
         showNotification('Введите заголовок', 'error');
@@ -260,8 +410,16 @@ const save = async () => {
 
     loading.value = true;
     try {
-        await menuItemsApi.update(menuItemId, form.value);
+        await menuItemsApi.update(menuItemId, prepareSubmitData());
         showNotification('Пункт меню сохранён', 'success');
+
+        // После сохранения возвращаем позицию в режим "оставить"
+        positionType.value = 'keep';
+        form.value.after_id = null;
+
+        // Обновляем опции
+        await loadParentOptions();
+        await loadOrderOptions();
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
@@ -277,7 +435,7 @@ const saveAndClose = async () => {
 
     loading.value = true;
     try {
-        await menuItemsApi.update(menuItemId, form.value);
+        await menuItemsApi.update(menuItemId, prepareSubmitData());
         router.visit(`/admin/menu/types/${form.value.menu_type_id}/items?message=Пункт+меню+обновлён`);
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
@@ -285,12 +443,7 @@ const saveAndClose = async () => {
     }
 };
 
-const openMaterialModal = () => {
-    alert('Выбор материалов будет добавлен позже');
-};
-
 onMounted(() => {
     loadMenuTypes();
-    loadParentOptions();
 });
 </script>

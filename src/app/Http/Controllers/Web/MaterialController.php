@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Services\MaterialService;
 use App\Services\CategoryService;
+use App\Services\MenuService;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,13 +15,13 @@ class MaterialController extends Controller
 {
     public function __construct(
         protected MaterialService $materialService,
-        protected CategoryService $categoryService
+        protected CategoryService $categoryService,
+        protected MenuService $menuService
     ) {
     }
 
     public function index(): Response
     {
-        // Находим материал, отмеченный для показа на главной
         $homepageMaterial = Material::where('show_on_homepage', true)
             ->where('state', 'published')
             ->with(['category', 'user'])
@@ -28,6 +29,7 @@ class MaterialController extends Controller
 
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
+            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
         ]);
     }
 
@@ -42,6 +44,7 @@ class MaterialController extends Controller
 
         return Inertia::render('Material/Show', [
             'material' => $material,
+            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
         ]);
     }
 
@@ -65,6 +68,7 @@ class MaterialController extends Controller
             'materials' => $materials,
             'categories' => $categories,
             'filters' => $filters,
+            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
         ]);
     }
 
@@ -84,6 +88,7 @@ class MaterialController extends Controller
             'materials' => $materials,
             'categories' => $categories,
             'search' => $search,
+            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
         ]);
     }
 }

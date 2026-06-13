@@ -17,6 +17,12 @@ export const materialsApi = {
         return response.data;
     },
 
+    // Получить материал по алиасу
+    getByAlias: async (alias: string): Promise<Material> => {
+        const response = await axios.get(`/api/materials/by-alias/${alias}`, headers());
+        return response.data;
+    },
+
     // Переместить в корзину
     moveToTrash: async (ids: number[]): Promise<{ message: string }> => {
         const response = await axios.post('/admin/materials/bulk-trash', { ids }, headers());

@@ -46,4 +46,19 @@ interface MenuItemRepositoryInterface
      * @return array<int, array<string, mixed>>
      */
     public function getChildren(int $parentId): array;
+
+    /**
+     * Получить максимальный ordering для меню и родителя
+     */
+    public function getMaxOrdering(int $menuTypeId, ?int $parentId): int;
+
+    /**
+     * Увеличить ordering у всех элементов, начиная с указанного значения
+     */
+    public function incrementOrdering(int $menuTypeId, ?int $parentId, int $fromOrdering): void;
+
+    /**
+     * Уменьшить ordering у всех элементов, начиная с указанного значения
+     */
+    public function decrementOrdering(int $menuTypeId, ?int $parentId, int $fromOrdering): void;
 }

@@ -160,67 +160,15 @@
         </div>
 
         <!-- Модальное окно создания/редактирования -->
-        <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-            <div class="fixed inset-0 bg-black/50" @click="modalOpen = false"></div>
-            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-900">{{ editingId ? 'Редактировать категорию' : 'Создать категорию' }}</h3>
-                </div>
-                <form @submit.prevent="submitForm" class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Название *</label>
-                        <input
-                            v-model="form.name"
-                            type="text"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Алиас</label>
-                        <input
-                            v-model="form.alias"
-                            type="text"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="останется пустым - сгенерируется автоматически"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Родительская категория</label>
-                        <select v-model="form.parent_id" class="w-full border border-gray-300 rounded-xl px-4 py-2">
-                            <option :value="null">— Без родителя —</option>
-                            <option v-for="(name, id) in parentOptions" :key="id" :value="id">
-                                {{ name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-2">Описание</label>
-                        <textarea
-                            v-model="form.description"
-                            rows="3"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        ></textarea>
-                    </div>
-                    <div class="flex gap-3 pt-4">
-                        <button
-                            type="submit"
-                            :disabled="loading"
-                            class="flex-1 bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700 disabled:opacity-50"
-                        >
-                            {{ loading ? 'Сохранение...' : (editingId ? 'Обновить' : 'Создать') }}
-                        </button>
-                        <button
-                            type="button"
-                            @click="modalOpen = false"
-                            class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-xl font-medium hover:bg-gray-300"
-                        >
-                            Отмена
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <CategoryModal
+            :show="modalOpen"
+            :is-edit="!!editingId"
+            :category-data="editingId ? categories.data.find(c => c.id === editingId) : null"
+            :parent-options="parentOptions"
+            :loading="loading"
+            @close="modalOpen = false"
+            @save="handleModalSave"
+        />
 
         <!-- Модальное окно подтверждения удаления -->
         <ConfirmModal
@@ -241,9 +189,12 @@
 
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
-import Toast from '../../../components/shared/Toast.vue';
+import ConfirmModal from '@/components/shared/ConfirmModal.vue';
+import Toast from '@/components/shared/Toast.vue';
+import CategoryModal from './components/CategoryModal.vue';
+import { categoriesApi } from '@/api/categories';
 import { useCategories } from '@/composables/useCategories';
+import type { CategoryFormData } from '@/types';
 
 interface User {
     id: number;
@@ -296,23 +247,44 @@ const {
     editingId,
     loading,
     deleteModalOpen,
-    categoryToDelete,
     deleteLoading,
-    form,
     deleteMessage,
     getIndent,
-    selectAll,
     applyFilters,
     debounceSearch,
     resetFilters,
     prevPage,
     nextPage,
     openCreateModal,
-    openEditModal,
     openEditSelectedModal,
-    submitForm,
-    openDeleteModal,
     bulkDelete,
-    confirmDeleteHandler
+    confirmDeleteHandler,
+    showNotification
 } = useCategories(props);
+
+const handleModalSave = (formData: CategoryFormData) => {
+    if (editingId.value) {
+        // Обновление
+        categoriesApi.update(editingId.value, formData)
+            .then(() => {
+                showNotification('Категория обновлена', 'success');
+                modalOpen.value = false;
+                applyFilters();
+            })
+            .catch((error) => {
+                showNotification(error.response?.data?.message || 'Ошибка при обновлении', 'error');
+            });
+    } else {
+        // Создание
+        categoriesApi.create(formData)
+            .then(() => {
+                showNotification('Категория создана', 'success');
+                modalOpen.value = false;
+                applyFilters();
+            })
+            .catch((error) => {
+                showNotification(error.response?.data?.message || 'Ошибка при создании', 'error');
+            });
+    }
+};
 </script>

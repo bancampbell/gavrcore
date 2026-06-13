@@ -17,9 +17,11 @@ use Inertia\Inertia;
 
 // Публичные роуты
 Route::get('/', [WebMaterialController::class, 'index'])->name('home');
-Route::get('/material/{slug}', [WebMaterialController::class, 'show'])->name('material.show');
 Route::get('/category/{slug}', [WebMaterialController::class, 'category'])->name('category.show');
 Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
+
+// Материалы с красивыми URL (без /material/)
+Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login).+');
 
 Route::get('/admin/login', fn () => Inertia::render('Auth/Login'))->name('login');
 

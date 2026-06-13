@@ -1,3 +1,4 @@
+<!--esources/js/Pages/Admin/Menu/Index.vue -->
 <template>
     <AdminLayout :user="user">
         <div class="bg-white rounded-lg shadow">

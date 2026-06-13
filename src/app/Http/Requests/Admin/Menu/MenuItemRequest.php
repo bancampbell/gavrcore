@@ -18,10 +18,11 @@ class MenuItemRequest extends FormRequest
     public function rules(): array
     {
         $id = $this->route('id');
-        $menuTypeId = $this->menu_type_id ?? $this->route('menuTypeId');
+
+        // Для PUT запроса menu_type_id может быть в маршруте или в теле
+        $menuTypeId = $this->input('menu_type_id') ?? $this->route('menuTypeId');
 
         $rules = [
-            'menu_type_id' => 'required|exists:menu_types,id',
             'parent_id' => 'nullable|exists:menu_items,id',
             'title' => 'required|string|max:255',
             'link_type' => 'required|in:url,material,separator,heading,external',
@@ -32,6 +33,14 @@ class MenuItemRequest extends FormRequest
             'access' => 'nullable|string',
             'language' => 'nullable|string',
         ];
+
+        // menu_type_id обязателен только для POST запроса
+        if ($this->isMethod('post')) {
+            $rules['menu_type_id'] = 'required|exists:menu_types,id';
+        } elseif ($menuTypeId) {
+            // Для PUT - если есть в запросе, проверяем существование
+            $rules['menu_type_id'] = 'sometimes|exists:menu_types,id';
+        }
 
         // Правило для alias
         if ($this->filled('alias')) {
@@ -65,6 +74,14 @@ class MenuItemRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // Для PUT запроса, если есть menuTypeId в маршруте, добавляем его в данные
+        if ($this->isMethod('put') && $this->route('menuTypeId')) {
+            $this->merge([
+                'menu_type_id' => $this->route('menuTypeId'),
+            ]);
+        }
+
+        // Для POST запроса
         if ($this->route('menuTypeId')) {
             $this->merge([
                 'menu_type_id' => $this->route('menuTypeId'),

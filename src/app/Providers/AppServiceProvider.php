@@ -18,18 +18,18 @@ use App\Policies\AccessLevelPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\GroupPolicy;
 use App\Policies\MaterialPolicy;
-// Импорт моделей
 use App\Policies\UserPolicy;
 use App\Repositories\CategoryRepository;
 use App\Repositories\GroupRepository;
 use App\Repositories\MaterialRepository;
 use App\Repositories\MenuItemRepository;
-// Импорт политик
 use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use App\Services\MenuService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -58,5 +58,17 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Material::class, MaterialPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
+
+        // Глобальные данные для Inertia
+        Inertia::share([
+            'mainMenu' => function () {
+                try {
+                    $menuService = app(MenuService::class);
+                    return $menuService->getMenuTree('main-menu');
+                } catch (\Exception $e) {
+                    return [];
+                }
+            },
+        ]);
     }
 }

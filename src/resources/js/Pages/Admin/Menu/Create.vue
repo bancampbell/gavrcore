@@ -68,16 +68,17 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Ссылка</label>
                             <div class="flex gap-2 max-w-md">
                                 <input
-                                    v-model="form.link_value"
+                                    v-model="form.link_value_display"
                                     type="text"
                                     class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    :placeholder="form.link_type === 'material' ? 'ID материала' : 'https://...'"
+                                    :placeholder="form.link_type === 'material' ? 'Выберите материал' : 'https://...'"
+                                    :readonly="form.link_type === 'material'"
                                 />
                                 <button
                                     v-if="form.link_type === 'material'"
-                                    @click="openMaterialModal"
+                                    @click="showMaterialModal = true"
                                     type="button"
-                                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+                                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm whitespace-nowrap"
                                 >
                                     Выбрать
                                 </button>
@@ -104,11 +105,47 @@
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Меню</h3>
                         <select
                             v-model="form.menu_type_id"
-                            @change="loadParentOptions"
+                            @change="onMenuTypeChange"
                             class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                         >
                             <option v-for="type in menuTypes" :key="type.id" :value="type.id">
                                 {{ type.title }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-800 mb-2">Позиция</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="first"
+                                    v-model="positionType"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm text-gray-700">Первым (в начало списка)</span>
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input
+                                    type="radio"
+                                    value="after"
+                                    v-model="positionType"
+                                    class="rounded border-gray-300"
+                                />
+                                <span class="text-sm text-gray-700">После элемента</span>
+                            </label>
+                        </div>
+
+                        <!-- Выбор элемента, после которого вставить -->
+                        <select
+                            v-if="positionType === 'after'"
+                            v-model="form.after_id"
+                            class="mt-2 w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        >
+                            <option :value="null">— Выберите элемент —</option>
+                            <option v-for="item in orderOptions" :key="item.id" :value="item.id">
+                                {{ '—'.repeat(item.level || 0) }} {{ item.title }}
                             </option>
                         </select>
                     </div>
@@ -154,14 +191,21 @@
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
+
+        <MaterialSelectorModal
+            :show="showMaterialModal"
+            @close="showMaterialModal = false"
+            @select="selectMaterial"
+        />
     </EmptyLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import EmptyLayout from '@/layouts/EmptyLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
+import MaterialSelectorModal from './components/MaterialSelectorModal.vue';
 import { menuTypesApi, menuItemsApi, type MenuType, type MenuItem } from '@/api/menu';
 
 const props = defineProps<{
@@ -172,7 +216,10 @@ const props = defineProps<{
 const loading = ref(false);
 const menuTypes = ref<MenuType[]>([]);
 const parentOptions = ref<(MenuItem & { level: number })[]>([]);
+const orderOptions = ref<(MenuItem & { level: number })[]>([]);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
+const showMaterialModal = ref(false);
+const positionType = ref<'first' | 'after'>('first');
 let notificationTimeout: number | null = null;
 
 const form = ref({
@@ -182,11 +229,27 @@ const form = ref({
     alias: '',
     link_type: 'url',
     link_value: '',
+    link_value_display: '',
     target: '_self',
     status: true,
     access: 'all',
     language: 'all',
+    after_id: null as number | null,
 });
+
+// Следим за изменением типа ссылки
+watch(() => form.value.link_type, (newType) => {
+    if (newType !== 'material') {
+        form.value.link_value = '';
+        form.value.link_value_display = '';
+    }
+});
+
+// При смене меню - перезагружаем списки
+const onMenuTypeChange = () => {
+    loadParentOptions();
+    loadOrderOptions();
+};
 
 const loadMenuTypes = async () => {
     try {
@@ -206,6 +269,7 @@ const loadMenuTypes = async () => {
         if (!form.value.menu_type_id && menuTypes.value.length > 0) {
             form.value.menu_type_id = menuTypes.value[0].id;
             await loadParentOptions();
+            await loadOrderOptions();
         }
     } catch (error) {
         console.error('Error loading menu types:', error);
@@ -231,6 +295,32 @@ const loadParentOptions = async () => {
     } catch (error) {
         console.error('Error loading parent options:', error);
         parentOptions.value = [];
+    }
+};
+
+// Загружаем опции для выбора порядка (все элементы текущего меню, отсортированные по ordering)
+const loadOrderOptions = async () => {
+    if (!form.value.menu_type_id) return;
+
+    try {
+        const response = await menuItemsApi.getTree(form.value.menu_type_id);
+        const flatten = (items: MenuItem[], level = 0): (MenuItem & { level: number })[] => {
+            let result: (MenuItem & { level: number })[] = [];
+            for (const item of items) {
+                result.push({ ...item, level });
+                if (item.children?.length) {
+                    result = [...result, ...flatten(item.children, level + 1)];
+                }
+            }
+            return result;
+        };
+        // Сортируем по ordering для правильного отображения порядка
+        const flat = flatten(response.data || []);
+        flat.sort((a, b) => (a.ordering || 0) - (b.ordering || 0));
+        orderOptions.value = flat;
+    } catch (error) {
+        console.error('Error loading order options:', error);
+        orderOptions.value = [];
     }
 };
 
@@ -265,6 +355,35 @@ const updateAlias = () => {
     form.value.alias = alias;
 };
 
+const selectMaterial = (material: { id: number; title: string; alias: string }) => {
+    form.value.link_value = material.alias;
+    form.value.link_value_display = material.title;
+};
+
+// Подготовка данных для отправки
+const prepareSubmitData = () => {
+    const submitData: any = {
+        parent_id: form.value.parent_id,
+        title: form.value.title,
+        alias: form.value.alias,
+        link_type: form.value.link_type,
+        link_value: form.value.link_value,
+        target: form.value.target,
+        status: form.value.status,
+        access: form.value.access,
+        language: 'all',
+    };
+
+    // Добавляем информацию о позиции
+    if (positionType.value === 'first') {
+        submitData.position = 'first';
+    } else if (positionType.value === 'after' && form.value.after_id) {
+        submitData.after_id = form.value.after_id;
+    }
+
+    return submitData;
+};
+
 const save = async () => {
     if (!form.value.title) {
         showNotification('Введите заголовок', 'error');
@@ -273,22 +392,21 @@ const save = async () => {
 
     loading.value = true;
     try {
-        await menuItemsApi.create(form.value.menu_type_id, {
-            parent_id: form.value.parent_id,
-            title: form.value.title,
-            alias: form.value.alias,
-            link_type: form.value.link_type,
-            link_value: form.value.link_value,
-            target: form.value.target,
-            status: form.value.status,
-            access: form.value.access,
-            language: 'all',
-        });
+        await menuItemsApi.create(form.value.menu_type_id, prepareSubmitData());
         showNotification('Пункт меню сохранён', 'success');
+
+        // Очищаем форму
         form.value.title = '';
         form.value.alias = '';
         form.value.link_value = '';
+        form.value.link_value_display = '';
         form.value.parent_id = null;
+        form.value.after_id = null;
+        positionType.value = 'first';
+
+        // Перезагружаем списки
+        await loadParentOptions();
+        await loadOrderOptions();
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
@@ -304,19 +422,7 @@ const saveAndClose = async () => {
 
     loading.value = true;
     try {
-        const submitData = {
-            parent_id: form.value.parent_id,
-            title: form.value.title,
-            alias: form.value.alias,
-            link_type: form.value.link_type,
-            link_value: form.value.link_value,
-            target: form.value.target,
-            status: form.value.status,
-            access: form.value.access,
-            language: 'all',
-        };
-
-        await menuItemsApi.create(form.value.menu_type_id, submitData);
+        await menuItemsApi.create(form.value.menu_type_id, prepareSubmitData());
         router.visit(`/admin/menu/types/${form.value.menu_type_id}/items?message=Пункт+меню+создан`);
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
@@ -332,40 +438,29 @@ const saveAndCreate = async () => {
 
     loading.value = true;
     try {
-        const submitData = {
-            parent_id: form.value.parent_id,
-            title: form.value.title,
-            alias: form.value.alias,
-            link_type: form.value.link_type,
-            link_value: form.value.link_value,
-            target: form.value.target,
-            status: form.value.status,
-            access: form.value.access,
-            language: 'all',
-        };
+        await menuItemsApi.create(form.value.menu_type_id, prepareSubmitData());
 
-        await menuItemsApi.create(form.value.menu_type_id, submitData);
-
+        // Очищаем форму
         form.value.title = '';
         form.value.alias = '';
         form.value.link_value = '';
+        form.value.link_value_display = '';
         form.value.parent_id = null;
+        form.value.after_id = null;
         form.value.link_type = 'url';
         form.value.target = '_self';
         form.value.status = true;
         form.value.access = 'all';
+        positionType.value = 'first';
 
         showNotification('Пункт меню создан. Можете создать следующий', 'success');
         await loadParentOptions();
+        await loadOrderOptions();
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
         loading.value = false;
     }
-};
-
-const openMaterialModal = () => {
-    alert('Выбор материалов будет добавлен позже');
 };
 
 onMounted(() => {

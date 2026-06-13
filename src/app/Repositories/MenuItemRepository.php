@@ -101,6 +101,32 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return $children->toArray();
     }
 
+    public function getMaxOrdering(int $menuTypeId, ?int $parentId): int
+    {
+        $query = MenuItem::where('menu_type_id', $menuTypeId)
+            ->where('parent_id', $parentId);
+
+        $max = $query->max('ordering');
+
+        return $max ?? 0;
+    }
+
+    public function incrementOrdering(int $menuTypeId, ?int $parentId, int $fromOrdering): void
+    {
+        MenuItem::where('menu_type_id', $menuTypeId)
+            ->where('parent_id', $parentId)
+            ->where('ordering', '>=', $fromOrdering)
+            ->increment('ordering');
+    }
+
+    public function decrementOrdering(int $menuTypeId, ?int $parentId, int $fromOrdering): void
+    {
+        MenuItem::where('menu_type_id', $menuTypeId)
+            ->where('parent_id', $parentId)
+            ->where('ordering', '>', $fromOrdering)
+            ->decrement('ordering');
+    }
+
     /**
      * @param  array<int, array<string, mixed>>  $items
      *
