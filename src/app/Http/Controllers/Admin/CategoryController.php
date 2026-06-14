@@ -37,6 +37,7 @@ class CategoryController extends Controller
             'parentOptions' => $parentOptions,
             'filters' => $filters,
             'user' => auth()->user(),
+            'title' => 'Категории',
         ]);
     }
 

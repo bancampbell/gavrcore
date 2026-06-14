@@ -43,6 +43,7 @@ class MenuTypeController extends Controller
                 'total' => $menuTypes->total(),
             ],
             'filters' => $filters,
+            'title' => 'Менеджер меню',
         ]);
     }
 

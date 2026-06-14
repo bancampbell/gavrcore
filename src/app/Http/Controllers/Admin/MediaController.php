@@ -21,6 +21,7 @@ class MediaController extends Controller
     {
         return Inertia::render('Admin/MediaManager/Index', [
             'user' => auth()->user(),
+            'title' => 'Медиа-менеджер',
         ]);
     }
 
@@ -203,9 +204,6 @@ class MediaController extends Controller
         return response()->json(['message' => 'Загружено файлов: '.count($uploaded), 'files' => $uploaded]);
     }
 
-    /**
-     * @return array<int, array<string, string>>
-     */
     private function scanFoldersRecursive(string $path, string $relativePath = ''): array
     {
         $folders = [];

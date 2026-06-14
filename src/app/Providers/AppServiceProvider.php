@@ -26,6 +26,7 @@ use App\Repositories\MenuItemRepository;
 use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
+use App\Services\SettingService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -65,6 +66,14 @@ class AppServiceProvider extends ServiceProvider
                 try {
                     $menuService = app(MenuService::class);
                     return $menuService->getMenuTree('main-menu');
+                } catch (\Exception $e) {
+                    return [];
+                }
+            },
+            'appSettings' => function () {
+                try {
+                    $settingService = app(SettingService::class);
+                    return $settingService->getAllSettings();
                 } catch (\Exception $e) {
                     return [];
                 }

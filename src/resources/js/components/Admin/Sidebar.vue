@@ -23,9 +23,9 @@
                     </SidebarLink>
 
                     <SidebarLink
-                        href="/admin/menu/types/1/items"
+                        href="/admin/menu/items/all"
                         icon="list"
-                        :active="currentUrl.includes('/admin/menu/types/') && currentUrl.includes('/items')"
+                        :active="currentUrl === '/admin/menu/items/all'"
                     >
                         Все меню
                     </SidebarLink>
@@ -109,7 +109,7 @@
 
                     <div class="px-3">
                         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">НАСТРОЙКИ</div>
-                        <SidebarLink href="#" icon="settings">Общие настройки</SidebarLink>
+                        <SidebarLink href="/admin/settings" icon="settings">Общие настройки</SidebarLink>
                         <SidebarLink href="/admin/materials/trash" icon="trash">Корзина</SidebarLink>
                     </div>
                 </nav>

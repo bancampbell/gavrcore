@@ -1,5 +1,9 @@
 <template>
     <AppLayout>
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
+
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-2">
@@ -28,9 +32,11 @@
 
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
+import { Head } from '@inertiajs/vue3';
 
 defineProps({
     material: Object,
+    title: String,
 });
 
 const formatDate = (date) => {

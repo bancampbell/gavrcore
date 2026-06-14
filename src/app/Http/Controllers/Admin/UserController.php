@@ -37,6 +37,7 @@ class UserController extends Controller
             'groups' => Group::all(),
             'filters' => $filters,
             'user' => auth()->user(),
+            'title' => 'Пользователи',
         ]);
     }
 
@@ -47,6 +48,7 @@ class UserController extends Controller
         return Inertia::render('Admin/Users/Create', [
             'groups' => Group::all(),
             'user' => auth()->user(),
+            'title' => 'Создать пользователя',
         ]);
     }
 
@@ -69,6 +71,7 @@ class UserController extends Controller
             'editUser' => $user,
             'groups' => Group::all(),
             'user' => auth()->user(),
+            'title' => 'Редактировать пользователя',
         ]);
     }
 

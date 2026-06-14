@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\MaterialService;
 use App\Services\CategoryService;
 use App\Services\MenuService;
+use App\Services\SettingService;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,9 +28,13 @@ class MaterialController extends Controller
             ->with(['category', 'user'])
             ->first();
 
+        $settingService = app(SettingService::class);
+        $siteName = $settingService->getAllSettings()['site_name'] ?? 'GavrCore CMS';
+
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'title' => $siteName,
         ]);
     }
 
@@ -45,6 +50,7 @@ class MaterialController extends Controller
         return Inertia::render('Material/Show', [
             'material' => $material,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'title' => $material->title,
         ]);
     }
 
@@ -69,6 +75,7 @@ class MaterialController extends Controller
             'categories' => $categories,
             'filters' => $filters,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'title' => $category->name,
         ]);
     }
 
@@ -84,11 +91,14 @@ class MaterialController extends Controller
         $materials = $this->materialService->getPaginated($filters);
         $categories = $this->categoryService->getAllForSelect();
 
+        $title = $search ? "Поиск: $search" : 'Поиск';
+
         return Inertia::render('Search/Index', [
             'materials' => $materials,
             'categories' => $categories,
             'search' => $search,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'title' => $title,
         ]);
     }
 }

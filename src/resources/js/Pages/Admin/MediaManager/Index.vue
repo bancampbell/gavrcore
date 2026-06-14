@@ -1,5 +1,8 @@
 <!-- resources/js/Pages/Admin/MediaManager/Index.vue -->
 <template>
+    <Head>
+        <title>{{ title }}</title>
+    </Head>
     <div v-if="mode === 'picker'" class="media-manager-picker-wrapper">
         <div class="media-manager-container picker-mode">
             <MediaHeader
@@ -196,6 +199,7 @@
 
 <script setup lang="ts">
 import { onMounted, watch, ref, nextTick } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import EmptyLayout from '../../../layouts/EmptyLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import FolderTree from './components/FolderTree.vue';
@@ -212,6 +216,7 @@ import type { MediaItem } from './composables/useSelection';
 
 const props = defineProps<{
     user: User;
+    title?: string;
     mode?: 'full' | 'picker';
     selectedUrl?: string;
     acceptedFiles?: string[];

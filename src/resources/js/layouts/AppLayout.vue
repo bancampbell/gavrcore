@@ -7,7 +7,7 @@
                     <Link href="/" class="group">
                         <h1 class="text-2xl font-black tracking-tight">
                             <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105 inline-block">
-                                GavrCore CMS
+                                {{ appSettings.site_name || 'GavrCore CMS' }}
                             </span>
                         </h1>
                     </Link>
@@ -71,7 +71,7 @@
 
         <footer class="bg-white border-t border-gray-200 mt-auto">
             <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
-                <p class="text-gray-500 text-sm">&copy; {{ new Date().getFullYear() }} GavrCore CMS. Все права защищены.</p>
+                <p class="text-gray-500 text-sm">&copy; {{ new Date().getFullYear() }} {{ appSettings.site_name || 'GavrCore CMS' }}. Все права защищены.</p>
             </div>
         </footer>
     </div>
@@ -84,6 +84,7 @@ import MenuItem from '@/components/shared/MenuItem.vue';
 
 const page = usePage();
 const mainMenu = page.props.mainMenu || [];
+const appSettings = page.props.appSettings || {};
 
 const mobileMenuOpen = ref(false);
 

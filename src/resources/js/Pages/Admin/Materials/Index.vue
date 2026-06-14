@@ -1,5 +1,8 @@
 <template>
     <AdminLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white rounded-lg shadow">
             <!-- Фиксированная панель с кнопками -->
             <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
@@ -90,7 +93,7 @@
                                 {{ material.title }}
                             </Link>
                             <div class="text-sm text-gray-500 mt-1">ID: {{ material.id }}</div>
-                            <div class="text-xs text-gray-400">Алиас: {{ material.alias }}</div>
+                            <div class="text-xs text-gray-400">Слаг: {{ material.slug || '—' }}</div>
                             <div class="text-xs text-[#3071a9]">Категория: {{ material.category?.name || 'Без категории' }}</div>
                             <div class="flex flex-wrap gap-4 mt-2 text-xs">
                                 <span class="text-gray-500">Автор: {{ material.user?.name || '—' }}</span>
@@ -144,7 +147,7 @@
                             <Link :href="`/admin/materials/${material.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
                                 {{ material.title }}
                             </Link>
-                            <div class="text-xs text-gray-400 mt-0.5">Алиас: {{ material.alias }}</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Слаг: {{ material.slug || '—' }}</div>
                             <div class="text-xs text-[#3071a9] mt-0.5">Категория: {{ material.category?.name || 'Без категории' }}</div>
                         </div>
                     </div>
@@ -217,6 +220,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { Link, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
@@ -225,6 +229,7 @@ import type { User, Category, MaterialsData, MaterialFilters } from '../../../ty
 
 const props = defineProps<{
     user: User;
+    title?: string;
     materials: MaterialsData;
     categories: Category[];
     authors: User[];

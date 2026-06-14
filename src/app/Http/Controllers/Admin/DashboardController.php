@@ -26,6 +26,7 @@ class DashboardController extends Controller
                 'users' => $totalUsers,
                 'views' => $totalViews,
             ],
+            'title' => 'Панель управления',
         ]);
     }
 }

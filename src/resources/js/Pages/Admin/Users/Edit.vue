@@ -1,5 +1,8 @@
 <template>
     <EmptyLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white border-b border-gray-200">
             <div class="px-6 py-4">
                 <h1 class="text-xl font-semibold text-gray-800">Менеджер пользователей: Редактировать пользователя</h1>
@@ -118,6 +121,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { Link, router } from '@inertiajs/vue3';
 import EmptyLayout from '@/layouts/EmptyLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
@@ -125,6 +129,7 @@ import { usersApi } from '@/api/users';
 
 const props = defineProps<{
     user: any;
+    title?: string;
     editUser: any;
     groups: any[];
 }>();

@@ -1,5 +1,8 @@
 <template>
     <EmptyLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white border-b border-gray-200">
             <div class="px-6 py-4">
                 <h1 class="text-xl font-semibold text-gray-800">Менеджер материалов: Создать материал</h1>
@@ -27,16 +30,17 @@
                         <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Заголовок *</label>
                         <input
                             v-model="form.title"
-                            @input="updateAlias"
+                            @input="updateSlug"
                             type="text"
                             class="w-96 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                             placeholder="Введите заголовок..."
                         />
                     </div>
                     <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Алиас</label>
+                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Слаг (ЧПУ)</label>
                         <input
-                            v-model="form.alias"
+                            v-model="form.slug"
+                            @input="onSlugInput"
                             type="text"
                             class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                             placeholder="останется пустым - сгенерируется автоматически"
@@ -142,6 +146,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import EmptyLayout from '../../../layouts/EmptyLayout.vue';
@@ -153,6 +158,7 @@ import MediaManagerModal from './components/MediaManagerModal.vue';
 
 const props = defineProps<{
     user: User;
+    title?: string;
     categories: Category[];
 }>();
 
@@ -169,13 +175,16 @@ let notificationTimeout: number | null = null;
 
 const form = ref({
     title: '',
-    alias: '',
+    slug: '',
     content: '',
     category_id: props.categories.length > 0 ? props.categories[0].id : null,
     state: 'draft',
     access: 'public',
     featured: '0'
 });
+
+// Флаг для отслеживания, вводил ли пользователь slug вручную
+const isSlugManuallyEdited = ref(false);
 
 const loadMaterials = async () => {
     try {
@@ -263,13 +272,8 @@ const updateLink = (data: { oldText: string; newUrl: string; newText: string; ne
     }
 };
 
-const updateAlias = () => {
-    if (!form.value.title) {
-        form.value.alias = '';
-        return;
-    }
-
-    let alias = form.value.title
+const generateSlug = (text: string): string => {
+    let slug = text
         .toLowerCase()
         .replace(/[^a-zа-яё0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
@@ -282,8 +286,27 @@ const updateAlias = () => {
         'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
     };
 
-    alias = alias.split('').map(char => ruMap[char] || char).join('');
-    form.value.alias = alias;
+    slug = slug.split('').map(char => ruMap[char] || char).join('');
+    return slug;
+};
+
+const updateSlug = () => {
+    // Если пользователь уже редактировал slug вручную, не трогаем его
+    if (isSlugManuallyEdited.value) {
+        return;
+    }
+
+    if (!form.value.title) {
+        form.value.slug = '';
+        return;
+    }
+
+    form.value.slug = generateSlug(form.value.title);
+};
+
+// Следим за ручным вводом slug
+const onSlugInput = () => {
+    isSlugManuallyEdited.value = true;
 };
 
 const save = async () => {
@@ -339,13 +362,15 @@ const saveAndCreate = async () => {
         });
         form.value = {
             title: '',
-            alias: '',
+            slug: '',
             content: '',
             category_id: props.categories.length > 0 ? props.categories[0].id : null,
             state: 'draft',
             access: 'public',
             featured: '0'
         };
+        // Сбрасываем флаг ручного редактирования
+        isSlugManuallyEdited.value = false;
         showNotification('Материал создан. Можете создать следующий', 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');

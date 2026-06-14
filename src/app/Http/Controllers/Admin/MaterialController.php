@@ -40,6 +40,7 @@ class MaterialController extends Controller
             'authors' => User::all(),
             'filters' => $filters,
             'user' => auth()->user(),
+            'title' => 'Менеджер материалов',
         ]);
     }
 
@@ -64,6 +65,7 @@ class MaterialController extends Controller
         return Inertia::render('Admin/Materials/Trash', [
             'materials' => $materials,
             'user' => auth()->user(),
+            'title' => 'Корзина',
         ]);
     }
 
@@ -156,6 +158,7 @@ class MaterialController extends Controller
         return Inertia::render('Admin/Materials/Create', [
             'categories' => Category::all(),
             'user' => auth()->user(),
+            'title' => 'Создать материал',
         ]);
     }
 
@@ -181,6 +184,7 @@ class MaterialController extends Controller
             'material' => $material,
             'categories' => Category::all(),
             'user' => auth()->user(),
+            'title' => 'Редактировать материал',
         ]);
     }
 
@@ -190,12 +194,10 @@ class MaterialController extends Controller
 
         $data = $request->validated();
 
-        // Генерируем slug только если есть title
         if (isset($data['title']) && !empty($data['title'])) {
             $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
         }
 
-        // Если материал помечается как "Показывать на главной", снимаем этот флаг с других материалов
         if (isset($data['show_on_homepage']) && $data['show_on_homepage']) {
             Material::where('id', '!=', $material->id)
                 ->where('show_on_homepage', true)

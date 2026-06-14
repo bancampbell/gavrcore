@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\MenuTypeController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Web\MaterialController as WebMaterialController;
 use App\Models\MenuItem;
@@ -64,20 +65,22 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Create page for menu items
     Route::get('/admin/menu/types/{menuTypeId}/items/create', function ($menuTypeId) {
+        $menuType = MenuType::findOrFail($menuTypeId);
         return Inertia::render('Admin/Menu/Create', [
             'user' => auth()->user(),
             'menuTypeId' => $menuTypeId,
+            'title' => "Создать пункт меню: {$menuType->title}",
         ]);
     })->name('admin.menu.items.create');
 
     // Edit page for menu items
     Route::get('/admin/menu/items/{id}/edit', function ($id) {
         $menuItem = MenuItem::with('menuType')->findOrFail($id);
-
         return Inertia::render('Admin/Menu/Edit', [
             'user' => auth()->user(),
             'menuItem' => $menuItem,
             'menuTypeId' => $menuItem->menu_type_id,
+            'title' => "Редактировать пункт меню: {$menuItem->title}",
         ]);
     })->name('admin.menu.items.edit');
 
@@ -103,7 +106,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('types/ordering/update', [MenuTypeController::class, 'updateOrdering'])->name('types.ordering');
 
         // Menu Items
-        Route::get('items/all', [MenuItemController::class, 'getAllItems'])->name('items.all');
+        Route::get('items/all', [MenuItemController::class, 'getAllItemsPage'])->name('items.all');
+        Route::get('items/all-data', [MenuItemController::class, 'getAllItems'])->name('items.all-data');
         Route::get('types/{menuTypeId}/items/tree', [MenuItemController::class, 'tree'])->name('items.tree');
         Route::post('types/{menuTypeId}/items', [MenuItemController::class, 'store'])->name('items.store');
         Route::get('items/{id}', [MenuItemController::class, 'show'])->name('items.show');
@@ -147,4 +151,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/access-levels/{id}', [AccessLevelController::class, 'destroy'])->name('access-levels.destroy');
         Route::post('/access-levels/ordering', [AccessLevelController::class, 'updateOrdering'])->name('access-levels.ordering');
     });
+
+    // Settings
+    Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
 });

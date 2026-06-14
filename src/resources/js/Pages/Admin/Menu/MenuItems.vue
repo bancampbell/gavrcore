@@ -1,12 +1,16 @@
 <template>
     <AdminLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white rounded-lg shadow">
             <!-- Фиксированная панель с кнопками -->
             <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
                 <div class="flex flex-wrap gap-2">
                     <Link
-                        :href="selectedMenuTypeId ? `/admin/menu/types/${selectedMenuTypeId}/items/create` : '/admin/menu/types/1/items/create'"
-                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition"
+                        :href="selectedMenuTypeId ? `/admin/menu/types/${selectedMenuTypeId}/items/create` : (menuTypes.length > 0 ? `/admin/menu/types/${menuTypes[0].id}/items/create` : '#')"
+                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition disabled:opacity-50"
+                        :class="{ 'opacity-50 pointer-events-none': menuTypes.length === 0 }"
                     >
                         + Создать пункт меню
                     </Link>
@@ -218,7 +222,7 @@
             title="Массовая публикация"
             :message="bulkPublishMessage"
             confirm-text="Опубликовать"
-            type="success"
+            type="warning"
             :loading="loading"
             @close="bulkPublishModalOpen = false"
             @confirm="confirmBulkPublish"
@@ -267,7 +271,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { router, Link } from '@inertiajs/vue3';
+import axios from 'axios';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import ConfirmModal from '@/components/shared/ConfirmModal.vue';
 import Toast from '@/components/shared/Toast.vue';
@@ -279,8 +285,18 @@ interface User {
     email: string;
 }
 
+interface ApiResponse {
+    data: MenuItem[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+}
+
 const props = defineProps<{
     user: User;
+    title?: string;
     menuTypeId?: number;
     menuTypeTitle?: string;
     menuItems?: {
@@ -328,7 +344,7 @@ const filters = ref({
     status: props.filters?.status as boolean | undefined,
 });
 
-const notification = ref({ show: false, message: '', type: 'success' });
+const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 const loading = ref(false);
 const deleteModalOpen = ref(false);
 const deleteLoading = ref(false);
@@ -339,7 +355,6 @@ const bulkDeleteModalOpen = ref(false);
 const bulkDeleteLoading = ref(false);
 const bulkDeleteMessage = ref('');
 
-// Модалки для статуса
 const toggleStatusModalOpen = ref(false);
 const toggleStatusMessage = ref('');
 const toggleStatusData = ref<{ id: number; status: boolean } | null>(null);
@@ -352,7 +367,7 @@ const bulkUnpublishMessage = ref('');
 
 let searchTimeout: any = null;
 
-const showNotification = (message: string, type: string = 'success') => {
+const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     notification.value = { show: true, message, type };
     setTimeout(() => {
         notification.value.show = false;
@@ -409,19 +424,18 @@ const loadAllItems = async () => {
         if (filters.value.search) params.search = filters.value.search;
         if (filters.value.status !== undefined) params.status = filters.value.status;
 
-        const response = await menuItemsApi.getAllItems(params);
+        const response = await axios.get<ApiResponse>('/admin/menu/items/all-data', { params });
+        const data = response.data;
 
-        const items = response.data.data || [];
-        const paginationData = {
-            current_page: response.data.current_page || 1,
-            last_page: response.data.last_page || 1,
-            from: response.data.from || 0,
-            to: response.data.to || 0,
-            total: response.data.total || 0
+        pagination.value = {
+            current_page: data.current_page,
+            last_page: data.last_page,
+            from: data.from || 0,
+            to: data.to || 0,
+            total: data.total
         };
 
-        // Плоский список всех пунктов
-        const allItems = items.map((item: MenuItem) => {
+        flatItems.value = data.data.map((item: MenuItem) => {
             const menuType = menuTypes.value.find(t => t.id === item.menu_type_id);
             return {
                 ...item,
@@ -429,9 +443,6 @@ const loadAllItems = async () => {
                 menu_type: { title: menuType?.title || '—' }
             };
         });
-
-        flatItems.value = allItems;
-        pagination.value = paginationData;
     } catch (error) {
         console.error('Error loading all items:', error);
         flatItems.value = [];
@@ -441,26 +452,51 @@ const loadAllItems = async () => {
 
 const loadMenuItemsForType = async () => {
     if (!selectedMenuTypeId.value) return;
-    const response = await menuItemsApi.getTree(selectedMenuTypeId.value);
-    let items = flattenTree(response.data);
 
-    if (filters.value.status !== undefined) {
-        items = items.filter(item => item.status === filters.value.status);
+    try {
+        const params: any = {
+            page: pagination.value.current_page,
+            per_page: 20
+        };
+        if (filters.value.search) params.search = filters.value.search;
+        if (filters.value.status !== undefined) params.status = filters.value.status;
+
+        const response = await menuItemsApi.getAll(selectedMenuTypeId.value, params);
+        const data = response.data;
+
+        pagination.value = {
+            current_page: (data as any).current_page || 1,
+            last_page: (data as any).last_page || 1,
+            from: (data as any).from || 0,
+            to: (data as any).to || 0,
+            total: (data as any).total || 0
+        };
+
+        const items = (data as any).data || [];
+
+        const buildTree = (items: MenuItem[], parentId: number | null = null, level = 0): (MenuItem & { level: number })[] => {
+            const result: (MenuItem & { level: number })[] = [];
+            const children = items.filter(item => item.parent_id === parentId);
+
+            for (const child of children) {
+                result.push({ ...child, level });
+                const grandchildren = buildTree(items, child.id, level + 1);
+                result.push(...grandchildren);
+            }
+            return result;
+        };
+
+        const treeItems = buildTree(items);
+        const currentMenuType = menuTypes.value.find(t => t.id === selectedMenuTypeId.value);
+
+        flatItems.value = treeItems.map(item => ({
+            ...item,
+            menu_type: { title: currentMenuType?.title || '' }
+        }));
+    } catch (error) {
+        console.error('Error loading menu items for type:', error);
+        flatItems.value = [];
     }
-
-    flatItems.value = items;
-    const currentMenuType = menuTypes.value.find(t => t.id === selectedMenuTypeId.value);
-    flatItems.value = flatItems.value.map(item => ({
-        ...item,
-        menu_type: { title: currentMenuType?.title || '' }
-    }));
-    pagination.value = {
-        current_page: 1,
-        last_page: 1,
-        from: 1,
-        to: flatItems.value.length,
-        total: flatItems.value.length
-    };
 };
 
 const loadMenuTypes = async () => {
@@ -481,6 +517,7 @@ const applyFilters = () => {
         pagination.value.current_page = 1;
         loadAllItems();
     } else {
+        pagination.value.current_page = 1;
         loadMenuItemsForType();
     }
 };
@@ -501,6 +538,9 @@ const prevPage = () => {
     if (selectedMenuTypeId.value === null && pagination.value.current_page > 1) {
         pagination.value.current_page--;
         loadAllItems();
+    } else if (selectedMenuTypeId.value !== null && pagination.value.current_page > 1) {
+        pagination.value.current_page--;
+        loadMenuItemsForType();
     }
 };
 
@@ -508,6 +548,9 @@ const nextPage = () => {
     if (selectedMenuTypeId.value === null && pagination.value.current_page < pagination.value.last_page) {
         pagination.value.current_page++;
         loadAllItems();
+    } else if (selectedMenuTypeId.value !== null && pagination.value.current_page < pagination.value.last_page) {
+        pagination.value.current_page++;
+        loadMenuItemsForType();
     }
 };
 
@@ -515,7 +558,7 @@ const changeMenuType = () => {
     if (selectedMenuTypeId.value) {
         router.visit(`/admin/menu/types/${selectedMenuTypeId.value}/items`);
     } else {
-        router.visit('/admin/menu/types/1/items?all=1');
+        router.visit('/admin/menu/items/all');
     }
 };
 
@@ -537,7 +580,6 @@ const updateLocalStatus = (ids: number[], status: boolean) => {
     });
 };
 
-// Одиночное изменение статуса с модалкой
 const openToggleStatusModal = (id: number, status: boolean, title?: string) => {
     toggleStatusData.value = { id, status };
     toggleStatusMessage.value = `Вы уверены, что хотите ${status ? 'опубликовать' : 'снять с публикации'} пункт "${title || 'меню'}"?`;
@@ -550,7 +592,7 @@ const confirmToggleStatus = async () => {
     try {
         await menuItemsApi.updateStatus(toggleStatusData.value.id, toggleStatusData.value.status);
         updateLocalStatus([toggleStatusData.value.id], toggleStatusData.value.status);
-        showNotification(`Пункт меню ${toggleStatusData.value.status ? 'опубликован' : 'скрыт'}`);
+        showNotification(`Пункт меню ${toggleStatusData.value.status ? 'опубликован' : 'скрыт'}`, 'success');
         toggleStatusModalOpen.value = false;
         toggleStatusData.value = null;
     } catch (error: any) {
@@ -560,7 +602,6 @@ const confirmToggleStatus = async () => {
     }
 };
 
-// Массовая публикация
 const openBulkPublishModal = () => {
     if (selectedItems.value.length === 0) return;
 
@@ -582,7 +623,7 @@ const confirmBulkPublish = async () => {
             await menuItemsApi.updateStatus(id, true);
         }
         updateLocalStatus(selectedItems.value, true);
-        showNotification(`${selectedItems.value.length} пункт(ов) меню опубликовано`);
+        showNotification(`${selectedItems.value.length} пункт(ов) меню опубликовано`, 'success');
         selectedItems.value = [];
         bulkPublishModalOpen.value = false;
     } catch (error: any) {
@@ -592,7 +633,6 @@ const confirmBulkPublish = async () => {
     }
 };
 
-// Массовое снятие с публикации
 const openBulkUnpublishModal = () => {
     if (selectedItems.value.length === 0) return;
 
@@ -614,7 +654,7 @@ const confirmBulkUnpublish = async () => {
             await menuItemsApi.updateStatus(id, false);
         }
         updateLocalStatus(selectedItems.value, false);
-        showNotification(`${selectedItems.value.length} пункт(ов) меню снято с публикации`);
+        showNotification(`${selectedItems.value.length} пункт(ов) меню снято с публикации`, 'success');
         selectedItems.value = [];
         bulkUnpublishModalOpen.value = false;
     } catch (error: any) {
@@ -624,7 +664,6 @@ const confirmBulkUnpublish = async () => {
     }
 };
 
-// Удаление
 const openDeleteModal = (item: MenuItem) => {
     itemToDelete.value = item;
     deleteMessage.value = `Вы уверены, что хотите удалить пункт "${item.title}"? Все дочерние пункты также будут удалены.`;
@@ -636,7 +675,7 @@ const confirmDeleteHandler = async () => {
     deleteLoading.value = true;
     try {
         await menuItemsApi.delete(itemToDelete.value.id);
-        showNotification('Пункт меню удален');
+        showNotification('Пункт меню удален', 'success');
         deleteModalOpen.value = false;
         await loadData();
     } catch (error: any) {
@@ -668,7 +707,7 @@ const confirmBulkDeleteHandler = async () => {
         for (const id of selectedItems.value) {
             await menuItemsApi.delete(id);
         }
-        showNotification(`${selectedItems.value.length} пункт(ов) меню удалено`);
+        showNotification(`${selectedItems.value.length} пункт(ов) меню удалено`, 'success');
         selectedItems.value = [];
         bulkDeleteModalOpen.value = false;
         await loadData();
@@ -676,15 +715,6 @@ const confirmBulkDeleteHandler = async () => {
         showNotification(error.response?.data?.message || 'Ошибка удаления', 'error');
     } finally {
         bulkDeleteLoading.value = false;
-    }
-};
-
-const toggleSelect = (id: number) => {
-    const index = selectedItems.value.indexOf(id);
-    if (index === -1) {
-        selectedItems.value.push(id);
-    } else {
-        selectedItems.value.splice(index, 1);
     }
 };
 
@@ -700,13 +730,14 @@ onMounted(async () => {
         window.history.replaceState({}, '', url.toString());
     }
 
-    const isAllMode = urlParams.get('all') === '1' || !props.menuTypeId;
+    const isAllMode = window.location.pathname === '/admin/menu/items/all';
 
     if (isAllMode) {
         selectedMenuTypeId.value = null;
         await loadAllItems();
     } else if (props.menuTypeId && menuTypes.value.length > 0) {
         selectedMenuTypeId.value = props.menuTypeId;
+        pagination.value.current_page = 1;
         await loadMenuItemsForType();
     } else {
         selectedMenuTypeId.value = null;

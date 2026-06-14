@@ -27,6 +27,7 @@ class AccessLevelController extends Controller
             'accessLevels' => $accessLevels,
             'groups' => Group::orderBy('name')->get(),
             'user' => auth()->user(),
+            'title' => 'Уровни доступа',
         ]);
     }
 
@@ -37,6 +38,7 @@ class AccessLevelController extends Controller
         return Inertia::render('Admin/AccessLevels/Create', [
             'groups' => Group::orderBy('name')->get(),
             'user' => auth()->user(),
+            'title' => 'Создать уровень доступа',
         ]);
     }
 
@@ -80,6 +82,7 @@ class AccessLevelController extends Controller
             'editAccessLevel' => $accessLevel,
             'groups' => Group::orderBy('name')->get(),
             'user' => auth()->user(),
+            'title' => 'Редактировать уровень доступа',
         ]);
     }
 

@@ -1,5 +1,8 @@
 <template>
     <AdminLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white rounded-lg shadow">
             <!-- Фиксированная панель с кнопками -->
             <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
@@ -206,6 +209,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import ConfirmModal from '@/components/shared/ConfirmModal.vue';
@@ -246,6 +250,7 @@ interface Filters {
 
 const props = defineProps<{
     user: any;
+    title?: string;
     users: UsersData;
     groups: Group[];
     filters?: Filters;

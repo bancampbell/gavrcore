@@ -1,5 +1,9 @@
 <template>
     <AppLayout>
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
+
         <div class="space-y-6">
             <!-- Hero -->
             <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow p-8 text-white">
@@ -46,10 +50,11 @@
 
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue';
-import {Link} from '@inertiajs/vue3';
+import { Link, Head } from '@inertiajs/vue3';
 
 defineProps({
     homepageMaterial: Object,
+    title: String,
 });
 
 const formatDate = (date) => {

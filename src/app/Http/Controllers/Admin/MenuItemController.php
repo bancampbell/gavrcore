@@ -49,6 +49,7 @@ class MenuItemController extends Controller
                 'total' => $menuItems->total(),
             ],
             'filters' => $filters,
+            'title' => "Пункты меню: {$menuType->title}",
         ]);
     }
 
@@ -85,6 +86,41 @@ class MenuItemController extends Controller
         $menuItem = $this->service->update($id, $request->validated());
 
         return new MenuItemResource($menuItem);
+    }
+
+    public function getAllItemsPage(Request $request): Response
+    {
+        $filters = $request->only(['search', 'status']);
+        $perPage = $request->get('per_page', 20);
+        $page = $request->get('page', 1);
+
+        $query = MenuItem::with('menuType')->orderBy('created_at', 'desc');
+
+        if (! empty($filters['search'])) {
+            $query->where('title', 'like', '%'.$filters['search'].'%');
+        }
+
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        $menuItems = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return Inertia::render('Admin/Menu/MenuItems', [
+            'user' => auth()->user(),
+            'menuTypeId' => null,
+            'menuTypeTitle' => 'Все пункты',
+            'menuItems' => [
+                'data' => $menuItems->items(),
+                'current_page' => $menuItems->currentPage(),
+                'last_page' => $menuItems->lastPage(),
+                'from' => $menuItems->firstItem(),
+                'to' => $menuItems->lastItem(),
+                'total' => $menuItems->total(),
+            ],
+            'filters' => $filters,
+            'title' => 'Все пункты меню',
+        ]);
     }
 
     public function getAllItems(Request $request): JsonResponse

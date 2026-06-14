@@ -1,6 +1,9 @@
 <!--esources/js/Pages/Admin/Menu/Index.vue -->
 <template>
     <AdminLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white rounded-lg shadow">
             <!-- Фиксированная панель с кнопками -->
             <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
@@ -219,6 +222,7 @@
 
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head } from '@inertiajs/vue3';
 import ConfirmModal from '@/components/shared/ConfirmModal.vue';
 import Toast from '@/components/shared/Toast.vue';
 import { useMenuTypes } from '@/composables/useMenuTypes';
@@ -258,6 +262,7 @@ interface Filters {
 
 const props = defineProps<{
     user: User;
+    title?: string;
     menuTypes: MenuTypesData;
     filters?: Filters;
 }>();

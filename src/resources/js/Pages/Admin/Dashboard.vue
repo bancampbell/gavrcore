@@ -1,5 +1,8 @@
 <template>
     <AdminLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white rounded-lg shadow p-6">
             <h1 class="text-2xl font-bold text-gray-900">Добро пожаловать, {{ user.name }}!</h1>
             <p class="text-gray-600 mt-2">Это панель управления GavrCore CMS.</p>
@@ -28,9 +31,11 @@
 
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head } from '@inertiajs/vue3';
 
 defineProps({
     user: Object,
     stats: Object,
+    title: String,
 });
 </script>

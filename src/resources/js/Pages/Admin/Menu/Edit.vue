@@ -1,5 +1,8 @@
 <template>
     <EmptyLayout :user="user">
+        <Head>
+            <title>{{ title }}</title>
+        </Head>
         <div class="bg-white border-b border-gray-200">
             <div class="px-6 py-4">
                 <h1 class="text-xl font-semibold text-gray-800">Менеджер меню: Редактировать пункт меню</h1>
@@ -208,6 +211,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
+import { Head } from '@inertiajs/vue3';
 import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import EmptyLayout from '@/layouts/EmptyLayout.vue';
@@ -217,6 +221,7 @@ import { menuTypesApi, menuItemsApi, type MenuType, type MenuItem } from '@/api/
 
 const props = defineProps<{
     user: any;
+    title?: string;
     menuItem: MenuItem;
     menuTypeId: number;
 }>();

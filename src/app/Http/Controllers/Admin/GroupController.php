@@ -41,6 +41,7 @@ class GroupController extends Controller
             'groups' => $groups,
             'filters' => $filters,
             'user' => auth()->user(),
+            'title' => 'Группы пользователей',
         ]);
     }
 
@@ -53,6 +54,7 @@ class GroupController extends Controller
         return Inertia::render('Admin/Groups/Create', [
             'permissions' => $permissions,
             'user' => auth()->user(),
+            'title' => 'Создать группу',
         ]);
     }
 
@@ -83,6 +85,7 @@ class GroupController extends Controller
             'permissions' => $permissions,
             'groupPermissions' => $groupPermissions,
             'user' => auth()->user(),
+            'title' => 'Редактировать группу',
         ]);
     }
 
