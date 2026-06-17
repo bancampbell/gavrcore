@@ -75,41 +75,64 @@
                 <div class="space-y-4">
                     <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Группы</h3>
-                        <div class="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto">
-                            <label v-for="group in groups" :key="group.id" class="flex items-center gap-2 mb-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    :value="group.id"
-                                    v-model="form.groups"
-                                    class="rounded border-gray-300"
-                                />
+                        <div class="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-3">
+                            <div v-for="group in groups" :key="group.id" class="flex items-center justify-between">
                                 <span class="text-sm text-gray-700">{{ group.name }}</span>
-                            </label>
+                                <button
+                                    @click="toggleGroup(group.id)"
+                                    type="button"
+                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                    :class="isGroupSelected(group.id) ? 'bg-indigo-600' : 'bg-gray-300'"
+                                >
+                                    <span
+                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                        :class="isGroupSelected(group.id) ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                    />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Статус</h3>
-                        <select
-                            v-model="form.blocked"
-                            class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
-                            :class="form.blocked ? 'bg-red-600 text-white border-red-700' : 'bg-green-600 text-white border-green-700'"
-                        >
-                            <option :value="false" class="bg-white text-gray-800">Активен</option>
-                            <option :value="true" class="bg-white text-gray-800">Заблокирован</option>
-                        </select>
+                        <div class="flex items-center gap-3">
+                            <label class="text-sm text-gray-600">Заблокирован</label>
+                            <button
+                                @click="form.blocked = !form.blocked"
+                                type="button"
+                                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+                                :class="form.blocked ? 'bg-red-600' : 'bg-green-600'"
+                            >
+                                <span
+                                    class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
+                                    :class="form.blocked ? 'translate-x-6' : 'translate-x-1'"
+                                />
+                            </button>
+                            <span class="text-sm font-medium" :class="form.blocked ? 'text-red-600' : 'text-green-600'">
+                                {{ form.blocked ? 'Заблокирован' : 'Активен' }}
+                            </span>
+                        </div>
                     </div>
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Активация</h3>
-                        <select
-                            v-model="form.activated"
-                            class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
-                            :class="form.activated ? 'bg-green-600 text-white border-green-700' : 'bg-gray-500 text-white border-gray-600'"
-                        >
-                            <option :value="true" class="bg-white text-gray-800">Активирован</option>
-                            <option :value="false" class="bg-white text-gray-800">Не активирован</option>
-                        </select>
+                        <div class="flex items-center gap-3">
+                            <label class="text-sm text-gray-600">Активирован</label>
+                            <button
+                                @click="form.activated = !form.activated"
+                                type="button"
+                                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+                                :class="form.activated ? 'bg-green-600' : 'bg-gray-400'"
+                            >
+                                <span
+                                    class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
+                                    :class="form.activated ? 'translate-x-6' : 'translate-x-1'"
+                                />
+                            </button>
+                            <span class="text-sm font-medium" :class="form.activated ? 'text-green-600' : 'text-gray-500'">
+                                {{ form.activated ? 'Активирован' : 'Не активирован' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,6 +177,19 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     notificationTimeout = window.setTimeout(() => {
         notification.value.show = false;
     }, 5000);
+};
+
+const isGroupSelected = (groupId: number) => {
+    return form.value.groups.includes(groupId);
+};
+
+const toggleGroup = (groupId: number) => {
+    const index = form.value.groups.indexOf(groupId);
+    if (index === -1) {
+        form.value.groups.push(groupId);
+    } else {
+        form.value.groups.splice(index, 1);
+    }
 };
 
 const save = async () => {

@@ -91,12 +91,64 @@
                                     </select>
                                 </div>
                                 <div class="flex items-center gap-3">
+                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать дату</label>
+                                    <button
+                                        @click="settings.show_date = !settings.show_date"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.show_date ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.show_date ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Показывать дату</span>
+                                </div>
+                                <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать автора</label>
-                                    <input type="checkbox" v-model="settings.show_author" class="w-4 h-4 rounded border-gray-300" />
+                                    <button
+                                        @click="settings.show_author = !settings.show_author"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.show_author ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.show_author ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Показывать автора</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать категорию</label>
+                                    <button
+                                        @click="settings.show_category = !settings.show_category"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.show_category ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.show_category ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Показывать категорию</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать просмотры</label>
-                                    <input type="checkbox" v-model="settings.show_views" class="w-4 h-4 rounded border-gray-300" />
+                                    <button
+                                        @click="settings.show_views = !settings.show_views"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.show_views ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.show_views ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Показывать просмотры</span>
                                 </div>
                             </div>
                         </div>
@@ -143,11 +195,33 @@
                             <div class="space-y-4">
                                 <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Режим отладки</label>
-                                    <input type="checkbox" v-model="settings.debug_mode" class="w-4 h-4 rounded border-gray-300" />
+                                    <button
+                                        @click="settings.debug_mode = !settings.debug_mode"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.debug_mode ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.debug_mode ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Режим отладки</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Сайт на обслуживании</label>
-                                    <input type="checkbox" v-model="settings.maintenance_mode" class="w-4 h-4 rounded border-gray-300" />
+                                    <button
+                                        @click="settings.maintenance_mode = !settings.maintenance_mode"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.maintenance_mode ? 'bg-amber-500' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.maintenance_mode ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Сайт на обслуживании</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Часовой пояс</label>
@@ -202,7 +276,18 @@
                             <div class="space-y-4">
                                 <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Кэшировать страницы</label>
-                                    <input type="checkbox" v-model="settings.cache_enabled" class="w-4 h-4 rounded border-gray-300" />
+                                    <button
+                                        @click="settings.cache_enabled = !settings.cache_enabled"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="settings.cache_enabled ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="settings.cache_enabled ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        />
+                                    </button>
+                                    <span class="text-sm text-gray-700">Кэшировать страницы</span>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Время кэша (минуты)</label>
@@ -243,7 +328,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
@@ -261,25 +346,27 @@ const notification = ref({ show: false, message: '', type: 'success' as 'success
 let notificationTimeout: number | null = null;
 
 const settings = ref({
-    site_name: props.settings.site_name || 'GavrCore CMS',
-    site_description: props.settings.site_description || '',
-    admin_email: props.settings.admin_email || '',
-    seo_keywords: props.settings.seo_keywords || '',
-    materials_per_page: props.settings.materials_per_page || 10,
-    date_format: props.settings.date_format || 'd.m.Y',
-    show_author: props.settings.show_author || false,
-    show_views: props.settings.show_views || false,
-    max_file_size: props.settings.max_file_size || 5,
-    allowed_formats: props.settings.allowed_formats || 'jpg,jpeg,png,gif,webp',
-    image_quality: props.settings.image_quality || 80,
-    debug_mode: props.settings.debug_mode || false,
-    maintenance_mode: props.settings.maintenance_mode || false,
-    timezone: props.settings.timezone || 'UTC',
-    robots: props.settings.robots || 'index,follow',
-    google_analytics_id: props.settings.google_analytics_id || '',
-    yandex_metrika_id: props.settings.yandex_metrika_id || '',
-    cache_enabled: props.settings.cache_enabled || false,
-    cache_ttl: props.settings.cache_ttl || 60,
+    site_name: props.settings.site_name ?? 'GavrCore CMS',
+    site_description: props.settings.site_description ?? '',
+    admin_email: props.settings.admin_email ?? '',
+    seo_keywords: props.settings.seo_keywords ?? '',
+    materials_per_page: props.settings.materials_per_page ?? 10,
+    date_format: props.settings.date_format ?? 'd.m.Y',
+    show_date: props.settings.show_date === undefined || props.settings.show_date === null ? true : !!props.settings.show_date,
+    show_author: props.settings.show_author === undefined || props.settings.show_author === null ? true : !!props.settings.show_author,
+    show_category: props.settings.show_category === undefined || props.settings.show_category === null ? true : !!props.settings.show_category,
+    show_views: props.settings.show_views === undefined || props.settings.show_views === null ? true : !!props.settings.show_views,
+    max_file_size: props.settings.max_file_size ?? 5,
+    allowed_formats: props.settings.allowed_formats ?? 'jpg,jpeg,png,gif,webp',
+    image_quality: props.settings.image_quality ?? 80,
+    debug_mode: props.settings.debug_mode === undefined || props.settings.debug_mode === null ? false : !!props.settings.debug_mode,
+    maintenance_mode: props.settings.maintenance_mode === undefined || props.settings.maintenance_mode === null ? false : !!props.settings.maintenance_mode,
+    timezone: props.settings.timezone ?? 'UTC',
+    robots: props.settings.robots ?? 'index,follow',
+    google_analytics_id: props.settings.google_analytics_id ?? '',
+    yandex_metrika_id: props.settings.yandex_metrika_id ?? '',
+    cache_enabled: props.settings.cache_enabled === undefined || props.settings.cache_enabled === null ? false : !!props.settings.cache_enabled,
+    cache_ttl: props.settings.cache_ttl ?? 60,
 });
 
 const showNotification = (message: string, type: 'success' | 'error' = 'success') => {

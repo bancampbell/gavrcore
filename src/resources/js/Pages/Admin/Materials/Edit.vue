@@ -97,10 +97,20 @@
 
                     <div>
                         <h3 class="text-sm font-medium text-gray-800 mb-2">Показывать на главной</h3>
-                        <select v-model="form.show_on_homepage" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
-                            <option value="0">Нет</option>
-                            <option value="1">Да</option>
-                        </select>
+                        <div class="flex items-center gap-3">
+                            <button
+                                @click="form.show_on_homepage = form.show_on_homepage === '1' ? '0' : '1'"
+                                type="button"
+                                class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                :class="form.show_on_homepage === '1' ? 'bg-indigo-600' : 'bg-gray-300'"
+                            >
+                                <span
+                                    class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                    :class="form.show_on_homepage === '1' ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                />
+                            </button>
+                            <span class="text-sm text-gray-700">{{ form.show_on_homepage === '1' ? 'Да' : 'Нет' }}</span>
+                        </div>
                         <p class="text-xs text-gray-400 mt-1">Только один материал может быть отмечен. При выборе "Да" у других материалов этот параметр снимется.</p>
                     </div>
 
@@ -111,6 +121,91 @@
                             <option value="registered">Registered</option>
                             <option value="special">Special</option>
                         </select>
+                    </div>
+
+                    <!-- Отображение элементов -->
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-800 mb-2">Отображение</h3>
+                        <div class="space-y-2 border border-gray-300 rounded-lg p-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Использовать глобальные настройки</span>
+                                <button
+                                    @click="form.use_global_settings = !form.use_global_settings"
+                                    type="button"
+                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                    :class="form.use_global_settings ? 'bg-indigo-600' : 'bg-gray-300'"
+                                >
+                                    <span
+                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                        :class="form.use_global_settings ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                    />
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                <span class="text-sm text-gray-700">Дата создания</span>
+                                <button
+                                    @click="form.show_date = !form.show_date"
+                                    :disabled="form.use_global_settings"
+                                    type="button"
+                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                    :class="form.show_date ? 'bg-indigo-600' : 'bg-gray-300'"
+                                >
+                                    <span
+                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                        :class="form.show_date ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                    />
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                <span class="text-sm text-gray-700">Автор</span>
+                                <button
+                                    @click="form.show_author = !form.show_author"
+                                    :disabled="form.use_global_settings"
+                                    type="button"
+                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                    :class="form.show_author ? 'bg-indigo-600' : 'bg-gray-300'"
+                                >
+                                    <span
+                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                        :class="form.show_author ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                    />
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                <span class="text-sm text-gray-700">Категория</span>
+                                <button
+                                    @click="form.show_category = !form.show_category"
+                                    :disabled="form.use_global_settings"
+                                    type="button"
+                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                    :class="form.show_category ? 'bg-indigo-600' : 'bg-gray-300'"
+                                >
+                                    <span
+                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                        :class="form.show_category ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                    />
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                <span class="text-sm text-gray-700">Просмотры</span>
+                                <button
+                                    @click="form.show_views = !form.show_views"
+                                    :disabled="form.use_global_settings"
+                                    type="button"
+                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                    :class="form.show_views ? 'bg-indigo-600' : 'bg-gray-300'"
+                                >
+                                    <span
+                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                        :class="form.show_views ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">
+                            <span v-if="form.use_global_settings">Используются глобальные настройки</span>
+                            <span v-else>Индивидуальные настройки для этого материала</span>
+                        </p>
                     </div>
 
                     <div>
@@ -188,7 +283,12 @@ const form = ref({
     state: props.material.state,
     access: props.material.access,
     featured: props.material.featured ? '1' : '0',
-    show_on_homepage: props.material.show_on_homepage ? '1' : '0'
+    show_on_homepage: props.material.show_on_homepage ? '1' : '0',
+    use_global_settings: props.material.use_global_settings ?? true,
+    show_date: props.material.show_date ?? true,
+    show_author: props.material.show_author ?? true,
+    show_category: props.material.show_category ?? true,
+    show_views: props.material.show_views ?? true,
 });
 
 // Флаг для отслеживания, вводил ли пользователь slug вручную
@@ -299,20 +399,14 @@ const generateSlug = (text: string): string => {
 };
 
 const updateSlug = () => {
-    // Если пользователь уже редактировал slug вручную, не трогаем его
-    if (isSlugManuallyEdited.value) {
-        return;
-    }
-
+    if (isSlugManuallyEdited.value) return;
     if (!form.value.title) {
         form.value.slug = '';
         return;
     }
-
     form.value.slug = generateSlug(form.value.title);
 };
 
-// Следим за ручным вводом slug
 const onSlugInput = () => {
     isSlugManuallyEdited.value = true;
 };
@@ -334,7 +428,12 @@ const save = async () => {
             state: form.value.state,
             access: form.value.access,
             featured: form.value.featured,
-            show_on_homepage: form.value.show_on_homepage
+            show_on_homepage: form.value.show_on_homepage,
+            use_global_settings: form.value.use_global_settings,
+            show_date: form.value.show_date,
+            show_author: form.value.show_author,
+            show_category: form.value.show_category,
+            show_views: form.value.show_views,
         };
 
         await axios({
@@ -373,7 +472,12 @@ const saveAndClose = async () => {
             state: form.value.state,
             access: form.value.access,
             featured: form.value.featured,
-            show_on_homepage: form.value.show_on_homepage
+            show_on_homepage: form.value.show_on_homepage,
+            use_global_settings: form.value.use_global_settings,
+            show_date: form.value.show_date,
+            show_author: form.value.show_author,
+            show_category: form.value.show_category,
+            show_views: form.value.show_views,
         };
 
         await axios({

@@ -162,7 +162,7 @@ class MaterialController extends Controller
         ]);
     }
 
-    public function store(StoreMaterialRequest $request): RedirectResponse
+    public function store(StoreMaterialRequest $request): RedirectResponse|JsonResponse
     {
         $this->authorize('create', Material::class);
 
@@ -170,7 +170,20 @@ class MaterialController extends Controller
         $data['user_id'] = auth()->id();
         $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
 
-        Material::create($data);
+        $data['show_date'] = $data['show_date'] ?? true;
+        $data['show_author'] = $data['show_author'] ?? true;
+        $data['show_category'] = $data['show_category'] ?? true;
+        $data['show_views'] = $data['show_views'] ?? true;
+
+        $material = Material::create($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Материал создан',
+                'id' => $material->id,
+            ]);
+        }
 
         return redirect()->route('admin.materials.index')
             ->with('success', 'Материал создан');

@@ -29,12 +29,17 @@ class MaterialController extends Controller
             ->first();
 
         $settingService = app(SettingService::class);
-        $siteName = $settingService->getAllSettings()['site_name'] ?? 'GavrCore CMS';
+        $settings = $settingService->getAllSettings();
+        $siteName = $settings['site_name'] ?? 'GavrCore CMS';
+        $siteDescription = $settings['site_description'] ?? '';
+        $siteKeywords = $settings['seo_keywords'] ?? '';
 
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $siteName,
+            'description' => $siteDescription,
+            'keywords' => $siteKeywords,
         ]);
     }
 
@@ -47,10 +52,17 @@ class MaterialController extends Controller
 
         $material->increment('views');
 
+        $settingService = app(SettingService::class);
+        $settings = $settingService->getAllSettings();
+        $siteDescription = $settings['site_description'] ?? '';
+        $siteKeywords = $settings['seo_keywords'] ?? '';
+
         return Inertia::render('Material/Show', [
             'material' => $material,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $material->title,
+            'description' => $siteDescription,
+            'keywords' => $siteKeywords,
         ]);
     }
 
@@ -69,6 +81,11 @@ class MaterialController extends Controller
         $materials = $this->materialService->getPaginated($filters);
         $categories = $this->categoryService->getAllForSelect();
 
+        $settingService = app(SettingService::class);
+        $settings = $settingService->getAllSettings();
+        $siteDescription = $settings['site_description'] ?? '';
+        $siteKeywords = $settings['seo_keywords'] ?? '';
+
         return Inertia::render('Category/Show', [
             'category' => $category,
             'materials' => $materials,
@@ -76,6 +93,8 @@ class MaterialController extends Controller
             'filters' => $filters,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $category->name,
+            'description' => $siteDescription,
+            'keywords' => $siteKeywords,
         ]);
     }
 
@@ -93,12 +112,19 @@ class MaterialController extends Controller
 
         $title = $search ? "Поиск: $search" : 'Поиск';
 
+        $settingService = app(SettingService::class);
+        $settings = $settingService->getAllSettings();
+        $siteDescription = $settings['site_description'] ?? '';
+        $siteKeywords = $settings['seo_keywords'] ?? '';
+
         return Inertia::render('Search/Index', [
             'materials' => $materials,
             'categories' => $categories,
             'search' => $search,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $title,
+            'description' => $siteDescription,
+            'keywords' => $siteKeywords,
         ]);
     }
 }

@@ -29,6 +29,11 @@ class UpdateMaterialRequest extends FormRequest
             'access' => 'nullable|in:public,registered,special',
             'featured' => 'nullable|in:0,1',
             'show_on_homepage' => 'nullable|in:0,1',
+            'show_date' => 'nullable|boolean',
+            'show_author' => 'nullable|boolean',
+            'show_category' => 'nullable|boolean',
+            'show_views' => 'nullable|boolean',
+            'use_global_settings' => 'nullable|boolean',
         ];
     }
 

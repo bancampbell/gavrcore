@@ -14,7 +14,6 @@ class SettingService
         foreach ($settings as $setting) {
             $value = $setting->value;
 
-            // Преобразуем значение в правильный тип
             if ($setting->type === 'boolean') {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
             } elseif ($setting->type === 'number') {
@@ -30,7 +29,32 @@ class SettingService
     public function updateSettings(array $settings): void
     {
         foreach ($settings as $key => $value) {
-            Setting::set($key, $value);
+            $setting = Setting::where('key', $key)->first();
+
+            // Для boolean полей преобразуем в строку '1' или '0'
+            if (is_bool($value)) {
+                $value = $value ? '1' : '0';
+            }
+
+            if ($setting) {
+                $setting->update(['value' => $value]);
+            } else {
+                $type = 'string';
+                if (is_bool($value) || $value === '1' || $value === '0') {
+                    $type = 'boolean';
+                } elseif (is_numeric($value)) {
+                    $type = 'number';
+                }
+
+                Setting::create([
+                    'key' => $key,
+                    'value' => $value,
+                    'type' => $type,
+                    'group' => 'general',
+                    'label' => $key,
+                    'order' => 0,
+                ]);
+            }
         }
     }
 
@@ -43,8 +67,10 @@ class SettingService
             ['key' => 'seo_keywords', 'value' => '', 'type' => 'string', 'group' => 'seo', 'label' => 'Ключевые слова', 'order' => 1],
             ['key' => 'materials_per_page', 'value' => '10', 'type' => 'number', 'group' => 'materials', 'label' => 'Материалов на странице', 'order' => 1],
             ['key' => 'date_format', 'value' => 'd.m.Y', 'type' => 'string', 'group' => 'materials', 'label' => 'Формат даты', 'order' => 2],
-            ['key' => 'show_author', 'value' => '0', 'type' => 'boolean', 'group' => 'materials', 'label' => 'Показывать автора', 'order' => 3],
-            ['key' => 'show_views', 'value' => '1', 'type' => 'boolean', 'group' => 'materials', 'label' => 'Показывать просмотры', 'order' => 4],
+            ['key' => 'show_date', 'value' => '1', 'type' => 'boolean', 'group' => 'materials', 'label' => 'Показывать дату', 'order' => 3],
+            ['key' => 'show_author', 'value' => '1', 'type' => 'boolean', 'group' => 'materials', 'label' => 'Показывать автора', 'order' => 4],
+            ['key' => 'show_category', 'value' => '1', 'type' => 'boolean', 'group' => 'materials', 'label' => 'Показывать категорию', 'order' => 5],
+            ['key' => 'show_views', 'value' => '1', 'type' => 'boolean', 'group' => 'materials', 'label' => 'Показывать просмотры', 'order' => 6],
             ['key' => 'max_file_size', 'value' => '5', 'type' => 'number', 'group' => 'media', 'label' => 'Макс. размер файла (MB)', 'order' => 1],
             ['key' => 'allowed_formats', 'value' => 'jpg,jpeg,png,gif,webp', 'type' => 'string', 'group' => 'media', 'label' => 'Разрешенные форматы', 'order' => 2],
             ['key' => 'image_quality', 'value' => '80', 'type' => 'number', 'group' => 'media', 'label' => 'Качество изображений (%)', 'order' => 3],

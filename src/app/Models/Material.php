@@ -21,6 +21,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $published_at
  * @property bool $featured
  * @property bool $show_on_homepage
+ * @property bool $show_date
+ * @property bool $show_author
+ * @property bool $show_category
+ * @property bool $show_views
+ * @property bool $use_global_settings
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -47,6 +52,11 @@ class Material extends Model
         'published_at',
         'featured',
         'show_on_homepage',
+        'show_date',
+        'show_author',
+        'show_category',
+        'show_views',
+        'use_global_settings',
     ];
 
     protected $casts = [
@@ -54,6 +64,11 @@ class Material extends Model
         'views' => 'integer',
         'featured' => 'boolean',
         'show_on_homepage' => 'boolean',
+        'show_date' => 'boolean',
+        'show_author' => 'boolean',
+        'show_category' => 'boolean',
+        'show_views' => 'boolean',
+        'use_global_settings' => 'boolean',
     ];
 
     /**

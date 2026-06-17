@@ -23,6 +23,11 @@ class StoreMaterialRequest extends FormRequest
             'category_id' => 'required|exists:categories,id',
             'state' => 'nullable|in:published,draft,archived',
             'access' => 'nullable|in:public,registered,special',
+            'show_date' => 'nullable|boolean',
+            'show_author' => 'nullable|boolean',
+            'show_category' => 'nullable|boolean',
+            'show_views' => 'nullable|boolean',
+            'use_global_settings' => 'nullable|boolean',
         ];
     }
 

@@ -46,62 +46,90 @@
             </div>
         </div>
 
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div class="p-6 space-y-6">
+        <div class="px-6 py-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-6 space-y-6">
+                    <!-- Описание -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
+                        <textarea
+                            v-model="form.description"
+                            rows="3"
+                            class="w-full max-w-2xl border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Введите описание группы..."
+                        ></textarea>
+                    </div>
+
+                    <!-- Настройки -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
-                            <textarea
-                                v-model="form.description"
-                                rows="5"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="Введите описание группы..."
-                            ></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Порядок сортировки</label>
+                            <input
+                                v-model.number="form.ordering"
+                                type="number"
+                                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Статус</label>
+                            <div class="flex items-center gap-3 pt-1">
+                                <button
+                                    @click="form.status = !form.status"
+                                    type="button"
+                                    class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
+                                    :class="form.status ? 'bg-green-600' : 'bg-gray-400'"
+                                >
+                                    <span
+                                        class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
+                                        :class="form.status ? 'translate-x-6' : 'translate-x-1'"
+                                    />
+                                </button>
+                                <span class="text-sm font-medium" :class="form.status ? 'text-green-600' : 'text-gray-500'">
+                                    {{ form.status ? 'Опубликовано' : 'Скрыто' }}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="w-80">
-                <div class="space-y-4">
+                    <!-- Права доступа -->
                     <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Порядок сортировки</h3>
-                        <input
-                            v-model.number="form.ordering"
-                            type="number"
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                        />
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Статус</h3>
-                        <select
-                            v-model="form.status"
-                            class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
-                            :class="form.status ? 'bg-green-600 text-white border-green-700' : 'bg-red-600 text-white border-red-700'"
-                        >
-                            <option :value="true" class="bg-white text-gray-800">Опубликовано</option>
-                            <option :value="false" class="bg-white text-gray-800">Скрыто</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Права доступа</h3>
-                        <div class="border border-gray-300 rounded-lg p-3 max-h-64 overflow-y-auto">
-                            <div v-for="(perms, groupName) in groupedPermissions" :key="groupName" class="mb-3">
-                                <div class="font-semibold text-gray-700 text-xs uppercase mb-2">{{ groupName || 'Другие' }}</div>
-                                <div class="space-y-1">
-                                    <label v-for="perm in perms" :key="perm.id" class="flex items-center gap-2 cursor-pointer text-sm">
-                                        <input
-                                            type="checkbox"
-                                            :value="perm.id"
-                                            v-model="form.permissions"
-                                            class="rounded border-gray-300"
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Права доступа</label>
+                        <div class="border border-gray-300 rounded-lg p-4">
+                            <div v-for="(perms, groupName) in groupedPermissions" :key="groupName" class="mb-4 last:mb-0">
+                                <div class="font-semibold text-gray-700 text-xs uppercase mb-2">{{ groupName }}</div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    <div v-for="perm in perms" :key="perm.id" class="flex items-center gap-2">
+                                        <button
+                                            @click="togglePermission(perm.id)"
+                                            type="button"
+                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                            :class="isPermissionSelected(perm.id) ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        >
+                                            <span
+                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                                :class="isPermissionSelected(perm.id) ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                            />
+                                        </button>
+                                        <span class="text-sm text-gray-700">{{ perm.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Отдельная строка для MENU -->
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="font-semibold text-gray-700 text-xs uppercase mb-2">МЕНЮ</div>
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        @click="toggleMenuPermission"
+                                        type="button"
+                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                        :class="isMenuSelected ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    >
+                                        <span
+                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                            :class="isMenuSelected ? 'translate-x-4.5' : 'translate-x-0.5'"
                                         />
-                                        <span>{{ perm.name }}</span>
-                                        <span class="text-xs text-gray-400 font-mono ml-1">({{ perm.key }})</span>
-                                    </label>
+                                    </button>
+                                    <span class="text-sm text-gray-700">Управление меню</span>
                                 </div>
                             </div>
                         </div>
@@ -138,12 +166,23 @@ let notificationTimeout: number | null = null;
 const groupedPermissions = computed(() => {
     const grouped: Record<string, any[]> = {};
     for (const perm of props.permissions || []) {
+        // Пропускаем menu.manage, добавим отдельно
+        if (perm.key === 'menu.manage') continue;
         const group = perm.group || 'Другие';
         if (!grouped[group]) grouped[group] = [];
         grouped[group].push(perm);
     }
     return grouped;
 });
+
+const isMenuSelected = computed(() => {
+    return form.value.permissions.includes(getMenuPermissionId());
+});
+
+const getMenuPermissionId = () => {
+    const menuPerm = props.permissions.find((p: any) => p.key === 'menu.manage');
+    return menuPerm ? menuPerm.id : null;
+};
 
 const form = ref({
     name: '',
@@ -171,6 +210,25 @@ const updateAlias = () => {
         .toLowerCase()
         .replace(/[^a-zа-яё0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
+};
+
+const isPermissionSelected = (permId: number) => {
+    return form.value.permissions.includes(permId);
+};
+
+const togglePermission = (permId: number) => {
+    const index = form.value.permissions.indexOf(permId);
+    if (index === -1) {
+        form.value.permissions.push(permId);
+    } else {
+        form.value.permissions.splice(index, 1);
+    }
+};
+
+const toggleMenuPermission = () => {
+    const menuId = getMenuPermissionId();
+    if (!menuId) return;
+    togglePermission(menuId);
 };
 
 const save = async () => {
