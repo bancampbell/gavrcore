@@ -99,7 +99,8 @@
                         <SidebarLink href="#" icon="module">Менеджер модулей</SidebarLink>
                     </div>
 
-                    <div class="px-3">
+                    <!-- ПОЛЬЗОВАТЕЛИ - только для админа -->
+                    <div v-if="isAdmin" class="px-3">
                         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">ПОЛЬЗОВАТЕЛИ</div>
                         <SidebarLink href="/admin/users" icon="users">Пользователи</SidebarLink>
                         <SidebarLink href="/admin/groups" icon="users">Группы пользователей</SidebarLink>
@@ -107,7 +108,8 @@
                         <div class="px-3 py-2 text-xs text-gray-400 mt-1">Срочных запросов нет.</div>
                     </div>
 
-                    <div class="px-3">
+                    <!-- НАСТРОЙКИ - только для админа -->
+                    <div v-if="isAdmin" class="px-3">
                         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">НАСТРОЙКИ</div>
                         <SidebarLink href="/admin/settings" icon="settings">Общие настройки</SidebarLink>
                         <SidebarLink href="/admin/materials/trash" icon="trash">Корзина</SidebarLink>
@@ -125,21 +127,22 @@ import SidebarLink from './SidebarLink.vue';
 
 interface Props {
     isOpen: boolean;
+    user?: any;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const page = usePage();
 const currentUrl = computed(() => window.location.pathname);
 
 const currentMenuTypeId = computed(() => {
-    const props = page.props as any;
-    return props.menuTypeId || null;
+    const pageProps = page.props as any;
+    return pageProps.menuTypeId || null;
 });
 
 const currentMenuTypeTitle = computed(() => {
-    const props = page.props as any;
-    return props.menuTypeTitle || null;
+    const pageProps = page.props as any;
+    return pageProps.menuTypeTitle || null;
 });
 
 const isMenuItemsPage = computed(() => {
@@ -154,5 +157,11 @@ const isUserManagerPage = computed(() => {
     return currentUrl.value.startsWith('/admin/users') ||
         currentUrl.value.startsWith('/admin/groups') ||
         currentUrl.value.startsWith('/admin/access-levels');
+});
+
+// Админ определяется по email
+const isAdmin = computed(() => {
+    if (!props.user) return false;
+    return props.user.email === 'admin@example.com';
 });
 </script>
