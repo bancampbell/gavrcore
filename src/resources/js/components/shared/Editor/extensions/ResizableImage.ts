@@ -22,6 +22,14 @@ export const ResizableImage = Image.extend({
                     return { height: attributes.height };
                 },
             },
+            // Добавляем атрибут data-lightbox для всех изображений
+            'data-lightbox': {
+                default: 'true',
+                parseHTML: (element: HTMLElement) => element.getAttribute('data-lightbox'),
+                renderHTML: () => {
+                    return { 'data-lightbox': 'true' };
+                },
+            },
         };
     },
 
@@ -37,6 +45,7 @@ export const ResizableImage = Image.extend({
             img.title = node.attrs.title || '';
             img.style.maxWidth = '100%';
             img.style.height = 'auto';
+            img.setAttribute('data-lightbox', 'true');
 
             if (node.attrs.width) img.style.width = `${node.attrs.width}px`;
             if (node.attrs.height) img.style.height = `${node.attrs.height}px`;
@@ -118,6 +127,7 @@ export const ResizableImage = Image.extend({
                     img.src = updatedNode.attrs.src;
                     img.alt = updatedNode.attrs.alt || '';
                     img.title = updatedNode.attrs.title || '';
+                    img.setAttribute('data-lightbox', 'true');
                     if (updatedNode.attrs.width) img.style.width = `${updatedNode.attrs.width}px`;
                     img.style.height = 'auto';
                     updateHandlePosition();

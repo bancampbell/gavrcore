@@ -19,8 +19,7 @@
                     {{ material.title }}
                 </h1>
 
-                <!-- Контент с галереями -->
-                <div class="prose max-w-none">
+                <div class="prose max-w-none" ref="contentRef">
                     <template v-for="(part, index) in contentParts" :key="index">
                         <span v-if="part.type === 'html'" v-html="part.content"></span>
                         <GalleryRenderer v-else-if="part.type === 'gallery'" :gallery="part.data" />
@@ -39,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
@@ -58,7 +57,6 @@ const props = defineProps({
 const siteDescription = appSettings.site_description || '';
 const siteKeywords = appSettings.seo_keywords || '';
 
-// Логика отображения
 const useGlobal = props.material.use_global_settings ?? true;
 
 const showDate = useGlobal
@@ -83,6 +81,7 @@ const formatDate = (date) => {
 };
 
 const contentParts = ref([]);
+const contentRef = ref(null);
 
 const parseContent = async () => {
     const content = props.material.content || '';
@@ -93,7 +92,6 @@ const parseContent = async () => {
     let match;
 
     while ((match = regex.exec(content)) !== null) {
-        // HTML до шорткода
         if (match.index > lastIndex) {
             parts.push({
                 type: 'html',
@@ -101,7 +99,6 @@ const parseContent = async () => {
             });
         }
 
-        // Загружаем галерею
         const galleryId = match[1];
         try {
             const response = await axios.get(`/api/galleries/${galleryId}`);
@@ -120,7 +117,6 @@ const parseContent = async () => {
         lastIndex = regex.lastIndex;
     }
 
-    // Остаток HTML после последнего шорткода
     if (lastIndex < content.length) {
         parts.push({
             type: 'html',
@@ -129,6 +125,55 @@ const parseContent = async () => {
     }
 
     contentParts.value = parts;
+
+    await nextTick();
+    setupImageLightbox();
+    setupImageLinks();
+};
+
+const setupImageLightbox = () => {
+    if (!contentRef.value) return;
+
+    const images = contentRef.value.querySelectorAll('img[data-lightbox="true"]:not(.gallery-renderer img)');
+    images.forEach((img) => {
+        img.removeEventListener('click', handleImageClick);
+        img.addEventListener('click', handleImageClick);
+        img.style.cursor = 'pointer';
+    });
+};
+
+const handleImageClick = (event) => {
+    const img = event.currentTarget;
+    if (img.closest('.gallery-renderer')) return;
+
+    if (window.__globalLightbox) {
+        window.__globalLightbox.open([
+            { src: img.src, alt: img.alt || 'Изображение' }
+        ], 0);
+    }
+};
+
+const setupImageLinks = () => {
+    if (!contentRef.value) return;
+
+    const links = contentRef.value.querySelectorAll('a[href$=".jpg"], a[href$=".jpeg"], a[href$=".png"], a[href$=".gif"], a[href$=".webp"], a[href$=".svg"]');
+    links.forEach((link) => {
+        link.removeEventListener('click', handleLinkClick);
+        link.addEventListener('click', handleLinkClick);
+        link.style.cursor = 'pointer';
+    });
+};
+
+const handleLinkClick = (event) => {
+    event.preventDefault();
+    const link = event.currentTarget;
+    const url = link.getAttribute('href');
+
+    if (url && window.__globalLightbox) {
+        window.__globalLightbox.open([
+            { src: url, alt: link.textContent || 'Изображение' }
+        ], 0);
+    }
 };
 
 onMounted(() => {
@@ -144,5 +189,15 @@ onMounted(() => {
 .prose img {
     max-width: 100%;
     height: auto;
+    cursor: pointer;
+}
+
+.prose a[href$=".jpg"],
+.prose a[href$=".jpeg"],
+.prose a[href$=".png"],
+.prose a[href$=".gif"],
+.prose a[href$=".webp"],
+.prose a[href$=".svg"] {
+    cursor: pointer;
 }
 </style>
