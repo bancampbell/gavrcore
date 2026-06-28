@@ -9,6 +9,7 @@
             :align-image-right="() => imageHandlers.alignImageRight(editor!)"
             :open-link-modal="handleOpenLinkModal"
             :open-image-modal="() => imageHandlers.openImageModal(emit)"
+            :open-gallery-modal="handleOpenGalleryModal"
             :toggle-html="toggleHtml"
             :open-file-manager="openFileManager"
         />
@@ -102,6 +103,10 @@ const handleOpenLinkModal = () => {
     } else {
         openLinkModal('');
     }
+};
+
+const handleOpenGalleryModal = () => {
+    emit('open-gallery-modal');
 };
 
 const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {

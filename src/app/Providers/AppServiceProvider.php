@@ -26,6 +26,7 @@ use App\Repositories\MenuItemRepository;
 use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
+use App\Services\GalleryParserService;
 use App\Services\SettingService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -46,6 +47,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuTypeRepositoryInterface::class, MenuTypeRepository::class);
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
+        $this->app->singleton(GalleryParserService::class, function () {
+            return new GalleryParserService();
+        });
     }
 
     /**

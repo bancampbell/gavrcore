@@ -56,6 +56,7 @@
                         @open-link-modal="openLinkModal"
                         @open-image-manager="openImageManager"
                         @edit-link="handleEditLink"
+                        @open-gallery-modal="openGalleryModal"
                     />
                 </div>
             </div>
@@ -242,6 +243,13 @@
             @close="closeImageManager"
             @select="onImageSelect"
         />
+
+        <!-- Модалка выбора галереи -->
+        <GallerySelectModal
+            :show="showGalleryModal"
+            @close="closeGalleryModal"
+            @select="insertGallery"
+        />
     </EmptyLayout>
 </template>
 
@@ -256,6 +264,7 @@ import type { User, Category, Material } from '../../../types';
 import Editor from '../../../components/shared/Editor/Index.vue';
 import LinkModal from './components/LinkModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
+import GallerySelectModal from '../../../components/shared/GallerySelectModal.vue';
 
 const props = defineProps<{
     user: User;
@@ -267,6 +276,7 @@ const props = defineProps<{
 const loading = ref(false);
 const showLinkModal = ref(false);
 const showImageManager = ref(false);
+const showGalleryModal = ref(false);
 const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
 const editImageData = ref<any>(null);
@@ -322,6 +332,22 @@ const openLinkModal = (selectedText?: string) => {
 const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
     editImageData.value = imageData || null;
     showImageManager.value = true;
+};
+
+const openGalleryModal = () => {
+    showGalleryModal.value = true;
+};
+
+const closeGalleryModal = () => {
+    showGalleryModal.value = false;
+};
+
+const insertGallery = (galleryId: number, galleryName: string) => {
+    if (editorRef.value) {
+        const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
+        editorRef.value.insertContent(shortcode);
+    }
+    closeGalleryModal();
 };
 
 const closeImageManager = () => {

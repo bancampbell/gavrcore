@@ -96,6 +96,7 @@
                     <div class="px-3">
                         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">СТРУКТУРА</div>
                         <SidebarLink href="/admin/menu" icon="menu">Менеджер меню</SidebarLink>
+                        <SidebarLink href="/admin/galleries" icon="image">Галереи</SidebarLink>
                         <SidebarLink href="#" icon="module">Менеджер модулей</SidebarLink>
                     </div>
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccessLevelController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MediaController;
@@ -28,6 +29,19 @@ Route::get('/admin/login', fn () => Inertia::render('Auth/Login'))->name('login'
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Gallery Manager
+    Route::get('/admin/galleries', [GalleryController::class, 'index'])->name('admin.galleries.index');
+    Route::get('/admin/galleries/list', [GalleryController::class, 'list'])->name('admin.galleries.list');
+    Route::get('/admin/galleries/create', [GalleryController::class, 'create'])->name('admin.galleries.create');
+    Route::post('/admin/galleries', [GalleryController::class, 'store'])->name('admin.galleries.store');
+    Route::get('/admin/galleries/{gallery}/edit', [GalleryController::class, 'edit'])->name('admin.galleries.edit');
+    Route::put('/admin/galleries/{gallery}', [GalleryController::class, 'update'])->name('admin.galleries.update');
+    Route::delete('/admin/galleries/{gallery}', [GalleryController::class, 'destroy'])->name('admin.galleries.destroy');
+
+    // Gallery Images
+    Route::post('/admin/galleries/{gallery}/images', [GalleryController::class, 'uploadImage'])->name('admin.galleries.images.upload');
+    Route::delete('/admin/galleries/{gallery}/images/{image}', [GalleryController::class, 'deleteImage'])->name('admin.galleries.images.delete');
 
     Route::get('/admin/materials', [MaterialController::class, 'index'])->name('admin.materials.index');
 

@@ -24,4 +24,5 @@ export interface EditorEmits {
     (e: 'openLinkModal'): void;
     (e: 'openImageManager', imageData?: ImageData): void;
     (e: 'editLink', data: LinkData): void;
+    (e: 'open-gallery-modal'): void;
 }

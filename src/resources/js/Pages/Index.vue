@@ -41,7 +41,6 @@
                 </div>
             </div>
 
-            <!-- Если нет материала на главной -->
             <div v-else class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
                 <p>Нет материала, отмеченного для показа на главной.</p>
                 <p class="text-sm mt-2">Выберите материал в админке и отметьте "Показывать на главной".</p>
@@ -51,8 +50,9 @@
 </template>
 
 <script setup>
+import {onMounted} from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, Head, usePage } from '@inertiajs/vue3';
+import {Link, Head, usePage} from '@inertiajs/vue3';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -67,7 +67,6 @@ const props = defineProps({
 const siteDescription = appSettings.site_description || '';
 const siteKeywords = appSettings.seo_keywords || '';
 
-// Логика отображения для главной страницы
 const useGlobal = props.homepageMaterial?.use_global_settings ?? true;
 
 const showDate = useGlobal
@@ -90,6 +89,26 @@ const formatDate = (date) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('ru-RU');
 };
+
+// Обработчик для кликов по изображениям галереи на главной
+onMounted(() => {
+    document.querySelectorAll('.gallery-server-renderer img').forEach((img, index) => {
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', () => {
+            const galleryContainer = img.closest('.gallery-server-renderer');
+            if (galleryContainer) {
+                const images = galleryContainer.querySelectorAll('img');
+                const imageList = Array.from(images).map(el => ({
+                    src: el.src,
+                    alt: el.alt || 'Изображение'
+                }));
+                if (window.__globalLightbox) {
+                    window.__globalLightbox.open(imageList, index);
+                }
+            }
+        });
+    });
+});
 </script>
 
 <style scoped>
@@ -100,5 +119,9 @@ const formatDate = (date) => {
 .prose img {
     max-width: 100%;
     height: auto;
+}
+
+.gallery-server-renderer img {
+    cursor: pointer;
 }
 </style>

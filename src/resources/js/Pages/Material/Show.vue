@@ -19,7 +19,8 @@
                     {{ material.title }}
                 </h1>
 
-                <div class="prose max-w-none" v-html="material.content"></div>
+                <!-- Контент с галереями -->
+                <div class="prose max-w-none" ref="contentRef" v-html="renderedContent"></div>
 
                 <div v-if="showAuthor || showViews" class="mt-6 flex items-center justify-between text-sm text-gray-500">
                     <div class="flex items-center space-x-4">
@@ -33,8 +34,11 @@
 </template>
 
 <script setup>
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import {ref, onMounted, nextTick} from 'vue';
+import {Head, usePage} from '@inertiajs/vue3';
+import {useGalleryParser} from '@/composables/useGalleryParser';
+import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
+import {createApp} from 'vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -72,6 +76,55 @@ const formatDate = (date) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('ru-RU');
 };
+
+// Рендер контента с галереями
+const renderedContent = ref(props.material.content || '');
+const contentRef = ref(null);
+
+const renderGalleries = async () => {
+    console.log('=== renderGalleries START ===');
+    console.log('material.content:', props.material.content);
+
+    const {parseGalleries} = useGalleryParser();
+    const result = await parseGalleries(props.material.content || '');
+
+    console.log('parseGalleries result.content:', result.content);
+    console.log('parseGalleries result.galleries:', result.galleries);
+
+    renderedContent.value = result.content;
+
+    // После рендера контента монтируем компоненты галерей
+    await nextTick();
+
+    console.log('contentRef.value:', contentRef.value);
+    console.log('renderedContent.value:', renderedContent.value);
+
+    for (const [id, galleryData] of Object.entries(result.galleries)) {
+        console.log(`Processing gallery ${id}:`, galleryData);
+        if (galleryData) {
+            const container = contentRef.value?.querySelector(`[data-gallery-id="${id}"]`);
+            console.log(`container for gallery ${id}:`, container);
+            if (container) {
+                const mountDiv = document.createElement('div');
+                container.replaceWith(mountDiv);
+
+                createApp(GalleryRenderer, {
+                    gallery: galleryData
+                }).mount(mountDiv);
+
+                console.log(`Gallery ${id} mounted successfully`);
+            } else {
+                console.log(`Container for gallery ${id} NOT FOUND`);
+            }
+        }
+    }
+
+    console.log('=== renderGalleries END ===');
+};
+
+onMounted(() => {
+    renderGalleries();
+});
 </script>
 
 <style scoped>

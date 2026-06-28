@@ -133,6 +133,13 @@
         >
             🖼️
         </button>
+        <button
+            @click="openGalleryModal"
+            class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
+            title="Вставить галерею"
+        >
+            📷
+        </button>
 
         <div class="w-px h-6 bg-gray-300 mx-1"></div>
 
@@ -195,6 +202,7 @@ defineProps<{
     alignImageRight: () => void;
     openLinkModal: () => void;
     openImageModal: () => void;
+    openGalleryModal: () => void;
     toggleHtml: () => void;
     openFileManager: () => void;
 }>();
