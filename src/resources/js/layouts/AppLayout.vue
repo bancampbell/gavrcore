@@ -3,7 +3,6 @@
         <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center">
-                    <!-- Логотип -->
                     <Link href="/" class="group">
                         <h1 class="text-2xl font-black tracking-tight">
                             <span class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent transition-all duration-300 group-hover:scale-105 inline-block">
@@ -12,8 +11,7 @@
                         </h1>
                     </Link>
 
-                    <!-- Навигационное меню (десктоп) -->
-                    <nav class="hidden md:flex items-center space-x-1">
+                    <nav class="flex items-center space-x-1 flex-wrap">
                         <MenuItem
                             v-for="item in mainMenu"
                             :key="item.id"
@@ -21,7 +19,6 @@
                         />
                     </nav>
 
-                    <!-- Мобильное меню (бюргер) -->
                     <div class="md:hidden">
                         <button
                             @click="mobileMenuOpen = !mobileMenuOpen"
@@ -41,7 +38,6 @@
                     </div>
                 </div>
 
-                <!-- Мобильное выпадающее меню (упрощённо без вложенности) -->
                 <div
                     class="md:hidden overflow-hidden transition-all duration-300 ease-in-out"
                     :class="{ 'max-h-0 opacity-0': !mobileMenuOpen, 'max-h-screen opacity-100 mt-4': mobileMenuOpen }"
@@ -78,7 +74,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import MenuItem from '@/components/shared/MenuItem.vue';
 
@@ -90,7 +86,7 @@ const mobileMenuOpen = ref(false);
 
 const getLinkUrl = (item) => {
     if (item.link_type === 'url') return item.link_value || '/';
-    if (item.link_type === 'material') return `/material/${item.link_value}`;
+    if (item.link_type === 'material') return `/${item.link_value}`;
     if (item.link_type === 'category') return `/category/${item.link_value}`;
     return '#';
 };

@@ -7,7 +7,6 @@ use App\Services\MaterialService;
 use App\Services\CategoryService;
 use App\Services\MenuService;
 use App\Services\SettingService;
-use App\Services\GalleryParserService;
 use App\Models\Material;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,16 +21,12 @@ class MaterialController extends Controller
     ) {
     }
 
-    public function index(GalleryParserService $galleryParser): Response
+    public function index(): Response
     {
         $homepageMaterial = Material::where('show_on_homepage', true)
             ->where('state', 'published')
             ->with(['category', 'user'])
             ->first();
-
-        if ($homepageMaterial) {
-            $homepageMaterial->content = $galleryParser->parseContent($homepageMaterial->content);
-        }
 
         $settingService = app(SettingService::class);
         $settings = $settingService->getAllSettings();

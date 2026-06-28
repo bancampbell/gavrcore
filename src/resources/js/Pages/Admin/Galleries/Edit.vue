@@ -23,15 +23,26 @@
 
         <div class="p-6">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                <!-- НАЗВАНИЕ -->
+                <!-- НАЗВАНИЕ и ТИП -->
                 <div class="p-4 border-b border-gray-200">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">НАЗВАНИЕ</label>
-                    <input
-                        v-model="form.title"
-                        type="text"
-                        class="w-full max-w-2xl border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="Введите название..."
-                    />
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">НАЗВАНИЕ</label>
+                        <input
+                            v-model="form.title"
+                            type="text"
+                            class="w-full max-w-2xl border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Введите название..."
+                        />
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ТИП ГАЛЕРЕИ</label>
+                        <select v-model="form.type" class="w-56 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="grid">Сетка (Grid)</option>
+                            <option value="switcher">Switcher</option>
+                            <option value="slideshow">Слайд-шоу (Slideshow)</option>
+                            <option value="slider">Слайдер (Slider)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Вкладки -->
@@ -50,13 +61,6 @@
                             :class="activeTab === 'settings' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                         >
                             НАСТРОЙКИ
-                        </button>
-                        <button
-                            @click="activeTab = 'content'"
-                            class="px-4 py-3 text-sm font-medium border-b-2 transition"
-                            :class="activeTab === 'content' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                        >
-                            КОНТЕНТ
                         </button>
                     </div>
                 </div>
@@ -128,6 +132,15 @@
                                                 type="text"
                                                 class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 placeholder="Введите название..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-500 mb-1">ОПИСАНИЕ</label>
+                                            <textarea
+                                                v-model="selectedImage.description"
+                                                rows="3"
+                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                                                placeholder="Введите описание изображения..."
                                             />
                                         </div>
                                         <div>
@@ -321,55 +334,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- КОНТЕНТ -->
-                    <div v-if="activeTab === 'content'">
-                        <div class="max-w-3xl space-y-6">
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Текст</h3>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.content.show_title = !settings.content.show_title"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.content.show_title ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.content.show_title ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать заголовок</span>
-                                    </div>
-
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.content.show_content = !settings.content.show_content"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.content.show_content ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.content.show_content ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать описание</span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Размер заголовка</label>
-                                        <select v-model="settings.content.title_size" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="default">По умолчанию</option>
-                                            <option value="small">Маленький</option>
-                                            <option value="large">Большой</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
 
                             <div>
                                 <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Ссылка</h3>
@@ -446,27 +410,6 @@
                                         />
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-3 max-w-md">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">Ширина (px)</label>
-                                            <input
-                                                v-model="settings.lightbox.image_width"
-                                                type="text"
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                placeholder="авто"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">Высота (px)</label>
-                                            <input
-                                                v-model="settings.lightbox.image_height"
-                                                type="text"
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                placeholder="авто"
-                                            />
-                                        </div>
-                                    </div>
-
                                     <div class="flex items-center gap-3">
                                         <button
                                             @click="settings.lightbox.show_second_media = !settings.lightbox.show_second_media"
@@ -518,6 +461,37 @@
                                             class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                                             placeholder="Подробнее"
                                         />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Switcher настройки -->
+                            <div v-if="form.type === 'switcher'">
+                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4 mt-6">Switcher</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Размер миниатюр (px)</label>
+                                        <input
+                                            v-model.number="settings.thumbnail_size"
+                                            type="number"
+                                            min="40"
+                                            max="200"
+                                            class="w-32 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <button
+                                            @click="settings.show_labels = !settings.show_labels"
+                                            type="button"
+                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                            :class="settings.show_labels ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        >
+                                            <span
+                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
+                                                :class="settings.show_labels ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                            />
+                                        </button>
+                                        <span class="text-sm text-gray-700">Показывать подписи под миниатюрами</span>
                                     </div>
                                 </div>
                             </div>
@@ -590,11 +564,11 @@ const defaultSettings = {
         mode: 'default',
         use_title: true,
         caption: '',
-        image_width: 'auto',
-        image_height: 'auto',
         show_second_media: false,
         button: { enabled: true, style: 'button', text: 'Подробнее' }
-    }
+    },
+    thumbnail_size: 80,
+    show_labels: true
 };
 
 function mergeDeep(target: any, source: any): any {
@@ -732,6 +706,17 @@ const save = async () => {
             status: form.value.status,
             settings: settings
         });
+
+        // Сохраняем изображения (названия и описания)
+        for (const image of images.value) {
+            await axios.put(`/admin/galleries/${props.gallery.id}/images/${image.id}`, {
+                title: image.title,
+                description: image.description,
+                alt_text: image.alt_text,
+                link: image.link,
+            });
+        }
+
         showNotification('Сохранено', 'success');
     } catch (error) {
         showNotification('Ошибка при сохранении', 'error');
@@ -755,6 +740,17 @@ const saveAndClose = async () => {
             status: form.value.status,
             settings: settings
         });
+
+        // Сохраняем изображения (названия и описания)
+        for (const image of images.value) {
+            await axios.put(`/admin/galleries/${props.gallery.id}/images/${image.id}`, {
+                title: image.title,
+                description: image.description,
+                alt_text: image.alt_text,
+                link: image.link,
+            });
+        }
+
         showNotification('Сохранено', 'success');
         setTimeout(() => {
             router.visit('/admin/galleries');

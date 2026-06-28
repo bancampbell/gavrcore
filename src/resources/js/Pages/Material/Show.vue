@@ -20,7 +20,12 @@
                 </h1>
 
                 <!-- Контент с галереями -->
-                <div class="prose max-w-none" ref="contentRef" v-html="renderedContent"></div>
+                <div class="prose max-w-none">
+                    <template v-for="(part, index) in contentParts" :key="index">
+                        <span v-if="part.type === 'html'" v-html="part.content"></span>
+                        <GalleryRenderer v-else-if="part.type === 'gallery'" :gallery="part.data" />
+                    </template>
+                </div>
 
                 <div v-if="showAuthor || showViews" class="mt-6 flex items-center justify-between text-sm text-gray-500">
                     <div class="flex items-center space-x-4">
@@ -34,11 +39,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted, nextTick} from 'vue';
-import {Head, usePage} from '@inertiajs/vue3';
-import {useGalleryParser} from '@/composables/useGalleryParser';
+import { ref, onMounted } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
-import {createApp} from 'vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -77,53 +82,57 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('ru-RU');
 };
 
-// Рендер контента с галереями
-const renderedContent = ref(props.material.content || '');
-const contentRef = ref(null);
+const contentParts = ref([]);
 
-const renderGalleries = async () => {
-    console.log('=== renderGalleries START ===');
-    console.log('material.content:', props.material.content);
+const parseContent = async () => {
+    const content = props.material.content || '';
+    const regex = /\[gallery\s+id="(\d+)"(?:\s+name="([^"]*)")?\]/g;
 
-    const {parseGalleries} = useGalleryParser();
-    const result = await parseGalleries(props.material.content || '');
+    const parts = [];
+    let lastIndex = 0;
+    let match;
 
-    console.log('parseGalleries result.content:', result.content);
-    console.log('parseGalleries result.galleries:', result.galleries);
-
-    renderedContent.value = result.content;
-
-    // После рендера контента монтируем компоненты галерей
-    await nextTick();
-
-    console.log('contentRef.value:', contentRef.value);
-    console.log('renderedContent.value:', renderedContent.value);
-
-    for (const [id, galleryData] of Object.entries(result.galleries)) {
-        console.log(`Processing gallery ${id}:`, galleryData);
-        if (galleryData) {
-            const container = contentRef.value?.querySelector(`[data-gallery-id="${id}"]`);
-            console.log(`container for gallery ${id}:`, container);
-            if (container) {
-                const mountDiv = document.createElement('div');
-                container.replaceWith(mountDiv);
-
-                createApp(GalleryRenderer, {
-                    gallery: galleryData
-                }).mount(mountDiv);
-
-                console.log(`Gallery ${id} mounted successfully`);
-            } else {
-                console.log(`Container for gallery ${id} NOT FOUND`);
-            }
+    while ((match = regex.exec(content)) !== null) {
+        // HTML до шорткода
+        if (match.index > lastIndex) {
+            parts.push({
+                type: 'html',
+                content: content.substring(lastIndex, match.index)
+            });
         }
+
+        // Загружаем галерею
+        const galleryId = match[1];
+        try {
+            const response = await axios.get(`/api/galleries/${galleryId}`);
+            parts.push({
+                type: 'gallery',
+                data: response.data
+            });
+        } catch (error) {
+            console.error(`Gallery ${galleryId} not found`);
+            parts.push({
+                type: 'html',
+                content: `[gallery id="${galleryId}"]`
+            });
+        }
+
+        lastIndex = regex.lastIndex;
     }
 
-    console.log('=== renderGalleries END ===');
+    // Остаток HTML после последнего шорткода
+    if (lastIndex < content.length) {
+        parts.push({
+            type: 'html',
+            content: content.substring(lastIndex)
+        });
+    }
+
+    contentParts.value = parts;
 };
 
 onMounted(() => {
-    renderGalleries();
+    parseContent();
 });
 </script>
 

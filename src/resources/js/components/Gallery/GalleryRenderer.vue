@@ -1,12 +1,12 @@
 <template>
     <div v-if="gallery" class="gallery-renderer" :class="`gallery-align-${settings.alignment || 'left'}`">
-        <!-- Сетка (Grid) -->
+        <!-- Grid -->
         <div v-if="gallery.type === 'grid'" class="gallery-grid" :style="gridStyle">
             <div
                 v-for="image in gallery.images"
                 :key="image.id"
-                class="gallery-item overflow-hidden rounded-lg group cursor-pointer"
-                :class="mediaBorderClass"
+                class="gallery-item overflow-hidden group cursor-pointer"
+                :class="[mediaBorderClass]"
                 @click="openLightbox(image)"
             >
                 <img
@@ -30,6 +30,50 @@
                     >
                         {{ settings.link?.text || 'Подробнее' }}
                     </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Switcher -->
+        <div v-else-if="gallery.type === 'switcher'" class="switcher-gallery">
+            <div style="display: flex; justify-content: center;">
+                <div
+                    class="switcher-main overflow-hidden bg-gray-100 cursor-pointer"
+                    :class="mediaBorderClass"
+                    :style="switcherContainerStyle"
+                    @click="openLightbox(switcherCurrentImage)"
+                >
+                    <img
+                        :src="switcherCurrentImage?.image_path"
+                        :alt="switcherCurrentImage?.alt_text || switcherCurrentImage?.title || 'Изображение'"
+                        :style="switcherImageStyle"
+                        loading="lazy"
+                    />
+                </div>
+            </div>
+
+            <div class="switcher-thumbnails">
+                <div
+                    v-for="(image, index) in gallery.images"
+                    :key="image.id"
+                    @click.stop="switcherSelectImage(index)"
+                    class="switcher-thumbnail"
+                    :class="[
+                        switcherCurrentIndex === index ? 'active' : '',
+                        mediaBorderClass
+                    ]"
+                    :style="{
+                        width: switcherThumbnailSize + 'px',
+                        height: switcherThumbnailSize + 'px',
+                        backgroundImage: `url(${image.image_path})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }"
+                >
+                    <div v-if="settings.show_labels" class="label-overlay">
+                        {{ image.description || image.title }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -136,30 +180,9 @@ const props = defineProps<{
 
 const settings = computed(() => props.gallery?.settings || {});
 
+// ===== Общие настройки =====
 const gutterValue = computed(() => {
     return settings.value.gutter ?? 20;
-});
-
-const itemWidth = computed(() => {
-    const width = settings.value.media?.width;
-    if (width && width !== 'auto') {
-        return parseInt(width);
-    }
-    return 200;
-});
-
-const gridStyle = computed(() => {
-    const alignment = settings.value.alignment || 'left';
-    let justifyContent = 'flex-start';
-    if (alignment === 'center') justifyContent = 'center';
-    if (alignment === 'right') justifyContent = 'flex-end';
-
-    return {
-        display: 'grid',
-        gridTemplateColumns: `repeat(auto-fill, ${itemWidth.value}px)`,
-        gap: gutterValue.value + 'px',
-        justifyContent: justifyContent,
-    };
 });
 
 const mediaBorderClass = computed(() => {
@@ -185,7 +208,63 @@ const imageStyle = computed(() => {
     return style;
 });
 
-// Slideshow
+// ===== Grid =====
+const gridStyle = computed(() => {
+    const alignment = settings.value.alignment || 'left';
+    let justifyContent = 'flex-start';
+    if (alignment === 'center') justifyContent = 'center';
+    if (alignment === 'right') justifyContent = 'flex-end';
+
+    return {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        gap: gutterValue.value + 'px',
+        justifyContent: justifyContent,
+    };
+});
+
+// ===== Switcher =====
+const switcherCurrentIndex = ref(0);
+
+const switcherCurrentImage = computed(() => {
+    return props.gallery?.images?.[switcherCurrentIndex.value] || null;
+});
+
+const switcherThumbnailSize = computed(() => {
+    return settings.value.thumbnail_size || 80;
+});
+
+const switcherContainerStyle = computed(() => {
+    const width = settings.value.media?.width;
+    const height = settings.value.media?.height;
+    const style: any = {};
+
+    if (width && width !== 'auto') {
+        style.width = width + 'px';
+    } else {
+        style.width = '100%';
+    }
+
+    if (height && height !== 'auto') {
+        style.height = height + 'px';
+    }
+
+    return style;
+});
+
+const switcherImageStyle = computed(() => {
+    return {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+    };
+});
+
+const switcherSelectImage = (index: number) => {
+    switcherCurrentIndex.value = index;
+};
+
+// ===== Slideshow =====
 const currentSlide = ref(0);
 let autoplayInterval: any = null;
 
@@ -203,13 +282,14 @@ const prevSlide = () => {
     currentSlide.value = (currentSlide.value - 1 + props.gallery.images.length) % props.gallery.images.length;
 };
 
-// Лайтбокс с навигацией
+// ===== Лайтбокс =====
 const lightboxOpen = ref(false);
 const lightboxImage = ref<any>(null);
 const lightboxIndex = ref(0);
 
 const openLightbox = (image: any) => {
     if (settings.value.lightbox?.mode === 'disabled') return;
+    if (!image) return;
     lightboxImage.value = image;
     lightboxIndex.value = props.gallery.images.findIndex((img: any) => img.id === image.id);
     lightboxOpen.value = true;
@@ -232,7 +312,6 @@ const lightboxNext = () => {
     lightboxImage.value = props.gallery.images[lightboxIndex.value];
 };
 
-// Обработка клавиш
 const handleKeydown = (e: KeyboardEvent) => {
     if (!lightboxOpen.value) return;
     if (e.key === 'ArrowLeft') lightboxPrev();
@@ -240,7 +319,6 @@ const handleKeydown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') closeLightbox();
 };
 
-// Автоплей
 const startAutoplay = () => {
     if (props.gallery?.type === 'slideshow' && props.gallery?.images?.length > 1) {
         const interval = settings.value.autoplay_interval || 5000;
@@ -275,6 +353,10 @@ onBeforeUnmount(() => {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
+}
+
+.switcher-thumbnails {
+    gap: 8px;
 }
 
 @media (max-width: 480px) {

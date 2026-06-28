@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Gallery Images
     Route::post('/admin/galleries/{gallery}/images', [GalleryController::class, 'uploadImage'])->name('admin.galleries.images.upload');
+    Route::put('/admin/galleries/{gallery}/images/{image}', [GalleryController::class, 'updateImage'])->name('admin.galleries.images.update');
     Route::delete('/admin/galleries/{gallery}/images/{image}', [GalleryController::class, 'deleteImage'])->name('admin.galleries.images.delete');
 
     Route::get('/admin/materials', [MaterialController::class, 'index'])->name('admin.materials.index');

@@ -92,6 +92,26 @@ class GalleryController extends Controller
         ]);
     }
 
+    // Обновление изображения
+    public function updateImage(Request $request, Gallery $gallery, $imageId): JsonResponse
+    {
+        $image = $gallery->images()->findOrFail($imageId);
+
+        $validated = $request->validate([
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'alt_text' => 'nullable|string|max:255',
+            'link' => 'nullable|url',
+        ]);
+
+        $image->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Изображение обновлено',
+        ]);
+    }
+
     // Удаление
     public function destroy(Gallery $gallery): JsonResponse
     {
@@ -147,11 +167,9 @@ class GalleryController extends Controller
         ]);
     }
 
-
     // Получение галереи для публичной части
     public function show(Gallery $gallery): JsonResponse
     {
-        // Если галерея не опубликована — возвращаем 404
         if (!$gallery->status) {
             return response()->json(['message' => 'Gallery not published'], 404);
         }

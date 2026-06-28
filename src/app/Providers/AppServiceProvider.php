@@ -26,18 +26,15 @@ use App\Repositories\MenuItemRepository;
 use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
-use App\Services\GalleryParserService;
 use App\Services\SettingService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use App\Services\MenuService;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
@@ -47,29 +44,22 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuTypeRepositoryInterface::class, MenuTypeRepository::class);
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
-        $this->app->singleton(GalleryParserService::class, function () {
-            return new GalleryParserService();
-        });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        // Регистрация политик
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Group::class, GroupPolicy::class);
         Gate::policy(Material::class, MaterialPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
 
-        // Глобальные данные для Inertia
         Inertia::share([
             'mainMenu' => function () {
                 try {
                     $menuService = app(MenuService::class);
-                    return $menuService->getMenuTree('main-menu');
+                    $menu = $menuService->getMenuTree('main-menu');
+                    return $menu;
                 } catch (\Exception $e) {
                     return [];
                 }

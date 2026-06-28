@@ -7,13 +7,11 @@
         </Head>
 
         <div class="space-y-6">
-            <!-- Hero -->
             <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow p-8 text-white">
                 <h1 class="text-3xl font-bold">Добро пожаловать в GavrCore CMS</h1>
                 <p class="mt-2 opacity-90">{{ siteDescription || 'Управляйте своим контентом легко и быстро.' }}</p>
             </div>
 
-            <!-- Главный материал -->
             <div v-if="homepageMaterial" class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="p-6">
                     <div v-if="showDate || showCategory" class="flex items-center justify-between mb-2">
@@ -27,7 +25,12 @@
                         {{ homepageMaterial.title }}
                     </h1>
 
-                    <div class="prose max-w-none" v-html="homepageMaterial.content"></div>
+                    <div class="prose max-w-none">
+                        <template v-for="(part, index) in contentParts" :key="index">
+                            <span v-if="part.type === 'html'" v-html="part.content"></span>
+                            <GalleryRenderer v-else-if="part.type === 'gallery'" :gallery="part.data" />
+                        </template>
+                    </div>
 
                     <div v-if="showAuthor || showViews" class="mt-6 flex items-center justify-between text-sm text-gray-500">
                         <div class="flex items-center space-x-4">
@@ -50,9 +53,11 @@
 </template>
 
 <script setup>
-import {onMounted} from 'vue';
+import { ref, onMounted } from 'vue';
+import { Link, Head, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import {Link, Head, usePage} from '@inertiajs/vue3';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -90,24 +95,54 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('ru-RU');
 };
 
-// Обработчик для кликов по изображениям галереи на главной
-onMounted(() => {
-    document.querySelectorAll('.gallery-server-renderer img').forEach((img, index) => {
-        img.style.cursor = 'pointer';
-        img.addEventListener('click', () => {
-            const galleryContainer = img.closest('.gallery-server-renderer');
-            if (galleryContainer) {
-                const images = galleryContainer.querySelectorAll('img');
-                const imageList = Array.from(images).map(el => ({
-                    src: el.src,
-                    alt: el.alt || 'Изображение'
-                }));
-                if (window.__globalLightbox) {
-                    window.__globalLightbox.open(imageList, index);
-                }
-            }
+const contentParts = ref([]);
+
+const parseContent = async () => {
+    const content = props.homepageMaterial?.content || '';
+    const regex = /\[gallery\s+id="(\d+)"(?:\s+name="([^"]*)")?\]/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(content)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push({
+                type: 'html',
+                content: content.substring(lastIndex, match.index)
+            });
+        }
+
+        const galleryId = match[1];
+        try {
+            const response = await axios.get(`/api/galleries/${galleryId}`);
+            parts.push({
+                type: 'gallery',
+                data: response.data
+            });
+        } catch (error) {
+            console.error(`Gallery ${galleryId} not found`);
+            parts.push({
+                type: 'html',
+                content: `[gallery id="${galleryId}"]`
+            });
+        }
+
+        lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < content.length) {
+        parts.push({
+            type: 'html',
+            content: content.substring(lastIndex)
         });
-    });
+    }
+
+    contentParts.value = parts;
+};
+
+onMounted(() => {
+    parseContent();
 });
 </script>
 
@@ -119,9 +154,5 @@ onMounted(() => {
 .prose img {
     max-width: 100%;
     height: auto;
-}
-
-.gallery-server-renderer img {
-    cursor: pointer;
 }
 </style>

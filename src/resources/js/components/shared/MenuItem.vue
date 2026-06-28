@@ -3,7 +3,7 @@
     <div v-if="!isSubmenu" class="relative group">
         <Link
             :href="getLinkUrl(item)"
-            :target="item.target"
+            :target="item.target || '_self'"
             class="relative block px-3 py-2 text-gray-700 transition-all duration-200 hover:text-indigo-600"
             :class="{ 'text-indigo-600': isActive }"
         >
@@ -30,7 +30,7 @@
     <div v-else class="relative group-submenu">
         <Link
             :href="getLinkUrl(item)"
-            :target="item.target"
+            :target="item.target || '_self'"
             class="relative block px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-all duration-200"
             :class="{ 'bg-indigo-50 text-indigo-600': isActive }"
         >
@@ -77,13 +77,16 @@ const props = defineProps({
 });
 
 const getLinkUrl = (item) => {
+    if (!item) return '#';
     if (item.link_type === 'url') return item.link_value || '/';
-    if (item.link_type === 'material') return `/${item.link_value}`;  // ← убрал /material/
+    if (item.link_type === 'material') return `/${item.link_value}`;
     if (item.link_type === 'category') return `/category/${item.link_value}`;
     return '#';
 };
 
-const hasChildren = computed(() => props.item.children && props.item.children.length > 0);
+const hasChildren = computed(() => {
+    return props.item?.children && Array.isArray(props.item.children) && props.item.children.length > 0;
+});
 
 const isActive = computed(() => {
     const currentUrl = page.url;
