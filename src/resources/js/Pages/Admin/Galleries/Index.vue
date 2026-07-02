@@ -7,9 +7,12 @@
             <!-- Фиксированная панель с кнопками -->
             <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
                 <div class="flex flex-wrap gap-2">
-                    <Link href="/admin/galleries/create" class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition">
+                    <button
+                        @click="openCreateModal"
+                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition"
+                    >
                         + Создать галерею
-                    </Link>
+                    </button>
                     <button
                         @click="deleteSelected"
                         :disabled="selectedGalleries.length === 0"
@@ -99,7 +102,6 @@
 
             <!-- Десктопная версия (Flexbox) -->
             <div class="hidden lg:block overflow-x-auto">
-                <!-- Заголовки -->
                 <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
                     <div class="w-10 flex items-center justify-center">
                         <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
@@ -113,7 +115,6 @@
                     <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
                 </div>
 
-                <!-- Строки -->
                 <div v-for="(gallery, index) in filteredGalleries" :key="gallery.id"
                      class="flex px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
                      :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
@@ -165,16 +166,24 @@
             </div>
         </div>
 
+        <!-- Модалка создания галереи -->
+        <GalleryModal
+            :show="modalOpen"
+            @close="modalOpen = false"
+            @save="handleCreateGallery"
+        />
+
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AdminLayout from '../../../layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
+import GalleryModal from './components/GalleryModal.vue';
 
 const props = defineProps<{
     user: any;
@@ -187,6 +196,7 @@ const search = ref('');
 const filterType = ref('');
 const filterStatus = ref('');
 const loading = ref(false);
+const modalOpen = ref(false);
 let searchTimeout: any = null;
 
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
@@ -230,6 +240,29 @@ const loadGalleries = async () => {
         console.error('Error loading galleries:', error);
     } finally {
         loading.value = false;
+    }
+};
+
+const openCreateModal = () => {
+    modalOpen.value = true;
+};
+
+const handleCreateGallery = async (data: any) => {
+    try {
+        const response = await axios.post('/admin/galleries', {
+            title: data.title,
+            type: data.type,
+            status: data.status,
+            settings: {},
+        });
+
+        modalOpen.value = false;
+        showNotification('Галерея создана', 'success');
+
+        // Переход на страницу редактирования
+        router.visit(`/admin/galleries/${response.data.id}/edit`);
+    } catch (error: any) {
+        showNotification(error.response?.data?.message || 'Ошибка при создании', 'error');
     }
 };
 

@@ -1,1 +1,23 @@
 @import 'tailwindcss';
+
+@import './admin-variables.css';
+
+/* Тема */
+@import 'themes/default/variables.css';
+@import 'themes/default/layout.css';
+@import 'themes/default/header.css';
+@import 'themes/default/footer.css';
+@import 'themes/default/components.css';
+
+/* Галереи */
+@import './gallery.css';
+
+/* Пустые параграфы в контенте */
+.prose p:empty {
+    min-height: 1.5em;
+}
+
+.prose p:empty::before {
+    content: "\00a0";
+    display: inline-block;
+}

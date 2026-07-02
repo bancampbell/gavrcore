@@ -1,0 +1,66 @@
+/* ===== Админка: фиксированные цвета ===== */
+:root {
+    /* Цвета админки (не зависят от темы) */
+    --admin-primary: #3071a9;
+    --admin-primary-hover: #265a8a;
+    --admin-primary-light: #e8f0f8;
+    --admin-text: #1f2937;
+    --admin-text-muted: #6b7280;
+    --admin-bg: #f9fafb;
+    --admin-surface: #ffffff;
+    --admin-border: #e5e7eb;
+}
+
+/* ===== ПЕРЕОПРЕДЕЛЯЕМ ВСЕ ССЫЛКИ В АДМИНКЕ ===== */
+.admin-sidebar a,
+.admin-sidebar .menu-link,
+.admin-sidebar .menu-link:hover,
+.admin-sidebar .menu-link.active,
+.admin-sidebar .menu-link:focus {
+    color: var(--admin-text) !important;
+    background: transparent !important;
+    text-decoration: none !important;
+}
+
+.admin-sidebar a:hover,
+.admin-sidebar .menu-link:hover {
+    color: var(--admin-primary) !important;
+    background: var(--admin-primary-light) !important;
+}
+
+.admin-sidebar a.active,
+.admin-sidebar .menu-link.active {
+    color: var(--admin-primary) !important;
+    background: var(--admin-primary-light) !important;
+}
+
+/* Ссылки в контенте админки */
+.admin-content a:not(.btn):not(.no-style) {
+    color: var(--admin-primary) !important;
+    text-decoration: none !important;
+}
+
+.admin-content a:not(.btn):not(.no-style):hover {
+    color: var(--admin-primary-hover) !important;
+    text-decoration: underline !important;
+}
+
+/* Кнопки в админке */
+.admin-btn-primary {
+    background: var(--admin-primary);
+    color: white;
+}
+
+.admin-btn-primary:hover {
+    background: var(--admin-primary-hover);
+}
+
+/* Таблицы в админке */
+.admin-table th {
+    color: var(--admin-primary);
+    border-bottom: 2px solid var(--admin-border);
+}
+
+.admin-table td {
+    border-bottom: 1px solid var(--admin-border);
+}

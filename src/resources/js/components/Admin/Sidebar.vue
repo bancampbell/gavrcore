@@ -1,6 +1,6 @@
 <template>
     <aside :class="[
-        'fixed lg:relative z-30 w-64 bg-white border-r border-gray-200 h-screen overflow-y-auto transition-transform duration-300 ease-in-out',
+        'admin-sidebar fixed lg:relative z-30 w-64 bg-white border-r border-gray-200 h-screen overflow-y-auto transition-transform duration-300 ease-in-out',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
     ]">
         <div class="py-4">
@@ -113,6 +113,7 @@
                     <div v-if="isAdmin" class="px-3">
                         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">НАСТРОЙКИ</div>
                         <SidebarLink href="/admin/settings" icon="settings">Общие настройки</SidebarLink>
+                        <SidebarLink href="/admin/themes" icon="palette">Темы оформления</SidebarLink>
                         <SidebarLink href="/admin/materials/trash" icon="trash">Корзина</SidebarLink>
                     </div>
                 </nav>

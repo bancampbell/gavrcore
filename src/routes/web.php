@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Web\MaterialController as WebMaterialController;
 use App\Models\MenuItem;
@@ -170,4 +171,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Settings
     Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
+
+    // Themes
+    Route::get('/admin/themes', [ThemeController::class, 'index'])->name('admin.themes.index');
+    Route::post('/admin/themes', [ThemeController::class, 'update'])->name('admin.themes.update');
 });

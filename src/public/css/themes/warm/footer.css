@@ -1,0 +1,22 @@
+/* ===== Footer (Крафтовый стиль) ===== */
+.site-footer {
+    background: var(--color-surface);
+    border-top: 4px solid var(--color-border);
+    padding: var(--spacing-xl) 0;
+    margin-top: auto;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    font-family: 'Georgia', serif;
+}
+
+.site-footer a {
+    color: var(--color-primary);
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition);
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    border-bottom-color: var(--color-border);
+}

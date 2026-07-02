@@ -345,10 +345,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.gallery-renderer {
-    margin-bottom: 24px;
-}
-
 .gallery-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

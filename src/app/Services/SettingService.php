@@ -58,6 +58,14 @@ class SettingService
         }
     }
 
+    /**
+     * Get current theme
+     */
+    public function getTheme(): string
+    {
+        return Setting::where('key', 'theme')->first()?->value ?? 'default';
+    }
+
     public function initializeDefaultSettings(): void
     {
         $defaults = [

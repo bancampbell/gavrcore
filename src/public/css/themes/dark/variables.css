@@ -1,0 +1,36 @@
+:root {
+    /* ===== ЦВЕТА (Тёмная тема) ===== */
+    --color-primary: #818cf8;
+    --color-primary-hover: #6366f1;
+    --color-secondary: #a78bfa;
+
+    --color-bg: #0f0f12;
+    --color-surface: #1a1a1e;
+    --color-text: #e4e4e7;
+    --color-text-muted: #a1a1aa;
+    --color-border: #2a2a2e;
+    --color-white: #1a1a1e;
+
+    /* Шрифты (оставляем как в default) */
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-size-base: 16px;
+
+    /* Отступы (оставляем как в default) */
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 4rem;
+
+    /* Радиусы (оставляем как в default) */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+
+    /* Тени (адаптируем под тёмный фон) */
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.5);
+
+    /* Переходы (оставляем) */
+    --transition: 0.2s ease-in-out;
+}

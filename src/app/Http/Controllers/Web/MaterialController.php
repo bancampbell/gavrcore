@@ -14,11 +14,14 @@ use Inertia\Response;
 
 class MaterialController extends Controller
 {
+    protected SettingService $settingService;
+
     public function __construct(
         protected MaterialService $materialService,
         protected CategoryService $categoryService,
         protected MenuService $menuService
     ) {
+        $this->settingService = app(SettingService::class);
     }
 
     public function index(): Response
@@ -28,11 +31,11 @@ class MaterialController extends Controller
             ->with(['category', 'user'])
             ->first();
 
-        $settingService = app(SettingService::class);
-        $settings = $settingService->getAllSettings();
+        $settings = $this->settingService->getAllSettings();
         $siteName = $settings['site_name'] ?? 'GavrCore CMS';
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
+        $currentTheme = $this->settingService->getTheme();
 
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
@@ -40,6 +43,8 @@ class MaterialController extends Controller
             'title' => $siteName,
             'description' => $siteDescription,
             'keywords' => $siteKeywords,
+            'appSettings' => $settings,
+            'currentTheme' => $currentTheme,
         ]);
     }
 
@@ -52,10 +57,10 @@ class MaterialController extends Controller
 
         $material->increment('views');
 
-        $settingService = app(SettingService::class);
-        $settings = $settingService->getAllSettings();
+        $settings = $this->settingService->getAllSettings();
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
+        $currentTheme = $this->settingService->getTheme();
 
         return Inertia::render('Material/Show', [
             'material' => $material,
@@ -63,6 +68,8 @@ class MaterialController extends Controller
             'title' => $material->title,
             'description' => $siteDescription,
             'keywords' => $siteKeywords,
+            'appSettings' => $settings,
+            'currentTheme' => $currentTheme,
         ]);
     }
 
@@ -81,10 +88,10 @@ class MaterialController extends Controller
         $materials = $this->materialService->getPaginated($filters);
         $categories = $this->categoryService->getAllForSelect();
 
-        $settingService = app(SettingService::class);
-        $settings = $settingService->getAllSettings();
+        $settings = $this->settingService->getAllSettings();
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
+        $currentTheme = $this->settingService->getTheme();
 
         return Inertia::render('Category/Show', [
             'category' => $category,
@@ -95,6 +102,8 @@ class MaterialController extends Controller
             'title' => $category->name,
             'description' => $siteDescription,
             'keywords' => $siteKeywords,
+            'appSettings' => $settings,
+            'currentTheme' => $currentTheme,
         ]);
     }
 
@@ -112,10 +121,10 @@ class MaterialController extends Controller
 
         $title = $search ? "Поиск: $search" : 'Поиск';
 
-        $settingService = app(SettingService::class);
-        $settings = $settingService->getAllSettings();
+        $settings = $this->settingService->getAllSettings();
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
+        $currentTheme = $this->settingService->getTheme();
 
         return Inertia::render('Search/Index', [
             'materials' => $materials,
@@ -125,6 +134,8 @@ class MaterialController extends Controller
             'title' => $title,
             'description' => $siteDescription,
             'keywords' => $siteKeywords,
+            'appSettings' => $settings,
+            'currentTheme' => $currentTheme,
         ]);
     }
 }

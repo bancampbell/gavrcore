@@ -1,0 +1,72 @@
+/* ===== Layout (Крафтовый стиль) ===== */
+.site-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--color-bg);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    line-height: 1.9;
+}
+
+.site-main {
+    flex: 1;
+    padding: var(--spacing-xl) 0;
+}
+
+.container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* Типографика */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.02em;
+    color: var(--color-text);
+}
+
+h1 {
+    font-size: 2.8rem;
+    border-bottom: 3px solid var(--color-border);
+    padding-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2.2rem;
+}
+
+h3 {
+    font-size: 1.6rem;
+}
+
+/* Ссылки */
+a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: all var(--transition);
+}
+
+a:hover {
+    color: var(--color-primary-hover);
+}
+
+/* Кнопки */
+button, .btn {
+    font-family: 'Georgia', serif;
+    border: 2px solid var(--color-border);
+    background: transparent;
+    padding: 0.5rem 1.5rem;
+    transition: all var(--transition);
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 0;
+}
+
+button:hover, .btn:hover {
+    background: var(--color-border);
+    color: var(--color-text);
+}

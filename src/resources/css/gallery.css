@@ -95,11 +95,6 @@
 .rounded-full .label-overlay {
     border-radius: 0 0 9999px 9999px !important;
 }
-.gallery-renderer,
-.gallery-server-renderer,
-.switcher-gallery-server {
-    margin-bottom: 24px;
-}
 .text-center {
     text-align: center;
 }

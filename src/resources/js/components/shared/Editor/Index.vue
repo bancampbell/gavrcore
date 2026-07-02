@@ -18,12 +18,8 @@
             <div class="tiptap p-4 h-full" ref="editorElement"></div>
         </div>
 
-        <div v-show="showHtml" class="flex-1 p-4">
-            <textarea
-                v-model="htmlContent"
-                class="w-full h-full font-mono text-sm border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                rows="12"
-            ></textarea>
+        <div v-show="showHtml" class="flex-1 p-4 overflow-hidden">
+            <div ref="codeEditorRef" class="h-full w-full"></div>
             <div class="mt-2 flex justify-end gap-2">
                 <button @click="applyHtml" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
                     Применить
@@ -49,13 +45,24 @@ import { ResizableImage } from './extensions';
 import { useHtmlMode, useLinkHandlers, useImageHandlers } from './composables';
 import type { EditorProps, EditorEmits } from './types/editor';
 
+// CodeMirror
+import { EditorView, basicSetup } from 'codemirror';
+import { html } from '@codemirror/lang-html';
+import { EditorView as EditorViewExt } from '@codemirror/view';
+
+// Prettier для форматирования HTML
+import { format } from 'prettier/standalone';
+import parserHtml from 'prettier/plugins/html';
+
 const props = defineProps<EditorProps>();
 const emit = defineEmits<EditorEmits>();
 
 const editorElement = ref<HTMLElement>();
 const showHtml = ref(false);
 const htmlContent = ref('');
+const codeEditorRef = ref<HTMLElement>();
 let editor: Editor | null = null;
+let codeEditorView: EditorView | null = null;
 
 const editorRef = ref(editor) as VueRef<Editor | null>;
 
@@ -85,6 +92,62 @@ const { selectedImageAlign, handleImageClick, updateImage: imageHandlersUpdate }
 
 watch(editor, (newEditor) => {
     editorRef.value = newEditor;
+});
+
+// При открытии HTML режима создаем CodeMirror с форматированием
+watch(showHtml, async (newVal) => {
+    if (newVal) {
+        await nextTick();
+        if (codeEditorRef.value && !codeEditorView) {
+            let formattedHtml = htmlContent.value;
+            try {
+                formattedHtml = await format(htmlContent.value, {
+                    parser: 'html',
+                    plugins: [parserHtml],
+                    printWidth: 80,
+                    tabWidth: 2,
+                    useTabs: false,
+                });
+            } catch (e) {
+                console.warn('HTML formatting failed:', e);
+            }
+            htmlContent.value = formattedHtml;
+
+            codeEditorView = new EditorView({
+                doc: formattedHtml,
+                extensions: [
+                    basicSetup,
+                    html(),
+                    EditorViewExt.lineWrapping,
+                    EditorView.updateListener.of((update) => {
+                        if (update.docChanged) {
+                            htmlContent.value = update.state.doc.toString();
+                        }
+                    }),
+                ],
+                parent: codeEditorRef.value,
+            });
+        }
+    } else {
+        if (codeEditorView) {
+            codeEditorView.destroy();
+            codeEditorView = null;
+        }
+    }
+});
+
+// Синхронизация при изменении htmlContent извне
+watch(htmlContent, (newVal) => {
+    if (codeEditorView && newVal !== codeEditorView.state.doc.toString()) {
+        const transaction = codeEditorView.state.update({
+            changes: {
+                from: 0,
+                to: codeEditorView.state.doc.length,
+                insert: newVal,
+            },
+        });
+        codeEditorView.dispatch(transaction);
+    }
 });
 
 const handleOpenLinkModal = () => {
@@ -198,6 +261,10 @@ onBeforeUnmount(() => {
         editorContainer.removeEventListener('click', handleImageClick, true);
     }
     editor?.destroy();
+    if (codeEditorView) {
+        codeEditorView.destroy();
+        codeEditorView = null;
+    }
 });
 </script>
 
@@ -257,5 +324,53 @@ onBeforeUnmount(() => {
 }
 .tiptap p {
     margin-bottom: 0.5rem;
+}
+
+/* CodeMirror стили — светлая тема */
+.cm-editor {
+    height: 100% !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
+    font-size: 13px !important;
+    background: #ffffff !important;
+}
+.cm-scroller {
+    overflow: auto !important;
+}
+
+/* Светлая тема для подсветки */
+.cm-editor .cm-content {
+    color: #24292e !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+}
+
+/* HTML теги — синие */
+.cm-editor .ͼ1 .cm-tag {
+    color: #0550ae !important;
+}
+
+/* Атрибуты — красные */
+.cm-editor .ͼ1 .cm-attribute {
+    color: #8250df !important;
+}
+
+/* Значения атрибутов — зеленые */
+.cm-editor .ͼ1 .cm-string {
+    color: #0a3069 !important;
+}
+
+/* Комментарии — серые */
+.cm-editor .ͼ1 .cm-comment {
+    color: #6e7781 !important;
+}
+
+/* Ключевые слова — синие */
+.cm-editor .ͼ1 .cm-keyword {
+    color: #0550ae !important;
+}
+
+/* Операторы — черные */
+.cm-editor .ͼ1 .cm-operator {
+    color: #24292e !important;
 }
 </style>
