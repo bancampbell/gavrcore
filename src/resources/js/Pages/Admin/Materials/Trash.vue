@@ -3,111 +3,183 @@
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white rounded-lg shadow">
-            <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
-                <div class="flex flex-wrap gap-2 justify-between items-center">
-                    <div class="flex flex-wrap gap-2">
+
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <div class="flex flex-wrap gap-2.5 justify-between items-center">
+                    <div class="flex flex-wrap gap-2.5">
                         <button
                             @click="restoreSelected"
                             :disabled="selectedMaterials.length === 0"
-                            class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                            class="admin-btn admin-btn-secondary"
                         >
                             Восстановить
                         </button>
                         <button
                             @click="openDeleteModal"
                             :disabled="selectedMaterials.length === 0"
-                            class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-red-600 hover:bg-red-50 transition disabled:opacity-50"
+                            class="admin-btn admin-btn-danger"
                         >
                             Удалить навсегда
                         </button>
                         <button
                             @click="openEmptyTrashModal"
                             :disabled="materials.data?.length === 0"
-                            class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-red-600 hover:bg-red-50 transition disabled:opacity-50"
+                            class="admin-btn admin-btn-danger"
                         >
                             Очистить корзину
                         </button>
                     </div>
-                    <Link href="/admin/materials" class="text-sm text-gray-500 hover:text-gray-700">
+                    <Link href="/admin/materials" class="text-sm text-slate-500 hover:text-slate-700">
                         ← Назад к материалам
                     </Link>
                 </div>
             </div>
 
-            <!-- Таблица -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="text-left px-4 py-3 w-10">
-                            <input type="checkbox" @change="selectAll" v-model="allSelected" class="rounded border-gray-300">
-                        </th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Заголовок</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Доступ</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Автор</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Язык</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Дата создания</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">Просмотров</th>
-                        <th class="text-left px-4 py-3 font-bold text-[#3071a9]">ID</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(material, index) in materials.data" :key="material.id"
-                        :class="[
-                                'border-b border-gray-100 hover:bg-gray-100 cursor-pointer',
-                                index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                            ]">
-                        <td class="px-4 py-3">
-                            <input type="checkbox" v-model="selectedMaterials" :value="material.id" class="rounded border-gray-300">
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="font-medium text-gray-800">{{ material.title }}</div>
-                            <div class="text-xs text-gray-400 mt-0.5">Алиас: {{ material.alias }}</div>
-                            <div class="text-xs text-gray-400">Категория: {{ material.category?.name || 'Uncategorized' }}</div>
-                        </td>
-                        <td class="px-4 py-3">
-                                <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium" :class="{
-                                    'bg-green-100 text-green-800': material.access === 'public',
-                                    'bg-yellow-100 text-yellow-800': material.access === 'registered',
-                                    'bg-red-100 text-red-800': material.access === 'special'
-                                }">
-                                    {{ material.access }}
-                                </span>
-                        </td>
-                        <td class="px-4 py-3 text-gray-600">{{ material.user?.name }}</td>
-                        <td class="px-4 py-3 text-gray-600">Все</td>
-                        <td class="px-4 py-3 text-gray-600">{{ formatDate(material.created_at) }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ material.views }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ material.id }}</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <!-- Контент (скроллится) -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full">
+                    <!-- Мобильная версия (карточки) -->
+                    <div class="lg:hidden divide-y divide-slate-100">
+                        <div v-for="material in materials.data" :key="material.id" class="p-4 hover:bg-slate-50">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" v-model="selectedMaterials" :value="material.id" class="mt-1 admin-checkbox">
+                                <div class="flex-1">
+                                    <div class="font-medium text-slate-800">{{ material.title }}</div>
+                                    <div class="text-sm text-slate-500 mt-1">ID: {{ material.id }}</div>
+                                    <div class="text-xs text-slate-400">Алиас: {{ material.alias }}</div>
+                                    <div class="text-xs text-[#3071a9]">Категория: {{ material.category?.name || 'Без категории' }}</div>
+                                    <div class="flex flex-wrap gap-4 mt-2 text-xs">
+                                        <span class="text-slate-500">Автор: {{ material.user?.name || '—' }}</span>
+                                        <span class="text-slate-500">Просмотров: {{ material.views }}</span>
+                                        <span class="text-slate-500">Дата: {{ formatDate(material.created_at) }}</span>
+                                        <span :class="{
+                                            'text-emerald-600': material.access === 'public',
+                                            'text-amber-600': material.access === 'registered',
+                                            'text-rose-600': material.access === 'special'
+                                        }">
+                                            {{ material.access }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Пагинация -->
-            <div class="border-t border-gray-200 px-6 py-4 flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                    Показано {{ materials.from || 0 }} - {{ materials.to || 0 }} из {{ materials.total || 0 }}
-                </div>
-                <div class="flex gap-1">
-                    <button
-                        @click="prevPage"
-                        :disabled="materials.current_page === 1"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        ← Назад
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">
-                        {{ materials.current_page }} / {{ materials.last_page }}
-                    </span>
-                    <button
-                        @click="nextPage"
-                        :disabled="materials.current_page === materials.last_page"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        Вперед →
-                    </button>
+                    <!-- Десктопная версия - ЕДИНАЯ ТАБЛИЦА -->
+                    <div class="hidden lg:block admin-table-scroll">
+                        <table class="admin-table-fixed">
+                            <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" v-model="allSelected" class="admin-checkbox">
+                                </th>
+                                <th class="col-title">Заголовок</th>
+                                <th class="col-access">Доступ</th>
+                                <th class="col-author">Автор</th>
+                                <th class="col-language">Язык</th>
+                                <th class="col-created">Дата создания</th>
+                                <th class="col-views">Просмотров</th>
+                                <th class="col-id">ID</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr
+                                v-for="material in materials.data"
+                                :key="material.id"
+                                :class="{ 'bg-blue-50/50': selectedMaterials.includes(material.id) }"
+                            >
+                                <!-- Чекбокс -->
+                                <td class="col-checkbox" @click.stop="toggleSelect(material.id)">
+                                    <input
+                                        type="checkbox"
+                                        :checked="selectedMaterials.includes(material.id)"
+                                        @change="toggleSelect(material.id)"
+                                        class="admin-checkbox"
+                                    />
+                                </td>
+
+                                <!-- Название -->
+                                <td class="col-title" @click="toggleSelect(material.id)">
+                                    <div class="font-medium text-slate-800">{{ material.title }}</div>
+                                    <div class="title-slug">Алиас: {{ material.alias }}</div>
+                                    <div class="title-category">Категория: {{ material.category?.name || 'Без категории' }}</div>
+                                </td>
+
+                                <!-- Доступ -->
+                                <td class="col-access" @click="toggleSelect(material.id)">
+                                    <span class="access-badge" :class="{
+                                        'access-public': material.access === 'public',
+                                        'access-registered': material.access === 'registered',
+                                        'access-special': material.access === 'special'
+                                    }">
+                                        {{ material.access }}
+                                    </span>
+                                </td>
+
+                                <!-- Автор -->
+                                <td class="col-author" @click="toggleSelect(material.id)">
+                                    {{ material.user?.name || '—' }}
+                                </td>
+
+                                <!-- Язык -->
+                                <td class="col-language" @click="toggleSelect(material.id)">
+                                    Все
+                                </td>
+
+                                <!-- Дата создания -->
+                                <td class="col-created" @click="toggleSelect(material.id)">
+                                    {{ formatDate(material.created_at) }}
+                                </td>
+
+                                <!-- Просмотров -->
+                                <td class="col-views" @click="toggleSelect(material.id)">
+                                    {{ material.views }}
+                                </td>
+
+                                <!-- ID -->
+                                <td class="col-id" @click="toggleSelect(material.id)">
+                                    {{ material.id }}
+                                </td>
+                            </tr>
+
+                            <!-- Пустая строка, если нет данных -->
+                            <tr v-if="materials.data?.length === 0">
+                                <td colspan="8" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                    Корзина пуста
+                                    <p style="font-size: 12px; margin-top: 4px;">Удалённые материалы будут появляться здесь</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <div v-if="materials.data?.length > 0" class="admin-pagination">
+                        <div class="admin-pagination-info">
+                            Показано {{ materials.from || 0 }} - {{ materials.to || 0 }} из {{ materials.total || 0 }}
+                        </div>
+                        <div class="admin-pagination-controls">
+                            <button
+                                @click="prevPage"
+                                :disabled="materials.current_page === 1"
+                                class="admin-pagination-btn"
+                            >
+                                ← Назад
+                            </button>
+                            <span class="admin-pagination-current">
+                                {{ materials.current_page }} / {{ materials.last_page }}
+                            </span>
+                            <button
+                                @click="nextPage"
+                                :disabled="materials.current_page === materials.last_page"
+                                class="admin-pagination-btn"
+                            >
+                                Вперед →
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,7 +196,6 @@
             @confirm="confirmAction"
         />
 
-        <!-- Toast уведомление -->
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
@@ -144,6 +215,15 @@ const props = defineProps<{
     materials: MaterialsData;
 }>();
 
+const toggleSelect = (id: number) => {
+    const index = selectedMaterials.value.indexOf(id);
+    if (index === -1) {
+        selectedMaterials.value.push(id);
+    } else {
+        selectedMaterials.value.splice(index, 1);
+    }
+};
+
 const {
     selectedMaterials,
     allSelected,
@@ -154,7 +234,6 @@ const {
     modalConfirmText,
     modalLoading,
     formatDate,
-    selectAll,
     prevPage,
     nextPage,
     restoreSelected,

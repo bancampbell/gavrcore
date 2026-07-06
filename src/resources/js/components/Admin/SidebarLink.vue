@@ -56,8 +56,15 @@ const isActive = computed(() => {
     // Точное совпадение
     if (currentUrl === props.href) return true;
 
-    // Для всех основных разделов — startsWith
-    if (props.href === '/admin/materials' && currentUrl.startsWith('/admin/materials')) return true;
+    // ===== ГРУППЫ =====
+
+    // Материалы (исключаем корзину)
+    if (props.href === '/admin/materials' && currentUrl.startsWith('/admin/materials') && !currentUrl.startsWith('/admin/materials/trash')) return true;
+
+    // Корзина (только точное совпадение)
+    if (props.href === '/admin/materials/trash' && currentUrl === '/admin/materials/trash') return true;
+
+    // Остальные разделы
     if (props.href === '/admin/categories' && currentUrl.startsWith('/admin/categories')) return true;
     if (props.href === '/admin/media' && currentUrl.startsWith('/admin/media')) return true;
     if (props.href === '/admin/users' && currentUrl.startsWith('/admin/users')) return true;
@@ -65,6 +72,7 @@ const isActive = computed(() => {
     if (props.href === '/admin/access-levels' && currentUrl.startsWith('/admin/access-levels')) return true;
     if (props.href === '/admin/themes' && currentUrl.startsWith('/admin/themes')) return true;
     if (props.href === '/admin/settings' && currentUrl.startsWith('/admin/settings')) return true;
+    if (props.href === '/admin/galleries' && currentUrl.startsWith('/admin/galleries')) return true;
 
     // Менеджер меню — только точное совпадение
     if (props.href === '/admin/menu' && currentUrl === '/admin/menu') return true;
@@ -74,9 +82,6 @@ const isActive = computed(() => {
 
     // Создание материала
     if (props.href === '/admin/materials/create' && currentUrl === '/admin/materials/create') return true;
-
-    // Корзина
-    if (props.href === '/admin/materials/trash' && currentUrl.startsWith('/admin/materials/trash')) return true;
 
     // Редактирование материалов и категорий
     if (props.href === '/admin/materials' && currentUrl.includes('/admin/materials/') && currentUrl.includes('/edit')) return true;

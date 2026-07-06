@@ -3,56 +3,54 @@
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white rounded-lg shadow">
-            <!-- Фиксированная панель с кнопками -->
-            <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
-                <div class="flex flex-wrap gap-2">
+
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий + фильтры -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <div class="flex flex-wrap gap-2.5">
                     <button
                         @click="openCreateModal"
-                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition"
+                        class="admin-btn admin-btn-primary"
                     >
                         + Создать галерею
                     </button>
-                    <button
-                        @click="deleteSelected"
-                        :disabled="selectedGalleries.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-red-500 bg-white text-red-600 hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Удалить
-                    </button>
-                    <button
-                        @click="publishSelected"
-                        :disabled="selectedGalleries.length === 0"
-                        class="px-4 py-2 rounded-md text-sm bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50"
-                    >
-                        Опубликовать
-                    </button>
-                    <button
-                        @click="unpublishSelected"
-                        :disabled="selectedGalleries.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
-                    >
-                        Снять с публикации
-                    </button>
+                    <template v-if="selectedGalleries.length > 0">
+                        <button
+                            @click="publishSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Опубликовать
+                        </button>
+                        <button
+                            @click="unpublishSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Снять с публикации
+                        </button>
+                        <button
+                            @click="deleteSelected"
+                            class="admin-btn admin-btn-danger"
+                        >
+                            Удалить
+                        </button>
+                    </template>
                 </div>
-            </div>
 
-            <!-- Фильтры -->
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap gap-4 items-end">
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Поиск</label>
+                <!-- Фильтры -->
+                <div class="admin-filters-inline">
+                    <div class="admin-filter-group">
+                        <label class="admin-filter-label">Поиск</label>
                         <input
                             type="text"
                             v-model="search"
                             @input="debounceSearch"
                             placeholder="Введите название..."
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            class="admin-filter-input"
                         />
                     </div>
                     <div class="w-40">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Тип</label>
-                        <select v-model="filterType" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+                        <label class="admin-filter-label">Тип</label>
+                        <select v-model="filterType" @change="applyFilters" class="admin-filter-select">
                             <option value="">Все</option>
                             <option value="grid">Сетка</option>
                             <option value="slideshow">Слайд-шоу</option>
@@ -61,108 +59,161 @@
                         </select>
                     </div>
                     <div class="w-40">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
-                        <select v-model="filterStatus" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+                        <label class="admin-filter-label">Статус</label>
+                        <select v-model="filterStatus" @change="applyFilters" class="admin-filter-select">
                             <option value="">Все</option>
                             <option value="1">Опубликовано</option>
                             <option value="0">Черновик</option>
                         </select>
                     </div>
-                    <button @click="resetFilters" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">
-                        Очистить
-                    </button>
+                    <button @click="resetFilters" class="admin-filter-reset">Очистить</button>
                 </div>
             </div>
 
-            <!-- Мобильная версия (карточки) -->
-            <div class="lg:hidden divide-y divide-gray-100">
-                <div v-for="gallery in filteredGalleries" :key="gallery.id" class="p-4 hover:bg-gray-50">
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" v-model="selectedGalleries" :value="gallery.id" class="mt-1 rounded border-gray-300">
-                        <div class="flex-1">
-                            <Link :href="`/admin/galleries/${gallery.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
-                                {{ gallery.title }}
-                            </Link>
-                            <div class="text-sm text-gray-500 mt-1">ID: {{ gallery.id }}</div>
-                            <div class="text-xs text-gray-400">Тип: {{ gallery.type }}</div>
-                            <div class="flex flex-wrap gap-4 mt-2 text-xs">
-                                <span class="text-gray-500">Изображений: {{ gallery.images_count || 0 }}</span>
-                                <span :class="gallery.status ? 'text-green-600' : 'text-gray-500'">
-                                    {{ gallery.status ? 'Опубликовано' : 'Черновик' }}
-                                </span>
-                                <span class="text-gray-400">Дата: {{ formatDate(gallery.created_at) }}</span>
-                            </div>
-                            <div class="mt-1">
-                                <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">[gallery id="{{ gallery.id }}"]</code>
+            <!-- Контент (скроллится) -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full">
+                    <!-- Мобильная версия (карточки) -->
+                    <div class="lg:hidden divide-y divide-slate-100">
+                        <div v-for="gallery in filteredGalleries" :key="gallery.id" class="p-4 hover:bg-slate-50">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" v-model="selectedGalleries" :value="gallery.id" class="mt-1 admin-checkbox">
+                                <div class="flex-1">
+                                    <Link :href="`/admin/galleries/${gallery.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
+                                        {{ gallery.title }}
+                                    </Link>
+                                    <div class="text-sm text-slate-500 mt-1">ID: {{ gallery.id }}</div>
+                                    <div class="text-xs text-slate-400">Тип: {{ gallery.type }}</div>
+                                    <div class="flex flex-wrap gap-4 mt-2 text-xs">
+                                        <span class="text-slate-500">Изображений: {{ gallery.images_count || 0 }}</span>
+                                        <span :class="gallery.status ? 'text-emerald-600' : 'text-slate-500'">
+                                            {{ gallery.status ? 'Опубликовано' : 'Черновик' }}
+                                        </span>
+                                        <span class="text-slate-400">Дата: {{ formatDate(gallery.created_at) }}</span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <code class="text-xs bg-slate-100 px-2 py-0.5 rounded">[gallery id="{{ gallery.id }}"]</code>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Десктопная версия - ЕДИНАЯ ТАБЛИЦА -->
+                    <div class="hidden lg:block admin-table-scroll">
+                        <table class="admin-table-fixed">
+                            <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" v-model="allSelected" class="admin-checkbox">
+                                </th>
+                                <th class="col-title">Название</th>
+                                <th class="col-type">Тип</th>
+                                <th class="col-images">Изображений</th>
+                                <th class="col-status">Статус</th>
+                                <th class="col-shortcode">Шорткод</th>
+                                <th class="col-created">Дата создания</th>
+                                <th class="col-id">ID</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr
+                                v-for="gallery in filteredGalleries"
+                                :key="gallery.id"
+                                :class="{ 'bg-blue-50/50': selectedGalleries.includes(gallery.id) }"
+                            >
+                                <!-- Чекбокс -->
+                                <td class="col-checkbox" @click.stop="toggleSelect(gallery.id)">
+                                    <input
+                                        type="checkbox"
+                                        :checked="selectedGalleries.includes(gallery.id)"
+                                        @change="toggleSelect(gallery.id)"
+                                        class="admin-checkbox"
+                                    />
+                                </td>
+
+                                <!-- Название -->
+                                <td class="col-title" @click="toggleSelect(gallery.id)">
+                                    <Link :href="`/admin/galleries/${gallery.id}/edit`" class="title-text" style="display: inline-block !important;" @click.stop>
+                                        {{ gallery.title }}
+                                    </Link>
+                                </td>
+
+                                <!-- Тип -->
+                                <td class="col-type" @click="toggleSelect(gallery.id)">
+                                    <span class="gallery-type-badge">
+                                        {{ gallery.type }}
+                                    </span>
+                                </td>
+
+                                <!-- Изображений -->
+                                <td class="col-images" @click="toggleSelect(gallery.id)">
+                                    <span class="stat-badge stat-badge-blue">
+                                        {{ gallery.images_count || 0 }}
+                                    </span>
+                                </td>
+
+                                <!-- Статус -->
+                                <td class="col-status" @click="toggleSelect(gallery.id)">
+                                    <span
+                                        class="status-badge"
+                                        :class="gallery.status ? 'status-published' : 'status-draft'"
+                                    >
+                                        {{ gallery.status ? 'Опубликовано' : 'Черновик' }}
+                                    </span>
+                                </td>
+
+                                <!-- Шорткод -->
+                                <td class="col-shortcode" @click="toggleSelect(gallery.id)">
+                                    <code class="shortcode">[gallery id="{{ gallery.id }}"]</code>
+                                </td>
+
+                                <!-- Дата создания -->
+                                <td class="col-created" @click="toggleSelect(gallery.id)">
+                                    {{ formatDate(gallery.created_at) }}
+                                </td>
+
+                                <!-- ID -->
+                                <td class="col-id" @click="toggleSelect(gallery.id)">{{ gallery.id }}</td>
+                            </tr>
+
+                            <!-- Пустая строка, если нет данных -->
+                            <tr v-if="filteredGalleries.length === 0">
+                                <td colspan="8" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                    Нет галерей
+                                    <p style="font-size: 12px; margin-top: 4px;">Создайте первую галерею</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <div v-if="filteredGalleries.length > 0" class="admin-pagination">
+                        <div class="admin-pagination-info">
+                            Показано {{ pagination.from || 0 }} - {{ pagination.to || 0 }} из {{ pagination.total || 0 }}
+                        </div>
+                        <div class="admin-pagination-controls">
+                            <button
+                                @click="prevPage"
+                                :disabled="pagination.current_page === 1"
+                                class="admin-pagination-btn"
+                            >
+                                ← Назад
+                            </button>
+                            <span class="admin-pagination-current">
+                                {{ pagination.current_page }} / {{ pagination.last_page }}
+                            </span>
+                            <button
+                                @click="nextPage"
+                                :disabled="pagination.current_page === pagination.last_page"
+                                class="admin-pagination-btn"
+                            >
+                                Вперед →
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Десктопная версия (Flexbox) -->
-            <div class="hidden lg:block overflow-x-auto">
-                <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
-                    </div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Название</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Тип</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Изображений</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Статус</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Шорткод</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Дата создания</div>
-                    <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
-                </div>
-
-                <div v-for="(gallery, index) in filteredGalleries" :key="gallery.id"
-                     class="flex px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
-                     :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="selectedGalleries" :value="gallery.id" class="rounded border-gray-300">
-                    </div>
-
-                    <div class="flex-1 flex items-center">
-                        <Link :href="`/admin/galleries/${gallery.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
-                            {{ gallery.title }}
-                        </Link>
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center">
-                        <span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded">
-                            {{ gallery.type }}
-                        </span>
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center text-gray-600">
-                        {{ gallery.images_count || 0 }}
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center">
-                        <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap" :class="{
-                            'bg-green-100 text-green-800': gallery.status,
-                            'bg-gray-100 text-gray-600': !gallery.status
-                        }">
-                            {{ gallery.status ? 'Опубликовано' : 'Черновик' }}
-                        </span>
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center">
-                        <code class="text-xs bg-gray-100 px-2 py-0.5 rounded">[gallery id="{{ gallery.id }}"]</code>
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center text-gray-600 whitespace-nowrap">
-                        {{ formatDate(gallery.created_at) }}
-                    </div>
-
-                    <div class="w-16 flex items-center justify-center text-gray-600">{{ gallery.id }}</div>
-                </div>
-            </div>
-
-            <div v-if="filteredGalleries.length === 0" class="text-center py-12 text-gray-500">
-                <p>Нет галерей</p>
-                <p class="text-sm mt-1">Создайте первую галерею</p>
             </div>
         </div>
 
@@ -197,6 +248,17 @@ const filterType = ref('');
 const filterStatus = ref('');
 const loading = ref(false);
 const modalOpen = ref(false);
+
+// Пагинация
+const pagination = ref({
+    current_page: 1,
+    last_page: 1,
+    from: 0,
+    to: 0,
+    total: 0,
+});
+const perPage = ref(20);
+
 let searchTimeout: any = null;
 
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
@@ -231,11 +293,24 @@ const allSelected = computed({
     }
 });
 
+const toggleSelect = (id: number) => {
+    const index = selectedGalleries.value.indexOf(id);
+    if (index === -1) {
+        selectedGalleries.value.push(id);
+    } else {
+        selectedGalleries.value.splice(index, 1);
+    }
+};
+
 const loadGalleries = async () => {
     loading.value = true;
     try {
         const response = await axios.get('/admin/galleries/list');
         galleries.value = response.data;
+        pagination.value.total = response.data.length;
+        pagination.value.last_page = Math.ceil(pagination.value.total / perPage.value) || 1;
+        pagination.value.from = 1;
+        pagination.value.to = response.data.length;
     } catch (error) {
         console.error('Error loading galleries:', error);
     } finally {
@@ -258,8 +333,6 @@ const handleCreateGallery = async (data: any) => {
 
         modalOpen.value = false;
         showNotification('Галерея создана', 'success');
-
-        // Переход на страницу редактирования
         router.visit(`/admin/galleries/${response.data.id}/edit`);
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при создании', 'error');
@@ -269,7 +342,11 @@ const handleCreateGallery = async (data: any) => {
 const formatDate = (date: string | null) => {
     if (!date) return '—';
     const d = new Date(date);
-    return d.toLocaleDateString('ru-RU');
+    return d.toLocaleDateString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
 };
 
 const debounceSearch = () => {
@@ -347,6 +424,14 @@ const unpublishSelected = async () => {
     } catch (error) {
         showNotification('Ошибка', 'error');
     }
+};
+
+const prevPage = () => {
+    // Для локальной пагинации
+};
+
+const nextPage = () => {
+    // Для локальной пагинации
 };
 
 onMounted(() => {

@@ -1013,3 +1013,52 @@
 .admin-pagination-current {
     @apply text-sm text-slate-600;
 }
+
+/* ========================================
+   САЙДБАР - АККОРДЕОН (ТОЛЬКО ДЛЯ АККОРДЕОНА)
+   ======================================== */
+
+.sidebar-section-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 12px !important;
+    margin: 2px 0 !important;
+    border-radius: 6px 0 0 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    background: rgba(45, 58, 77, 0.04) !important;
+    user-select: none !important;
+}
+
+.sidebar-section-toggle:hover {
+    background: rgba(45, 58, 77, 0.08) !important;
+}
+
+.section-title-text {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    letter-spacing: 0.02em !important;
+}
+
+.section-arrow {
+    flex-shrink: 0 !important;
+    color: #94a3b8 !important;
+    transition: transform 0.25s ease !important;
+}
+
+.section-arrow-open {
+    transform: rotate(180deg) !important;
+    color: #3071a9 !important;
+}
+
+.sidebar-section-content {
+    margin-top: 2px !important;
+    padding-left: 4px !important;
+}
+
+.sidebar-section-content .sidebar-link {
+    padding-left: 24px !important;
+    font-size: 14px !important;
+}
