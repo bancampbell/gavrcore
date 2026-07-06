@@ -8,7 +8,7 @@ class MaterialData
 {
     public function __construct(
         public readonly string $title,
-        public readonly string $alias,
+        public readonly string $slug,
         public readonly ?string $content,
         public readonly int $category_id,
         public readonly int $user_id,
@@ -25,7 +25,7 @@ class MaterialData
     {
         return new self(
             title: $data['title'],
-            alias: $data['alias'] ?? Str::slug($data['title']),
+            slug: $data['slug'] ?? Str::slug($data['title']),
             content: $data['content'] ?? null,
             category_id: (int) $data['category_id'],
             user_id: (int) ($data['user_id'] ?? auth()->id()),
@@ -42,7 +42,7 @@ class MaterialData
     {
         return [
             'title' => $this->title,
-            'alias' => $this->alias,
+            'slug' => $this->slug,
             'content' => $this->content,
             'category_id' => $this->category_id,
             'user_id' => $this->user_id,

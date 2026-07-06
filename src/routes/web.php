@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/access-levels/{id}', [AccessLevelController::class, 'update'])->name('access-levels.update');
         Route::delete('/access-levels/{id}', [AccessLevelController::class, 'destroy'])->name('access-levels.destroy');
         Route::post('/access-levels/ordering', [AccessLevelController::class, 'updateOrdering'])->name('access-levels.ordering');
+        Route::patch('/access-levels/{id}/status', [AccessLevelController::class, 'updateStatus'])->name('access-levels.status');
     });
 
     // Settings

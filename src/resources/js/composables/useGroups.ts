@@ -32,7 +32,6 @@ export function useGroups(props: any) {
     const groupToDelete = ref<any>(null);
     const deleteMessage = ref('');
 
-    // Модалка для массовых операций
     const bulkModalOpen = ref(false);
     const bulkModalTitle = ref('');
     const bulkModalMessage = ref('');
@@ -55,8 +54,19 @@ export function useGroups(props: any) {
         }, 3000);
     };
 
+    // Исправленный applyFilters
     const applyFilters = () => {
-        router.get('/admin/groups', filters.value, {
+        const params: any = {};
+
+        if (filters.value.search) {
+            params.search = filters.value.search;
+        }
+
+        if (filters.value.status !== undefined && filters.value.status !== null) {
+            params.status = filters.value.status;
+        }
+
+        router.get('/admin/groups', params, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -76,7 +86,14 @@ export function useGroups(props: any) {
 
     const prevPage = () => {
         if (props.groups?.current_page > 1) {
-            router.get('/admin/groups', { ...filters.value, page: props.groups.current_page - 1 }, {
+            const params: any = {
+                page: props.groups.current_page - 1
+            };
+            if (filters.value.search) params.search = filters.value.search;
+            if (filters.value.status !== undefined && filters.value.status !== null) {
+                params.status = filters.value.status;
+            }
+            router.get('/admin/groups', params, {
                 preserveState: true,
                 preserveScroll: true,
             });
@@ -85,7 +102,14 @@ export function useGroups(props: any) {
 
     const nextPage = () => {
         if (props.groups?.current_page < props.groups?.last_page) {
-            router.get('/admin/groups', { ...filters.value, page: props.groups.current_page + 1 }, {
+            const params: any = {
+                page: props.groups.current_page + 1
+            };
+            if (filters.value.search) params.search = filters.value.search;
+            if (filters.value.status !== undefined && filters.value.status !== null) {
+                params.status = filters.value.status;
+            }
+            router.get('/admin/groups', params, {
                 preserveState: true,
                 preserveScroll: true,
             });
@@ -151,6 +175,19 @@ export function useGroups(props: any) {
         groupToDelete.value = group;
         deleteMessage.value = `Вы уверены, что хотите удалить группу "${group.name}"?`;
         deleteModalOpen.value = true;
+    };
+
+    const openDeleteModalForSelected = () => {
+        if (selectedGroups.value.length === 0) return;
+
+        if (selectedGroups.value.length === 1) {
+            const group = props.groups.data.find((g: any) => g.id === selectedGroups.value[0]);
+            if (group) {
+                openDeleteModal(group);
+            }
+        } else {
+            bulkDelete();
+        }
     };
 
     const confirmDeleteHandler = async () => {
@@ -278,6 +315,7 @@ export function useGroups(props: any) {
         openEditSelectedModal,
         submitForm,
         openDeleteModal,
+        openDeleteModalForSelected,
         bulkDelete,
         bulkPublish,
         bulkUnpublish,

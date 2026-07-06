@@ -1,14 +1,14 @@
 <template>
-    <div class="min-h-screen bg-gray-100 admin-content">
+    <div class="admin-content h-screen overflow-hidden">
         <TopNav :user="user" @toggleSidebar="sidebarOpen = !sidebarOpen" @logout="handleLogout" />
 
-        <div class="flex pt-12">
+        <div class="flex pt-12 h-[calc(100vh-3rem)] overflow-hidden">
             <div v-if="sidebarOpen" class="fixed inset-0 z-20 lg:hidden" @click="sidebarOpen = false"></div>
 
             <Sidebar :isOpen="sidebarOpen" :user="user" />
 
-            <main class="flex-1 p-4 lg:p-6">
-                <div class="w-full">
+            <main class="flex-1 px-4 lg:px-6 pt-0 pb-0 overflow-hidden">
+                <div class="w-full h-full overflow-y-auto">
                     <slot />
                 </div>
             </main>

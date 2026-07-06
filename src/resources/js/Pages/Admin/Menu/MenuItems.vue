@@ -3,208 +3,247 @@
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white rounded-lg shadow">
-            <!-- Фиксированная панель с кнопками -->
-            <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
-                <div class="flex flex-wrap gap-2">
+
+        <div class="flex flex-col h-full">
+            <!-- Панель действий + фильтры (sticky) -->
+            <div class="admin-page-actions flex-shrink-0">
+                <div class="flex flex-wrap gap-2.5">
                     <Link
                         :href="selectedMenuTypeId ? `/admin/menu/types/${selectedMenuTypeId}/items/create` : (menuTypes.length > 0 ? `/admin/menu/types/${menuTypes[0].id}/items/create` : '#')"
-                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition disabled:opacity-50"
+                        class="admin-btn admin-btn-primary no-style"
                         :class="{ 'opacity-50 pointer-events-none': menuTypes.length === 0 }"
                     >
                         + Создать пункт меню
                     </Link>
-                    <button
-                        @click="openEditSelected"
-                        :disabled="selectedItems.length !== 1"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Редактировать выбранный
-                    </button>
-                    <button
-                        @click="openBulkPublishModal"
-                        :disabled="selectedItems.length === 0"
-                        class="px-4 py-2 rounded-md text-sm bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50"
-                    >
-                        Опубликовать
-                    </button>
-                    <button
-                        @click="openBulkUnpublishModal"
-                        :disabled="selectedItems.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-red-500 bg-white text-red-600 hover:bg-red-50 transition disabled:opacity-50"
-                    >
-                        Снять с публикации
-                    </button>
-                    <button
-                        @click="openDeleteModalForSelected"
-                        :disabled="selectedItems.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50"
-                    >
-                        Удалить выбранные
-                    </button>
+                    <template v-if="selectedItems.length > 0">
+                        <button
+                            @click="openEditSelected"
+                            :disabled="selectedItems.length !== 1"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Редактировать
+                        </button>
+                        <button
+                            @click="openBulkPublishModal"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Опубликовать
+                        </button>
+                        <button
+                            @click="openBulkUnpublishModal"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Снять с публикации
+                        </button>
+                        <button
+                            @click="openDeleteModalForSelected"
+                            class="admin-btn admin-btn-danger"
+                        >
+                            Удалить
+                        </button>
+                    </template>
                 </div>
 
-                <!-- Фильтры и выбор меню -->
-                <div class="mt-3 flex flex-wrap gap-4 items-end">
-                    <div class="min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Выбрать меню</label>
+                <!-- Фильтры -->
+                <div class="admin-filters-inline">
+                    <div class="w-48">
+                        <label class="admin-filter-label">Выбрать меню</label>
                         <select
                             v-model="selectedMenuTypeId"
                             @change="changeMenuType"
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+                            class="admin-filter-select"
                         >
-                            <option :value="null">— Выбор меню (все пункты) —</option>
+                            <option :value="null">— Все меню —</option>
                             <option v-for="type in menuTypes" :key="type.id" :value="type.id">
                                 {{ type.title }}
                             </option>
                         </select>
                     </div>
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Поиск</label>
+                    <div class="admin-filter-group">
+                        <label class="admin-filter-label">Поиск</label>
                         <input
                             type="text"
                             v-model="filters.search"
                             @input="debounceSearch"
                             placeholder="Введите название..."
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            class="admin-filter-input"
                         />
                     </div>
-                    <div class="min-w-[150px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
+                    <div class="w-40">
+                        <label class="admin-filter-label">Статус</label>
                         <select
                             v-model="filters.status"
                             @change="applyFilters"
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+                            class="admin-filter-select"
                         >
                             <option :value="undefined">Все</option>
                             <option :value="true">Опубликовано</option>
                             <option :value="false">Не опубликовано</option>
                         </select>
                     </div>
-                    <button @click="resetFilters" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">
-                        Очистить
-                    </button>
+                    <button @click="resetFilters" class="admin-filter-reset">Очистить</button>
                 </div>
             </div>
 
-            <!-- Grid таблица -->
-            <div class="hidden lg:block overflow-x-auto">
-                <!-- Заголовки -->
-                <div class="grid bg-gray-50 border-b border-gray-200 px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider"
-                     style="grid-template-columns: 40px 60px 1fr 1.5fr 140px">
-                    <div class="flex items-center">
-                        <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
+            <!-- Контент (скроллится) -->
+            <div class="admin-page-content">
+                <div class="admin-page-card">
+                    <!-- Мобильная версия (карточки) -->
+                    <div class="lg:hidden divide-y divide-slate-100">
+                        <div v-for="item in flatItems" :key="item.id" class="p-4 hover:bg-slate-50">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" v-model="selectedItems" :value="item.id" class="mt-1 admin-checkbox">
+                                <div class="flex-1">
+                                    <Link
+                                        :href="`/admin/menu/items/${item.id}/edit`"
+                                        class="font-medium hover:underline text-[#1e5981]"
+                                    >
+                                        {{ item.title }}
+                                    </Link>
+                                    <div class="text-sm text-slate-500 mt-1">ID: {{ item.id }}</div>
+                                    <div class="text-xs text-slate-400">
+                                        {{ getLinkTypeLabel(item.link_type) }}: {{ getLinkValueDisplay(item.link_type, item.link_value) }}
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <span class="menu-badge">
+                                            {{ item.menu_type?.title || '—' }}
+                                        </span>
+                                        <span
+                                            class="status-badge"
+                                            :class="item.status ? 'status-published' : 'status-draft'"
+                                        >
+                                            <svg v-if="item.status" class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <svg v-else class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            {{ item.status ? 'Опубликовано' : 'Не опубликовано' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>ID</div>
-                    <div>Заголовок</div>
-                    <div>Меню</div>
-                    <div class="text-center">Статус</div>
-                </div>
 
-                <!-- Строки -->
-                <div v-for="(item, index) in flatItems" :key="item.id"
-                     class="grid px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
-                     :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-                     style="grid-template-columns: 40px 60px 1fr 1.5fr 140px">
-
-                    <div class="flex items-center">
-                        <input type="checkbox" v-model="selectedItems" :value="item.id" class="rounded border-gray-300">
-                    </div>
-
-                    <div class="flex items-center text-gray-600">{{ item.id }}</div>
-
-                    <div class="flex items-start" :style="{ paddingLeft: `${item.level * 20}px` }">
-                        <div>
-                            <button
-                                @click="openEditModal(item.id)"
-                                class="font-medium text-[#3071a9] hover:underline text-left"
+                    <!-- Десктопная версия -->
+                    <div class="hidden lg:block admin-table-scroll">
+                        <table class="admin-table-fixed">
+                            <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" v-model="allSelected" class="admin-checkbox">
+                                </th>
+                                <th class="col-title">Заголовок</th>
+                                <th class="col-menu">Меню</th>
+                                <th class="col-status">Статус</th>
+                                <th class="col-id">ID</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr
+                                v-for="item in flatItems"
+                                :key="item.id"
+                                class="cursor-pointer"
+                                :class="{ 'bg-blue-50/50': selectedItems.includes(item.id) }"
                             >
-                                {{ item.title }}
+                                <!-- Чекбокс -->
+                                <td class="col-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        :checked="selectedItems.includes(item.id)"
+                                        @change="toggleSelect(item.id)"
+                                        class="admin-checkbox"
+                                    />
+                                </td>
+
+                                <!-- Название -->
+                                <td class="col-title" @click="toggleSelect(item.id)">
+                                    <Link
+                                        :href="`/admin/menu/items/${item.id}/edit`"
+                                        class="title-text"
+                                        :style="{
+                                            display: 'inline-block !important',
+                                            paddingLeft: `${item.level * 20}px`
+                                        }"
+                                        @click.stop
+                                    >
+                                        {{ item.title }}
+                                    </Link>
+                                    <span class="title-slug">
+                                        {{ getLinkTypeLabel(item.link_type) }}: {{ getLinkValueDisplay(item.link_type, item.link_value) }}
+                                    </span>
+                                </td>
+
+                                <!-- Меню -->
+                                <td class="col-menu" @click="toggleSelect(item.id)">
+                                    <span class="menu-badge">
+                                        {{ item.menu_type?.title || '—' }}
+                                    </span>
+                                </td>
+
+                                <!-- Статус - единый класс -->
+                                <td class="col-status" @click="toggleSelect(item.id)">
+                                    <span
+                                        class="status-badge"
+                                        :class="item.status ? 'status-published' : 'status-draft'"
+                                    >
+                                        <svg v-if="item.status" class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <svg v-else class="status-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        {{ item.status ? 'Опубликовано' : 'Не опубликовано' }}
+                                    </span>
+                                </td>
+
+                                <!-- ID -->
+                                <td class="col-id" @click="toggleSelect(item.id)">
+                                    {{ item.id }}
+                                </td>
+                            </tr>
+
+                            <tr v-if="flatItems.length === 0">
+                                <td colspan="5" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                    Нет пунктов меню
+                                    <p style="font-size: 12px; margin-top: 4px;">Создайте первый пункт меню</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <div v-if="flatItems.length > 0" class="admin-pagination">
+                        <div class="admin-pagination-info">
+                            Показано {{ pagination.from || 0 }} - {{ pagination.to || 0 }} из {{ pagination.total || 0 }}
+                        </div>
+                        <div class="admin-pagination-controls">
+                            <button
+                                @click="prevPage"
+                                :disabled="pagination.current_page === 1"
+                                class="admin-pagination-btn"
+                            >
+                                ← Назад
                             </button>
-                            <div class="text-xs text-gray-400 mt-0.5">
-                                {{ getLinkTypeLabel(item.link_type) }}: {{ getLinkValueDisplay(item.link_type, item.link_value) }}
-                            </div>
+                            <span class="admin-pagination-current">
+                                {{ pagination.current_page }} / {{ pagination.last_page }}
+                            </span>
+                            <button
+                                @click="nextPage"
+                                :disabled="pagination.current_page === pagination.last_page"
+                                class="admin-pagination-btn"
+                            >
+                                Вперед →
+                            </button>
                         </div>
                     </div>
-
-                    <div class="flex items-center">
-                        <span :class="getMenuColorClass(item.menu_type?.title)">
-                            {{ item.menu_type?.title || '—' }}
-                        </span>
-                    </div>
-
-                    <div class="flex items-center justify-center">
-                        <span
-                            :class="[
-                                'px-2 py-1 text-xs rounded-full font-medium',
-                                item.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
-                            ]"
-                        >
-                            {{ item.status ? 'Опубликовано' : 'Не опубликовано' }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Мобильная версия - карточки -->
-            <div class="lg:hidden divide-y divide-gray-100">
-                <div v-for="item in flatItems" :key="item.id" class="p-4 hover:bg-gray-50">
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" v-model="selectedItems" :value="item.id" class="mt-1 rounded border-gray-300">
-                        <div class="flex-1">
-                            <button @click="openEditModal(item.id)" class="font-medium text-[#3071a9] hover:underline">
-                                {{ item.title }}
-                            </button>
-                            <div class="text-sm text-gray-500 mt-1">ID: {{ item.id }}</div>
-                            <div class="text-xs text-gray-400">
-                                {{ getLinkTypeLabel(item.link_type) }}: {{ getLinkValueDisplay(item.link_type, item.link_value) }}
-                            </div>
-                            <div class="mt-2">
-                                <span class="text-xs px-2 py-1 rounded bg-indigo-100 text-indigo-600">
-                                    {{ item.menu_type?.title || '—' }}
-                                </span>
-                                <span
-                                    :class="[
-                                        'ml-2 px-2 py-1 text-xs rounded-full font-medium',
-                                        item.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'
-                                    ]"
-                                >
-                                    {{ item.status ? 'Опубликовано' : 'Не опубликовано' }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Пагинация -->
-            <div class="border-t border-gray-200 px-6 py-4 flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                    Показано {{ pagination.from || 0 }} - {{ pagination.to || 0 }} из {{ pagination.total || 0 }}
-                </div>
-                <div class="flex gap-1">
-                    <button
-                        @click="prevPage"
-                        :disabled="pagination.current_page === 1"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        ← Назад
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">
-                        {{ pagination.current_page }} / {{ pagination.last_page }}
-                    </span>
-                    <button
-                        @click="nextPage"
-                        :disabled="pagination.current_page === pagination.last_page"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        Вперед →
-                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Модальное окно для смены статуса (одиночное) -->
+        <!-- Модалки -->
         <ConfirmModal
             :is-open="toggleStatusModalOpen"
             title="Изменение статуса"
@@ -216,7 +255,6 @@
             @confirm="confirmToggleStatus"
         />
 
-        <!-- Модальное окно для массовой публикации -->
         <ConfirmModal
             :is-open="bulkPublishModalOpen"
             title="Массовая публикация"
@@ -228,7 +266,6 @@
             @confirm="confirmBulkPublish"
         />
 
-        <!-- Модальное окно для массового снятия с публикации -->
         <ConfirmModal
             :is-open="bulkUnpublishModalOpen"
             title="Массовое снятие с публикации"
@@ -240,7 +277,6 @@
             @confirm="confirmBulkUnpublish"
         />
 
-        <!-- Модальное окно подтверждения удаления (одиночное) -->
         <ConfirmModal
             :is-open="deleteModalOpen"
             title="Удаление пункта меню"
@@ -252,7 +288,6 @@
             @confirm="confirmDeleteHandler"
         />
 
-        <!-- Модальное окно подтверждения массового удаления -->
         <ConfirmModal
             :is-open="bulkDeleteModalOpen"
             title="Массовое удаление"
@@ -264,7 +299,6 @@
             @confirm="confirmBulkDeleteHandler"
         />
 
-        <!-- Toast уведомление -->
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
@@ -374,6 +408,15 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 3000);
 };
 
+const toggleSelect = (id: number) => {
+    const index = selectedItems.value.indexOf(id);
+    if (index === -1) {
+        selectedItems.value.push(id);
+    } else {
+        selectedItems.value.splice(index, 1);
+    }
+};
+
 const getLinkTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
         url: 'URL',
@@ -389,20 +432,6 @@ const getLinkValueDisplay = (type: string, value: string | null) => {
     if (!value) return '—';
     if (type === 'material') return `ID: ${value}`;
     return value;
-};
-
-const getMenuColorClass = (menuTitle?: string) => {
-    const colors: Record<string, string> = {
-        'Main Menu': 'px-2 py-1 text-xs rounded-full font-medium bg-blue-100 text-blue-700',
-        'Menu login': 'px-2 py-1 text-xs rounded-full font-medium bg-purple-100 text-purple-700',
-        'Nevidimia': 'px-2 py-1 text-xs rounded-full font-medium bg-gray-100 text-gray-700',
-    };
-
-    if (menuTitle && colors[menuTitle]) {
-        return colors[menuTitle];
-    }
-
-    return 'px-2 py-1 text-xs rounded-full font-medium bg-gray-100 text-gray-600';
 };
 
 const flattenTree = (items: MenuItem[], level = 0): (MenuItem & { level: number })[] => {

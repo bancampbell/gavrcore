@@ -20,17 +20,17 @@ class MaterialService
      *
      * @return LengthAwarePaginator<int, Material>
      */
-    public function getPaginated(array $filters): LengthAwarePaginator
+    public function getPaginated(array $filters, int $perPage = 10): LengthAwarePaginator
     {
-        return $this->repository->paginate($filters);
+        return $this->repository->paginate($filters, $perPage);
     }
 
     public function create(MaterialData $data): Material
     {
-        if (empty($data->alias)) {
+        if (empty($data->slug)) {
             $data = new MaterialData(
                 title: $data->title,
-                alias: Str::slug($data->title),
+                slug: Str::slug($data->title),
                 content: $data->content,
                 category_id: $data->category_id,
                 user_id: $data->user_id,
@@ -45,10 +45,10 @@ class MaterialService
 
     public function update(Material $material, MaterialData $data): Material
     {
-        if (empty($data->alias)) {
+        if (empty($data->slug)) {
             $data = new MaterialData(
                 title: $data->title,
-                alias: Str::slug($data->title),
+                slug: Str::slug($data->title),
                 content: $data->content,
                 category_id: $data->category_id,
                 user_id: $data->user_id,

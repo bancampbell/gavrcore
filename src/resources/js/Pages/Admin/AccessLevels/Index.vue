@@ -3,173 +3,229 @@
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white rounded-lg shadow">
-            <!-- Фиксированная панель с кнопками -->
-            <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
-                <div class="flex flex-wrap gap-2">
+
+        <div class="flex flex-col h-full">
+            <!-- Панель действий + фильтры (sticky) -->
+            <div class="admin-page-actions flex-shrink-0">
+                <div class="flex flex-wrap gap-2.5">
                     <Link
                         href="/admin/access-levels/create"
-                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition"
+                        class="admin-btn admin-btn-primary no-style"
                     >
                         + Создать уровень доступа
                     </Link>
-                    <button
-                        @click="openBulkDeleteModal"
-                        :disabled="selectedLevels.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50"
-                    >
-                        Удалить выбранные
-                    </button>
+                    <template v-if="selectedLevels.length > 0">
+                        <button
+                            @click="openBulkDeleteModal"
+                            class="admin-btn admin-btn-danger"
+                        >
+                            Удалить выбранные
+                        </button>
+                        <button
+                            @click="bulkActivate"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Активировать
+                        </button>
+                        <button
+                            @click="bulkDeactivate"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Деактивировать
+                        </button>
+                    </template>
                 </div>
-            </div>
 
-            <!-- Фильтры -->
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap gap-4 items-end">
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Поиск</label>
+                <!-- Фильтры -->
+                <div class="admin-filters-inline">
+                    <div class="admin-filter-group">
+                        <label class="admin-filter-label">Поиск</label>
                         <input
                             type="text"
                             v-model="filters.search"
                             @input="debounceSearch"
                             placeholder="Введите название..."
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            class="admin-filter-input"
                         />
                     </div>
-                    <div class="w-32">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
+                    <div class="w-40">
+                        <label class="admin-filter-label">Статус</label>
                         <select
                             v-model="filters.status"
                             @change="applyFilters"
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+                            class="admin-filter-select"
                         >
                             <option :value="undefined">Все</option>
                             <option :value="true">Активные</option>
                             <option :value="false">Неактивные</option>
                         </select>
                     </div>
-                    <button @click="resetFilters" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">
-                        Очистить
-                    </button>
+                    <button @click="resetFilters" class="admin-filter-reset">Очистить</button>
                 </div>
             </div>
 
-            <!-- Список карточек (мобильная версия) -->
-            <div class="lg:hidden divide-y divide-gray-100">
-                <div v-for="level in paginatedLevels" :key="level.id" class="p-4 hover:bg-gray-50">
-                    <div class="flex items-start gap-3">
-                        <input
-                            type="checkbox"
-                            v-model="selectedLevels"
-                            :value="level.id"
-                            class="mt-1 rounded border-gray-300"
-                        />
-                        <div class="flex-1">
-                            <div class="font-medium text-[#3071a9]">{{ level.title }}</div>
-                            <div class="text-sm text-gray-500 mt-1">ID: {{ level.id }}</div>
-                            <div class="text-xs text-gray-400">Алиас: {{ level.alias }}</div>
-                            <div class="mt-1">
-                                <span class="text-xs text-gray-500">Статус:</span>
-                                <span :class="level.status ? 'text-green-600' : 'text-red-600'" class="ml-1">
-                                    {{ level.status ? 'Активен' : 'Неактивен' }}
-                                </span>
-                            </div>
-                            <div class="mt-1">
-                                <span class="text-xs text-gray-500">Группы:</span>
-                                <div class="flex flex-wrap gap-1 mt-0.5">
-                                    <span v-for="group in level.groups" :key="group.id" class="inline-flex px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-                                        {{ group.name }}
-                                    </span>
-                                    <span v-if="!level.groups?.length" class="text-xs text-gray-400">—</span>
+            <!-- Контент (скроллится) -->
+            <div class="admin-page-content">
+                <div class="admin-page-card">
+                    <!-- Мобильная версия (карточки) -->
+                    <div class="lg:hidden divide-y divide-slate-100">
+                        <div v-for="level in filteredLevels" :key="level.id" class="p-4 hover:bg-slate-50">
+                            <div class="flex items-start gap-3">
+                                <input
+                                    type="checkbox"
+                                    v-model="selectedLevels"
+                                    :value="level.id"
+                                    class="mt-1 admin-checkbox"
+                                />
+                                <div class="flex-1">
+                                    <Link :href="`/admin/access-levels/${level.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
+                                        {{ level.title }}
+                                    </Link>
+                                    <div class="text-sm text-slate-500 mt-1">ID: {{ level.id }}</div>
+                                    <div class="text-xs text-slate-400">Алиас: {{ level.alias }}</div>
+                                    <div class="mt-1">
+                                        <span class="text-xs text-slate-500">Статус:</span>
+                                        <span :class="level.status ? 'text-emerald-600' : 'text-rose-600'" class="ml-1">
+                                            {{ level.status ? 'Активен' : 'Неактивен' }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <span class="text-xs text-slate-500">Группы:</span>
+                                        <div class="flex flex-wrap gap-1 mt-0.5">
+                                            <span v-for="group in level.groups" :key="group.id" class="group-badge">
+                                                {{ group.name }}
+                                            </span>
+                                            <span v-if="!level.groups?.length" class="text-xs text-slate-400">—</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex gap-2">
-                            <Link :href="`/admin/access-levels/${level.id}/edit`" class="text-indigo-600 hover:text-indigo-800" title="Редактировать">✏️</Link>
-                            <button @click="deleteLevel(level)" class="text-red-600 hover:text-red-800" title="Удалить">🗑</button>
+                    </div>
+
+                    <!-- Десктопная версия - ЕДИНАЯ ТАБЛИЦА -->
+                    <div class="hidden lg:block admin-table-scroll">
+                        <table class="admin-table-fixed">
+                            <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" v-model="allSelected" class="admin-checkbox">
+                                </th>
+                                <th class="col-id">ID</th>
+                                <th class="col-title">Название уровня</th>
+                                <th class="col-alias">Алиас</th>
+                                <th class="col-status">Статус</th>
+                                <th class="col-groups">Группы пользователей</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr
+                                v-for="level in filteredLevels"
+                                :key="level.id"
+                                class="cursor-pointer"
+                                :class="{ 'bg-blue-50/50': selectedLevels.includes(level.id) }"
+                            >
+                                <!-- Чекбокс -->
+                                <td class="col-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        :checked="selectedLevels.includes(level.id)"
+                                        @change="toggleSelect(level.id)"
+                                        class="admin-checkbox"
+                                    />
+                                </td>
+
+                                <!-- ID -->
+                                <td class="col-id" @click="toggleSelect(level.id)">{{ level.id }}</td>
+
+                                <!-- Название -->
+                                <td class="col-title" @click="toggleSelect(level.id)">
+                                    <Link
+                                        :href="`/admin/access-levels/${level.id}/edit`"
+                                        class="title-text"
+                                        style="display: inline-block !important;"
+                                        @click.stop
+                                    >
+                                        {{ level.title }}
+                                    </Link>
+                                </td>
+
+                                <!-- Алиас -->
+                                <td class="col-alias" @click="toggleSelect(level.id)">{{ level.alias }}</td>
+
+                                <!-- Статус - единый класс -->
+                                <td class="col-status" @click="toggleSelect(level.id)">
+                                    <span
+                                        class="status-badge"
+                                        :class="level.status ? 'status-active' : 'status-inactive'"
+                                    >
+                                        {{ level.status ? 'Активен' : 'Неактивен' }}
+                                    </span>
+                                </td>
+
+                                <!-- Группы -->
+                                <td class="col-groups" @click="toggleSelect(level.id)">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span v-for="group in level.groups" :key="group.id" class="group-badge">
+                                            {{ group.name }}
+                                        </span>
+                                        <span v-if="!level.groups?.length" class="text-slate-400 text-xs">—</span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Пустая строка, если нет данных -->
+                            <tr v-if="filteredLevels.length === 0">
+                                <td colspan="6" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                    Нет уровней доступа
+                                    <p style="font-size: 12px; margin-top: 4px;">Создайте первый уровень доступа</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Пагинация -->
+                    <div v-if="filteredLevels.length > 0" class="admin-pagination">
+                        <div class="admin-pagination-info">
+                            Показано {{ pagination.from || 0 }} - {{ pagination.to || 0 }} из {{ pagination.total || 0 }}
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Десктопная версия (Flexbox таблица) -->
-            <div class="hidden lg:block overflow-x-auto">
-                <!-- Заголовки -->
-                <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
-                    </div>
-                    <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Название уровня</div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Алиас</div>
-                    <div class="w-24 flex items-center justify-center font-bold text-[#3071a9]">Статус</div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Группы пользователей, имеющие право доступа</div>
-                </div>
-
-                <!-- Строки -->
-                <div v-for="(level, index) in paginatedLevels" :key="level.id"
-                     class="flex px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
-                     :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="selectedLevels" :value="level.id" class="rounded border-gray-300">
-                    </div>
-
-                    <div class="w-16 flex items-center justify-center text-gray-600">{{ level.id }}</div>
-
-                    <div class="flex-1 flex items-start">
-                        <Link :href="`/admin/access-levels/${level.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
-                            {{ level.title }}
-                        </Link>
-                    </div>
-
-                    <div class="flex-1 flex items-start text-gray-500 text-sm">{{ level.alias }}</div>
-
-                    <div class="w-24 flex items-center justify-center">
-                        <span :class="level.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-700'" class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
-                            {{ level.status ? 'Активен' : 'Неактивен' }}
-                        </span>
-                    </div>
-
-                    <div class="flex-1 flex items-start">
-                        <div class="flex flex-wrap gap-1">
-                            <span v-for="group in level.groups" :key="group.id" class="inline-flex px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-                                {{ group.name }}
+                        <div class="admin-pagination-controls">
+                            <button
+                                @click="prevPage"
+                                :disabled="pagination.current_page === 1"
+                                class="admin-pagination-btn"
+                            >
+                                ← Назад
+                            </button>
+                            <span class="admin-pagination-current">
+                                {{ pagination.current_page }} / {{ pagination.last_page }}
                             </span>
-                            <span v-if="!level.groups?.length" class="text-gray-400 text-xs">—</span>
+                            <button
+                                @click="nextPage"
+                                :disabled="pagination.current_page === pagination.last_page"
+                                class="admin-pagination-btn"
+                            >
+                                Вперед →
+                            </button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Пагинация -->
-            <div class="border-t border-gray-200 px-6 py-4 flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                    Показано {{ pagination.from || 0 }} - {{ pagination.to || 0 }} из {{ pagination.total || 0 }}
-                </div>
-                <div class="flex gap-1">
-                    <button
-                        @click="prevPage"
-                        :disabled="pagination.current_page === 1"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        ← Назад
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">
-                        {{ pagination.current_page }} / {{ pagination.last_page }}
-                    </span>
-                    <button
-                        @click="nextPage"
-                        :disabled="pagination.current_page === pagination.last_page"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        Вперед →
-                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Модальное окно для массового удаления -->
+        <!-- Модалки -->
+        <ConfirmModal
+            :is-open="deleteModalOpen"
+            title="Удаление уровня доступа"
+            :message="deleteMessage"
+            confirm-text="Удалить"
+            type="danger"
+            :loading="deleteLoading"
+            @close="deleteModalOpen = false"
+            @confirm="confirmDelete"
+        />
+
         <ConfirmModal
             :is-open="bulkDeleteModalOpen"
             title="Массовое удаление"
@@ -181,8 +237,16 @@
             @confirm="confirmBulkDelete"
         />
 
-        <!-- Модальное окно для одиночного удаления -->
-        <ConfirmModal :is-open="deleteModalOpen" title="Удаление уровня доступа" :message="deleteMessage" confirm-text="Удалить" type="danger" @close="deleteModalOpen = false" @confirm="confirmDelete" />
+        <ConfirmModal
+            :is-open="toggleStatusModalOpen"
+            title="Изменение статуса"
+            :message="toggleStatusMessage"
+            confirm-text="Подтвердить"
+            type="warning"
+            :loading="loading"
+            @close="toggleStatusModalOpen = false"
+            @confirm="confirmToggleStatus"
+        />
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
@@ -229,7 +293,7 @@ const filters = ref({
 const selectedLevels = ref<number[]>([]);
 
 // Пагинация
-const perPage = ref(10);
+const perPage = ref(20);
 const pagination = ref({
     current_page: 1,
     last_page: 1,
@@ -257,20 +321,20 @@ const filteredLevels = computed(() => {
     return levels;
 });
 
+// Обновление пагинации
+const updatePagination = () => {
+    pagination.value.total = filteredLevels.value.length;
+    pagination.value.last_page = Math.ceil(pagination.value.total / perPage.value) || 1;
+    pagination.value.from = (pagination.value.current_page - 1) * perPage.value + 1;
+    pagination.value.to = Math.min(pagination.value.current_page * perPage.value, pagination.value.total);
+};
+
 // Пагинированные уровни
 const paginatedLevels = computed(() => {
     const start = (pagination.value.current_page - 1) * perPage.value;
     const end = start + perPage.value;
     return filteredLevels.value.slice(start, end);
 });
-
-// Обновление пагинации
-const updatePagination = () => {
-    pagination.value.total = filteredLevels.value.length;
-    pagination.value.last_page = Math.ceil(pagination.value.total / perPage.value);
-    pagination.value.from = (pagination.value.current_page - 1) * perPage.value + 1;
-    pagination.value.to = Math.min(pagination.value.current_page * perPage.value, pagination.value.total);
-};
 
 // Выбрать все
 const allSelected = computed({
@@ -288,21 +352,34 @@ const allSelected = computed({
 });
 
 const notification = ref({ show: false, message: '', type: 'success' });
+const loading = ref(false);
 const deleteModalOpen = ref(false);
 const deleteLoading = ref(false);
 const itemToDelete = ref<AccessLevel | null>(null);
 const deleteMessage = ref('');
 
-// Массовое удаление
 const bulkDeleteModalOpen = ref(false);
 const bulkDeleteLoading = ref(false);
 const bulkDeleteMessage = ref('');
+
+const toggleStatusModalOpen = ref(false);
+const toggleStatusMessage = ref('');
+const toggleStatusData = ref<{ id: number; status: boolean } | null>(null);
 
 let searchTimeout: any = null;
 
 const showNotification = (message: string, type: string = 'success') => {
     notification.value = { show: true, message, type };
     setTimeout(() => { notification.value.show = false; }, 3000);
+};
+
+const toggleSelect = (id: number) => {
+    const index = selectedLevels.value.indexOf(id);
+    if (index === -1) {
+        selectedLevels.value.push(id);
+    } else {
+        selectedLevels.value.splice(index, 1);
+    }
 };
 
 const applyFilters = () => {
@@ -348,7 +425,8 @@ const confirmDelete = async () => {
     try {
         await axios.delete(`/admin/access-levels/${itemToDelete.value.id}`);
         deleteModalOpen.value = false;
-        window.location.href = '/admin/access-levels?message=Уровень+доступа+удалён';
+        await applyFilters();
+        showNotification('Уровень доступа удалён', 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
         deleteLoading.value = false;
@@ -370,19 +448,84 @@ const openBulkDeleteModal = () => {
 };
 
 const confirmBulkDelete = async () => {
-    const count = selectedLevels.value.length;
     bulkDeleteLoading.value = true;
     try {
         for (const id of selectedLevels.value) {
             await axios.delete(`/admin/access-levels/${id}`);
         }
+        const count = selectedLevels.value.length;
         selectedLevels.value = [];
         bulkDeleteModalOpen.value = false;
-        window.location.href = `/admin/access-levels?message=${count}+уровней+доступа+удалено`;
+        await applyFilters();
+        showNotification(`${count} уровней доступа удалено`, 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
+    } finally {
         bulkDeleteLoading.value = false;
     }
+};
+
+// Переключение статуса (одиночное)
+const toggleStatus = (level: AccessLevel) => {
+    const newStatus = !level.status;
+    toggleStatusData.value = { id: level.id, status: newStatus };
+    toggleStatusMessage.value = `Вы уверены, что хотите ${newStatus ? 'активировать' : 'деактивировать'} уровень "${level.title}"?`;
+    toggleStatusModalOpen.value = true;
+};
+
+const confirmToggleStatus = async () => {
+    if (!toggleStatusData.value) return;
+    loading.value = true;
+    try {
+        if (toggleStatusData.value.id === 0) {
+            // Массовая операция
+            const ids = selectedLevels.value;
+            for (const id of ids) {
+                await axios.patch(`/admin/access-levels/${id}/status`);
+            }
+            // Обновляем локально
+            filteredLevels.value.forEach(level => {
+                if (ids.includes(level.id)) {
+                    level.status = toggleStatusData.value?.status ?? false;
+                }
+            });
+            selectedLevels.value = [];
+            showNotification(`${ids.length} уровней доступа ${toggleStatusData.value.status ? 'активировано' : 'деактивировано'}`, 'success');
+        } else {
+            // Одиночная операция
+            await axios.patch(`/admin/access-levels/${toggleStatusData.value.id}/status`);
+            const level = filteredLevels.value.find(l => l.id === toggleStatusData.value?.id);
+            if (level) {
+                level.status = toggleStatusData.value.status;
+            }
+            showNotification(`Уровень доступа ${toggleStatusData.value.status ? 'активирован' : 'деактивирован'}`, 'success');
+        }
+        toggleStatusModalOpen.value = false;
+        updatePagination();
+    } catch (error: any) {
+        showNotification(error.response?.data?.message || 'Ошибка', 'error');
+    } finally {
+        loading.value = false;
+        toggleStatusData.value = null;
+    }
+};
+
+// Массовые операции со статусом
+const bulkActivate = () => {
+    if (selectedLevels.value.length === 0) return;
+    bulkToggleStatus(true);
+};
+
+const bulkDeactivate = () => {
+    if (selectedLevels.value.length === 0) return;
+    bulkToggleStatus(false);
+};
+
+const bulkToggleStatus = (status: boolean) => {
+    const action = status ? 'активировать' : 'деактивировать';
+    toggleStatusMessage.value = `Вы уверены, что хотите ${action} ${selectedLevels.value.length} уровень(ей) доступа?`;
+    toggleStatusData.value = { id: 0, status };
+    toggleStatusModalOpen.value = true;
 };
 
 onMounted(() => {

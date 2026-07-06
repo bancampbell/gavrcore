@@ -32,13 +32,15 @@ class MaterialController extends Controller
         $this->authorize('viewAny', Material::class);
 
         $filters = $request->validated();
-        $materials = $this->materialService->getPaginated($filters);
+        $perPage = $request->input('per_page', 10);
+        $materials = $this->materialService->getPaginated($filters, $perPage);
 
         return Inertia::render('Admin/Materials/Index', [
             'materials' => $materials,
             'categories' => Category::all(),
             'authors' => User::all(),
             'filters' => $filters,
+            'perPage' => (int) $perPage,
             'user' => auth()->user(),
             'title' => 'Менеджер материалов',
         ]);

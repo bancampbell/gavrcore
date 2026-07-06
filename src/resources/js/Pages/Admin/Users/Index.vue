@@ -3,183 +3,216 @@
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white rounded-lg shadow">
-            <!-- Фиксированная панель с кнопками -->
-            <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
-                <div class="flex flex-wrap gap-2">
+
+        <div class="flex flex-col h-full">
+            <!-- Панель действий + фильтры (sticky) -->
+            <div class="admin-page-actions flex-shrink-0">
+                <div class="flex flex-wrap gap-2.5">
                     <Link
                         href="/admin/users/create"
-                        class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition"
+                        class="admin-btn admin-btn-primary no-style"
                     >
                         + Создать пользователя
                     </Link>
-                    <button
-                        @click="bulkBlock"
-                        :disabled="selectedUsers.length === 0"
-                        class="px-4 py-2 rounded-md text-sm bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50"
-                    >
-                        Заблокировать
-                    </button>
-                    <button
-                        @click="bulkUnblock"
-                        :disabled="selectedUsers.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-green-500 bg-white text-green-600 hover:bg-green-50 transition disabled:opacity-50"
-                    >
-                        Разблокировать
-                    </button>
-                    <button
-                        @click="openDeleteModalForSelected"
-                        :disabled="selectedUsers.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50"
-                    >
-                        Удалить выбранные
-                    </button>
+                    <template v-if="selectedUsers.length > 0">
+                        <button
+                            @click="bulkBlock"
+                            class="admin-btn admin-btn-danger"
+                        >
+                            Заблокировать
+                        </button>
+                        <button
+                            @click="bulkUnblock"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Разблокировать
+                        </button>
+                        <button
+                            @click="openDeleteModalForSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Удалить выбранные
+                        </button>
+                    </template>
                 </div>
-            </div>
 
-            <!-- Фильтры -->
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap gap-4 items-end">
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Поиск</label>
+                <!-- Фильтры -->
+                <div class="admin-filters-inline">
+                    <div class="admin-filter-group">
+                        <label class="admin-filter-label">Поиск</label>
                         <input
                             type="text"
                             v-model="filters.search"
                             @input="debounceSearch"
                             placeholder="Введите имя, логин или email..."
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            class="admin-filter-input"
                         />
                     </div>
-                    <div class="w-32">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Статус</label>
+                    <div class="w-40">
+                        <label class="admin-filter-label">Статус</label>
                         <select
                             v-model="filters.blocked"
                             @change="applyFilters"
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm"
+                            class="admin-filter-select"
                         >
                             <option :value="undefined">Все</option>
                             <option :value="false">Активные</option>
                             <option :value="true">Заблокированные</option>
                         </select>
                     </div>
-                    <button @click="resetFilters" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">
-                        Очистить
-                    </button>
+                    <button @click="resetFilters" class="admin-filter-reset">Очистить</button>
                 </div>
             </div>
 
-            <!-- Список карточек (мобильная версия) -->
-            <div class="lg:hidden divide-y divide-gray-100">
-                <div v-for="user in users.data" :key="user.id" class="p-4 hover:bg-gray-50">
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" v-model="selectedUsers" :value="user.id" class="mt-1 rounded border-gray-300">
-                        <div class="flex-1">
-                            <div class="font-medium text-[#3071a9]">{{ user.name }}</div>
-                            <div class="text-sm text-gray-500 mt-1">ID: {{ user.id }}</div>
-                            <div class="text-xs text-gray-400">Логин: {{ user.username }}</div>
-                            <div class="text-xs text-gray-400">Email: {{ user.email }}</div>
-                            <div class="flex flex-wrap gap-4 mt-2 text-xs">
-                                <span :class="user.blocked ? 'text-red-600' : 'text-green-600'">
-                                    {{ user.blocked ? 'Заблокирован' : 'Активен' }}
-                                </span>
-                                <span class="text-gray-500">Активирован: {{ user.activated ? 'Да' : 'Нет' }}</span>
-                                <span class="text-gray-500" v-if="user.last_login_at">Последний вход: {{ formatDate(user.last_login_at) }}</span>
-                                <span class="text-gray-500">Дата регистрации: {{ formatDate(user.created_at) }}</span>
-                            </div>
-                            <div class="mt-1">
-                                <span v-for="group in user.groups" :key="group.id" class="inline-flex px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600 mr-1">
-                                    {{ group.name }}
-                                </span>
+            <!-- Контент (скроллится) -->
+            <div class="admin-page-content">
+                <div class="admin-page-card">
+                    <!-- Мобильная версия (карточки) -->
+                    <div class="lg:hidden divide-y divide-slate-100">
+                        <div v-for="user in users.data" :key="user.id" class="p-4 hover:bg-slate-50">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" v-model="selectedUsers" :value="user.id" class="mt-1 admin-checkbox">
+                                <div class="flex-1">
+                                    <Link :href="`/admin/users/${user.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
+                                        {{ user.name }}
+                                    </Link>
+                                    <div class="text-sm text-slate-500 mt-1">ID: {{ user.id }}</div>
+                                    <div class="text-xs text-slate-400">Логин: {{ user.username }}</div>
+                                    <div class="text-xs text-slate-400">Email: {{ user.email }}</div>
+                                    <div class="flex flex-wrap gap-4 mt-2 text-xs">
+                                        <span :class="user.blocked ? 'text-rose-600' : 'text-emerald-600'">
+                                            {{ user.blocked ? 'Заблокирован' : 'Активен' }}
+                                        </span>
+                                        <span class="text-slate-500">Активирован: {{ user.activated ? 'Да' : 'Нет' }}</span>
+                                        <span class="text-slate-500" v-if="user.last_login_at">Последний вход: {{ formatDate(user.last_login_at) }}</span>
+                                        <span class="text-slate-500">Дата регистрации: {{ formatDate(user.created_at) }}</span>
+                                    </div>
+                                    <div class="mt-1">
+                                        <span v-for="group in user.groups" :key="group.id" class="inline-flex px-1.5 py-0.5 rounded text-xs bg-slate-100 text-slate-600 mr-1">
+                                            {{ group.name }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Десктопная версия (Flexbox таблица) -->
-            <div class="hidden lg:block overflow-x-auto">
-                <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
-                    </div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Имя</div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Логин</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Статус</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Активация</div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Группы</div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">E-mail</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Последний вход</div>
-                    <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
-                </div>
+                    <!-- Десктопная версия - ЕДИНАЯ ТАБЛИЦА -->
+                    <div class="hidden lg:block admin-table-scroll">
+                        <table class="admin-table-fixed">
+                            <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" v-model="allSelected" class="admin-checkbox">
+                                </th>
+                                <th class="col-title">Имя</th>
+                                <th class="col-username">Логин</th>
+                                <th class="col-status">Статус</th>
+                                <th class="col-activated">Активация</th>
+                                <th class="col-email">E-mail</th>
+                                <th class="col-groups">Группы</th>
+                                <th class="col-lastlogin">Последний вход</th>
+                                <th class="col-id">ID</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr
+                                v-for="user in users.data"
+                                :key="user.id"
+                                class="cursor-pointer"
+                                :class="{ 'bg-blue-50/50': selectedUsers.includes(user.id) }"
+                            >
+                                <!-- Чекбокс -->
+                                <td class="col-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        :checked="selectedUsers.includes(user.id)"
+                                        @change="toggleSelect(user.id)"
+                                        class="admin-checkbox"
+                                    />
+                                </td>
 
-                <div v-for="(user, index) in users.data" :key="user.id"
-                     class="flex px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
-                     :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="selectedUsers" :value="user.id" class="rounded border-gray-300">
+                                <!-- Название -->
+                                <td class="col-title" @click="toggleSelect(user.id)">
+                                    <Link :href="`/admin/users/${user.id}/edit`" class="title-text" style="display: inline-block !important;" @click.stop>
+                                        {{ user.name }}
+                                    </Link>
+                                </td>
+
+                                <!-- Логин -->
+                                <td class="col-username" @click="toggleSelect(user.id)">{{ user.username }}</td>
+
+                                <!-- Статус - единый класс -->
+                                <td class="col-status" @click="toggleSelect(user.id)">
+                                    <span :class="user.blocked ? 'status-badge status-inactive' : 'status-badge status-active'">
+                                        {{ user.blocked ? 'Заблокирован' : 'Активен' }}
+                                    </span>
+                                </td>
+
+                                <!-- Активация - единый класс -->
+                                <td class="col-activated" @click="toggleSelect(user.id)">
+                                    <span :class="user.activated ? 'status-badge status-active' : 'status-badge status-inactive'">
+                                        {{ user.activated ? 'Активирован' : 'Не активирован' }}
+                                    </span>
+                                </td>
+
+                                <!-- Email -->
+                                <td class="col-email" @click="toggleSelect(user.id)" :title="user.email">
+                                    {{ user.email }}
+                                </td>
+
+                                <!-- Группы -->
+                                <td class="col-groups" @click="toggleSelect(user.id)">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span v-for="group in user.groups" :key="group.id" class="group-badge">
+                                            {{ group.name }}
+                                        </span>
+                                        <span v-if="!user.groups?.length" class="text-slate-400 text-xs">—</span>
+                                    </div>
+                                </td>
+
+                                <!-- Последний вход -->
+                                <td class="col-lastlogin" @click="toggleSelect(user.id)">
+                                    {{ formatDate(user.last_login_at) || '—' }}
+                                </td>
+
+                                <!-- ID -->
+                                <td class="col-id" @click="toggleSelect(user.id)">{{ user.id }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="flex-1 flex items-start">
-                        <Link :href="`/admin/users/${user.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
-                            {{ user.name }}
-                        </Link>
-                    </div>
-                    <div class="flex-1 flex items-start text-gray-600">{{ user.username }}</div>
-                    <div class="flex-1 flex items-center justify-center">
-                        <span :class="user.blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-800'" class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
-                            {{ user.blocked ? 'Заблокирован' : 'Активен' }}
-                        </span>
-                    </div>
-                    <div class="flex-1 flex items-center justify-center">
-                        <span :class="user.activated ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'" class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap">
-                            {{ user.activated ? 'Активирован' : 'Не активирован' }}
-                        </span>
-                    </div>
-                    <div class="flex-1 flex items-start">
-                        <div class="flex flex-wrap gap-1">
-                            <span v-for="group in user.groups" :key="group.id" class="inline-flex px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-                                {{ group.name }}
+
+                    <!-- Пагинация -->
+                    <div v-if="users.data?.length > 0" class="admin-pagination">
+                        <div class="admin-pagination-info">
+                            Показано {{ users.from || 0 }} - {{ users.to || 0 }} из {{ users.total || 0 }}
+                        </div>
+                        <div class="admin-pagination-controls">
+                            <button
+                                @click="prevPage"
+                                :disabled="users.current_page === 1"
+                                class="admin-pagination-btn"
+                            >
+                                ← Назад
+                            </button>
+                            <span class="admin-pagination-current">
+                                {{ users.current_page }} / {{ users.last_page }}
                             </span>
-                            <span v-if="!user.groups?.length" class="text-gray-400 text-xs">—</span>
+                            <button
+                                @click="nextPage"
+                                :disabled="users.current_page === users.last_page"
+                                class="admin-pagination-btn"
+                            >
+                                Вперед →
+                            </button>
                         </div>
                     </div>
-                    <div class="flex-1 flex items-start text-gray-600 truncate" :title="user.email">
-                        {{ user.email }}
-                    </div>
-                    <div class="flex-1 flex items-center justify-center text-gray-600 whitespace-nowrap">
-                        {{ formatDate(user.last_login_at) || '—' }}
-                    </div>
-                    <div class="w-16 flex items-center justify-center text-gray-600">{{ user.id }}</div>
-                </div>
-            </div>
-
-            <!-- Пагинация -->
-            <div class="border-t border-gray-200 px-6 py-4 flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                    Показано {{ users.from || 0 }} - {{ users.to || 0 }} из {{ users.total || 0 }}
-                </div>
-                <div class="flex gap-1">
-                    <button
-                        @click="prevPage"
-                        :disabled="users.current_page === 1"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        ← Назад
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">
-                        {{ users.current_page }} / {{ users.last_page }}
-                    </span>
-                    <button
-                        @click="nextPage"
-                        :disabled="users.current_page === users.last_page"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        Вперед →
-                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Модальное окно подтверждения удаления -->
+        <!-- Модалки -->
         <ConfirmModal
             :is-open="deleteModalOpen"
             title="Удаление пользователя"
@@ -191,7 +224,6 @@
             @confirm="confirmDeleteHandler"
         />
 
-        <!-- Модальное окно для массовых операций -->
         <ConfirmModal
             :is-open="bulkModalOpen"
             :title="bulkModalTitle"
@@ -265,6 +297,15 @@ const formatDate = (date: string | null) => {
         hour: '2-digit',
         minute: '2-digit',
     });
+};
+
+const toggleSelect = (id: number) => {
+    const index = selectedUsers.value.indexOf(id);
+    if (index === -1) {
+        selectedUsers.value.push(id);
+    } else {
+        selectedUsers.value.splice(index, 1);
+    }
 };
 
 const {

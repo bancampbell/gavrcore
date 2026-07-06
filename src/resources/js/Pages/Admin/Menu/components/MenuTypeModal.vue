@@ -1,5 +1,5 @@
 <template>
-    <div v-if="show" class="modal-overlay" @click.self="close">
+    <div v-if="show" class="modal-overlay">
         <div class="menu-type-modal">
             <div class="menu-type-modal-header">
                 <h3>{{ isEdit ? 'Редактировать тип меню' : 'Создать тип меню' }}</h3>

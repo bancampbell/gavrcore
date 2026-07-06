@@ -23,4 +23,13 @@ class GroupIndexRequest extends FormRequest
             'per_page' => 'nullable|integer',
         ];
     }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('status') && $this->status !== '' && $this->status !== null) {
+            $this->merge([
+                'status' => filter_var($this->status, FILTER_VALIDATE_BOOLEAN)
+            ]);
+        }
+    }
 }

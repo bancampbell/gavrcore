@@ -9,14 +9,14 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class MaterialRepository implements MaterialRepositoryInterface
 {
-    public function paginate(array $filters): LengthAwarePaginator
+    public function paginate(array $filters, int $perPage = 10): LengthAwarePaginator
     {
         $query = Material::with(['category', 'user'])->where('state', '!=', 'trash');
 
         if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
                 $q->where('title', 'ilike', '%'.$filters['search'].'%')
-                    ->orWhere('alias', 'ilike', '%'.$filters['search'].'%');
+                    ->orWhere('slug', 'ilike', '%'.$filters['search'].'%');
             });
         }
 
@@ -36,7 +36,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             $query->where('user_id', $filters['author']);
         }
 
-        return $query->orderBy('id', 'desc')->paginate(10);
+        return $query->orderBy('id', 'desc')->paginate($perPage);
     }
 
     public function find(int $id): ?Material
@@ -46,7 +46,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function findBySlug(string $slug): ?Material
     {
-        return Material::where('alias', $slug)
+        return Material::where('slug', $slug)
             ->where('state', 'published')
             ->with(['category', 'user'])
             ->first();

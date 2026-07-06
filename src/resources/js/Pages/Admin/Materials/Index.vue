@@ -3,213 +3,253 @@
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white rounded-lg shadow">
-            <!-- Фиксированная панель с кнопками -->
-            <div class="sticky top-12 z-10 bg-white border-b border-gray-200 px-6 py-3">
-                <div class="flex flex-wrap gap-2">
-                    <Link href="/admin/materials/create" class="bg-[#46a546] text-white px-4 py-2 rounded-md text-sm hover:bg-[#3d8a3d] transition">
+
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий + фильтры -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <div class="flex flex-wrap gap-2.5">
+                    <Link href="/admin/materials/create" class="admin-btn admin-btn-primary no-style">
                         + Создать материал
                     </Link>
-                    <button
-                        @click="editSelected"
-                        :disabled="selectedMaterials.length !== 1"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Изменить
-                    </button>
-                    <button
-                        @click="publishSelected"
-                        :disabled="selectedMaterials.length === 0"
-                        class="px-4 py-2 rounded-md text-sm bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50"
-                    >
-                        Опубликовать
-                    </button>
-                    <button
-                        @click="unpublishSelected"
-                        :disabled="selectedMaterials.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-red-500 bg-white text-red-600 hover:bg-red-50 transition disabled:opacity-50"
-                    >
-                        Снять с публикации
-                    </button>
-                    <button
-                        @click="moveToTrash"
-                        :disabled="selectedMaterials.length === 0"
-                        class="px-4 py-2 rounded-md text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition disabled:opacity-50"
-                    >
-                        В корзину
-                    </button>
+                    <template v-if="selectedMaterials.length > 0">
+                        <button
+                            @click="editSelected"
+                            :disabled="selectedMaterials.length !== 1"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Изменить
+                        </button>
+                        <button
+                            @click="publishSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Опубликовать
+                        </button>
+                        <button
+                            @click="unpublishSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Снять с публикации
+                        </button>
+                        <button
+                            @click="moveToTrash"
+                            class="admin-btn admin-btn-danger"
+                        >
+                            В корзину
+                        </button>
+                    </template>
                 </div>
-            </div>
 
-            <!-- Фильтры -->
-            <div class="p-4 border-b border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap gap-4 items-end">
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Поиск</label>
+                <!-- Фильтры -->
+                <div class="admin-filters-inline">
+                    <div class="admin-filter-group">
+                        <label class="admin-filter-label">Поиск</label>
                         <input
                             type="text"
                             v-model="filters.search"
                             @input="debounceSearch"
                             placeholder="Введите название..."
-                            class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            class="admin-filter-input"
                         />
                     </div>
                     <div class="w-32">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Состояние</label>
-                        <select v-model="filters.state" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+                        <label class="admin-filter-label">Состояние</label>
+                        <select v-model="filters.state" @change="applyFilters" class="admin-filter-select">
                             <option value="">Все</option>
                             <option value="published">Опубликовано</option>
                             <option value="draft">Не опубликовано</option>
                             <option value="archived">Архив</option>
                         </select>
                     </div>
-                    <div class="w-48">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Категория</label>
-                        <select v-model="filters.category_id" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+                    <div class="w-40">
+                        <label class="admin-filter-label">Категория</label>
+                        <select v-model="filters.category_id" @change="applyFilters" class="admin-filter-select">
                             <option value="">Все категории</option>
                             <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                         </select>
                     </div>
-                    <div class="w-40">
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Автор</label>
-                        <select v-model="filters.author" @change="applyFilters" class="w-full border border-gray-300 rounded-md px-3 py-1.5 text-sm">
+                    <div class="w-36">
+                        <label class="admin-filter-label">Автор</label>
+                        <select v-model="filters.author" @change="applyFilters" class="admin-filter-select">
                             <option value="">Все</option>
                             <option v-for="author in authors" :key="author.id" :value="author.id">{{ author.name }}</option>
                         </select>
                     </div>
-                    <button @click="resetFilters" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5">
-                        Очистить
-                    </button>
+                    <div class="w-20">
+                        <label class="admin-filter-label">Показывать</label>
+                        <select
+                            v-model="perPage"
+                            @change="changePerPage"
+                            class="admin-filter-select"
+                        >
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <button @click="resetFilters" class="admin-filter-reset">Очистить</button>
                 </div>
             </div>
 
-            <!-- Список карточек (мобильная версия) -->
-            <div class="lg:hidden divide-y divide-gray-100">
-                <div v-for="material in materials.data" :key="material.id" class="p-4 hover:bg-gray-50">
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" v-model="selectedMaterials" :value="material.id" class="mt-1 rounded border-gray-300">
-                        <div class="flex-1">
-                            <Link :href="`/admin/materials/${material.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
-                                {{ material.title }}
-                            </Link>
-                            <div class="text-sm text-gray-500 mt-1">ID: {{ material.id }}</div>
-                            <div class="text-xs text-gray-400">Слаг: {{ material.slug || '—' }}</div>
-                            <div class="text-xs text-[#3071a9]">Категория: {{ material.category?.name || 'Без категории' }}</div>
-                            <div class="flex flex-wrap gap-4 mt-2 text-xs">
-                                <span class="text-gray-500">Автор: {{ material.user?.name || '—' }}</span>
-                                <span class="text-gray-500">Язык: Все</span>
-                                <span class="text-gray-500">Просмотров: {{ material.views }}</span>
-                                <span class="text-gray-500">Дата: {{ formatDate(material.created_at) }}</span>
-                                <span :class="{
-                                    'text-green-600': material.state === 'published',
-                                    'text-red-600': material.state === 'draft',
-                                    'text-gray-500': material.state === 'archived'
-                                }">
-                                    {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
-                                </span>
-                                <span :class="material.show_on_homepage ? 'text-indigo-600 font-medium' : 'text-gray-400'">
-                                    {{ material.show_on_homepage ? 'На главной' : '' }}
-                                </span>
+            <!-- Контент (скроллится) -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full">
+                    <!-- Мобильная версия (карточки) -->
+                    <div class="lg:hidden divide-y divide-slate-100">
+                        <div v-for="material in materials.data" :key="material.id" class="p-4 hover:bg-slate-50">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" v-model="selectedMaterials" :value="material.id" class="mt-1 admin-checkbox">
+                                <div class="flex-1">
+                                    <Link :href="`/admin/materials/${material.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
+                                        {{ material.title }}
+                                    </Link>
+                                    <div class="text-sm text-slate-500 mt-1">ID: {{ material.id }}</div>
+                                    <div class="text-xs text-slate-400">Слаг: {{ material.slug || '—' }}</div>
+                                    <div class="text-xs text-[#3071a9]">Категория: {{ material.category?.name || 'Без категории' }}</div>
+                                    <div class="flex flex-wrap gap-4 mt-2 text-xs">
+                                        <span class="text-slate-500">Автор: {{ material.user?.name || '—' }}</span>
+                                        <span class="text-slate-500">Просмотров: {{ material.views }}</span>
+                                        <span class="text-slate-500">Дата: {{ formatDate(material.created_at) }}</span>
+                                        <span :class="{
+                                            'text-emerald-600': material.state === 'published',
+                                            'text-rose-600': material.state === 'draft',
+                                            'text-slate-500': material.state === 'archived'
+                                        }">
+                                            {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
+                                        </span>
+                                        <span :class="material.show_on_homepage ? 'text-[#3071a9] font-medium' : 'text-slate-400'">
+                                            {{ material.show_on_homepage ? 'На главной' : '' }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Десктопная версия (Flexbox таблица) -->
-            <div class="hidden lg:block overflow-x-auto">
-                <!-- Заголовки -->
-                <div class="flex bg-gray-50 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="allSelected" class="rounded border-gray-300">
+                    <!-- Десктопная версия - ЕДИНАЯ ТАБЛИЦА -->
+                    <div class="hidden lg:block admin-table-scroll">
+                        <table class="admin-table-fixed">
+                            <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" v-model="allSelected" class="admin-checkbox">
+                                </th>
+                                <th class="col-title">Заголовок</th>
+                                <th class="col-status">Статус</th>
+                                <th class="col-author">Автор</th>
+                                <th class="col-created">Дата создания</th>
+                                <th class="col-views">Просмотров</th>
+                                <th class="col-home">На главной</th>
+                                <th class="col-id">ID</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr
+                                v-for="material in materials.data"
+                                :key="material.id"
+                                :class="{ 'bg-blue-50/50': selectedMaterials.includes(material.id) }"
+                            >
+                                <!-- Чекбокс -->
+                                <td class="col-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        :checked="selectedMaterials.includes(material.id)"
+                                        @change="toggleSelect(material.id)"
+                                        class="admin-checkbox"
+                                    />
+                                </td>
+
+                                <!-- Название - ссылка только на текст, клик по ячейке = выбор -->
+                                <td class="col-title" @click="toggleSelect(material.id)">
+                                    <Link :href="`/admin/materials/${material.id}/edit`" class="title-text" style="display: inline-block !important;" @click.stop>
+                                        {{ material.title }}
+                                    </Link>
+                                    <span class="title-slug">Слаг: {{ material.slug || '—' }}</span>
+                                    <span class="title-category">Категория: {{ material.category?.name || 'Без категории' }}</span>
+                                </td>
+
+                                <!-- Статус - единый класс -->
+                                <td class="col-status" @click="toggleSelect(material.id)">
+                                    <span class="status-badge" :class="{
+                                        'status-published': material.state === 'published',
+                                        'status-draft': material.state === 'draft',
+                                        'status-archived': material.state === 'archived'
+                                    }">
+                                        <svg v-if="material.state === 'published'" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <svg v-else-if="material.state === 'draft'" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        <svg v-else width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="8" stroke-width="2.5" />
+                                        </svg>
+                                        {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
+                                    </span>
+                                </td>
+
+                                <td class="col-author" @click="toggleSelect(material.id)" :title="material.user?.name">
+                                    {{ material.user?.name || '—' }}
+                                </td>
+
+                                <td class="col-created" @click="toggleSelect(material.id)">
+                                    {{ formatDate(material.created_at) }}
+                                </td>
+
+                                <td class="col-views" @click="toggleSelect(material.id)">{{ material.views }}</td>
+
+                                <td class="col-home" @click.stop>
+                                    <div
+                                        class="admin-toggle"
+                                        :class="material.show_on_homepage ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        @click="toggleHomepage(material)"
+                                    >
+                                        <span
+                                            class="admin-toggle-slider"
+                                            :class="material.show_on_homepage ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                        ></span>
+                                    </div>
+                                </td>
+
+                                <td class="col-id" @click="toggleSelect(material.id)">{{ material.id }}</td>
+                            </tr>
+
+                            <!-- Пустая строка, если нет данных -->
+                            <tr v-if="materials.data.length === 0">
+                                <td colspan="8" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                    Материалов не найдено
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="flex-1 flex items-center justify-start font-bold text-[#3071a9]">Заголовок</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Статус</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Автор</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Язык</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Дата создания</div>
-                    <div class="flex-1 flex items-center justify-center font-bold text-[#3071a9]">Просмотров</div>
-                    <div class="w-24 flex items-center justify-center font-bold text-[#3071a9]">На главной</div>
-                    <div class="w-16 flex items-center justify-center font-bold text-[#3071a9]">ID</div>
-                </div>
 
-                <!-- Строки -->
-                <div v-for="(material, index) in materials.data" :key="material.id"
-                     class="flex px-4 py-3 text-sm hover:bg-gray-50 border-b border-gray-100"
-                     :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-
-                    <div class="w-10 flex items-center justify-center">
-                        <input type="checkbox" v-model="selectedMaterials" :value="material.id" class="rounded border-gray-300">
-                    </div>
-
-                    <div class="flex-1 flex items-start">
-                        <div>
-                            <Link :href="`/admin/materials/${material.id}/edit`" class="font-medium text-[#3071a9] hover:underline">
-                                {{ material.title }}
-                            </Link>
-                            <div class="text-xs text-gray-400 mt-0.5">Слаг: {{ material.slug || '—' }}</div>
-                            <div class="text-xs text-[#3071a9] mt-0.5">Категория: {{ material.category?.name || 'Без категории' }}</div>
+                    <!-- Пагинация -->
+                    <div class="admin-pagination">
+                        <div class="admin-pagination-info">
+                            Показано {{ materials.from || 0 }} - {{ materials.to || 0 }} из {{ materials.total || 0 }}
+                        </div>
+                        <div class="admin-pagination-controls">
+                            <button
+                                @click="prevPage"
+                                :disabled="materials.current_page === 1"
+                                class="admin-pagination-btn"
+                            >
+                                ← Назад
+                            </button>
+                            <span class="admin-pagination-current">
+                                {{ materials.current_page }} / {{ materials.last_page }}
+                            </span>
+                            <button
+                                @click="nextPage"
+                                :disabled="materials.current_page === materials.last_page"
+                                class="admin-pagination-btn"
+                            >
+                                Вперед →
+                            </button>
                         </div>
                     </div>
-
-                    <div class="flex-1 flex items-center justify-center">
-                        <span class="inline-flex px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap" :class="{
-                            'bg-green-100 text-green-800': material.state === 'published',
-                            'bg-red-100 text-red-700': material.state === 'draft',
-                            'bg-gray-100 text-gray-600': material.state === 'archived'
-                        }">
-                            {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
-                        </span>
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center text-gray-600 truncate" :title="material.user?.name">
-                        {{ material.user?.name || '—' }}
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center text-gray-600">Все</div>
-
-                    <div class="flex-1 flex items-center justify-center text-gray-600 whitespace-nowrap">
-                        {{ formatDate(material.created_at) }}
-                    </div>
-
-                    <div class="flex-1 flex items-center justify-center text-gray-600">{{ material.views }}</div>
-
-                    <div class="w-24 flex items-center justify-center">
-                        <div class="relative inline-block w-10 h-5 rounded-full cursor-pointer transition-colors"
-                             :class="material.show_on_homepage ? 'bg-indigo-600' : 'bg-gray-300'"
-                             @click="toggleHomepage(material)">
-                            <span class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform"
-                                  :class="material.show_on_homepage ? 'translate-x-5' : 'translate-x-0'"></span>
-                        </div>
-                    </div>
-
-                    <div class="w-16 flex items-center justify-center text-gray-600">{{ material.id }}</div>
-                </div>
-            </div>
-
-            <!-- Пагинация -->
-            <div class="border-t border-gray-200 px-6 py-4 flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                    Показано {{ materials.from || 0 }} - {{ materials.to || 0 }} из {{ materials.total || 0 }}
-                </div>
-                <div class="flex gap-1">
-                    <button
-                        @click="prevPage"
-                        :disabled="materials.current_page === 1"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        ← Назад
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">
-                        {{ materials.current_page }} / {{ materials.last_page }}
-                    </span>
-                    <button
-                        @click="nextPage"
-                        :disabled="materials.current_page === materials.last_page"
-                        class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 hover:bg-gray-50"
-                    >
-                        Вперед →
-                    </button>
                 </div>
             </div>
         </div>
@@ -221,7 +261,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import { useMaterials } from '../../../composables/useMaterials';
@@ -234,6 +274,7 @@ const props = defineProps<{
     categories: Category[];
     authors: User[];
     filters?: MaterialFilters;
+    perPage?: number;
 }>();
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -241,14 +282,15 @@ const message = urlParams.get('message');
 
 const {
     filters,
+    perPage,
     selectedMaterials,
     allSelected,
     notification,
     formatDate,
-    selectAll,
     applyFilters,
     debounceSearch,
     resetFilters,
+    changePerPage,
     prevPage,
     nextPage,
     moveToTrash,
@@ -258,6 +300,15 @@ const {
     showNotification,
     toggleHomepage
 } = useMaterials(props);
+
+const toggleSelect = (id: number) => {
+    const index = selectedMaterials.value.indexOf(id);
+    if (index === -1) {
+        selectedMaterials.value.push(id);
+    } else {
+        selectedMaterials.value.splice(index, 1);
+    }
+};
 
 onMounted(() => {
     if (message) {

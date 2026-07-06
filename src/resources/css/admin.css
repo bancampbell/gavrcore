@@ -1,0 +1,1015 @@
+/* ========================================
+   АДМИНКА - ОСНОВНЫЕ СТИЛИ
+   ======================================== */
+
+/* ----- Базовый фон для всей админки ----- */
+.admin-content {
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 50%, #ffffff 80%) !important;
+}
+
+/* ----- Базовый фон дашборда ----- */
+.admin-dashboard {
+    background: transparent !important;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    min-height: 100%;
+}
+
+/* ----- Welcome Section ----- */
+.welcome-section {
+    @apply relative px-0 py-4 mb-6;
+    border-top: none;
+    border-bottom: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.welcome-content {
+    @apply flex items-center justify-between flex-wrap gap-4 relative z-10;
+}
+
+.welcome-title {
+    @apply text-2xl font-bold text-slate-800;
+}
+
+.welcome-subtitle {
+    @apply text-slate-500 mt-0.5 text-sm;
+}
+
+.welcome-right {
+    @apply flex items-center gap-3;
+}
+
+.welcome-date {
+    @apply flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-xl text-sm text-slate-600 shadow-sm border border-white/50;
+}
+
+.welcome-version {
+    @apply flex items-center gap-1.5 bg-white/70 backdrop-blur-sm px-3 py-2 rounded-xl text-xs text-slate-400 font-medium shadow-sm border border-white/50;
+}
+
+/* ----- Stats Grid ----- */
+.stats-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6;
+}
+
+.stat-card {
+    @apply bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50 transition-all duration-300 cursor-pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.stat-card:hover {
+    @apply -translate-y-1;
+    background: rgba(165, 199, 223, 0.02) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+    border-color: #e5e7eb !important;
+}
+
+.stat-card:active {
+    @apply scale-[0.98];
+}
+
+.stat-card-icon {
+    @apply w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300;
+}
+
+.stat-card:hover .stat-card-icon {
+    @apply scale-105;
+}
+
+.stat-card-icon.purple {
+    @apply bg-gradient-to-br from-indigo-100 to-indigo-50 text-indigo-600;
+}
+
+.stat-card-icon.blue {
+    @apply bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600;
+}
+
+.stat-card-icon.green {
+    @apply bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600;
+}
+
+.stat-card-icon.orange {
+    @apply bg-gradient-to-br from-amber-100 to-amber-50 text-amber-600;
+}
+
+.stat-card-content {
+    @apply flex flex-col flex-1;
+}
+
+.stat-card-label {
+    @apply text-sm text-slate-400 font-medium tracking-wide;
+}
+
+.stat-card-value {
+    @apply text-3xl font-bold text-slate-800 tracking-tight;
+}
+
+.stat-card-change {
+    @apply text-xs font-medium mt-1.5 px-3 py-1 rounded-full inline-block w-fit transition-all duration-300;
+}
+
+.stat-card:hover .stat-card-change {
+    @apply scale-105;
+}
+
+.stat-card-change.positive {
+    @apply bg-emerald-50 text-emerald-600;
+}
+
+.stat-card-change.negative {
+    @apply bg-rose-50 text-rose-600;
+}
+
+/* ----- Balance Card ----- */
+.balance-card {
+    @apply relative overflow-hidden rounded-3xl p-8 mb-6 text-white;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%);
+    box-shadow: 0 20px 60px rgba(79, 70, 229, 0.25);
+}
+
+.balance-card::before {
+    content: '';
+    @apply absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-10;
+    background: radial-gradient(circle, #a78bfa, transparent 70%);
+}
+
+.balance-card::after {
+    content: '';
+    @apply absolute -bottom-20 -left-20 w-60 h-60 rounded-full opacity-5;
+    background: radial-gradient(circle, #818cf8, transparent 70%);
+}
+
+.balance-content {
+    @apply relative z-10;
+}
+
+.balance-label {
+    @apply text-sm text-indigo-200 font-medium tracking-wide;
+}
+
+.balance-amount {
+    @apply text-4xl font-bold mt-1 tracking-tight;
+}
+
+.balance-account {
+    @apply text-sm text-indigo-300 mt-1;
+}
+
+/* ----- Activity Section ----- */
+.activity-section {
+    @apply bg-white/80 backdrop-blur-sm rounded-3xl p-6 border border-white/50 transition-all duration-500;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.activity-section:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.04);
+}
+
+.activity-header {
+    @apply flex items-center justify-between mb-6;
+}
+
+.activity-title {
+    @apply text-lg font-semibold text-slate-800;
+}
+
+.activity-button {
+    @apply text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-all duration-300 hover:scale-105;
+}
+
+.activity-list {
+    @apply space-y-3;
+}
+
+.activity-item {
+    @apply flex items-center gap-4 p-3 rounded-xl transition-all duration-300 hover:bg-slate-50/50;
+}
+
+.activity-dot {
+    @apply w-3 h-3 rounded-full flex-shrink-0 shadow-sm;
+}
+
+.activity-dot.green {
+    @apply bg-emerald-400;
+}
+
+.activity-dot.blue {
+    @apply bg-blue-400;
+}
+
+.activity-dot.purple {
+    @apply bg-indigo-400;
+}
+
+.activity-dot.orange {
+    @apply bg-amber-400;
+}
+
+.activity-content {
+    @apply flex flex-col flex-1;
+}
+
+.activity-text {
+    @apply text-sm text-slate-700 font-medium;
+}
+
+.activity-time {
+    @apply text-xs text-slate-400;
+}
+
+.activity-amount {
+    @apply text-sm font-medium text-slate-800;
+}
+
+.activity-amount.negative {
+    @apply text-rose-500;
+}
+
+.activity-amount.positive {
+    @apply text-emerald-500;
+}
+
+/* ========================================
+   TOP NAV
+   ======================================== */
+.admin-topnav {
+    @apply fixed top-0 left-0 right-0 z-40 shadow-md;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-topnav-inner {
+    @apply px-4 sm:px-6 lg:px-8 h-12 flex justify-between items-center;
+}
+
+.admin-topnav-left {
+    @apply flex items-center;
+}
+
+.admin-topnav-toggle {
+    @apply lg:hidden mr-3 text-white/80 hover:text-white transition;
+}
+
+.admin-topnav-brand {
+    @apply flex-shrink-0;
+}
+
+.admin-topnav-logo,
+.admin-topnav-logo:link,
+.admin-topnav-logo:visited,
+.admin-topnav-logo:hover,
+.admin-topnav-logo:active,
+.admin-topnav-logo:focus {
+    color: #ffffff !important;
+    text-decoration: none !important;
+    opacity: 1 !important;
+}
+
+.admin-topnav-logo:hover {
+    opacity: 0.8 !important;
+}
+
+.admin-topnav-menu {
+    @apply hidden md:flex md:ml-4 space-x-1;
+}
+
+/* ========================================
+   САЙДБАР - БЕЛЫЙ ФОН, ЧЁРНЫЙ ТЕКСТ
+   ======================================== */
+.admin-sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid #e5e7eb !important;
+}
+
+.admin-sidebar .sidebar-link {
+    @apply flex items-center py-2 pl-3 transition-colors;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    color: #000000 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    border-radius: 6px 0 0 6px !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+}
+
+.admin-sidebar .sidebar-link:hover {
+    background: #3688d1cf !important;
+    color: #ffffff !important;
+    border-radius: 6px 0 0 6px !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+}
+
+.admin-sidebar .sidebar-link.active {
+    background: #3688d1cf !important;
+    color: #ffffff !important;
+    border-radius: 6px 0 0 6px !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+}
+
+.admin-sidebar .sidebar-icon {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 12px !important;
+    color: #4b5563 !important;
+    flex-shrink: 0 !important;
+}
+
+.admin-sidebar .sidebar-link.active .sidebar-icon {
+    color: #ffffff !important;
+}
+
+.admin-sidebar .sidebar-link:hover .sidebar-icon {
+    color: #ffffff !important;
+}
+
+/* ========================================
+   ССЫЛКИ В КОНТЕНТЕ АДМИНКИ - СИНИЕ
+   ======================================== */
+.admin-content a:not(.btn):not(.no-style):not(.sidebar-link) {
+    color: #1e5981 !important;
+    text-decoration: none !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 15px !important;
+}
+
+.admin-content a:not(.btn):not(.no-style):not(.sidebar-link):hover {
+    color: #265a8a !important;
+    text-decoration: underline !important;
+}
+
+/* ========================================
+   АДМИНКА - ОБЩИЕ СТИЛИ ДЛЯ СТРАНИЦ
+   ======================================== */
+
+/* ----- Панель действий ----- */
+.admin-page-actions {
+    @apply bg-white border-b border-slate-200 py-3;
+    margin-top: 12px !important;
+    padding-top: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+    background: white !important;
+}
+
+/* ----- Карточка страницы ----- */
+.admin-page-card {
+    @apply bg-white shadow-sm border border-slate-200/60 overflow-hidden;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-radius: 0 !important;
+}
+
+/* ----- Контент со скроллом ----- */
+.admin-page-content {
+    flex: 1 !important;
+    overflow: hidden !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.admin-page-actions .admin-btn {
+    @apply px-4 py-2 rounded-md text-sm font-medium transition-all duration-200;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.admin-page-actions .admin-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+.admin-btn-primary {
+    @apply font-semibold;
+    background: #3688d1cf !important;
+    box-shadow: 0 2px 8px rgba(48, 113, 169, 0.25);
+    color: #ffffff !important;
+}
+
+.admin-btn-primary:hover {
+    background: #2a6d9e !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(48, 113, 169, 0.35);
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.admin-btn-primary:active {
+    transform: translateY(0);
+}
+
+.admin-btn-primary:link,
+.admin-btn-primary:visited,
+.admin-btn-primary:focus {
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.admin-btn-secondary,
+.admin-btn-danger {
+    @apply bg-white text-slate-700 font-medium;
+    border: 1.5px solid #e2e8f0;
+}
+
+.admin-btn-secondary:hover,
+.admin-btn-danger:hover {
+    @apply bg-slate-50;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.admin-btn-secondary:active,
+.admin-btn-danger:active {
+    transform: translateY(0);
+}
+
+/* ----- Фильтры внутри панели ----- */
+.admin-page-actions .admin-filters-inline {
+    @apply flex flex-wrap gap-4 items-end mt-3 pt-3 border-t border-slate-200;
+}
+
+.admin-page-actions .admin-filter-group {
+    @apply flex-1 min-w-[180px];
+}
+
+.admin-page-actions .admin-filter-label {
+    @apply block text-xs font-medium text-slate-500 mb-1;
+}
+
+.admin-page-actions .admin-filter-input {
+    @apply w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3071a9]/20 focus:border-[#3071a9] transition-all;
+}
+
+.admin-page-actions .admin-filter-select {
+    @apply w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3071a9]/20 focus:border-[#3071a9] transition-all bg-white;
+}
+
+.admin-page-actions .admin-filter-reset {
+    @apply text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5;
+}
+
+/* ========================================
+   ТАБЛИЦА С ФИКСИРОВАННЫМ ЗАГОЛОВКОМ
+   ======================================== */
+
+/* Контейнер таблицы - СКРОЛЛ ЗДЕСЬ */
+.admin-table-scroll {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    background: white;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0 !important;
+}
+
+/* Единая таблица */
+.admin-table-fixed {
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    font-size: 14px;
+    background: white;
+}
+
+/* Шапка - фиксируется при скролле ВНУТРИ .admin-table-scroll */
+.admin-table-fixed thead th {
+    background: #e7e8ec !important;
+    padding: 12px 12px !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    color: #2a3a51 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    white-space: nowrap !important;
+}
+
+.admin-table-fixed thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+}
+
+/* Ячейки */
+.admin-table-fixed tbody td {
+    padding: 12px 12px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle !important;
+}
+
+/* Строки */
+.admin-table-fixed tbody tr {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.admin-table-fixed tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.admin-table-fixed tbody tr:nth-child(odd) {
+    background: #ffffff;
+}
+
+.admin-table-fixed tbody tr:hover {
+    background: rgba(54, 136, 209, 0.08) !important;
+}
+
+.admin-table-fixed tbody tr.bg-blue-50\/50 {
+    background: rgba(54, 136, 209, 0.16) !important;
+}
+
+/* ----- ШИРИНА КОЛОНОК ----- */
+.admin-table-fixed .col-checkbox { width: 40px !important; text-align: center !important; }
+.admin-table-fixed .col-id       { width: 70px !important; text-align: center !important; }
+.admin-table-fixed .col-title    { width: 32% !important; }
+.admin-table-fixed .col-status   { width: 130px !important; }
+.admin-table-fixed .col-author   { width: 130px !important; }
+.admin-table-fixed .col-created  { width: 140px !important; }
+.admin-table-fixed .col-views    { width: 80px !important; text-align: center !important; }
+.admin-table-fixed .col-home     { width: 90px !important; text-align: center !important; }
+.admin-table-fixed .col-published { width: 110px !important; text-align: center !important; }
+.admin-table-fixed .col-draft     { width: 110px !important; text-align: center !important; }
+.admin-table-fixed .col-trash     { width: 110px !important; text-align: center !important; }
+.admin-table-fixed .col-alias    { width: 160px !important; }
+.admin-table-fixed .col-items    { width: 100px !important; text-align: center !important; }
+.admin-table-fixed .col-menu     { width: 160px !important; }
+.admin-table-fixed .col-groups   { width: 200px !important; }
+.admin-table-fixed .col-description { width: 200px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+.admin-table-fixed .col-username { width: 140px !important; }
+.admin-table-fixed .col-email    { width: 180px !important; }
+.admin-table-fixed .col-activated { width: 120px !important; text-align: center !important; }
+.admin-table-fixed .col-lastlogin { width: 150px !important; }
+.admin-table-fixed .col-access   { width: 90px !important; text-align: center !important; }
+.admin-table-fixed .col-language { width: 70px !important; text-align: center !important; }
+.admin-table-fixed .col-order    { width: 60px !important; text-align: center !important; }
+.admin-table-fixed .col-type     { width: 120px !important; }
+.admin-table-fixed .col-date     { width: 140px !important; }
+.admin-table-fixed .col-actions  { width: 100px !important; text-align: center !important; }
+.admin-table-fixed .col-parent   { width: 130px !important; }
+
+/* ========================================
+   ЕДИНЫЕ СТИЛИ ДЛЯ ССЫЛОК В КОЛОНКЕ ЗАГОЛОВОК
+   ======================================== */
+
+.admin-table-fixed .col-title .title-text,
+.admin-table-fixed .col-title .category-name-link,
+.admin-table-fixed .col-title .menu-type-name {
+    display: inline-block !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+    line-height: 1.4 !important;
+    color: #1e5981 !important;
+    font-weight: 500 !important;
+    font-size: 15px !important;
+    text-decoration: none !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    text-align: left !important;
+}
+
+.admin-table-fixed .col-title .title-text:hover,
+.admin-table-fixed .col-title .category-name-link:hover,
+.admin-table-fixed .col-title .menu-type-name:hover {
+    text-decoration: underline !important;
+}
+
+.admin-table-fixed .col-title .title-slug,
+.admin-table-fixed .col-title .title-category {
+    display: block !important;
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-top: 2px;
+}
+
+.admin-table-fixed .col-title .category-alias {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+    font-weight: 400 !important;
+}
+
+/* ========================================
+   ЕДИНЫЕ СТАТУСЫ И БЕЙДЖИ (ДЛЯ ВСЕХ СТРАНИЦ)
+   ======================================== */
+
+/* ----- Статус-бейдж (общий для всех) ----- */
+.admin-table-fixed .status-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+}
+
+/* ----- Активный / Опубликовано ----- */
+.admin-table-fixed .status-active,
+.admin-table-fixed .status-published {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+/* ----- Неактивный / Черновик / Скрыто ----- */
+.admin-table-fixed .status-inactive,
+.admin-table-fixed .status-draft,
+.admin-table-fixed .status-unpublished {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+/* ----- Архив ----- */
+.admin-table-fixed .status-archived {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+/* ----- Бейдж для групп (общий) ----- */
+.admin-table-fixed .group-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 1px 8px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+/* ----- Бейдж для меню (общий) ----- */
+.admin-table-fixed .menu-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    background: #eef2ff !important;
+    color: #4338ca !important;
+}
+
+/* ----- Статистика (кружки для категорий) ----- */
+.admin-table-fixed .stat-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    transition: transform 0.15s ease !important;
+}
+
+.admin-table-fixed .stat-badge-green {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+.admin-table-fixed .stat-badge-amber {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+.admin-table-fixed .stat-badge-rose {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.admin-table-fixed .stat-badge-blue {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+.admin-table-fixed .stat-badge:hover {
+    transform: scale(1.15) !important;
+}
+
+/* ----- Статусы пользователей ----- */
+.admin-table-fixed .user-status-active {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+.admin-table-fixed .user-status-blocked {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.admin-table-fixed .user-status-inactive {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 2px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+/* ----- ЧЕКБОКСЫ ----- */
+.admin-table-fixed .admin-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: #3071a9 !important;
+    cursor: pointer !important;
+}
+
+/* ----- Toggle (переключатель) ----- */
+.admin-table-fixed .admin-toggle {
+    display: inline-block !important;
+    position: relative !important;
+    width: 40px !important;
+    height: 20px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.admin-table-fixed .admin-toggle-on {
+    background: #3071a9 !important;
+}
+
+.admin-table-fixed .admin-toggle-off {
+    background: #cbd5e1 !important;
+}
+
+.admin-table-fixed .admin-toggle-slider {
+    position: absolute !important;
+    left: 2px !important;
+    top: 2px !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: white !important;
+    border-radius: 50% !important;
+    transition: transform 0.2s ease !important;
+}
+
+.admin-table-fixed .admin-toggle-slider-on {
+    transform: translateX(20px) !important;
+}
+
+.admin-table-fixed .admin-toggle-slider-off {
+    transform: translateX(0) !important;
+}
+
+/* ========================================
+   АДАПТИВ ДЛЯ ТАБЛИЦ
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .admin-table-fixed .col-status,
+    .admin-table-fixed .col-author,
+    .admin-table-fixed .col-created,
+    .admin-table-fixed .col-views,
+    .admin-table-fixed .col-home,
+    .admin-table-fixed .col-published,
+    .admin-table-fixed .col-draft,
+    .admin-table-fixed .col-trash,
+    .admin-table-fixed .col-alias,
+    .admin-table-fixed .col-items,
+    .admin-table-fixed .col-menu,
+    .admin-table-fixed .col-groups,
+    .admin-table-fixed .col-description {
+        display: none !important;
+    }
+
+    .admin-table-fixed .col-title {
+        width: 50% !important;
+    }
+
+    .admin-table-fixed .col-id {
+        width: 60px !important;
+    }
+
+    .admin-table-fixed .col-checkbox {
+        width: 36px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-table-fixed .col-id {
+        display: none !important;
+    }
+
+    .admin-table-fixed .col-title {
+        width: 70% !important;
+    }
+
+    .admin-table-fixed .col-checkbox {
+        display: none !important;
+    }
+
+    .admin-table-fixed thead th.col-checkbox {
+        display: none !important;
+    }
+
+    .admin-table-scroll {
+        max-height: none !important;
+        overflow-y: visible !important;
+        border: none !important;
+    }
+
+    .admin-pagination {
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+
+    .admin-page-actions .admin-filters-inline {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .admin-page-actions .admin-filter-group {
+        min-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .admin-page-actions .admin-filters-inline .w-32,
+    .admin-page-actions .admin-filters-inline .w-40,
+    .admin-page-actions .admin-filters-inline .w-36,
+    .admin-page-actions .admin-filters-inline .w-20 {
+        width: 100% !important;
+    }
+
+    .admin-page-actions .flex-wrap {
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .admin-page-actions .admin-btn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .admin-table-fixed .status-badge,
+    .admin-table-fixed .user-status-active,
+    .admin-table-fixed .user-status-blocked,
+    .admin-table-fixed .user-status-inactive {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+    }
+
+    .admin-table-fixed .col-title .title-text,
+    .admin-table-fixed .col-title .category-name-link,
+    .admin-table-fixed .col-title .menu-type-name {
+        font-size: 13px !important;
+    }
+
+    .admin-table-fixed thead th {
+        font-size: 11px !important;
+        padding: 8px 6px !important;
+    }
+
+    .admin-table-fixed tbody td {
+        padding: 8px 6px !important;
+        font-size: 12px !important;
+    }
+
+    .admin-table-fixed .stat-badge {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 11px !important;
+    }
+}
+
+/* ========================================
+   КАСТОМНЫЕ ВЫПАДАЮЩИЕ СПИСКИ
+   ======================================== */
+
+.admin-content select {
+    @apply border rounded-md px-3 py-1.5 text-sm transition-all;
+    border-color: #cbd5e1 !important;
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    padding-right: 32px !important;
+    cursor: pointer !important;
+}
+
+.admin-content select:hover {
+    border-color: #94a3b8 !important;
+}
+
+.admin-content select:focus {
+    border-color: rgba(48, 113, 169, 0.31) !important;
+    box-shadow: 0 0 0 3px rgba(48, 113, 169, 0.12) !important;
+    outline: none !important;
+}
+
+.admin-content select option {
+    @apply bg-white text-slate-700;
+    padding: 6px 10px !important;
+    font-weight: 400 !important;
+}
+
+.admin-content select option:checked {
+    @apply bg-[#3071a9] text-white;
+}
+
+.admin-content select option:hover {
+    background-color: #f1f5f9 !important;
+}
+
+/* ----- Кнопка просмотра сайта ----- */
+.admin-topnav-right {
+    @apply flex items-center gap-3;
+}
+
+.admin-topnav-view-site,
+.admin-topnav-view-site:link,
+.admin-topnav-view-site:visited,
+.admin-topnav-view-site:hover,
+.admin-topnav-view-site:active,
+.admin-topnav-view-site:focus {
+    @apply flex items-center gap-1.5 transition-all duration-200;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    text-decoration: none !important;
+    color: #ffffff !important;
+}
+
+.admin-topnav-view-site:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.admin-topnav-view-site svg {
+    @apply flex-shrink-0;
+}
+
+/* ----- Пагинация ----- */
+.admin-pagination {
+    @apply border-t border-slate-200 px-6 py-4 flex flex-wrap justify-between items-center gap-2;
+}
+
+.admin-pagination-info {
+    @apply text-sm text-slate-500;
+}
+
+.admin-pagination-controls {
+    @apply flex gap-1 items-center;
+}
+
+.admin-pagination-btn {
+    @apply px-3 py-1 border border-slate-300 rounded-lg text-sm disabled:opacity-50 hover:bg-slate-50 transition;
+}
+
+.admin-pagination-current {
+    @apply text-sm text-slate-600;
+}

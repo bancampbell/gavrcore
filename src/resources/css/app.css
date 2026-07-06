@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 
+/* Админка */
 @import './admin-variables.css';
+@import './admin.css';
 
 /* Тема */
 @import 'themes/default/variables.css';

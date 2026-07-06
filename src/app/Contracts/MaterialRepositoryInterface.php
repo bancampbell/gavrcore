@@ -13,7 +13,7 @@ interface MaterialRepositoryInterface
      *
      * @return LengthAwarePaginator<int, Material>
      */
-    public function paginate(array $filters): LengthAwarePaginator;
+    public function paginate(array $filters, int $perPage = 10): LengthAwarePaginator;
 
     public function find(int $id): ?Material;
 

@@ -1,5 +1,5 @@
 <template>
-    <div v-if="show" class="modal-overlay" @click.self="close">
+    <div v-if="show" class="modal-overlay">
         <div class="category-modal">
             <div class="category-modal-header">
                 <h3>{{ isEdit ? 'Редактировать категорию' : 'Создать категорию' }}</h3>

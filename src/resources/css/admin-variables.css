@@ -1,61 +1,150 @@
 /* ===== Админка: фиксированные цвета ===== */
 :root {
-    /* Цвета админки (не зависят от темы) */
     --admin-primary: #3071a9;
     --admin-primary-hover: #265a8a;
     --admin-primary-light: #e8f0f8;
     --admin-text: #1f2937;
     --admin-text-muted: #6b7280;
-    --admin-bg: #f9fafb;
+    --admin-bg: #f8fafc;
     --admin-surface: #ffffff;
     --admin-border: #e5e7eb;
+    --admin-bg-gradient: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #f8fafc 80%);
 }
 
-/* ===== ПЕРЕОПРЕДЕЛЯЕМ ВСЕ ССЫЛКИ В АДМИНКЕ ===== */
-.admin-sidebar a,
-.admin-sidebar .menu-link,
-.admin-sidebar .menu-link:hover,
-.admin-sidebar .menu-link.active,
-.admin-sidebar .menu-link:focus {
-    color: var(--admin-text) !important;
+/* ========================================
+   САЙДБАР - БЕЛЫЙ ФОН, ЧЁРНЫЙ ТЕКСТ
+   ======================================== */
+.admin-sidebar {
+    background: #ffffff !important;
+    border-right: 1px solid var(--admin-border) !important;
+}
+
+.admin-sidebar .py-4,
+.admin-sidebar .pl-3,
+.admin-sidebar .px-3 {
+    padding-left: 12px !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+}
+
+.admin-sidebar .version-block {
+    display: flex !important;
+    align-items: center !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+    border-radius: 6px 0 0 6px !important;
     background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+}
+
+.admin-sidebar .version-label {
+    color: #818cf8 !important;
+    font-weight: 600 !important;
+    font-size: 10px !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+}
+
+.admin-sidebar .version-number {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.admin-sidebar .sidebar-link {
+    display: flex !important;
+    align-items: center !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    padding-left: 12px !important;
+    padding-right: 0 !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    color: #1f2937 !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    border-radius: 6px 0 0 6px !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+    transition: all 0.2s ease !important;
+}
+
+.admin-sidebar .sidebar-link:hover {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+}
+
+.admin-sidebar .sidebar-link.active {
+    background: #e5e7eb !important;
+    color: #1f2937 !important;
+}
+
+.admin-sidebar .sidebar-icon {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 12px !important;
+    color: #4b5563 !important;
+    flex-shrink: 0 !important;
+}
+
+.admin-sidebar .sidebar-link.active .sidebar-icon {
+    color: #1f2937 !important;
+}
+
+.admin-sidebar .sidebar-link:hover .sidebar-icon {
+    color: #1f2937 !important;
+}
+
+.admin-sidebar .bg-white\/10 {
+    background: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+}
+
+.admin-sidebar .text-white\/70 {
+    color: #6b7280 !important;
+}
+
+.admin-sidebar .text-white\/90 {
+    color: #1f2937 !important;
+}
+
+.admin-sidebar .text-white\/50 {
+    color: #6b7280 !important;
+}
+
+.admin-sidebar .text-white\/80 {
+    color: #1f2937 !important;
+}
+
+.admin-sidebar .border-white\/20 {
+    border-color: #e5e7eb !important;
+}
+
+.admin-sidebar .border-white\/10 {
+    border-color: #e5e7eb !important;
+}
+
+/* ========================================
+   ССЫЛКИ В КОНТЕНТЕ АДМИНКИ - СИНИЕ
+   ======================================== */
+.admin-content a:not(.btn):not(.no-style):not(.sidebar-link) {
+    color: var(--admin-primary) !important;
     text-decoration: none !important;
 }
 
-.admin-sidebar a:hover,
-.admin-sidebar .menu-link:hover {
-    color: var(--admin-primary) !important;
-    background: var(--admin-primary-light) !important;
-}
-
-.admin-sidebar a.active,
-.admin-sidebar .menu-link.active {
-    color: var(--admin-primary) !important;
-    background: var(--admin-primary-light) !important;
-}
-
-/* Ссылки в контенте админки */
-.admin-content a:not(.btn):not(.no-style) {
-    color: var(--admin-primary) !important;
-    text-decoration: none !important;
-}
-
-.admin-content a:not(.btn):not(.no-style):hover {
+.admin-content a:not(.btn):not(.no-style):not(.sidebar-link):hover {
     color: var(--admin-primary-hover) !important;
     text-decoration: underline !important;
 }
 
-/* Кнопки в админке */
-.admin-btn-primary {
-    background: var(--admin-primary);
-    color: white;
-}
-
-.admin-btn-primary:hover {
-    background: var(--admin-primary-hover);
-}
-
-/* Таблицы в админке */
+/* ========================================
+   ТАБЛИЦЫ В АДМИНКЕ
+   ======================================== */
 .admin-table th {
     color: var(--admin-primary);
     border-bottom: 2px solid var(--admin-border);
@@ -63,4 +152,41 @@
 
 .admin-table td {
     border-bottom: 1px solid var(--admin-border);
+}
+
+/* ========================================
+   РАЗДЕЛЫ САЙДБАРА - ЗАГОЛОВКИ
+   ======================================== */
+.admin-sidebar .section-title {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: none !important;
+    color: #000000 !important;
+    padding: 6px 12px !important;
+    margin-bottom: 2px !important;
+    margin-top: 0 !important;
+    display: block !important;
+    background: rgba(45, 58, 77, 0.08) !important;
+    border-radius: 6px 0 0 6px !important;
+}
+
+.admin-sidebar .section-divider {
+    height: 1px !important;
+    background: #e5e7eb !important;
+    margin: 8px 0 8px 12px !important;
+    border: none !important;
+}
+
+/* ========================================
+   ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ КНОПОК
+   ======================================== */
+.admin-btn-primary,
+.admin-btn-primary:link,
+.admin-btn-primary:visited,
+.admin-btn-primary:hover,
+.admin-btn-primary:active,
+.admin-btn-primary:focus {
+    color: #ffffff !important;
+    text-decoration: none !important;
 }

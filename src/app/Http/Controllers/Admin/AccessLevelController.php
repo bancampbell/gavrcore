@@ -17,15 +17,35 @@ class AccessLevelController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index(): Response
+    public function index(Request $request): Response|JsonResponse
     {
         $this->authorize('viewAny', AccessLevel::class);
 
-        $accessLevels = AccessLevel::with('groups')->orderBy('ordering')->get();
+        $query = AccessLevel::with('groups');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('alias', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($request->has('status') && $request->status !== '' && $request->status !== null) {
+            $query->where('status', filter_var($request->status, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $accessLevels = $query->orderBy('ordering')->get();
+        $groups = Group::orderBy('name')->get();
+
+        if ($request->wantsJson()) {
+            return response()->json($accessLevels);
+        }
 
         return Inertia::render('Admin/AccessLevels/Index', [
             'accessLevels' => $accessLevels,
-            'groups' => Group::orderBy('name')->get(),
+            'groups' => $groups,
+            'filters' => $request->only(['search', 'status']),
             'user' => auth()->user(),
             'title' => 'Уровни доступа',
         ]);
@@ -42,7 +62,7 @@ class AccessLevelController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $this->authorize('create', AccessLevel::class);
 
@@ -55,7 +75,7 @@ class AccessLevelController extends Controller
             'status' => 'nullable|boolean',
         ]);
 
-        $alias = $request->alias ? $request->alias : Str::slug($request->title);
+        $alias = $request->alias ?: Str::slug($request->title);
 
         $accessLevel = AccessLevel::create([
             'title' => $request->title,
@@ -67,6 +87,10 @@ class AccessLevelController extends Controller
 
         if ($request->has('groups')) {
             $accessLevel->groups()->sync($request->groups);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Уровень доступа создан']);
         }
 
         return redirect()->route('admin.access-levels.index')
@@ -100,7 +124,7 @@ class AccessLevelController extends Controller
             'status' => 'nullable|boolean',
         ]);
 
-        $alias = $request->alias ? $request->alias : Str::slug($request->title);
+        $alias = $request->alias ?: Str::slug($request->title);
 
         $accessLevel->update([
             'title' => $request->title,
@@ -141,5 +165,16 @@ class AccessLevelController extends Controller
         }
 
         return response()->json(['message' => 'Порядок обновлён']);
+    }
+
+    public function updateStatus(int $id): JsonResponse
+    {
+        $accessLevel = AccessLevel::findOrFail($id);
+        $this->authorize('update', $accessLevel);
+
+        $accessLevel->status = !$accessLevel->status;
+        $accessLevel->save();
+
+        return response()->json(['message' => 'Статус обновлён']);
     }
 }

@@ -6,6 +6,7 @@ import type { MaterialsData, MaterialFilters, Notification } from '../types';
 interface UseMaterialsProps {
     materials: MaterialsData;
     filters?: MaterialFilters;
+    perPage?: number;
 }
 
 export function useMaterials(props: UseMaterialsProps) {
@@ -17,6 +18,7 @@ export function useMaterials(props: UseMaterialsProps) {
         author: props.filters?.author ? Number(props.filters.author) : null
     });
 
+    const perPage = ref<number>(props.perPage || 10);
     const selectedMaterials = ref<number[]>([]);
     const allSelected = ref<boolean>(false);
     const notification = ref<Notification>({ show: false, message: '', type: 'success' });
@@ -61,7 +63,8 @@ export function useMaterials(props: UseMaterialsProps) {
             search: filters.value.search,
             state: filters.value.state,
             category_id: filters.value.category_id ?? null,
-            author: filters.value.author ?? null
+            author: filters.value.author ?? null,
+            per_page: perPage.value
         }, {
             preserveState: true,
             preserveScroll: true
@@ -85,13 +88,18 @@ export function useMaterials(props: UseMaterialsProps) {
         applyFilters();
     };
 
+    const changePerPage = () => {
+        applyFilters();
+    };
+
     const prevPage = () => {
         if (props.materials.current_page > 1) {
             router.get(`/admin/materials?page=${props.materials.current_page - 1}`, {
                 search: filters.value.search,
                 state: filters.value.state,
                 category_id: filters.value.category_id ?? null,
-                author: filters.value.author ?? null
+                author: filters.value.author ?? null,
+                per_page: perPage.value
             });
         }
     };
@@ -102,7 +110,8 @@ export function useMaterials(props: UseMaterialsProps) {
                 search: filters.value.search,
                 state: filters.value.state,
                 category_id: filters.value.category_id ?? null,
-                author: filters.value.author ?? null
+                author: filters.value.author ?? null,
+                per_page: perPage.value
             });
         }
     };
@@ -152,7 +161,6 @@ export function useMaterials(props: UseMaterialsProps) {
             const response = await materialsApi.toggleHomepage(material.id, newValue);
             showNotification(response.message, 'success');
 
-            // Если новый материал становится "на главной", снимаем флаг у всех остальных в списке
             if (newValue) {
                 props.materials.data.forEach(m => {
                     if (m.id !== material.id) {
@@ -161,7 +169,6 @@ export function useMaterials(props: UseMaterialsProps) {
                 });
             }
 
-            // Обновляем текущий материал
             const index = props.materials.data.findIndex(m => m.id === material.id);
             if (index !== -1) {
                 props.materials.data[index].show_on_homepage = newValue;
@@ -230,6 +237,7 @@ export function useMaterials(props: UseMaterialsProps) {
 
     return {
         filters,
+        perPage,
         selectedMaterials,
         allSelected,
         notification,
@@ -243,6 +251,7 @@ export function useMaterials(props: UseMaterialsProps) {
         applyFilters,
         debounceSearch,
         resetFilters,
+        changePerPage,
         prevPage,
         nextPage,
         moveToTrash,
