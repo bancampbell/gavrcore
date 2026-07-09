@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full w-full">
             <!-- Панель действий + фильтры -->
             <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер галерей</h1>
                 <div class="flex flex-wrap gap-2.5">
                     <button
                         @click="openCreateModal"
@@ -14,6 +15,17 @@
                     >
                         + Создать галерею
                     </button>
+
+                    <!-- Кнопка редактирования появляется когда выбрана ровно 1 галерея -->
+                    <template v-if="selectedGalleries.length === 1">
+                        <button
+                            @click="editSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Редактировать
+                        </button>
+                    </template>
+
                     <template v-if="selectedGalleries.length > 0">
                         <button
                             @click="publishSelected"
@@ -28,7 +40,7 @@
                             Снять с публикации
                         </button>
                         <button
-                            @click="deleteSelected"
+                            @click="openDeleteModal"
                             class="admin-btn admin-btn-danger"
                         >
                             Удалить
@@ -134,7 +146,7 @@
 
                                 <!-- Название -->
                                 <td class="col-title" @click="toggleSelect(gallery.id)">
-                                    <Link :href="`/admin/galleries/${gallery.id}/edit`" class="title-text" style="display: inline-block !important;" @click.stop>
+                                    <Link :href="`/admin/galleries/${gallery.id}/edit`" class="title-text">
                                         {{ gallery.title }}
                                     </Link>
                                 </td>
@@ -224,6 +236,18 @@
             @save="handleCreateGallery"
         />
 
+        <!-- Модалка подтверждения удаления -->
+        <ConfirmModal
+            :is-open="deleteModalOpen"
+            title="Удаление галерей"
+            :message="deleteMessage"
+            confirm-text="Удалить"
+            type="danger"
+            :loading="deleteLoading"
+            @close="closeDeleteModal"
+            @confirm="confirmDelete"
+        />
+
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
@@ -233,6 +257,7 @@ import { ref, computed, onMounted } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AdminLayout from '../../../layouts/AdminLayout.vue';
+import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import GalleryModal from './components/GalleryModal.vue';
 
@@ -248,6 +273,12 @@ const filterType = ref('');
 const filterStatus = ref('');
 const loading = ref(false);
 const modalOpen = ref(false);
+
+// Состояние модалки удаления
+const deleteModalOpen = ref(false);
+const deleteLoading = ref(false);
+const deleteMessage = ref('');
+const itemsToDelete = ref<number[]>([]);
 
 // Пагинация
 const pagination = ref({
@@ -374,19 +405,48 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
-const deleteSelected = async () => {
-    if (selectedGalleries.value.length === 0) return;
-    if (!confirm(`Удалить ${selectedGalleries.value.length} галерей?`)) return;
+const editSelected = () => {
+    if (selectedGalleries.value.length === 1) {
+        router.visit(`/admin/galleries/${selectedGalleries.value[0]}/edit`);
+    }
+};
 
+// Открытие модалки удаления
+const openDeleteModal = () => {
+    if (selectedGalleries.value.length === 0) return;
+
+    const count = selectedGalleries.value.length;
+    deleteMessage.value = count === 1
+        ? 'Вы уверены, что хотите удалить выбранную галерею? Это действие нельзя отменить.'
+        : `Вы уверены, что хотите удалить ${count} галерей? Это действие нельзя отменить.`;
+
+    itemsToDelete.value = [...selectedGalleries.value];
+    deleteModalOpen.value = true;
+};
+
+// Закрытие модалки удаления
+const closeDeleteModal = () => {
+    deleteModalOpen.value = false;
+    deleteLoading.value = false;
+    itemsToDelete.value = [];
+};
+
+// Подтверждение удаления
+const confirmDelete = async () => {
+    if (itemsToDelete.value.length === 0) return;
+
+    deleteLoading.value = true;
     try {
-        for (const id of selectedGalleries.value) {
+        for (const id of itemsToDelete.value) {
             await axios.delete(`/admin/galleries/${id}`);
         }
-        showNotification('Галереи удалены', 'success');
+        showNotification(`${itemsToDelete.value.length} галерей удалено`, 'success');
         selectedGalleries.value = [];
+        closeDeleteModal();
         await loadGalleries();
     } catch (error) {
         showNotification('Ошибка при удалении', 'error');
+        deleteLoading.value = false;
     }
 };
 

@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full">
             <!-- Панель действий + фильтры (sticky) -->
             <div class="admin-page-actions flex-shrink-0">
+                <h1 class="admin-page-title">Все меню</h1>
                 <div class="flex flex-wrap gap-2.5">
                     <Link
                         :href="selectedMenuTypeId ? `/admin/menu/types/${selectedMenuTypeId}/items/create` : (menuTypes.length > 0 ? `/admin/menu/types/${menuTypes[0].id}/items/create` : '#')"
@@ -24,13 +25,13 @@
                             Редактировать
                         </button>
                         <button
-                            @click="openBulkPublishModal"
+                            @click="handleBulkPublish"
                             class="admin-btn admin-btn-secondary"
                         >
                             Опубликовать
                         </button>
                         <button
-                            @click="openBulkUnpublishModal"
+                            @click="handleBulkUnpublish"
                             class="admin-btn admin-btn-secondary"
                         >
                             Снять с публикации
@@ -182,7 +183,7 @@
                                     </span>
                                 </td>
 
-                                <!-- Статус - единый класс -->
+                                <!-- Статус -->
                                 <td class="col-status" @click="toggleSelect(item.id)">
                                     <span
                                         class="status-badge"
@@ -244,39 +245,6 @@
         </div>
 
         <!-- Модалки -->
-        <ConfirmModal
-            :is-open="toggleStatusModalOpen"
-            title="Изменение статуса"
-            :message="toggleStatusMessage"
-            confirm-text="Подтвердить"
-            type="warning"
-            :loading="loading"
-            @close="toggleStatusModalOpen = false"
-            @confirm="confirmToggleStatus"
-        />
-
-        <ConfirmModal
-            :is-open="bulkPublishModalOpen"
-            title="Массовая публикация"
-            :message="bulkPublishMessage"
-            confirm-text="Опубликовать"
-            type="warning"
-            :loading="loading"
-            @close="bulkPublishModalOpen = false"
-            @confirm="confirmBulkPublish"
-        />
-
-        <ConfirmModal
-            :is-open="bulkUnpublishModalOpen"
-            title="Массовое снятие с публикации"
-            :message="bulkUnpublishMessage"
-            confirm-text="Снять с публикации"
-            type="danger"
-            :loading="loading"
-            @close="bulkUnpublishModalOpen = false"
-            @confirm="confirmBulkUnpublish"
-        />
-
         <ConfirmModal
             :is-open="deleteModalOpen"
             title="Удаление пункта меню"
@@ -388,16 +356,6 @@ const deleteMessage = ref('');
 const bulkDeleteModalOpen = ref(false);
 const bulkDeleteLoading = ref(false);
 const bulkDeleteMessage = ref('');
-
-const toggleStatusModalOpen = ref(false);
-const toggleStatusMessage = ref('');
-const toggleStatusData = ref<{ id: number; status: boolean } | null>(null);
-
-const bulkPublishModalOpen = ref(false);
-const bulkPublishMessage = ref('');
-
-const bulkUnpublishModalOpen = ref(false);
-const bulkUnpublishMessage = ref('');
 
 let searchTimeout: any = null;
 
@@ -609,52 +567,19 @@ const updateLocalStatus = (ids: number[], status: boolean) => {
     });
 };
 
-const openToggleStatusModal = (id: number, status: boolean, title?: string) => {
-    toggleStatusData.value = { id, status };
-    toggleStatusMessage.value = `Вы уверены, что хотите ${status ? 'опубликовать' : 'снять с публикации'} пункт "${title || 'меню'}"?`;
-    toggleStatusModalOpen.value = true;
-};
-
-const confirmToggleStatus = async () => {
-    if (!toggleStatusData.value) return;
-    loading.value = true;
-    try {
-        await menuItemsApi.updateStatus(toggleStatusData.value.id, toggleStatusData.value.status);
-        updateLocalStatus([toggleStatusData.value.id], toggleStatusData.value.status);
-        showNotification(`Пункт меню ${toggleStatusData.value.status ? 'опубликован' : 'скрыт'}`, 'success');
-        toggleStatusModalOpen.value = false;
-        toggleStatusData.value = null;
-    } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-const openBulkPublishModal = () => {
+// УБРАЛИ МОДАЛКУ - теперь просто выполняем действие
+const handleBulkPublish = async () => {
     if (selectedItems.value.length === 0) return;
 
-    if (selectedItems.value.length === 1) {
-        const item = flatItems.value.find(i => i.id === selectedItems.value[0]);
-        if (item) {
-            openToggleStatusModal(item.id, true, item.title);
-        }
-    } else {
-        bulkPublishMessage.value = `Вы уверены, что хотите опубликовать ${selectedItems.value.length} пункт(ов) меню?`;
-        bulkPublishModalOpen.value = true;
-    }
-};
-
-const confirmBulkPublish = async () => {
     loading.value = true;
     try {
-        for (const id of selectedItems.value) {
+        const ids = selectedItems.value;
+        for (const id of ids) {
             await menuItemsApi.updateStatus(id, true);
         }
-        updateLocalStatus(selectedItems.value, true);
-        showNotification(`${selectedItems.value.length} пункт(ов) меню опубликовано`, 'success');
+        updateLocalStatus(ids, true);
+        showNotification(`${ids.length} пункт(ов) меню опубликовано`, 'success');
         selectedItems.value = [];
-        bulkPublishModalOpen.value = false;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
     } finally {
@@ -662,30 +587,19 @@ const confirmBulkPublish = async () => {
     }
 };
 
-const openBulkUnpublishModal = () => {
+// УБРАЛИ МОДАЛКУ - теперь просто выполняем действие
+const handleBulkUnpublish = async () => {
     if (selectedItems.value.length === 0) return;
 
-    if (selectedItems.value.length === 1) {
-        const item = flatItems.value.find(i => i.id === selectedItems.value[0]);
-        if (item) {
-            openToggleStatusModal(item.id, false, item.title);
-        }
-    } else {
-        bulkUnpublishMessage.value = `Вы уверены, что хотите снять с публикации ${selectedItems.value.length} пункт(ов) меню?`;
-        bulkUnpublishModalOpen.value = true;
-    }
-};
-
-const confirmBulkUnpublish = async () => {
     loading.value = true;
     try {
-        for (const id of selectedItems.value) {
+        const ids = selectedItems.value;
+        for (const id of ids) {
             await menuItemsApi.updateStatus(id, false);
         }
-        updateLocalStatus(selectedItems.value, false);
-        showNotification(`${selectedItems.value.length} пункт(ов) меню снято с публикации`, 'success');
+        updateLocalStatus(ids, false);
+        showNotification(`${ids.length} пункт(ов) меню снято с публикации`, 'success');
         selectedItems.value = [];
-        bulkUnpublishModalOpen.value = false;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
     } finally {

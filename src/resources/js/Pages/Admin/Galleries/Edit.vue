@@ -1,497 +1,451 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
 
-        <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">{{ title }}</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <Link href="/admin/galleries" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Закрыть
-                </Link>
-            </div>
-        </div>
-
-        <div class="p-6">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                <!-- НАЗВАНИЕ и ТИП -->
-                <div class="p-4 border-b border-gray-200">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">НАЗВАНИЕ</label>
-                        <input
-                            v-model="form.title"
-                            type="text"
-                            class="w-full max-w-2xl border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите название..."
-                        />
-                    </div>
-                    <div class="mt-3">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ТИП ГАЛЕРЕИ</label>
-                        <select v-model="form.type" class="w-56 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="grid">Сетка (Grid)</option>
-                            <option value="switcher">Switcher</option>
-                            <option value="slideshow">Слайд-шоу (Slideshow)</option>
-                            <option value="slider">Слайдер (Slider)</option>
-                        </select>
-                    </div>
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">{{ title }}</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Закрыть
+                    </button>
                 </div>
+            </div>
 
-                <!-- Вкладки -->
-                <div class="border-b border-gray-200">
-                    <div class="flex px-4">
-                        <button
-                            @click="activeTab = 'media'"
-                            class="px-4 py-3 text-sm font-medium border-b-2 transition"
-                            :class="activeTab === 'media' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                        >
-                            МЕДИА
-                        </button>
-                        <button
-                            @click="activeTab = 'settings'"
-                            class="px-4 py-3 text-sm font-medium border-b-2 transition"
-                            :class="activeTab === 'settings' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                        >
-                            НАСТРОЙКИ
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Содержимое вкладок -->
-                <div class="p-4">
-                    <!-- МЕДИА -->
-                    <div v-if="activeTab === 'media'">
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <div class="lg:col-span-1 border-r border-gray-200 pr-4">
-                                <div class="flex justify-between items-center mb-3">
-                                    <span class="text-sm font-medium text-gray-700">Изображения</span>
-                                    <button
-                                        @click="triggerUpload"
-                                        :disabled="uploading"
-                                        class="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
-                                    >
-                                        {{ uploading ? 'Загрузка...' : '+ Добавить' }}
-                                    </button>
-                                    <input
-                                        ref="fileInput"
-                                        type="file"
-                                        multiple
-                                        accept="image/*"
-                                        class="hidden"
-                                        @change="uploadImages"
-                                    />
-                                </div>
-
-                                <div class="space-y-1 max-h-[500px] overflow-y-auto">
-                                    <div
-                                        v-for="image in images"
-                                        :key="image.id"
-                                        @click="selectImage(image)"
-                                        class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-50 transition"
-                                        :class="selectedImage?.id === image.id ? 'bg-blue-50 border border-blue-200' : ''"
-                                    >
-                                        <img
-                                            :src="image.image_path"
-                                            alt=""
-                                            class="w-12 h-12 object-cover rounded border border-gray-200"
-                                        />
-                                        <span class="text-sm text-gray-700 truncate flex-1">
-                                            {{ image.title || 'Без названия' }}
-                                        </span>
-                                        <button
-                                            @click.stop="deleteImage(image.id)"
-                                            class="text-gray-400 hover:text-red-600"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                    <div v-if="images.length === 0 && !uploading" class="text-center py-8 text-gray-400 text-sm">
-                                        Нет изображений
-                                    </div>
-                                    <div v-if="uploading" class="text-center py-4 text-sm text-gray-500">
-                                        Загрузка...
-                                    </div>
-                                </div>
+            <!-- Основной контент -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full">
+                    <!-- НАЗВАНИЕ и ТИП - уменьшено -->
+                    <div class="p-4 border-b border-slate-200">
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1 max-w-md">
+                                <label class="admin-form-label text-xs text-slate-500">НАЗВАНИЕ</label>
+                                <input
+                                    v-model="form.title"
+                                    type="text"
+                                    class="admin-form-input"
+                                    placeholder="Введите название..."
+                                />
                             </div>
-
-                            <div class="lg:col-span-2">
-                                <div v-if="selectedImage" class="space-y-4">
-                                    <div class="space-y-3">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">НАЗВАНИЕ</label>
-                                            <input
-                                                v-model="selectedImage.title"
-                                                type="text"
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                placeholder="Введите название..."
-                                            />
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">ОПИСАНИЕ</label>
-                                            <textarea
-                                                v-model="selectedImage.description"
-                                                rows="3"
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                                                placeholder="Введите описание изображения..."
-                                            />
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">ПУТЬ</label>
-                                            <input
-                                                :value="selectedImage.image_path"
-                                                type="text"
-                                                readonly
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm bg-gray-50 text-gray-500"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div class="border border-gray-200 rounded-lg overflow-hidden bg-gray-50 p-2">
-                                        <img
-                                            :src="selectedImage.image_path"
-                                            :alt="selectedImage.title || 'Изображение'"
-                                            class="w-full max-w-[600px] h-64 object-contain"
-                                        />
-                                    </div>
-
-                                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                                        <div class="flex border-b border-gray-200">
-                                            <button
-                                                @click="editorMode = 'editor'"
-                                                class="px-4 py-2 text-sm font-medium border-b-2 transition"
-                                                :class="editorMode === 'editor' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'"
-                                            >
-                                                Редактор
-                                            </button>
-                                            <button
-                                                @click="editorMode = 'code'"
-                                                class="px-4 py-2 text-sm font-medium border-b-2 transition"
-                                                :class="editorMode === 'code' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'"
-                                            >
-                                                Код
-                                            </button>
-                                            <button
-                                                @click="editorMode = 'preview'"
-                                                class="px-4 py-2 text-sm font-medium border-b-2 transition"
-                                                :class="editorMode === 'preview' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'"
-                                            >
-                                                Предпросмотр
-                                            </button>
-                                        </div>
-                                        <div class="p-4 min-h-[150px]">
-                                            <textarea
-                                                v-if="editorMode === 'code'"
-                                                v-model="selectedImage.description"
-                                                class="w-full min-h-[150px] border-0 focus:outline-none font-mono text-sm"
-                                                placeholder="Введите описание..."
-                                            />
-                                            <div v-else-if="editorMode === 'preview'" class="prose max-w-none">
-                                                {{ selectedImage.description || 'Нет описания' }}
-                                            </div>
-                                            <textarea
-                                                v-else
-                                                v-model="selectedImage.description"
-                                                class="w-full min-h-[150px] border-0 focus:outline-none text-sm"
-                                                placeholder="Введите описание..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-else class="text-center py-12 text-gray-400">
-                                    Выберите изображение для редактирования
-                                </div>
+                            <div class="w-56 flex-shrink-0">
+                                <label class="admin-form-label text-xs text-slate-500">ТИП ГАЛЕРЕИ</label>
+                                <select v-model="form.type" class="admin-form-select">
+                                    <option value="grid">Сетка (Grid)</option>
+                                    <option value="switcher">Switcher</option>
+                                    <option value="slideshow">Слайд-шоу (Slideshow)</option>
+                                    <option value="slider">Слайдер (Slider)</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- НАСТРОЙКИ -->
-                    <div v-if="activeTab === 'settings'">
-                        <div class="max-w-3xl space-y-6">
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Макет</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Отступ (px)</label>
+                    <!-- Вкладки -->
+                    <div class="border-b border-slate-200">
+                        <div class="flex px-4">
+                            <button
+                                @click="activeTab = 'media'"
+                                class="px-4 py-3 text-sm font-medium border-b-2 transition"
+                                :class="activeTab === 'media' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                            >
+                                МЕДИА
+                            </button>
+                            <button
+                                @click="activeTab = 'settings'"
+                                class="px-4 py-3 text-sm font-medium border-b-2 transition"
+                                :class="activeTab === 'settings' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
+                            >
+                                НАСТРОЙКИ
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Содержимое вкладок с скроллом -->
+                    <div class="admin-tab-content">
+                        <!-- МЕДИА -->
+                        <div v-if="activeTab === 'media'" class="p-4">
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div class="lg:col-span-1 border-r border-slate-200 pr-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-sm font-medium text-slate-700">Изображения</span>
+                                        <button
+                                            @click="triggerUpload"
+                                            :disabled="uploading"
+                                            class="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                                        >
+                                            {{ uploading ? 'Загрузка...' : '+ Добавить' }}
+                                        </button>
                                         <input
-                                            v-model.number="settings.gutter"
-                                            type="number"
-                                            min="0"
-                                            max="50"
-                                            class="w-32 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            ref="fileInput"
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            class="hidden"
+                                            @change="uploadImages"
                                         />
                                     </div>
 
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.match_height = !settings.match_height"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.match_height ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    <div class="space-y-1 max-h-[500px] overflow-y-auto">
+                                        <div
+                                            v-for="image in images"
+                                            :key="image.id"
+                                            @click="selectImage(image)"
+                                            class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-slate-50 transition"
+                                            :class="selectedImage?.id === image.id ? 'bg-blue-50 border border-blue-200' : ''"
                                         >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.match_height ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                            <img
+                                                :src="image.image_path"
+                                                alt=""
+                                                class="w-12 h-12 object-cover rounded border border-slate-200"
                                             />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Выравнивание высоты</span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Выравнивание</label>
-                                        <select v-model="settings.alignment" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="left">По левому краю</option>
-                                            <option value="center">По центру</option>
-                                            <option value="right">По правому краю</option>
-                                        </select>
+                                            <span class="text-sm text-slate-700 truncate flex-1">
+                                                {{ image.title || 'Без названия' }}
+                                            </span>
+                                            <button
+                                                @click.stop="deleteImage(image.id)"
+                                                class="text-slate-400 hover:text-red-600"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                        <div v-if="images.length === 0 && !uploading" class="text-center py-8 text-slate-400 text-sm">
+                                            Нет изображений
+                                        </div>
+                                        <div v-if="uploading" class="text-center py-4 text-sm text-slate-500">
+                                            Загрузка...
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Медиа</h3>
-                                <div class="space-y-4">
-                                    <div class="grid grid-cols-2 gap-3 max-w-md">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">Ширина (px)</label>
-                                            <input
-                                                v-model="settings.media.width"
-                                                type="text"
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                placeholder="авто"
+                                <div class="lg:col-span-2">
+                                    <div v-if="selectedImage" class="space-y-4">
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label class="admin-form-label text-xs text-slate-500">НАЗВАНИЕ</label>
+                                                <input
+                                                    v-model="selectedImage.title"
+                                                    type="text"
+                                                    class="admin-form-input"
+                                                    placeholder="Введите название..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="admin-form-label text-xs text-slate-500">ОПИСАНИЕ</label>
+                                                <textarea
+                                                    v-model="selectedImage.description"
+                                                    rows="3"
+                                                    class="admin-form-textarea resize-none"
+                                                    placeholder="Введите описание изображения..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="admin-form-label text-xs text-slate-500">ПУТЬ</label>
+                                                <input
+                                                    :value="selectedImage.image_path"
+                                                    type="text"
+                                                    readonly
+                                                    class="admin-form-input bg-slate-50 text-slate-500 cursor-not-allowed"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div class="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 p-2">
+                                            <img
+                                                :src="selectedImage.image_path"
+                                                :alt="selectedImage.title || 'Изображение'"
+                                                class="w-full max-w-[600px] h-64 object-contain"
                                             />
                                         </div>
+                                    </div>
+
+                                    <div v-else class="text-center py-12 text-slate-400">
+                                        Выберите изображение для редактирования
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- НАСТРОЙКИ -->
+                        <div v-if="activeTab === 'settings'" class="p-4">
+                            <div class="max-w-3xl space-y-6">
+                                <!-- Макет -->
+                                <div>
+                                    <h3 class="admin-form-section-title text-sm">Макет</h3>
+                                    <div class="space-y-4">
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-500 mb-1">Высота (px)</label>
+                                            <label class="admin-form-label text-xs text-slate-500">Отступ (px)</label>
                                             <input
-                                                v-model="settings.media.height"
+                                                v-model.number="settings.gutter"
+                                                type="number"
+                                                min="0"
+                                                max="50"
+                                                class="admin-form-input w-32"
+                                            />
+                                        </div>
+
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.match_height = !settings.match_height"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.match_height ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.match_height ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Выравнивание высоты</span>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Выравнивание</label>
+                                            <select v-model="settings.alignment" class="admin-form-select w-full max-w-xs">
+                                                <option value="left">По левому краю</option>
+                                                <option value="center">По центру</option>
+                                                <option value="right">По правому краю</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Медиа -->
+                                <div>
+                                    <h3 class="admin-form-section-title text-sm">Медиа</h3>
+                                    <div class="space-y-4">
+                                        <div class="grid grid-cols-2 gap-3 max-w-md">
+                                            <div>
+                                                <label class="admin-form-label text-xs text-slate-500">Ширина (px)</label>
+                                                <input
+                                                    v-model="settings.media.width"
+                                                    type="text"
+                                                    class="admin-form-input"
+                                                    placeholder="авто"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="admin-form-label text-xs text-slate-500">Высота (px)</label>
+                                                <input
+                                                    v-model="settings.media.height"
+                                                    type="text"
+                                                    class="admin-form-input"
+                                                    placeholder="авто"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Граница</label>
+                                            <select v-model="settings.media.border" class="admin-form-select w-full max-w-xs">
+                                                <option value="none">Нет</option>
+                                                <option value="rounded">Скругленная</option>
+                                                <option value="circle">Круг</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Контент -->
+                                <div>
+                                    <h3 class="admin-form-section-title text-sm">Контент</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.content.show_title = !settings.content.show_title"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.content.show_title ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.content.show_title ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Показывать заголовок</span>
+                                        </div>
+
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.content.show_content = !settings.content.show_content"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.content.show_content ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.content.show_content ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Показывать описание</span>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Размер заголовка</label>
+                                            <select v-model="settings.content.title_size" class="admin-form-select w-full max-w-xs">
+                                                <option value="default">По умолчанию</option>
+                                                <option value="small">Маленький</option>
+                                                <option value="large">Большой</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Ссылка -->
+                                <div>
+                                    <h3 class="admin-form-section-title text-sm">Ссылка</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.link.show = !settings.link.show"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.link.show ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.link.show ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Показывать ссылку</span>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Стиль</label>
+                                            <select v-model="settings.link.style" class="admin-form-select w-full max-w-xs">
+                                                <option value="button">Кнопка</option>
+                                                <option value="text">Текст</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Текст</label>
+                                            <input
+                                                v-model="settings.link.text"
                                                 type="text"
-                                                class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                placeholder="авто"
+                                                class="admin-form-input w-full max-w-xs"
+                                                placeholder="Подробнее"
                                             />
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Граница</label>
-                                        <select v-model="settings.media.border" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="none">Нет</option>
-                                            <option value="rounded">Скругленная</option>
-                                            <option value="circle">Круг</option>
-                                        </select>
+                                <!-- Лайтбокс -->
+                                <div>
+                                    <h3 class="admin-form-section-title text-sm">Лайтбокс</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Лайтбокс</label>
+                                            <select v-model="settings.lightbox.mode" class="admin-form-select w-full max-w-xs">
+                                                <option value="default">По умолчанию</option>
+                                                <option value="enabled">Включен</option>
+                                                <option value="disabled">Отключен</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.lightbox.use_title = !settings.lightbox.use_title"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.lightbox.use_title ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.lightbox.use_title ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Использовать заголовок</span>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Подпись</label>
+                                            <input
+                                                v-model="settings.lightbox.caption"
+                                                type="text"
+                                                class="admin-form-input w-full max-w-xs"
+                                                placeholder="Подпись к изображению"
+                                            />
+                                        </div>
+
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.lightbox.show_second_media = !settings.lightbox.show_second_media"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.lightbox.show_second_media ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.lightbox.show_second_media ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Показывать второй медиа-элемент в лайтбоксе</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Контент</h3>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.content.show_title = !settings.content.show_title"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.content.show_title ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.content.show_title ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                <!-- Кнопка -->
+                                <div>
+                                    <h3 class="admin-form-section-title text-sm">Кнопка</h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.lightbox.button.enabled = !settings.lightbox.button.enabled"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.lightbox.button.enabled ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.lightbox.button.enabled ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Включить ссылку лайтбокса</span>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Стиль</label>
+                                            <select v-model="settings.lightbox.button.style" class="admin-form-select w-full max-w-xs">
+                                                <option value="button">Кнопка</option>
+                                                <option value="text">Текст</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Текст</label>
+                                            <input
+                                                v-model="settings.lightbox.button.text"
+                                                type="text"
+                                                class="admin-form-input w-full max-w-xs"
+                                                placeholder="Подробнее"
                                             />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать заголовок</span>
-                                    </div>
-
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.content.show_content = !settings.content.show_content"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.content.show_content ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.content.show_content ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать описание</span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Размер заголовка</label>
-                                        <select v-model="settings.content.title_size" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="default">По умолчанию</option>
-                                            <option value="small">Маленький</option>
-                                            <option value="large">Большой</option>
-                                        </select>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Ссылка</h3>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.link.show = !settings.link.show"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.link.show ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.link.show ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                <!-- Switcher настройки -->
+                                <div v-if="form.type === 'switcher'">
+                                    <h3 class="admin-form-section-title text-sm mt-6">Switcher</h3>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="admin-form-label text-xs text-slate-500">Размер миниатюр (px)</label>
+                                            <input
+                                                v-model.number="settings.thumbnail_size"
+                                                type="number"
+                                                min="40"
+                                                max="200"
+                                                class="admin-form-input w-32"
                                             />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать ссылку</span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Стиль</label>
-                                        <select v-model="settings.link.style" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="button">Кнопка</option>
-                                            <option value="text">Текст</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Текст</label>
-                                        <input
-                                            v-model="settings.link.text"
-                                            type="text"
-                                            class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            placeholder="Подробнее"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Лайтбокс</h3>
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Лайтбокс</label>
-                                        <select v-model="settings.lightbox.mode" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="default">По умолчанию</option>
-                                            <option value="enabled">Включен</option>
-                                            <option value="disabled">Отключен</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.lightbox.use_title = !settings.lightbox.use_title"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.lightbox.use_title ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.lightbox.use_title ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Использовать заголовок</span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Подпись</label>
-                                        <input
-                                            v-model="settings.lightbox.caption"
-                                            type="text"
-                                            class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            placeholder="Подпись к изображению"
-                                        />
-                                    </div>
-
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.lightbox.show_second_media = !settings.lightbox.show_second_media"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.lightbox.show_second_media ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.lightbox.show_second_media ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать второй медиа-элемент в лайтбоксе</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4">Кнопка</h3>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.lightbox.button.enabled = !settings.lightbox.button.enabled"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.lightbox.button.enabled ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.lightbox.button.enabled ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Включить ссылку лайтбокса</span>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Стиль</label>
-                                        <select v-model="settings.lightbox.button.style" class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                            <option value="button">Кнопка</option>
-                                            <option value="text">Текст</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Текст</label>
-                                        <input
-                                            v-model="settings.lightbox.button.text"
-                                            type="text"
-                                            class="w-full max-w-xs border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            placeholder="Подробнее"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Switcher настройки -->
-                            <div v-if="form.type === 'switcher'">
-                                <h3 class="text-sm font-medium text-gray-800 border-b border-gray-200 pb-2 mb-4 mt-6">Switcher</h3>
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Размер миниатюр (px)</label>
-                                        <input
-                                            v-model.number="settings.thumbnail_size"
-                                            type="number"
-                                            min="40"
-                                            max="200"
-                                            class="w-32 border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                        />
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <button
-                                            @click="settings.show_labels = !settings.show_labels"
-                                            type="button"
-                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                            :class="settings.show_labels ? 'bg-indigo-600' : 'bg-gray-300'"
-                                        >
-                                            <span
-                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                                :class="settings.show_labels ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                            />
-                                        </button>
-                                        <span class="text-sm text-gray-700">Показывать подписи под миниатюрами</span>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                @click="settings.show_labels = !settings.show_labels"
+                                                type="button"
+                                                class="admin-toggle"
+                                                :class="settings.show_labels ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                            >
+                                                <span class="admin-toggle-slider" :class="settings.show_labels ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                                            </button>
+                                            <span class="text-sm text-slate-700">Показывать подписи под миниатюрами</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -513,16 +467,16 @@
             @close="confirmModal.isOpen = false"
             @confirm="confirmModal.onConfirm"
         />
-    </EmptyLayout>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
-import EmptyLayout from '../../../layouts/EmptyLayout.vue';
-import Toast from '../../../components/shared/Toast.vue';
-import ConfirmModal from '../../../components/shared/ConfirmModal.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import Toast from '@/components/shared/Toast.vue';
+import ConfirmModal from '@/components/shared/ConfirmModal.vue';
 
 const props = defineProps<{
     user: any;
@@ -534,8 +488,7 @@ const loading = ref(false);
 const uploading = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 const activeTab = ref('media');
-const editorMode = ref('editor');
-const notification = ref({ show: false, message: '', type: 'success' | 'error' });
+const notification = ref({ show: false, message: '', type: 'success' | 'error' as 'success' | 'error' });
 
 const confirmModal = ref({
     isOpen: false,
@@ -691,6 +644,10 @@ const deleteImage = async (imageId: number) => {
     });
 };
 
+const cancel = () => {
+    router.visit('/admin/galleries');
+};
+
 const save = async () => {
     if (!form.value.title.trim()) {
         showNotification('Введите название', 'error');
@@ -707,7 +664,6 @@ const save = async () => {
             settings: settings
         });
 
-        // Сохраняем изображения (названия и описания)
         for (const image of images.value) {
             await axios.put(`/admin/galleries/${props.gallery.id}/images/${image.id}`, {
                 title: image.title,
@@ -741,7 +697,6 @@ const saveAndClose = async () => {
             settings: settings
         });
 
-        // Сохраняем изображения (названия и описания)
         for (const image of images.value) {
             await axios.put(`/admin/galleries/${props.gallery.id}/images/${image.id}`, {
                 title: image.title,

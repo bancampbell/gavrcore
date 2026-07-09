@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/rename', [MediaController::class, 'renameItem']);
         Route::delete('/item', [MediaController::class, 'deleteItem']);
+        Route::delete('/items', [MediaController::class, 'deleteMultiple']);
         Route::post('/copy', [MediaController::class, 'copyItem']);
         Route::post('/upload', [MediaController::class, 'uploadFile']);
     });
@@ -119,6 +120,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('types/{id}', [MenuTypeController::class, 'show'])->name('types.show');
         Route::put('types/{id}', [MenuTypeController::class, 'update'])->name('types.update');
         Route::delete('types/{id}', [MenuTypeController::class, 'destroy'])->name('types.destroy');
+        Route::post('types/{id}/status', [MenuTypeController::class, 'updateStatus'])->name('types.status'); // <--- ДОБАВЛЕНО
         Route::post('types/ordering/update', [MenuTypeController::class, 'updateOrdering'])->name('types.ordering');
 
         // Menu Items

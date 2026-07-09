@@ -1,141 +1,162 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">Менеджер пользователей: Создать пользователя</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <button @click="saveAndCreate" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и создать
-                </button>
-                <Link href="/admin/users" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Отменить
-                </Link>
-            </div>
-        </div>
 
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Имя *</label>
-                        <input
-                            v-model="form.name"
-                            type="text"
-                            class="w-96 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите имя..."
-                        />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Логин *</label>
-                        <input
-                            v-model="form.username"
-                            @input="updateUsername"
-                            type="text"
-                            class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите логин..."
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div class="p-6 space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">E-mail *</label>
-                            <input
-                                v-model="form.email"
-                                type="email"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="user@example.com"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Пароль *</label>
-                            <input
-                                v-model="form.password"
-                                type="password"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="Введите пароль..."
-                            />
-                        </div>
-                    </div>
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер пользователей: Создать пользователя</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="saveAndCreate"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и создать
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Отменить
+                    </button>
                 </div>
             </div>
 
-            <div class="w-80">
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Группы</h3>
-                        <div class="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-3">
-                            <div v-for="group in groups" :key="group.id" class="flex items-center justify-between">
-                                <span class="text-sm text-gray-700">{{ group.name }}</span>
-                                <button
-                                    @click="toggleGroup(group.id)"
-                                    type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="isGroupSelected(group.id) ? 'bg-indigo-600' : 'bg-gray-300'"
-                                >
-                                    <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                        :class="isGroupSelected(group.id) ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                    />
-                                </button>
+            <!-- Основной контент -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full p-6">
+                    <!-- Верхняя панель: имя + логин -->
+                    <div class="flex flex-wrap items-center gap-6 mb-6">
+                        <div class="flex items-center gap-3">
+                            <label class="admin-form-label whitespace-nowrap">Имя *</label>
+                            <input
+                                v-model="form.name"
+                                type="text"
+                                class="admin-form-input"
+                                style="width: 384px;"
+                                placeholder="Введите имя..."
+                            />
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="admin-form-label whitespace-nowrap">Логин *</label>
+                            <input
+                                v-model="form.username"
+                                @input="updateUsername"
+                                type="text"
+                                class="admin-form-input"
+                                style="width: 256px;"
+                                placeholder="Введите логин..."
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Остальные поля -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Левая колонка -->
+                        <div class="lg:col-span-2 space-y-4">
+                            <div>
+                                <label class="admin-form-label">E-mail *</label>
+                                <input
+                                    v-model="form.email"
+                                    type="email"
+                                    class="admin-form-input w-full max-w-md"
+                                    placeholder="user@example.com"
+                                />
+                            </div>
+                            <div>
+                                <label class="admin-form-label">Пароль *</label>
+                                <input
+                                    v-model="form.password"
+                                    type="password"
+                                    class="admin-form-input w-full max-w-md"
+                                    placeholder="Введите пароль..."
+                                />
                             </div>
                         </div>
-                    </div>
 
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Статус</h3>
-                        <div class="flex items-center gap-3">
-                            <label class="text-sm text-gray-600">Заблокирован</label>
-                            <button
-                                @click="form.blocked = !form.blocked"
-                                type="button"
-                                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
-                                :class="form.blocked ? 'bg-red-600' : 'bg-green-600'"
-                            >
-                                <span
-                                    class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
-                                    :class="form.blocked ? 'translate-x-6' : 'translate-x-1'"
-                                />
-                            </button>
-                            <span class="text-sm font-medium" :class="form.blocked ? 'text-red-600' : 'text-green-600'">
-                                {{ form.blocked ? 'Заблокирован' : 'Активен' }}
-                            </span>
-                        </div>
-                    </div>
+                        <!-- Правая колонка -->
+                        <div class="space-y-4">
+                            <!-- Группы -->
+                            <div>
+                                <h3 class="admin-form-label">Группы</h3>
+                                <div class="border border-slate-300 rounded-lg p-3 max-h-48 overflow-y-auto space-y-3">
+                                    <div v-for="group in groups" :key="group.id" class="flex items-center justify-between">
+                                        <span class="text-sm text-slate-700">{{ group.name }}</span>
+                                        <button
+                                            @click="toggleGroup(group.id)"
+                                            type="button"
+                                            class="admin-toggle"
+                                            :class="isGroupSelected(group.id) ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        >
+                                            <span
+                                                class="admin-toggle-slider"
+                                                :class="isGroupSelected(group.id) ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Активация</h3>
-                        <div class="flex items-center gap-3">
-                            <label class="text-sm text-gray-600">Активирован</label>
-                            <button
-                                @click="form.activated = !form.activated"
-                                type="button"
-                                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
-                                :class="form.activated ? 'bg-green-600' : 'bg-gray-400'"
-                            >
-                                <span
-                                    class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
-                                    :class="form.activated ? 'translate-x-6' : 'translate-x-1'"
-                                />
-                            </button>
-                            <span class="text-sm font-medium" :class="form.activated ? 'text-green-600' : 'text-gray-500'">
-                                {{ form.activated ? 'Активирован' : 'Не активирован' }}
-                            </span>
+                            <!-- Статус -->
+                            <div>
+                                <h3 class="admin-form-label">Статус</h3>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-slate-600">Заблокирован</label>
+                                    <button
+                                        @click="form.blocked = !form.blocked"
+                                        type="button"
+                                        class="admin-toggle"
+                                        :class="form.blocked ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                    >
+                                        <span
+                                            class="admin-toggle-slider"
+                                            :class="form.blocked ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                        />
+                                    </button>
+                                    <span class="text-sm font-medium" :class="form.blocked ? 'text-rose-600' : 'text-emerald-600'">
+                                        {{ form.blocked ? 'Заблокирован' : 'Активен' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Активация -->
+                            <div>
+                                <h3 class="admin-form-label">Активация</h3>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-sm text-slate-600">Активирован</label>
+                                    <button
+                                        @click="form.activated = !form.activated"
+                                        type="button"
+                                        class="admin-toggle"
+                                        :class="form.activated ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                    >
+                                        <span
+                                            class="admin-toggle-slider"
+                                            :class="form.activated ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                        />
+                                    </button>
+                                    <span class="text-sm font-medium" :class="form.activated ? 'text-emerald-600' : 'text-slate-500'">
+                                        {{ form.activated ? 'Активирован' : 'Не активирован' }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -143,14 +164,14 @@
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
-    </EmptyLayout>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, router } from '@inertiajs/vue3';
-import EmptyLayout from '@/layouts/EmptyLayout.vue';
+import { router } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import { usersApi } from '@/api/users';
 
@@ -202,6 +223,10 @@ const toggleGroup = (groupId: number) => {
     } else {
         form.value.groups.splice(index, 1);
     }
+};
+
+const cancel = () => {
+    router.visit('/admin/users');
 };
 
 const save = async () => {

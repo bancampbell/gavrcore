@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full w-full">
             <!-- Панель действий -->
             <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Корзина материалов</h1>
                 <div class="flex flex-wrap gap-2.5 justify-between items-center">
                     <div class="flex flex-wrap gap-2.5">
                         <button
@@ -102,20 +103,20 @@
 
                                 <!-- Название -->
                                 <td class="col-title" @click="toggleSelect(material.id)">
-                                    <div class="font-medium text-slate-800">{{ material.title }}</div>
-                                    <div class="title-slug">Алиас: {{ material.alias }}</div>
-                                    <div class="title-category">Категория: {{ material.category?.name || 'Без категории' }}</div>
+                                    <div class="title-text" style="display: inline-block !important;">{{ material.title }}</div>
+                                    <span class="title-slug">Алиас: {{ material.alias }}</span>
+                                    <span class="title-category">Категория: {{ material.category?.name || 'Без категории' }}</span>
                                 </td>
 
                                 <!-- Доступ -->
                                 <td class="col-access" @click="toggleSelect(material.id)">
-                                    <span class="access-badge" :class="{
-                                        'access-public': material.access === 'public',
-                                        'access-registered': material.access === 'registered',
-                                        'access-special': material.access === 'special'
-                                    }">
-                                        {{ material.access }}
-                                    </span>
+            <span class="access-badge" :class="{
+                'access-public': material.access === 'public',
+                'access-registered': material.access === 'registered',
+                'access-special': material.access === 'special'
+            }">
+                {{ material.access }}
+            </span>
                                 </td>
 
                                 <!-- Автор -->
@@ -141,14 +142,6 @@
                                 <!-- ID -->
                                 <td class="col-id" @click="toggleSelect(material.id)">
                                     {{ material.id }}
-                                </td>
-                            </tr>
-
-                            <!-- Пустая строка, если нет данных -->
-                            <tr v-if="materials.data?.length === 0">
-                                <td colspan="8" style="text-align: center; padding: 40px 0; color: #94a3b8;">
-                                    Корзина пуста
-                                    <p style="font-size: 12px; margin-top: 4px;">Удалённые материалы будут появляться здесь</p>
                                 </td>
                             </tr>
                             </tbody>

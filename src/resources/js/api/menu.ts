@@ -56,6 +56,9 @@ export const menuTypesApi = {
 
     updateOrdering: (order: { id: number; ordering: number }[]) =>
         axios.post('/admin/menu/types/ordering/update', { order }),
+
+    updateStatus: (id: number, status: boolean) =>
+        axios.post(`/admin/menu/types/${id}/status`, { status }),
 };
 
 // Menu Items API

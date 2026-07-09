@@ -1,205 +1,245 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">Менеджер материалов: Создать материал</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <button @click="saveAndCreate" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и создать
-                </button>
-                <Link href="/admin/materials" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Отменить
-                </Link>
-            </div>
-        </div>
 
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Заголовок *</label>
-                        <input
-                            v-model="form.title"
-                            @input="updateSlug"
-                            type="text"
-                            class="w-96 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите заголовок..."
-                        />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Слаг (ЧПУ)</label>
-                        <input
-                            v-model="form.slug"
-                            @input="onSlugInput"
-                            type="text"
-                            class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="останется пустым - сгенерируется автоматически"
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full">
-                    <Editor
-                        ref="editorRef"
-                        v-model="form.content"
-                        @open-link-modal="openLinkModal"
-                        @open-image-manager="openImageManager"
-                        @edit-link="handleEditLink"
-                    />
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер материалов: Создать материал</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="saveAndCreate"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и создать
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Отменить
+                    </button>
                 </div>
             </div>
 
-            <div class="w-80">
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Состояние</h3>
-                        <select
-                            v-model="form.state"
-                            class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
-                            :class="{
-                                'bg-green-600 text-white border-green-700 focus:ring-green-300': form.state === 'published',
-                                'bg-red-600 text-white border-red-700 focus:ring-red-300': form.state === 'draft',
-                                'bg-gray-500 text-white border-gray-600 focus:ring-gray-300': form.state === 'archived'
-                            }"
-                        >
-                            <option value="published" class="bg-white text-gray-800">Опубликовано</option>
-                            <option value="draft" class="bg-white text-gray-800">Не опубликовано</option>
-                            <option value="archived" class="bg-white text-gray-800">Архив</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Категория *</h3>
-                        <select v-model="form.category_id" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
-                            <option :value="null">Выберите категорию</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Избранные</h3>
-                        <select v-model="form.featured" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
-                            <option value="0">Нет</option>
-                            <option value="1">Да</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Доступ</h3>
-                        <select v-model="form.access" class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm">
-                            <option value="public">Public</option>
-                            <option value="registered">Registered</option>
-                            <option value="special">Special</option>
-                        </select>
-                    </div>
-
-                    <!-- Отображение элементов -->
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Отображение</h3>
-                        <div class="space-y-2 border border-gray-300 rounded-lg p-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-700">Использовать глобальные настройки</span>
-                                <button
-                                    @click="form.use_global_settings = !form.use_global_settings"
-                                    type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="form.use_global_settings ? 'bg-indigo-600' : 'bg-gray-300'"
-                                >
-                                    <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                        :class="form.use_global_settings ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                    />
-                                </button>
+            <!-- Основной контент -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full">
+                    <!-- Верхняя панель: заголовок + слаг + показывать на главной -->
+                    <div class="p-6 border-b border-slate-200">
+                        <div class="flex flex-wrap items-center gap-6">
+                            <div class="flex items-center gap-3">
+                                <label class="admin-form-label whitespace-nowrap">Заголовок *</label>
+                                <input
+                                    v-model="form.title"
+                                    @input="updateSlug"
+                                    type="text"
+                                    class="admin-form-input"
+                                    style="width: 384px;"
+                                    placeholder="Введите заголовок..."
+                                />
                             </div>
-                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
-                                <span class="text-sm text-gray-700">Дата создания</span>
-                                <button
-                                    @click="form.show_date = !form.show_date"
-                                    :disabled="form.use_global_settings"
-                                    type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="form.show_date ? 'bg-indigo-600' : 'bg-gray-300'"
-                                >
-                                    <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                        :class="form.show_date ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                    />
-                                </button>
+                            <div class="flex items-center gap-3">
+                                <label class="admin-form-label whitespace-nowrap">Слаг (ЧПУ)</label>
+                                <input
+                                    v-model="form.slug"
+                                    @input="onSlugInput"
+                                    type="text"
+                                    class="admin-form-input"
+                                    style="width: 256px;"
+                                    placeholder="останется пустым - сгенерируется автоматически"
+                                />
                             </div>
-                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
-                                <span class="text-sm text-gray-700">Автор</span>
+                            <div class="flex items-center gap-3">
+                                <label class="admin-form-label whitespace-nowrap">На главной</label>
                                 <button
-                                    @click="form.show_author = !form.show_author"
-                                    :disabled="form.use_global_settings"
+                                    @click="form.show_on_homepage = form.show_on_homepage === '1' ? '0' : '1'"
                                     type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="form.show_author ? 'bg-indigo-600' : 'bg-gray-300'"
+                                    class="admin-toggle"
+                                    :class="form.show_on_homepage === '1' ? 'admin-toggle-on' : 'admin-toggle-off'"
                                 >
                                     <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                        :class="form.show_author ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                        class="admin-toggle-slider"
+                                        :class="form.show_on_homepage === '1' ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
                                     />
                                 </button>
-                            </div>
-                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
-                                <span class="text-sm text-gray-700">Категория</span>
-                                <button
-                                    @click="form.show_category = !form.show_category"
-                                    :disabled="form.use_global_settings"
-                                    type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="form.show_category ? 'bg-indigo-600' : 'bg-gray-300'"
-                                >
-                                    <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                        :class="form.show_category ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                    />
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
-                                <span class="text-sm text-gray-700">Просмотры</span>
-                                <button
-                                    @click="form.show_views = !form.show_views"
-                                    :disabled="form.use_global_settings"
-                                    type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="form.show_views ? 'bg-indigo-600' : 'bg-gray-300'"
-                                >
-                                    <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform shadow-sm"
-                                        :class="form.show_views ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                    />
-                                </button>
+                                <span class="text-sm text-slate-700">{{ form.show_on_homepage === '1' ? 'Да' : 'Нет' }}</span>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">
-                            <span v-if="form.use_global_settings">Используются глобальные настройки</span>
-                            <span v-else>Индивидуальные настройки для этого материала</span>
-                        </p>
+                        <p class="text-xs text-slate-400 mt-2">Только один материал может быть отмечен на главной</p>
                     </div>
 
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Метки</h3>
-                        <input
-                            type="text"
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                            placeholder="Type or select some tags"
-                        />
-                        <p class="text-xs text-gray-400 mt-1">Введите метки через запятую</p>
+                    <!-- Редактор + правая панель -->
+                    <div class="flex flex-col lg:flex-row gap-6 p-6 min-h-[calc(100vh-280px)]">
+                        <!-- Редактор -->
+                        <div class="flex-1">
+                            <div class="border border-slate-300 rounded-lg overflow-hidden h-full">
+                                <Editor
+                                    ref="editorRef"
+                                    v-model="form.content"
+                                    @open-link-modal="openLinkModal"
+                                    @open-image-manager="openImageManager"
+                                    @edit-link="handleEditLink"
+                                    @open-gallery-modal="openGalleryModal"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Правая панель -->
+                        <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
+                            <!-- Состояние -->
+                            <div>
+                                <h3 class="admin-form-label">Состояние</h3>
+                                <select
+                                    v-model="form.state"
+                                    class="admin-form-select w-full"
+                                    :class="{
+                                        'admin-form-select-status-published': form.state === 'published',
+                                        'admin-form-select-status-draft': form.state === 'draft',
+                                        'admin-form-select-status-archived': form.state === 'archived'
+                                    }"
+                                >
+                                    <option value="published" class="bg-white text-slate-800">Опубликовано</option>
+                                    <option value="draft" class="bg-white text-slate-800">Не опубликовано</option>
+                                    <option value="archived" class="bg-white text-slate-800">Архив</option>
+                                </select>
+                            </div>
+
+                            <!-- Категория -->
+                            <div>
+                                <h3 class="admin-form-label">Категория *</h3>
+                                <select v-model="form.category_id" class="admin-form-select w-full">
+                                    <option :value="null">Выберите категорию</option>
+                                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                                        {{ cat.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Доступ -->
+                            <div>
+                                <h3 class="admin-form-label">Доступ</h3>
+                                <select v-model="form.access" class="admin-form-select w-full">
+                                    <option value="public">Public</option>
+                                    <option value="registered">Registered</option>
+                                    <option value="special">Special</option>
+                                </select>
+                            </div>
+
+                            <!-- Отображение -->
+                            <div>
+                                <h3 class="admin-form-label">Отображение</h3>
+                                <div class="border border-slate-300 rounded-lg p-3 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-slate-700">Глобальные настройки</span>
+                                        <button
+                                            @click="form.use_global_settings = !form.use_global_settings"
+                                            type="button"
+                                            class="admin-toggle"
+                                            :class="form.use_global_settings ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        >
+                                            <span
+                                                class="admin-toggle-slider"
+                                                :class="form.use_global_settings ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                            />
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                        <span class="text-sm text-slate-700">Дата создания</span>
+                                        <button
+                                            @click="form.show_date = !form.show_date"
+                                            :disabled="form.use_global_settings"
+                                            type="button"
+                                            class="admin-toggle"
+                                            :class="form.show_date ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        >
+                                            <span
+                                                class="admin-toggle-slider"
+                                                :class="form.show_date ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                            />
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                        <span class="text-sm text-slate-700">Автор</span>
+                                        <button
+                                            @click="form.show_author = !form.show_author"
+                                            :disabled="form.use_global_settings"
+                                            type="button"
+                                            class="admin-toggle"
+                                            :class="form.show_author ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        >
+                                            <span
+                                                class="admin-toggle-slider"
+                                                :class="form.show_author ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                            />
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                        <span class="text-sm text-slate-700">Категория</span>
+                                        <button
+                                            @click="form.show_category = !form.show_category"
+                                            :disabled="form.use_global_settings"
+                                            type="button"
+                                            class="admin-toggle"
+                                            :class="form.show_category ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        >
+                                            <span
+                                                class="admin-toggle-slider"
+                                                :class="form.show_category ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                            />
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                        <span class="text-sm text-slate-700">Просмотры</span>
+                                        <button
+                                            @click="form.show_views = !form.show_views"
+                                            :disabled="form.use_global_settings"
+                                            type="button"
+                                            class="admin-toggle"
+                                            :class="form.show_views ? 'admin-toggle-on' : 'admin-toggle-off'"
+                                        >
+                                            <span
+                                                class="admin-toggle-slider"
+                                                :class="form.show_views ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    <span v-if="form.use_global_settings">Используются глобальные настройки</span>
+                                    <span v-else>Индивидуальные настройки</span>
+                                </p>
+                            </div>
+
+                            <!-- Метки -->
+                            <div>
+                                <h3 class="admin-form-label">Метки</h3>
+                                <input
+                                    v-model="form.tags"
+                                    type="text"
+                                    class="admin-form-input w-full"
+                                    placeholder="Введите метки через запятую"
+                                />
+                                <p class="text-xs text-slate-400 mt-1">Введите метки через запятую</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -226,20 +266,27 @@
             @close="closeImageManager"
             @select="onImageSelect"
         />
-    </EmptyLayout>
+
+        <GallerySelectModal
+            :show="showGalleryModal"
+            @close="closeGalleryModal"
+            @select="insertGallery"
+        />
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import EmptyLayout from '../../../layouts/EmptyLayout.vue';
+import AdminLayout from '../../../layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category } from '../../../types';
 import Editor from '../../../components/shared/Editor/Index.vue';
 import LinkModal from './components/LinkModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
+import GallerySelectModal from '../../../components/shared/GallerySelectModal.vue';
 
 const props = defineProps<{
     user: User;
@@ -250,6 +297,7 @@ const props = defineProps<{
 const loading = ref(false);
 const showLinkModal = ref(false);
 const showImageManager = ref(false);
+const showGalleryModal = ref(false);
 const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
 const editImageData = ref<any>(null);
@@ -262,10 +310,11 @@ const form = ref({
     title: '',
     slug: '',
     content: '',
+    tags: '',
     category_id: props.categories.length > 0 ? props.categories[0].id : null,
     state: 'draft',
     access: 'public',
-    featured: '0',
+    show_on_homepage: '0',
     use_global_settings: true,
     show_date: true,
     show_author: true,
@@ -273,14 +322,11 @@ const form = ref({
     show_views: true,
 });
 
-// Флаг для отслеживания, вводил ли пользователь slug вручную
 const isSlugManuallyEdited = ref(false);
 
 const loadMaterials = async () => {
     try {
-        const response = await axios.get('/admin/materials/list', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const response = await axios.get('/admin/materials/list');
         materials.value = response.data;
     } catch (error) {
         console.error('Error loading materials:', error);
@@ -304,6 +350,22 @@ const openLinkModal = (selectedText?: string) => {
 const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
     editImageData.value = imageData || null;
     showImageManager.value = true;
+};
+
+const openGalleryModal = () => {
+    showGalleryModal.value = true;
+};
+
+const closeGalleryModal = () => {
+    showGalleryModal.value = false;
+};
+
+const insertGallery = (galleryId: number, galleryName: string) => {
+    if (editorRef.value) {
+        const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
+        editorRef.value.insertContent(shortcode);
+    }
+    closeGalleryModal();
 };
 
 const closeImageManager = () => {
@@ -393,6 +455,10 @@ const onSlugInput = () => {
     isSlugManuallyEdited.value = true;
 };
 
+const cancel = () => {
+    router.visit('/admin/materials');
+};
+
 const save = async () => {
     if (!form.value.title) {
         showNotification('Введите заголовок', 'error');
@@ -402,31 +468,30 @@ const save = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post('/admin/materials', form.value, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const payload = {
+            title: form.value.title,
+            slug: form.value.slug || null,
+            content: form.value.content,
+            tags: form.value.tags,
+            category_id: form.value.category_id,
+            state: form.value.state,
+            access: form.value.access,
+            show_on_homepage: form.value.show_on_homepage === '1' ? true : false,
+            use_global_settings: form.value.use_global_settings,
+            show_date: form.value.show_date,
+            show_author: form.value.show_author,
+            show_category: form.value.show_category,
+            show_views: form.value.show_views,
+        };
 
+        const response = await axios.post('/admin/materials', payload);
         const materialId = response.data.id || response.data.data?.id;
 
         if (materialId) {
             router.visit(`/admin/materials/${materialId}/edit?message=Материал+сохранён`);
         } else {
             showNotification('Материал сохранён', 'success');
-            form.value = {
-                title: '',
-                slug: '',
-                content: '',
-                category_id: props.categories.length > 0 ? props.categories[0].id : null,
-                state: 'draft',
-                access: 'public',
-                featured: '0',
-                use_global_settings: true,
-                show_date: true,
-                show_author: true,
-                show_category: true,
-                show_views: true,
-            };
-            isSlugManuallyEdited.value = false;
+            resetForm();
         }
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
@@ -444,9 +509,23 @@ const saveAndClose = async () => {
     loading.value = true;
 
     try {
-        await axios.post('/admin/materials', form.value, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        const payload = {
+            title: form.value.title,
+            slug: form.value.slug || null,
+            content: form.value.content,
+            tags: form.value.tags,
+            category_id: form.value.category_id,
+            state: form.value.state,
+            access: form.value.access,
+            show_on_homepage: form.value.show_on_homepage === '1' ? true : false,
+            use_global_settings: form.value.use_global_settings,
+            show_date: form.value.show_date,
+            show_author: form.value.show_author,
+            show_category: form.value.show_category,
+            show_views: form.value.show_views,
+        };
+
+        await axios.post('/admin/materials', payload);
         router.visit('/admin/materials?message=Материал+создан');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
@@ -463,30 +542,49 @@ const saveAndCreate = async () => {
     loading.value = true;
 
     try {
-        await axios.post('/admin/materials', form.value, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        form.value = {
-            title: '',
-            slug: '',
-            content: '',
-            category_id: props.categories.length > 0 ? props.categories[0].id : null,
-            state: 'draft',
-            access: 'public',
-            featured: '0',
-            use_global_settings: true,
-            show_date: true,
-            show_author: true,
-            show_category: true,
-            show_views: true,
+        const payload = {
+            title: form.value.title,
+            slug: form.value.slug || null,
+            content: form.value.content,
+            tags: form.value.tags,
+            category_id: form.value.category_id,
+            state: form.value.state,
+            access: form.value.access,
+            show_on_homepage: form.value.show_on_homepage === '1' ? true : false,
+            use_global_settings: form.value.use_global_settings,
+            show_date: form.value.show_date,
+            show_author: form.value.show_author,
+            show_category: form.value.show_category,
+            show_views: form.value.show_views,
         };
-        isSlugManuallyEdited.value = false;
+
+        await axios.post('/admin/materials', payload);
+        resetForm();
         showNotification('Материал создан. Можете создать следующий', 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
         loading.value = false;
     }
+};
+
+const resetForm = () => {
+    form.value = {
+        title: '',
+        slug: '',
+        content: '',
+        tags: '',
+        category_id: props.categories.length > 0 ? props.categories[0].id : null,
+        state: 'draft',
+        access: 'public',
+        show_on_homepage: '0',
+        use_global_settings: true,
+        show_date: true,
+        show_author: true,
+        show_category: true,
+        show_views: true,
+    };
+    isSlugManuallyEdited.value = false;
 };
 
 onMounted(() => {

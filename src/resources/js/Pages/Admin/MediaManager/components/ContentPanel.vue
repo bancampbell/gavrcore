@@ -54,6 +54,7 @@
                     :is-picker-mode="mode === 'picker'"
                     @select="onToggleSelect"
                     @click="onSelectFolder"
+                    @dblclick="onFolderDoubleClick"
                 />
                 <FileItem
                     v-for="item in files"
@@ -105,6 +106,7 @@ const emit = defineEmits<{
     (e: 'update:searchQuery', value: string): void;
     (e: 'toggle-select', path: string, item: MediaItem): void;
     (e: 'select-folder', item: MediaItem): void;
+    (e: 'open-folder', item: MediaItem): void;
     (e: 'select-file', item: MediaItem): void;
 }>();
 
@@ -119,6 +121,7 @@ const onClearSearch = () => emit('clear-search');
 const onToggleSelect = (path: string, item: MediaItem) => emit('toggle-select', path, item);
 const onSelectFolder = (item: MediaItem) => emit('select-folder', item);
 const onSelectFile = (item: MediaItem) => emit('select-file', item);
+const onFolderDoubleClick = (item: MediaItem) => emit('open-folder', item);
 
 const scrollToFile = (filePath: string) => {
     if (!scrollContainer.value) return;

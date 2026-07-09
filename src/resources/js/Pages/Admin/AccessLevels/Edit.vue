@@ -1,108 +1,121 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">Менеджер уровней доступа: Редактировать уровень доступа</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <Link href="/admin/access-levels" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Отменить
-                </Link>
-            </div>
-        </div>
 
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Название *</label>
-                        <input
-                            v-model="form.title"
-                            @input="updateAlias"
-                            type="text"
-                            class="w-96 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите название..."
-                        />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Алиас</label>
-                        <input
-                            v-model="form.alias"
-                            type="text"
-                            class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="останется пустым - сгенерируется автоматически"
-                        />
-                    </div>
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер уровней доступа: Редактировать уровень доступа</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Отменить
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div class="p-6 space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
-                            <textarea
-                                v-model="form.description"
-                                rows="5"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="Введите описание..."
-                            ></textarea>
+            <!-- Основной контент -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full p-6">
+                    <!-- Верхняя панель: название + алиас -->
+                    <div class="flex flex-wrap items-center gap-6 mb-6">
+                        <div class="flex items-center gap-3">
+                            <label class="admin-form-label whitespace-nowrap">Название *</label>
+                            <input
+                                v-model="form.title"
+                                @input="updateAlias"
+                                type="text"
+                                class="admin-form-input"
+                                style="width: 384px;"
+                                placeholder="Введите название..."
+                            />
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="admin-form-label whitespace-nowrap">Алиас</label>
+                            <input
+                                v-model="form.alias"
+                                type="text"
+                                class="admin-form-input"
+                                style="width: 256px;"
+                                placeholder="останется пустым - сгенерируется автоматически"
+                            />
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="w-80">
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Группы пользователей</h3>
-                        <div class="border border-gray-300 rounded-lg p-3">
-                            <div v-for="group in groups" :key="group.id" class="flex items-center justify-between mb-2 last:mb-0">
-                                <span class="text-sm text-gray-700">{{ group.name }}</span>
-                                <button
-                                    @click="toggleGroup(group.id)"
-                                    type="button"
-                                    class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                    :class="isGroupSelected(group.id) ? 'bg-indigo-600' : 'bg-gray-300'"
-                                >
-                                    <span
-                                        class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                        :class="isGroupSelected(group.id) ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                    />
-                                </button>
+                    <!-- Описание + правая панель -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Левая колонка -->
+                        <div class="lg:col-span-2">
+                            <div>
+                                <label class="admin-form-label">Описание</label>
+                                <textarea
+                                    v-model="form.description"
+                                    rows="5"
+                                    class="admin-form-textarea w-full max-w-md"
+                                    placeholder="Введите описание уровня доступа..."
+                                ></textarea>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Выберите группы, которые будут иметь этот уровень доступа</p>
-                    </div>
 
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Статус</h3>
-                        <div class="flex items-center gap-3">
-                            <button
-                                @click="form.status = !form.status"
-                                type="button"
-                                class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none"
-                                :class="form.status ? 'bg-green-600' : 'bg-gray-400'"
-                            >
-                                <span
-                                    class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform"
-                                    :class="form.status ? 'translate-x-6' : 'translate-x-1'"
-                                />
-                            </button>
-                            <span class="text-sm font-medium" :class="form.status ? 'text-green-600' : 'text-gray-500'">
-                                {{ form.status ? 'Активно' : 'Не активно' }}
-                            </span>
+                        <!-- Правая колонка -->
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="admin-form-label">Статус</h3>
+                                <select
+                                    v-model="form.status"
+                                    class="admin-form-select w-full"
+                                    :class="{
+                                        'admin-form-select-status-published': form.status === true,
+                                        'admin-form-select-status-draft': form.status === false
+                                    }"
+                                >
+                                    <option :value="true" class="bg-white text-slate-800">Активно</option>
+                                    <option :value="false" class="bg-white text-slate-800">Не активно</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <h3 class="admin-form-label">Группы пользователей</h3>
+                                <div class="admin-form-group">
+                                    <div
+                                        v-for="group in groups"
+                                        :key="group.id"
+                                        class="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-b-0"
+                                    >
+                                        <span class="text-sm text-gray-700">{{ group.name }}</span>
+                                        <button
+                                            @click="toggleGroup(group.id)"
+                                            type="button"
+                                            class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
+                                            :class="isGroupSelected(group.id) ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        >
+                                            <span
+                                                class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
+                                                :class="isGroupSelected(group.id) ? 'translate-x-4.5' : 'translate-x-0.5'"
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Выберите группы, которые будут иметь этот уровень доступа</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,14 +123,14 @@
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
-    </EmptyLayout>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, router } from '@inertiajs/vue3';
-import EmptyLayout from '@/layouts/EmptyLayout.vue';
+import { router } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import axios from 'axios';
 
@@ -183,6 +196,10 @@ const toggleGroup = (groupId: number) => {
     } else {
         form.value.groups.splice(index, 1);
     }
+};
+
+const cancel = () => {
+    router.visit('/admin/access-levels');
 };
 
 const save = async () => {

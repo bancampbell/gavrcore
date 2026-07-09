@@ -45,6 +45,7 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full', acceptedFiles?
         createFolder,
         renameItem,
         deleteItem,
+        deleteItems,
         copyItem,
         uploadFile,
         setUploadFiles
@@ -198,13 +199,38 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full', acceptedFiles?
     };
 
     const openDeleteModal = () => {
-        if (!selectedItem.value) return;
-        deleteItemData.value = selectedItem.value;
+        if (selectedItems.value.length === 0 && !selectedItem.value) {
+            showNotification('Ничего не выбрано для удаления', 'error');
+            return;
+        }
+
+        if (selectedItems.value.length > 1) {
+            deleteItemData.value = null;
+        } else if (selectedItem.value) {
+            deleteItemData.value = selectedItem.value;
+        }
+
         showDeleteModal.value = true;
     };
 
     const handleDelete = async () => {
-        if (!deleteItemData.value) return;
+        // Массовое удаление
+        if (selectedItems.value.length > 1) {
+            const success = await deleteItems(selectedItems.value);
+            if (success) {
+                showDeleteModal.value = false;
+                deleteItemData.value = null;
+                await loadData();
+            }
+            return;
+        }
+
+        // Удаление одного элемента
+        if (!deleteItemData.value) {
+            showNotification('Не выбран элемент для удаления', 'error');
+            return;
+        }
+
         const success = await deleteItem(deleteItemData.value.path);
         if (success) {
             showDeleteModal.value = false;
@@ -242,16 +268,13 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full', acceptedFiles?
 
     const selectFolder = (item: MediaItem) => {
         if (!item) return;
-        if (!showSearch.value) {
-            if (mode === 'picker') {
-                navigateToFolder(item.path);
-            } else {
-                selectItem(item);
-                navigateToFolder(item.path);
-            }
-        } else {
-            selectItem(item);
-        }
+        selectItem(item);
+        showNotification(`Выбрана папка: ${item.name}`, 'success');
+    };
+
+    const openFolder = (item: MediaItem) => {
+        if (!item) return;
+        navigateToFolder(item.path);
     };
 
     const selectFileItem = (item: MediaItem) => {
@@ -330,6 +353,7 @@ export function useMediaManager(mode: 'full' | 'picker' = 'full', acceptedFiles?
         setSortOrder,
         toggleSelect,
         selectFolder,
+        openFolder,
         selectFileItem,
         getSelectedFile,
         clearSelectedFile

@@ -1,12 +1,11 @@
 <!-- resources/js/Pages/Admin/MediaManager/components/DeleteModal.vue -->
 
 <template>
-    <div v-if="show" class="modal-overlay">
+    <div v-if="show" class="modal-overlay" @click.self="onClose">
         <div class="modal-content">
             <h2 class="text-lg font-semibold mb-4">Подтверждение удаления</h2>
             <p class="text-sm text-gray-600 mb-6">
-                Вы уверены, что хотите удалить "{{ itemName }}"?
-                Это действие нельзя отменить.
+                {{ message }}
             </p>
             <div class="flex justify-end gap-2">
                 <button @click="onClose" class="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300">
@@ -54,6 +53,7 @@ const onConfirm = () => emit('confirm');
     border-radius: 0.5rem;
     padding: 1.5rem;
     width: 24rem;
+    max-width: 90%;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 </style>

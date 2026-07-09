@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full">
             <!-- Панель действий + фильтры (sticky) -->
             <div class="admin-page-actions flex-shrink-0">
+                <h1 class="admin-page-title">Менеджер меню</h1>
                 <div class="flex flex-wrap gap-2.5">
                     <button
                         @click="openCreateModal"
@@ -23,19 +24,19 @@
                             Редактировать
                         </button>
                         <button
-                            @click="bulkPublish"
+                            @click="handleBulkPublish"
                             class="admin-btn admin-btn-secondary"
                         >
                             Опубликовать
                         </button>
                         <button
-                            @click="bulkUnpublish"
+                            @click="handleBulkUnpublish"
                             class="admin-btn admin-btn-secondary"
                         >
                             Снять с публикации
                         </button>
                         <button
-                            @click="bulkDelete"
+                            @click="openDeleteModal"
                             class="admin-btn admin-btn-danger"
                         >
                             Удалить
@@ -230,6 +231,7 @@
             @save="handleMenuTypeSave"
         />
 
+        <!-- Модалка подтверждения удаления -->
         <ConfirmModal
             :is-open="deleteModalOpen"
             title="Удаление типа меню"
@@ -237,19 +239,8 @@
             confirm-text="Удалить"
             type="danger"
             :loading="deleteLoading"
-            @close="deleteModalOpen = false"
-            @confirm="confirmDeleteHandler"
-        />
-
-        <ConfirmModal
-            :is-open="bulkModalOpen"
-            :title="bulkModalTitle"
-            :message="bulkModalMessage"
-            confirm-text="Подтвердить"
-            type="danger"
-            :loading="loading"
-            @close="bulkModalOpen = false"
-            @confirm="confirmBulkAction"
+            @close="closeDeleteModal"
+            @confirm="confirmDelete"
         />
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
@@ -303,6 +294,12 @@ const props = defineProps<{
     filters?: Filters;
 }>();
 
+// Состояние модалки удаления
+const deleteModalOpen = ref(false);
+const deleteLoading = ref(false);
+const deleteMessage = ref('');
+const itemsToDelete = ref<number[]>([]);
+
 const goToMenuItems = (menuTypeId: number, title: string) => {
     router.visit(`/admin/menu/types/${menuTypeId}/items`, {
         props: { menuTypeId, menuTypeTitle: title }
@@ -327,13 +324,6 @@ const {
     editingId,
     editingMenuType,
     loading,
-    deleteModalOpen,
-    deleteLoading,
-    form,
-    deleteMessage,
-    bulkModalOpen,
-    bulkModalTitle,
-    bulkModalMessage,
     applyFilters,
     debounceSearch,
     resetFilters,
@@ -343,14 +333,119 @@ const {
     openEditModal,
     openEditSelectedModal,
     submitForm,
-    openDeleteModal,
-    bulkDelete,
-    bulkPublish,
-    bulkUnpublish,
-    confirmDeleteHandler,
-    confirmBulkAction,
     showNotification,
 } = useMenuTypes(props);
+
+// Открытие модалки удаления
+const openDeleteModal = () => {
+    if (selectedMenuTypes.value.length === 0) return;
+
+    const count = selectedMenuTypes.value.length;
+    deleteMessage.value = count === 1
+        ? 'Вы уверены, что хотите удалить выбранный тип меню? Это действие нельзя отменить.'
+        : `Вы уверены, что хотите удалить ${count} типов меню? Это действие нельзя отменить.`;
+
+    itemsToDelete.value = [...selectedMenuTypes.value];
+    deleteModalOpen.value = true;
+};
+
+// Закрытие модалки удаления
+const closeDeleteModal = () => {
+    deleteModalOpen.value = false;
+    deleteLoading.value = false;
+    itemsToDelete.value = [];
+};
+
+// Подтверждение удаления
+const confirmDelete = async () => {
+    if (itemsToDelete.value.length === 0) return;
+
+    deleteLoading.value = true;
+    try {
+        const ids = itemsToDelete.value;
+        for (const id of ids) {
+            await menuTypesApi.delete(id);
+        }
+        showNotification(`${ids.length} тип(ов) меню удалено`, 'success');
+        selectedMenuTypes.value = [];
+        closeDeleteModal();
+        await applyFilters();
+    } catch (error: any) {
+        console.error('Delete error:', error);
+        showNotification(error.response?.data?.message || 'Ошибка удаления', 'error');
+        deleteLoading.value = false;
+    }
+};
+
+// Публикация
+const handleBulkPublish = async () => {
+    if (selectedMenuTypes.value.length === 0) return;
+
+    loading.value = true;
+    try {
+        const ids = selectedMenuTypes.value;
+        for (const id of ids) {
+            const type = props.menuTypes.data.find(t => t.id === id);
+            if (type) {
+                await menuTypesApi.update(id, {
+                    title: type.title,
+                    alias: type.alias,
+                    description: type.description,
+                    ordering: type.ordering,
+                    status: true
+                });
+            }
+        }
+        props.menuTypes.data.forEach(item => {
+            if (ids.includes(item.id)) {
+                item.status = true;
+            }
+        });
+        showNotification(`${ids.length} тип(ов) меню опубликовано`, 'success');
+        selectedMenuTypes.value = [];
+        await applyFilters();
+    } catch (error: any) {
+        console.error('Publish error:', error);
+        showNotification(error.response?.data?.message || 'Ошибка публикации', 'error');
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Снятие с публикации
+const handleBulkUnpublish = async () => {
+    if (selectedMenuTypes.value.length === 0) return;
+
+    loading.value = true;
+    try {
+        const ids = selectedMenuTypes.value;
+        for (const id of ids) {
+            const type = props.menuTypes.data.find(t => t.id === id);
+            if (type) {
+                await menuTypesApi.update(id, {
+                    title: type.title,
+                    alias: type.alias,
+                    description: type.description,
+                    ordering: type.ordering,
+                    status: false
+                });
+            }
+        }
+        props.menuTypes.data.forEach(item => {
+            if (ids.includes(item.id)) {
+                item.status = false;
+            }
+        });
+        showNotification(`${ids.length} тип(ов) меню снято с публикации`, 'success');
+        selectedMenuTypes.value = [];
+        await applyFilters();
+    } catch (error: any) {
+        console.error('Unpublish error:', error);
+        showNotification(error.response?.data?.message || 'Ошибка снятия с публикации', 'error');
+    } finally {
+        loading.value = false;
+    }
+};
 
 const closeMenuTypeModal = () => {
     modalOpen.value = false;
@@ -371,4 +466,7 @@ const handleMenuTypeSave = async (data: any) => {
         showNotification(error.response?.data?.message || 'Ошибка', 'error');
     }
 };
+
+// Импортируем ref
+import { ref } from 'vue';
 </script>

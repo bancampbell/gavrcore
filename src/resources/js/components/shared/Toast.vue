@@ -11,7 +11,7 @@
             <div v-if="show" :class="[
                 'fixed top-20 right-6 z-50 px-4 py-3 rounded-md text-sm font-medium shadow-lg',
                 type === 'success' ? 'text-white' : 'bg-rose-500 text-white'
-            ]" :style="type === 'success' ? { backgroundColor: '#46a546' } : {}">
+            ]" :style="type === 'success' ? { backgroundColor: '#4db64d' } : {}">
                 <div class="flex items-center gap-2">
                     <svg v-if="type === 'success'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />

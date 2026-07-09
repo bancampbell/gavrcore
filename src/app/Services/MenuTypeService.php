@@ -69,4 +69,19 @@ class MenuTypeService
     {
         return $this->repository->updateOrdering($order);
     }
+
+    /**
+     * Обновление статуса
+     */
+    public function updateStatus(int $id, bool $status): bool
+    {
+        $menuType = MenuType::find($id);
+
+        if (! $menuType) {
+            return false;
+        }
+
+        $menuType->status = $status;
+        return $menuType->save();
+    }
 }

@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Material\BulkTrashRequest;
 use App\Http\Requests\Admin\Material\MaterialIndexRequest;
-use App\Http\Requests\Admin\Material\StoreMaterialRequest;
+use App\Http\Requests\Admin\Material\MaterialStoreRequest;
+use App\Http\Requests\Admin\Material\StoreMaterialRequestOFF;
 use App\Http\Requests\Admin\Material\UpdateMaterialRequest;
 use App\Models\Category;
 use App\Models\Material;
@@ -164,18 +165,31 @@ class MaterialController extends Controller
         ]);
     }
 
-    public function store(StoreMaterialRequest $request): RedirectResponse|JsonResponse
+    public function store(MaterialStoreRequest $request): RedirectResponse|JsonResponse
     {
         $this->authorize('create', Material::class);
 
         $data = $request->validated();
         $data['user_id'] = auth()->id();
-        $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
 
+        // Генерация слага
+        if (empty($data['slug'])) {
+            $data['slug'] = Str::slug($data['title']);
+        }
+
+        // Установка значений по умолчанию
         $data['show_date'] = $data['show_date'] ?? true;
         $data['show_author'] = $data['show_author'] ?? true;
         $data['show_category'] = $data['show_category'] ?? true;
         $data['show_views'] = $data['show_views'] ?? true;
+        $data['use_global_settings'] = $data['use_global_settings'] ?? true;
+        $data['featured'] = $data['featured'] ?? false;
+        $data['show_on_homepage'] = $data['show_on_homepage'] ?? false;
+
+        // ✅ Логика: если материал отмечен на главную — снимаем с других
+        if (!empty($data['show_on_homepage'])) {
+            Material::where('show_on_homepage', true)->update(['show_on_homepage' => false]);
+        }
 
         $material = Material::create($data);
 

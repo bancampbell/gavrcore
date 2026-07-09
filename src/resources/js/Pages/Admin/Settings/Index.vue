@@ -1,66 +1,79 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">Общие настройки</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <Link href="/admin/dashboard" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Отменить
-                </Link>
-            </div>
-        </div>
 
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="p-6 space-y-6">
+        <div class="settings-page">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Общие настройки</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Отменить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Основной контент с сайдбаром справа -->
+            <div class="admin-page-content-with-sidebar">
+                <!-- Левая часть - контент -->
+                <div class="admin-page-content-scroll" ref="contentContainer">
+                    <div class="admin-page-card w-full p-6">
                         <!-- Основные настройки -->
-                        <div id="basic">
-                            <h2 class="text-md font-semibold text-gray-800 pb-2 border-b border-gray-200 mb-4">Основные настройки</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Название сайта</label>
+                        <div id="basic" ref="basicSection">
+                            <h2 class="admin-form-section-title">Основные настройки</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Название сайта</label>
                                     <input
                                         v-model="settings.site_name"
                                         type="text"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="GavrCore CMS"
                                     />
                                 </div>
-                                <div class="flex items-start gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap pt-1">Описание сайта</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48 pt-1">Описание сайта</label>
                                     <textarea
                                         v-model="settings.site_description"
                                         rows="3"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-textarea flex-1 max-w-md"
                                         placeholder="Описание сайта для SEO"
                                     ></textarea>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Email администратора</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Email администратора</label>
                                     <input
                                         v-model="settings.admin_email"
                                         type="email"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="admin@example.com"
                                     />
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Ключевые слова (SEO)</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Ключевые слова (SEO)</label>
                                     <input
                                         v-model="settings.seo_keywords"
                                         type="text"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="cms, laravel, vue"
                                     />
                                 </div>
@@ -68,164 +81,146 @@
                         </div>
 
                         <!-- Настройки материалов -->
-                        <div id="materials">
-                            <h2 class="text-md font-semibold text-gray-800 pb-2 border-b border-gray-200 mb-4">Настройки материалов</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Материалов на странице</label>
+                        <div id="materials" ref="materialsSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">Настройки материалов</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Материалов на странице</label>
                                     <input
                                         v-model.number="settings.materials_per_page"
                                         type="number"
                                         min="1"
                                         max="100"
-                                        class="w-24 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input w-24"
                                     />
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Формат даты</label>
-                                    <select v-model="settings.date_format" class="w-48 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Формат даты</label>
+                                    <select v-model="settings.date_format" class="admin-form-select w-48">
                                         <option value="d.m.Y">дд.мм.гггг (31.12.2024)</option>
                                         <option value="Y-m-d">гггг-мм-дд (2024-12-31)</option>
                                         <option value="m/d/Y">мм/дд/гггг (12/31/2024)</option>
                                         <option value="d/m/Y">дд/мм/гггг (31/12/2024)</option>
                                     </select>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать дату</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Показывать дату</label>
                                     <button
                                         @click="settings.show_date = !settings.show_date"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.show_date ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.show_date ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.show_date ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.show_date ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Показывать дату</span>
+                                    <span class="admin-toggle-label">Показывать дату</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать автора</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Показывать автора</label>
                                     <button
                                         @click="settings.show_author = !settings.show_author"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.show_author ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.show_author ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.show_author ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.show_author ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Показывать автора</span>
+                                    <span class="admin-toggle-label">Показывать автора</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать категорию</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Показывать категорию</label>
                                     <button
                                         @click="settings.show_category = !settings.show_category"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.show_category ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.show_category ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.show_category ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.show_category ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Показывать категорию</span>
+                                    <span class="admin-toggle-label">Показывать категорию</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Показывать просмотры</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Показывать просмотры</label>
                                     <button
                                         @click="settings.show_views = !settings.show_views"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.show_views ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.show_views ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.show_views ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.show_views ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Показывать просмотры</span>
+                                    <span class="admin-toggle-label">Показывать просмотры</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Настройки медиа -->
-                        <div id="media">
-                            <h2 class="text-md font-semibold text-gray-800 pb-2 border-b border-gray-200 mb-4">Настройки медиа</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Макс. размер файла (MB)</label>
+                        <div id="media" ref="mediaSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">Настройки медиа</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Макс. размер файла (MB)</label>
                                     <input
                                         v-model.number="settings.max_file_size"
                                         type="number"
                                         min="1"
                                         max="50"
-                                        class="w-24 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input w-24"
                                     />
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Разрешенные форматы</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Разрешенные форматы</label>
                                     <input
                                         v-model="settings.allowed_formats"
                                         type="text"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="jpg,jpeg,png,gif,webp"
                                     />
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Качество изображений (%)</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Качество изображений (%)</label>
                                     <input
                                         v-model.number="settings.image_quality"
                                         type="number"
                                         min="10"
                                         max="100"
-                                        class="w-24 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input w-24"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         <!-- Системные настройки -->
-                        <div id="system">
-                            <h2 class="text-md font-semibold text-gray-800 pb-2 border-b border-gray-200 mb-4">Системные настройки</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Режим отладки</label>
+                        <div id="system" ref="systemSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">Системные настройки</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Режим отладки</label>
                                     <button
                                         @click="settings.debug_mode = !settings.debug_mode"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.debug_mode ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.debug_mode ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.debug_mode ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.debug_mode ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Режим отладки</span>
+                                    <span class="admin-toggle-label">Режим отладки</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Сайт на обслуживании</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Сайт на обслуживании</label>
                                     <button
                                         @click="settings.maintenance_mode = !settings.maintenance_mode"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.maintenance_mode ? 'bg-amber-500' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.maintenance_mode ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.maintenance_mode ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.maintenance_mode ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Сайт на обслуживании</span>
+                                    <span class="admin-toggle-label">Сайт на обслуживании</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Часовой пояс</label>
-                                    <select v-model="settings.timezone" class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Часовой пояс</label>
+                                    <select v-model="settings.timezone" class="admin-form-select w-64">
                                         <option value="UTC">UTC</option>
                                         <option value="Europe/Moscow">Москва (UTC+3)</option>
                                         <option value="Europe/London">Лондон (UTC+0)</option>
@@ -237,33 +232,33 @@
                         </div>
 
                         <!-- SEO настройки -->
-                        <div id="seo">
-                            <h2 class="text-md font-semibold text-gray-800 pb-2 border-b border-gray-200 mb-4">SEO настройки</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Robots</label>
+                        <div id="seo" ref="seoSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">SEO настройки</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Robots</label>
                                     <input
                                         v-model="settings.robots"
                                         type="text"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="index,follow"
                                     />
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Google Analytics ID</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Google Analytics ID</label>
                                     <input
                                         v-model="settings.google_analytics_id"
                                         type="text"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="G-XXXXXXXXXX"
                                     />
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Яндекс Метрика ID</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Яндекс Метрика ID</label>
                                     <input
                                         v-model="settings.yandex_metrika_id"
                                         type="text"
-                                        class="flex-1 max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input flex-1 max-w-md"
                                         placeholder="XXXXXXXX"
                                     />
                                 </div>
@@ -271,52 +266,51 @@
                         </div>
 
                         <!-- Настройки кэша -->
-                        <div id="cache">
-                            <h2 class="text-md font-semibold text-gray-800 pb-2 border-b border-gray-200 mb-4">Настройки кэша</h2>
-                            <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Кэшировать страницы</label>
+                        <div id="cache" ref="cacheSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">Настройки кэша</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Кэшировать страницы</label>
                                     <button
                                         @click="settings.cache_enabled = !settings.cache_enabled"
                                         type="button"
-                                        class="relative inline-flex items-center h-5 rounded-full w-9 transition-colors focus:outline-none flex-shrink-0"
-                                        :class="settings.cache_enabled ? 'bg-indigo-600' : 'bg-gray-300'"
+                                        class="admin-toggle"
+                                        :class="settings.cache_enabled ? 'admin-toggle-on' : 'admin-toggle-off'"
                                     >
-                                        <span
-                                            class="inline-block w-3.5 h-3.5 transform bg-white rounded-full transition-transform"
-                                            :class="settings.cache_enabled ? 'translate-x-4.5' : 'translate-x-0.5'"
-                                        />
+                                        <span class="admin-toggle-slider" :class="settings.cache_enabled ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                     </button>
-                                    <span class="text-sm text-gray-700">Кэшировать страницы</span>
+                                    <span class="admin-toggle-label">Кэшировать страницы</span>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <label class="text-sm font-medium text-gray-700 w-48 whitespace-nowrap">Время кэша (минуты)</label>
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Время кэша (минуты)</label>
                                     <input
                                         v-model.number="settings.cache_ttl"
                                         type="number"
                                         min="1"
                                         max="1440"
-                                        class="w-24 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        class="admin-form-input w-24"
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Боковая панель с группами настроек -->
-            <div class="w-80">
-                <div class="space-y-4 sticky top-24">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Быстрая навигация</h3>
-                        <nav class="space-y-2">
-                            <a href="#basic" @click.prevent="scrollTo('basic')" class="block text-sm text-gray-600 hover:text-blue-600 py-1">Основные</a>
-                            <a href="#materials" @click.prevent="scrollTo('materials')" class="block text-sm text-gray-600 hover:text-blue-600 py-1">Материалы</a>
-                            <a href="#media" @click.prevent="scrollTo('media')" class="block text-sm text-gray-600 hover:text-blue-600 py-1">Медиа</a>
-                            <a href="#system" @click.prevent="scrollTo('system')" class="block text-sm text-gray-600 hover:text-blue-600 py-1">Системные</a>
-                            <a href="#seo" @click.prevent="scrollTo('seo')" class="block text-sm text-gray-600 hover:text-blue-600 py-1">SEO</a>
-                            <a href="#cache" @click.prevent="scrollTo('cache')" class="block text-sm text-gray-600 hover:text-blue-600 py-1">Кэш</a>
+                <!-- Правая часть - сайдбар с быстрой навигацией -->
+                <div class="admin-sidebar-wrapper">
+                    <div class="admin-sidebar-card">
+                        <h3 class="admin-sidebar-title">Быстрая навигация</h3>
+                        <nav class="admin-sidebar-nav">
+                            <a
+                                v-for="item in navItems"
+                                :key="item.id"
+                                href="#"
+                                @click.prevent="scrollTo(item.id)"
+                                class="admin-sidebar-link"
+                                :class="{ 'admin-sidebar-link-active': activeSection === item.id }"
+                            >
+                                {{ item.label }}
+                            </a>
                         </nav>
                     </div>
                 </div>
@@ -324,15 +318,15 @@
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
-    </EmptyLayout>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import EmptyLayout from '@/layouts/EmptyLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 
 const props = defineProps<{
@@ -344,6 +338,34 @@ const props = defineProps<{
 const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
+
+const activeSection = ref('basic');
+
+const navItems = [
+    { id: 'basic', label: 'Основные' },
+    { id: 'materials', label: 'Материалы' },
+    { id: 'media', label: 'Медиа' },
+    { id: 'system', label: 'Системные' },
+    { id: 'seo', label: 'SEO' },
+    { id: 'cache', label: 'Кэш' },
+];
+
+const contentContainer = ref<HTMLElement | null>(null);
+const basicSection = ref<HTMLElement | null>(null);
+const materialsSection = ref<HTMLElement | null>(null);
+const mediaSection = ref<HTMLElement | null>(null);
+const systemSection = ref<HTMLElement | null>(null);
+const seoSection = ref<HTMLElement | null>(null);
+const cacheSection = ref<HTMLElement | null>(null);
+
+const sectionRefs: Record<string, any> = {
+    basic: basicSection,
+    materials: materialsSection,
+    media: mediaSection,
+    system: systemSection,
+    seo: seoSection,
+    cache: cacheSection,
+};
 
 const settings = ref({
     site_name: props.settings.site_name ?? 'GavrCore CMS',
@@ -377,11 +399,47 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
-const scrollTo = (section: string) => {
-    const element = document.getElementById(section);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+const scrollTo = (sectionId: string) => {
+    activeSection.value = sectionId;
+    const ref = sectionRefs[sectionId];
+    if (ref && ref.value) {
+        ref.value.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
+};
+
+// Отслеживаем активную секцию при скролле
+const handleScroll = () => {
+    const container = contentContainer.value;
+    if (!container) return;
+
+    const sections = navItems.map(item => ({
+        id: item.id,
+        el: sectionRefs[item.id]?.value
+    }));
+
+    let currentSection = 'basic';
+    let minDistance = Infinity;
+
+    sections.forEach(({ id, el }) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const distance = Math.abs(rect.top - containerRect.top);
+
+        if (distance < minDistance && rect.top >= containerRect.top - 100) {
+            minDistance = distance;
+            currentSection = id;
+        }
+    });
+
+    activeSection.value = currentSection;
+};
+
+const cancel = () => {
+    router.visit('/admin/dashboard');
 };
 
 const save = async () => {
@@ -410,4 +468,18 @@ const saveAndClose = async () => {
         loading.value = false;
     }
 };
+
+onMounted(() => {
+    const container = contentContainer.value;
+    if (container) {
+        container.addEventListener('scroll', handleScroll);
+    }
+});
+
+onUnmounted(() => {
+    const container = contentContainer.value;
+    if (container) {
+        container.removeEventListener('scroll', handleScroll);
+    }
+});
 </script>

@@ -7,7 +7,9 @@
         <div class="flex flex-col h-full w-full">
             <!-- Панель действий + фильтры -->
             <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер материалов</h1>
                 <div class="flex flex-wrap gap-2.5">
+
                     <Link href="/admin/materials/create" class="admin-btn admin-btn-primary no-style">
                         + Создать материал
                     </Link>

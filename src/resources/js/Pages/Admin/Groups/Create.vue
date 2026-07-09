@@ -1,113 +1,134 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">Менеджер групп: Создать группу</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <button @click="saveAndCreate" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и создать
-                </button>
-                <Link href="/admin/groups" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Отменить
-                </Link>
-            </div>
-        </div>
 
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Название *</label>
-                        <input
-                            v-model="form.name"
-                            @input="updateAlias"
-                            type="text"
-                            class="w-96 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите название..."
-                        />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Алиас</label>
-                        <input
-                            v-model="form.alias"
-                            type="text"
-                            class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="останется пустым - сгенерируется автоматически"
-                        />
-                    </div>
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер групп: Создать группу</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="saveAndCreate"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и создать
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Отменить
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div class="p-6 space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
-                            <textarea
-                                v-model="form.description"
-                                rows="5"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                placeholder="Введите описание группы..."
-                            ></textarea>
+            <!-- Основной контент -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full p-6">
+                    <!-- Верхняя панель: название + алиас -->
+                    <div class="flex flex-wrap items-center gap-6 mb-6">
+                        <div class="flex items-center gap-3">
+                            <label class="admin-form-label whitespace-nowrap">Название *</label>
+                            <input
+                                v-model="form.name"
+                                @input="updateAlias"
+                                type="text"
+                                class="admin-form-input"
+                                style="width: 384px;"
+                                placeholder="Введите название..."
+                            />
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="admin-form-label whitespace-nowrap">Алиас</label>
+                            <input
+                                v-model="form.alias"
+                                type="text"
+                                class="admin-form-input"
+                                style="width: 256px;"
+                                placeholder="останется пустым - сгенерируется автоматически"
+                            />
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="w-80">
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Порядок сортировки</h3>
-                        <input
-                            v-model.number="form.ordering"
-                            type="number"
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                        />
-                    </div>
+                    <!-- Описание + правая панель -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Левая колонка -->
+                        <div class="lg:col-span-2">
+                            <div>
+                                <label class="admin-form-label">Описание</label>
+                                <textarea
+                                    v-model="form.description"
+                                    rows="5"
+                                    class="admin-form-textarea w-full max-w-md"
+                                    placeholder="Введите описание группы..."
+                                ></textarea>
+                            </div>
+                        </div>
 
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Статус</h3>
-                        <select
-                            v-model="form.status"
-                            class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
-                            :class="form.status ? 'bg-green-600 text-white border-green-700' : 'bg-red-600 text-white border-red-700'"
-                        >
-                            <option :value="true" class="bg-white text-gray-800">Опубликовано</option>
-                            <option :value="false" class="bg-white text-gray-800">Скрыто</option>
-                        </select>
+                        <!-- Правая колонка -->
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="admin-form-label">Порядок сортировки</h3>
+                                <input
+                                    v-model.number="form.ordering"
+                                    type="number"
+                                    class="admin-form-input w-full"
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div>
+                                <h3 class="admin-form-label">Статус</h3>
+                                <select
+                                    v-model="form.status"
+                                    class="admin-form-select w-full"
+                                    :class="{
+                                        'admin-form-select-status-published': form.status === true,
+                                        'admin-form-select-status-draft': form.status === false
+                                    }"
+                                >
+                                    <option :value="true" class="bg-white text-slate-800">Опубликовано</option>
+                                    <option :value="false" class="bg-white text-slate-800">Скрыто</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
-    </EmptyLayout>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, router } from '@inertiajs/vue3';
-import EmptyLayout from '@/layouts/EmptyLayout.vue';
+import { router } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import { groupsApi } from '@/api/groups';
 
 const props = defineProps<{
     user: any;
     title?: string;
-
 }>();
 
 const loading = ref(false);
@@ -139,6 +160,10 @@ const updateAlias = () => {
         .toLowerCase()
         .replace(/[^a-zа-яё0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
+};
+
+const cancel = () => {
+    router.visit('/admin/groups');
 };
 
 const save = async () => {

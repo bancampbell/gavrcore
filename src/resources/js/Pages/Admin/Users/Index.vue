@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full">
             <!-- Панель действий + фильтры (sticky) -->
             <div class="admin-page-actions flex-shrink-0">
+                <h1 class="admin-page-title">Пользователи</h1>
                 <div class="flex flex-wrap gap-2.5">
                     <Link
                         href="/admin/users/create"
@@ -15,6 +16,13 @@
                         + Создать пользователя
                     </Link>
                     <template v-if="selectedUsers.length > 0">
+                        <button
+                            @click="editSelected"
+                            :disabled="selectedUsers.length !== 1"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Редактировать
+                        </button>
                         <button
                             @click="bulkBlock"
                             class="admin-btn admin-btn-danger"
@@ -142,14 +150,14 @@
                                 <!-- Логин -->
                                 <td class="col-username" @click="toggleSelect(user.id)">{{ user.username }}</td>
 
-                                <!-- Статус - единый класс -->
+                                <!-- Статус -->
                                 <td class="col-status" @click="toggleSelect(user.id)">
                                     <span :class="user.blocked ? 'status-badge status-inactive' : 'status-badge status-active'">
                                         {{ user.blocked ? 'Заблокирован' : 'Активен' }}
                                     </span>
                                 </td>
 
-                                <!-- Активация - единый класс -->
+                                <!-- Активация -->
                                 <td class="col-activated" @click="toggleSelect(user.id)">
                                     <span :class="user.activated ? 'status-badge status-active' : 'status-badge status-inactive'">
                                         {{ user.activated ? 'Активирован' : 'Не активирован' }}
@@ -325,6 +333,7 @@ const {
     resetFilters,
     prevPage,
     nextPage,
+    editSelected,
     openDeleteModalForSelected,
     bulkBlock,
     bulkUnblock,

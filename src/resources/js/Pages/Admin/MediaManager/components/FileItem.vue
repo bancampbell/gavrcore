@@ -4,6 +4,7 @@
         class="flex items-center py-1 px-2 rounded-md transition-colors hover:bg-[#e6f0fa] group cursor-pointer"
         :class="{ 'bg-[#e6f0fa]': isSelected }"
         @click="onClick"
+        @dblclick="onDblClick"
     >
         <input
             type="checkbox"
@@ -55,6 +56,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'select', path: string, item: MediaItem): void;
     (e: 'click', item: MediaItem): void;
+    (e: 'dblclick', item: MediaItem): void;
 }>();
 
 const onSelect = () => {
@@ -63,5 +65,9 @@ const onSelect = () => {
 
 const onClick = () => {
     emit('click', props.item);
+};
+
+const onDblClick = () => {
+    emit('dblclick', props.item);
 };
 </script>

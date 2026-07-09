@@ -3,7 +3,6 @@
 <template>
     <div class="bg-white border-b border-gray-200">
         <div class="px-6 py-4">
-            <h1 class="text-xl font-semibold text-gray-800">Браузер файлов</h1>
         </div>
 
         <div class="px-6 pb-4 flex items-center justify-between">

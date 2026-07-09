@@ -95,4 +95,22 @@ class MenuTypeController extends Controller
 
         return response()->json(['message' => 'Ordering updated successfully']);
     }
+
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'status' => 'required|boolean',
+        ]);
+
+        $updated = $this->service->updateStatus($id, $request->status);
+
+        if (! $updated) {
+            return response()->json(['message' => 'Menu type not found'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Статус обновлен',
+            'status' => $request->status
+        ]);
+    }
 }

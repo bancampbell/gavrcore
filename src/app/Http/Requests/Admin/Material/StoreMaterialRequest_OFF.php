@@ -4,7 +4,7 @@ namespace App\Http\Requests\Admin\Material;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreMaterialRequest extends FormRequest
+class StoreMaterialRequestOFF extends FormRequest
 {
     public function authorize(): bool
     {

@@ -91,6 +91,27 @@ export function useFileOperations(showNotification?: NotificationFn) {
         }
     };
 
+    // НОВАЯ ФУНКЦИЯ ДЛЯ МАССОВОГО УДАЛЕНИЯ
+    const deleteItems = async (paths: string[]) => {
+        if (!paths || paths.length === 0) {
+            showNotification?.('Не выбрано ни одного элемента', 'error');
+            return false;
+        }
+
+        try {
+            await axios.delete('/admin/media/items', {
+                data: { paths },
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            showNotification?.(`Удалено ${paths.length} элементов`, 'success');
+            return true;
+        } catch (error: any) {
+            console.error('Error deleting items:', error);
+            showNotification?.(error.response?.data?.message || 'Ошибка удаления', 'error');
+            return false;
+        }
+    };
+
     const copyItem = async (path: string) => {
         try {
             await axios.post('/admin/media/copy', { path }, {
@@ -143,6 +164,7 @@ export function useFileOperations(showNotification?: NotificationFn) {
         createFolder,
         renameItem,
         deleteItem,
+        deleteItems,
         copyItem,
         uploadFile
     };

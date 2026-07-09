@@ -27,7 +27,7 @@ export function useMaterials(props: UseMaterialsProps) {
     const modalMessage = ref<string>('');
     const modalConfirmText = ref<string>('');
     const modalLoading = ref<boolean>(false);
-    let pendingAction: 'delete' | 'empty' | null = null;
+    let pendingAction: 'delete' | 'empty' | 'restore' | null = null;
 
     let notificationTimeout: number | null = null;
     let searchTimeout: number | null = null;
@@ -125,8 +125,27 @@ export function useMaterials(props: UseMaterialsProps) {
             selectedMaterials.value = [];
             applyFilters();
         } catch (error: any) {
-            showNotification('Ошибка при перемещении в корзину', 'error');
+            showNotification(error.response?.data?.message || 'Ошибка при перемещении в корзину', 'error');
         }
+    };
+
+    // ========================================
+    // ВОССТАНОВЛЕНИЕ ИЗ КОРЗИНЫ
+    // ========================================
+    const restoreSelected = () => {
+        if (selectedMaterials.value.length === 0) {
+            showNotification('Выберите материалы для восстановления', 'error');
+            return;
+        }
+
+        const count = selectedMaterials.value.length;
+        modalTitle.value = 'Восстановление материалов';
+        modalMessage.value = count === 1
+            ? 'Вы уверены, что хотите восстановить выбранный материал?'
+            : `Вы уверены, что хотите восстановить ${count} материалов?`;
+        modalConfirmText.value = 'Восстановить';
+        pendingAction = 'restore';
+        modalOpen.value = true;
     };
 
     const publishSelected = async () => {
@@ -138,7 +157,7 @@ export function useMaterials(props: UseMaterialsProps) {
             selectedMaterials.value = [];
             applyFilters();
         } catch (error: any) {
-            showNotification('Ошибка при публикации', 'error');
+            showNotification(error.response?.data?.message || 'Ошибка при публикации', 'error');
         }
     };
 
@@ -151,7 +170,7 @@ export function useMaterials(props: UseMaterialsProps) {
             selectedMaterials.value = [];
             applyFilters();
         } catch (error: any) {
-            showNotification('Ошибка при снятии с публикации', 'error');
+            showNotification(error.response?.data?.message || 'Ошибка при снятии с публикации', 'error');
         }
     };
 
@@ -174,7 +193,7 @@ export function useMaterials(props: UseMaterialsProps) {
                 props.materials.data[index].show_on_homepage = newValue;
             }
         } catch (error: any) {
-            showNotification('Ошибка при обновлении статуса "На главной"', 'error');
+            showNotification(error.response?.data?.message || 'Ошибка при обновлении статуса "На главной"', 'error');
         }
     };
 
@@ -207,31 +226,40 @@ export function useMaterials(props: UseMaterialsProps) {
         modalOpen.value = true;
     };
 
+    // ========================================
+    // ПОДТВЕРЖДЕНИЕ ДЕЙСТВИЯ
+    // ========================================
     const confirmAction = async () => {
         modalLoading.value = true;
 
         try {
             let response;
-            if (pendingAction === 'delete') {
+            if (pendingAction === 'restore') {
+                response = await materialsApi.restore(selectedMaterials.value);
+            } else if (pendingAction === 'delete') {
                 response = await materialsApi.forceDelete(selectedMaterials.value);
             } else if (pendingAction === 'empty') {
                 response = await materialsApi.emptyTrash();
             } else {
+                modalLoading.value = false;
                 return;
             }
 
             showNotification(response.message, 'success');
             selectedMaterials.value = [];
             modalOpen.value = false;
+            pendingAction = null;
 
+            // Перезагружаем страницу, чтобы обновить список
             setTimeout(() => {
                 router.reload();
             }, 1500);
         } catch (error: any) {
-            showNotification('Ошибка при выполнении операции', 'error');
-        } finally {
+            showNotification(error.response?.data?.message || 'Ошибка при выполнении операции', 'error');
             modalLoading.value = false;
             pendingAction = null;
+        } finally {
+            modalLoading.value = false;
         }
     };
 
@@ -255,6 +283,7 @@ export function useMaterials(props: UseMaterialsProps) {
         prevPage,
         nextPage,
         moveToTrash,
+        restoreSelected,
         publishSelected,
         unpublishSelected,
         editSelected,

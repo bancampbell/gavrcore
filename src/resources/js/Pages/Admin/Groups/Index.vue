@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full">
             <!-- Панель действий + фильтры (sticky) -->
             <div class="admin-page-actions flex-shrink-0">
+                <h1 class="admin-page-title">Группы пользователей</h1>
                 <div class="flex flex-wrap gap-2.5">
                     <Link
                         href="/admin/groups/create"
@@ -15,6 +16,13 @@
                         + Создать группу
                     </Link>
                     <template v-if="selectedGroups.length > 0">
+                        <button
+                            @click="editSelected"
+                            :disabled="selectedGroups.length !== 1"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Редактировать
+                        </button>
                         <button
                             @click="bulkPublish"
                             class="admin-btn admin-btn-secondary"
@@ -144,7 +152,7 @@
                                     {{ group.description || '—' }}
                                 </td>
 
-                                <!-- Статус - единый класс -->
+                                <!-- Статус -->
                                 <td class="col-status" @click="toggleSelect(group.id)">
                                     <span
                                         class="status-badge"
@@ -287,6 +295,7 @@ const {
     resetFilters,
     prevPage,
     nextPage,
+    editSelected,
     openDeleteModalForSelected,
     bulkDelete,
     bulkPublish,

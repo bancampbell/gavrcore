@@ -54,7 +54,6 @@ export function useGroups(props: any) {
         }, 3000);
     };
 
-    // Исправленный applyFilters
     const applyFilters = () => {
         const params: any = {};
 
@@ -138,6 +137,13 @@ export function useGroups(props: any) {
         if (selectedGroups.value.length === 1) {
             const group = props.groups.data.find((g: any) => g.id === selectedGroups.value[0]);
             if (group) openEditModal(group);
+        }
+    };
+
+    // ✅ ДОБАВЛЯЕМ МЕТОД editSelected
+    const editSelected = () => {
+        if (selectedGroups.value.length === 1) {
+            router.visit(`/admin/groups/${selectedGroups.value[0]}/edit`);
         }
     };
 
@@ -313,6 +319,7 @@ export function useGroups(props: any) {
         openCreateModal,
         openEditModal,
         openEditSelectedModal,
+        editSelected,          // ← ДОБАВЛЕНО
         submitForm,
         openDeleteModal,
         openDeleteModalForSelected,

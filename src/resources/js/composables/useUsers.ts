@@ -34,7 +34,6 @@ export function useUsers(props: any) {
     const userToDelete = ref<any>(null);
     const deleteMessage = ref('');
 
-    // Модалка для массовых операций
     const bulkModalOpen = ref(false);
     const bulkModalTitle = ref('');
     const bulkModalMessage = ref('');
@@ -134,6 +133,13 @@ export function useUsers(props: any) {
         if (selectedUsers.value.length === 1) {
             const user = props.users.data.find((u: any) => u.id === selectedUsers.value[0]);
             if (user) openEditModal(user);
+        }
+    };
+
+    // ✅ ДОБАВЛЕН МЕТОД editSelected
+    const editSelected = () => {
+        if (selectedUsers.value.length === 1) {
+            router.visit(`/admin/users/${selectedUsers.value[0]}/edit`);
         }
     };
 
@@ -303,6 +309,7 @@ export function useUsers(props: any) {
         openCreateModal,
         openEditModal,
         openEditSelectedModal,
+        editSelected,          // ← ДОБАВЛЕНО
         submitForm,
         openDeleteModal,
         bulkBlock,

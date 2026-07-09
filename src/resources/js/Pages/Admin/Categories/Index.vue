@@ -7,6 +7,7 @@
         <div class="flex flex-col h-full">
             <!-- Панель действий + фильтры (sticky) -->
             <div class="admin-page-actions flex-shrink-0">
+                <h1 class="admin-page-title">Менеджер категорий</h1>
                 <div class="flex flex-wrap gap-2.5">
                     <button
                         @click="openCreateModal"

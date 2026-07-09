@@ -145,6 +145,38 @@ class MediaController extends Controller
         return response()->json(['message' => 'Удалено успешно', 'success' => true]);
     }
 
+    public function deleteMultiple(Request $request): JsonResponse
+    {
+        $request->validate([
+            'paths' => 'required|array',
+            'paths.*' => 'required|string',
+        ]);
+
+        $paths = $request->input('paths');
+        $deleted = [];
+
+        foreach ($paths as $path) {
+            $fullPath = $this->basePath.'/'.$path;
+
+            if (! file_exists($fullPath)) {
+                continue;
+            }
+
+            if (is_dir($fullPath)) {
+                $this->deleteDirectory($fullPath);
+            } else {
+                unlink($fullPath);
+            }
+            $deleted[] = $path;
+        }
+
+        return response()->json([
+            'message' => 'Удалено элементов: '.count($deleted),
+            'success' => true,
+            'deleted' => $deleted
+        ]);
+    }
+
     public function copyItem(Request $request): JsonResponse
     {
         $request->validate([
