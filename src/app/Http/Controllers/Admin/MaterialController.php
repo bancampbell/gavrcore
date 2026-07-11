@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Activitylog\Facades\Activity;
 
 class MaterialController extends Controller
 {
@@ -51,8 +52,18 @@ class MaterialController extends Controller
     {
         $this->authorize('moveToTrash', Material::class);
 
-        $count = count($request->ids);
-        Material::whereIn('id', $request->ids)->update(['state' => 'trash']);
+        $ids = $request->ids;
+        $count = count($ids);
+        $materials = Material::whereIn('id', $ids)->get();
+
+        foreach ($materials as $material) {
+            $material->update(['state' => 'trash']);
+
+            // Логируем перемещение в корзину
+            Activity::causedBy(auth()->user())
+                ->performedOn($material)
+                ->log('Перемещен в корзину: ' . $material->title);
+        }
 
         $message = $count === 1 ? 'Материал перемещён в корзину' : 'Материалы перемещены в корзину';
 
@@ -76,8 +87,18 @@ class MaterialController extends Controller
     {
         $this->authorize('restore', Material::class);
 
-        $count = count($request->ids);
-        Material::whereIn('id', $request->ids)->update(['state' => 'draft']);
+        $ids = $request->ids;
+        $count = count($ids);
+        $materials = Material::whereIn('id', $ids)->get();
+
+        foreach ($materials as $material) {
+            $material->update(['state' => 'draft']);
+
+            // Логируем восстановление
+            Activity::causedBy(auth()->user())
+                ->performedOn($material)
+                ->log('Восстановлен из корзины: ' . $material->title);
+        }
 
         $message = $count === 1 ? 'Материал восстановлен' : 'Материалы восстановлены';
 
@@ -88,16 +109,22 @@ class MaterialController extends Controller
     {
         $this->authorize('forceDelete', Material::class);
 
-        $count = count($request->ids);
+        $ids = $request->ids;
+        $count = count($ids);
+        $materials = Material::withTrashed()->whereIn('id', $ids)->get();
 
-        foreach ($request->ids as $id) {
-            $material = Material::withTrashed()->find($id);
-            if ($material) {
-                $this->authorize('forceDelete', $material);
-            }
+        foreach ($materials as $material) {
+            $title = $material->title;
+
+            $this->authorize('forceDelete', $material);
+
+            $material->forceDelete();
+
+            // Логируем полное удаление
+            Activity::causedBy(auth()->user())
+                ->withProperties(['material_id' => $material->id])
+                ->log('Полностью удален материал: ' . $title);
         }
-
-        Material::whereIn('id', $request->ids)->forceDelete();
 
         $message = $count === 1 ? 'Материал удалён навсегда' : 'Материалы удалены навсегда';
 
@@ -108,8 +135,20 @@ class MaterialController extends Controller
     {
         $this->authorize('forceDelete', Material::class);
 
-        $count = Material::where('state', 'trash')->count();
+        $materials = Material::where('state', 'trash')->get();
+        $count = $materials->count();
+
+        $titles = $materials->pluck('title')->toArray();
+
         Material::where('state', 'trash')->forceDelete();
+
+        // Логируем очистку корзины
+        Activity::causedBy(auth()->user())
+            ->withProperties([
+                'count' => $count,
+                'materials' => $titles,
+            ])
+            ->log('Очищена корзина материалов: ' . $count . ' материалов');
 
         return response()->json(['message' => "Корзина очищена, удалено {$count} материалов"]);
     }
@@ -118,16 +157,20 @@ class MaterialController extends Controller
     {
         $this->authorize('publish', Material::class);
 
-        $count = count($request->ids);
+        $ids = $request->ids;
+        $count = count($ids);
+        $materials = Material::whereIn('id', $ids)->get();
 
-        foreach ($request->ids as $id) {
-            $material = Material::find($id);
-            if ($material) {
-                $this->authorize('publish', $material);
-            }
+        foreach ($materials as $material) {
+            $this->authorize('publish', $material);
+            $material->update(['state' => 'published']);
         }
 
-        Material::whereIn('id', $request->ids)->update(['state' => 'published']);
+        // Логируем публикацию
+        $titles = $materials->pluck('title')->toArray();
+        Activity::causedBy(auth()->user())
+            ->withProperties(['materials' => $titles, 'count' => $count])
+            ->log('Опубликовано материалов: ' . $count);
 
         $message = $count === 1 ? 'Материал опубликован' : 'Материалы опубликованы';
 
@@ -138,16 +181,20 @@ class MaterialController extends Controller
     {
         $this->authorize('unpublish', Material::class);
 
-        $count = count($request->ids);
+        $ids = $request->ids;
+        $count = count($ids);
+        $materials = Material::whereIn('id', $ids)->get();
 
-        foreach ($request->ids as $id) {
-            $material = Material::find($id);
-            if ($material) {
-                $this->authorize('unpublish', $material);
-            }
+        foreach ($materials as $material) {
+            $this->authorize('unpublish', $material);
+            $material->update(['state' => 'draft']);
         }
 
-        Material::whereIn('id', $request->ids)->update(['state' => 'draft']);
+        // Логируем снятие с публикации
+        $titles = $materials->pluck('title')->toArray();
+        Activity::causedBy(auth()->user())
+            ->withProperties(['materials' => $titles, 'count' => $count])
+            ->log('Снято с публикации материалов: ' . $count);
 
         $message = $count === 1 ? 'Материал снят с публикации' : 'Материалы сняты с публикации';
 
@@ -172,12 +219,10 @@ class MaterialController extends Controller
         $data = $request->validated();
         $data['user_id'] = auth()->id();
 
-        // Генерация слага
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['title']);
         }
 
-        // Установка значений по умолчанию
         $data['show_date'] = $data['show_date'] ?? true;
         $data['show_author'] = $data['show_author'] ?? true;
         $data['show_category'] = $data['show_category'] ?? true;
@@ -186,7 +231,6 @@ class MaterialController extends Controller
         $data['featured'] = $data['featured'] ?? false;
         $data['show_on_homepage'] = $data['show_on_homepage'] ?? false;
 
-        // ✅ Логика: если материал отмечен на главную — снимаем с других
         if (!empty($data['show_on_homepage'])) {
             Material::where('show_on_homepage', true)->update(['show_on_homepage' => false]);
         }

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Activitylog\Facades\CauserResolver;
 
 class LoginController extends Controller
 {
@@ -28,6 +29,15 @@ class LoginController extends Controller
             // Региенерируем сессию для безопасности
             $request->session()->regenerate();
 
+            // Логируем вход в админку
+            activity()
+                ->causedBy($user)
+                ->withProperties([
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ])
+                ->log('Вход в админку');
+
             // Редирект на дашборд
             return redirect()->intended('/admin/dashboard');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -41,6 +51,13 @@ class LoginController extends Controller
      */
     public function logout(Request $request)
     {
+        // Логируем выход
+        if (auth()->check()) {
+            activity()
+                ->causedBy(auth()->user())
+                ->log('Выход из админки');
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

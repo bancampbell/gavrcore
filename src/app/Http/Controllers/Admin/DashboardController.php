@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
@@ -18,6 +19,11 @@ class DashboardController extends Controller
         $totalUsers = User::count();
         $totalViews = Material::sum('views');
 
+        // Получаем последнюю активность с пагинацией
+        $activities = Activity::with('causer', 'subject')
+            ->latest()
+            ->paginate(20);
+
         return Inertia::render('Admin/Dashboard', [
             'user' => auth()->user(),
             'stats' => [
@@ -26,6 +32,7 @@ class DashboardController extends Controller
                 'users' => $totalUsers,
                 'views' => $totalViews,
             ],
+            'activities' => $activities,
             'title' => 'Панель управления',
         ]);
     }

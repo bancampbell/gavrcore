@@ -2215,3 +2215,35 @@
     padding: 0.375rem 0.75rem;
     font-size: 0.813rem;
 }
+
+/* ========================================
+   DASHBOARD STICKY HEADER
+   ======================================== */
+
+.dashboard-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 50%, #ffffff 80%);
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin: 0 -6px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.activity-list-wrapper {
+    padding-top: 4px;
+    overflow-y: auto !important;
+    flex: 1 !important;
+}
+
+.dashboard-pagination {
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 50%, #ffffff 80%);
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin: 0 -6px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-top: 1px solid #e5e7eb;
+}

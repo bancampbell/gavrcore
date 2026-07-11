@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Activitylog\Facades\Activity;
 
 class UserController extends Controller
 {
@@ -56,7 +57,12 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
 
-        $this->userService->create($request->validated());
+        $user = $this->userService->create($request->validated());
+
+        // Логируем создание пользователя
+        Activity::causedBy(auth()->user())
+            ->performedOn($user)
+            ->log('Создан пользователь: ' . $user->name);
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Пользователь создан');
@@ -77,9 +83,26 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, int $id): RedirectResponse|JsonResponse
     {
-        $this->authorize('update', $this->userService->find($id));
+        $user = $this->userService->find($id);
+        $this->authorize('update', $user);
+
+        // Сохраняем старые данные для логирования
+        $oldData = $user->only(['name', 'username', 'email', 'blocked', 'activated']);
 
         $this->userService->update($id, $request->validated());
+
+        // Получаем обновленные данные
+        $user->refresh();
+        $newData = $user->only(['name', 'username', 'email', 'blocked', 'activated']);
+
+        // Логируем обновление пользователя с изменениями
+        Activity::causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties([
+                'old' => $oldData,
+                'attributes' => $newData,
+            ])
+            ->log('Обновлен пользователь: ' . $user->name);
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Пользователь обновлён']);
@@ -93,7 +116,13 @@ class UserController extends Controller
         $user = $this->userService->find($id);
         $this->authorize('delete', $user);
 
+        $userName = $user->name;
+
         $this->userService->delete($id);
+
+        // Логируем удаление пользователя
+        Activity::causedBy(auth()->user())
+            ->log('Удален пользователь: ' . $userName);
 
         return response()->json(['message' => 'Пользователь удалён']);
     }
@@ -103,14 +132,21 @@ class UserController extends Controller
         $this->authorize('bulkBlock', User::class);
 
         $count = 0;
+        $userNames = [];
         foreach ($request->ids as $id) {
             $user = $this->userService->find($id);
             if ($user && $this->userService->updateStatus($id, true)) {
                 $count++;
+                $userNames[] = $user->name;
             }
         }
 
         $message = $count === 1 ? 'Пользователь заблокирован' : 'Пользователи заблокированы';
+
+        // Логируем массовую блокировку
+        Activity::causedBy(auth()->user())
+            ->withProperties(['users' => $userNames, 'count' => $count])
+            ->log('Заблокировано пользователей: ' . $count);
 
         return response()->json(['message' => $message]);
     }
@@ -120,14 +156,21 @@ class UserController extends Controller
         $this->authorize('bulkUnblock', User::class);
 
         $count = 0;
+        $userNames = [];
         foreach ($request->ids as $id) {
             $user = $this->userService->find($id);
             if ($user && $this->userService->updateStatus($id, false)) {
                 $count++;
+                $userNames[] = $user->name;
             }
         }
 
         $message = $count === 1 ? 'Пользователь разблокирован' : 'Пользователи разблокированы';
+
+        // Логируем массовую разблокировку
+        Activity::causedBy(auth()->user())
+            ->withProperties(['users' => $userNames, 'count' => $count])
+            ->log('Разблокировано пользователей: ' . $count);
 
         return response()->json(['message' => $message]);
     }
