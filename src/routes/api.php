@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Admin\GalleryController;
+use App\Http\Controllers\Api\FormController; // <--- ДОБАВИТЬ
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [RegisterController::class, 'register']);
@@ -17,3 +18,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Публичный роут для получения галереи
 Route::get('/galleries/{gallery}', [GalleryController::class, 'show']);
+
+// ========================================
+// API FORMS (публичные)
+// ========================================
+Route::prefix('forms')->group(function () {
+    Route::get('/{id}', [FormController::class, 'show']);
+    Route::post('/{id}/submit', [FormController::class, 'submit']);
+});

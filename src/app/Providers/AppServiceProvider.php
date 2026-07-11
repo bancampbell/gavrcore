@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\CategoryRepositoryInterface;
+use App\Contracts\FormSubmissionRepositoryInterface;
 use App\Contracts\GroupRepositoryInterface;
 use App\Contracts\MaterialRepositoryInterface;
 use App\Contracts\MenuItemRepositoryInterface;
@@ -20,6 +21,7 @@ use App\Policies\GroupPolicy;
 use App\Policies\MaterialPolicy;
 use App\Policies\UserPolicy;
 use App\Repositories\CategoryRepository;
+use App\Repositories\FormSubmissionRepository;
 use App\Repositories\GroupRepository;
 use App\Repositories\MaterialRepository;
 use App\Repositories\MenuItemRepository;
@@ -27,6 +29,7 @@ use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
 use App\Services\SettingService;
+use App\Services\FormSubmissionService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -44,6 +47,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuTypeRepositoryInterface::class, MenuTypeRepository::class);
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
+        // ДОБАВЛЕНО: биндинг для FormSubmission
+        $this->app->bind(FormSubmissionRepositoryInterface::class, FormSubmissionRepository::class);
     }
 
     public function boot(): void
@@ -70,6 +75,14 @@ class AppServiceProvider extends ServiceProvider
                     return $settingService->getAllSettings();
                 } catch (\Exception $e) {
                     return [];
+                }
+            },
+            'unreadCount' => function () {
+                try {
+                    $service = app(FormSubmissionService::class);
+                    return $service->countUnread();
+                } catch (\Exception $e) {
+                    return 0;
                 }
             },
         ]);

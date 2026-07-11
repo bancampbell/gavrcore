@@ -24,20 +24,20 @@
                             Редактировать
                         </button>
                         <button
-                            @click="bulkBlock"
+                            @click="openBlockModal"
                             class="admin-btn admin-btn-danger"
                         >
                             Заблокировать
                         </button>
                         <button
-                            @click="bulkUnblock"
+                            @click="openUnblockModal"
                             class="admin-btn admin-btn-secondary"
                         >
                             Разблокировать
                         </button>
                         <button
                             @click="openDeleteModalForSelected"
-                            class="admin-btn admin-btn-secondary"
+                            class="admin-btn admin-btn-danger"
                         >
                             Удалить выбранные
                         </button>
@@ -221,6 +221,31 @@
         </div>
 
         <!-- Модалки -->
+        <!-- Блокировка - красная (danger) -->
+        <ConfirmModal
+            :is-open="blockModalOpen"
+            title="Блокировка пользователя"
+            :message="blockMessage"
+            confirm-text="Заблокировать"
+            type="danger"
+            :loading="loading"
+            @close="blockModalOpen = false"
+            @confirm="confirmBlock"
+        />
+
+        <!-- Разблокировка - желтая (warning) -->
+        <ConfirmModal
+            :is-open="unblockModalOpen"
+            title="Разблокировка пользователя"
+            :message="unblockMessage"
+            confirm-text="Разблокировать"
+            type="warning"
+            :loading="loading"
+            @close="unblockModalOpen = false"
+            @confirm="confirmUnblock"
+        />
+
+        <!-- Удаление - красная (danger) -->
         <ConfirmModal
             :is-open="deleteModalOpen"
             title="Удаление пользователя"
@@ -232,23 +257,12 @@
             @confirm="confirmDeleteHandler"
         />
 
-        <ConfirmModal
-            :is-open="bulkModalOpen"
-            :title="bulkModalTitle"
-            :message="bulkModalMessage"
-            confirm-text="Подтвердить"
-            type="danger"
-            :loading="loading"
-            @close="bulkModalOpen = false"
-            @confirm="confirmBulkAction"
-        />
-
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -296,6 +310,15 @@ const props = defineProps<{
     filters?: Filters;
 }>();
 
+// Состояния для модалок
+const blockModalOpen = ref(false);
+const blockMessage = ref('');
+const itemsToBlock = ref<number[]>([]);
+
+const unblockModalOpen = ref(false);
+const unblockMessage = ref('');
+const itemsToUnblock = ref<number[]>([]);
+
 const formatDate = (date: string | null) => {
     if (!date) return '—';
     return new Date(date).toLocaleDateString('ru-RU', {
@@ -325,9 +348,6 @@ const {
     deleteModalOpen,
     deleteLoading,
     deleteMessage,
-    bulkModalOpen,
-    bulkModalTitle,
-    bulkModalMessage,
     applyFilters,
     debounceSearch,
     resetFilters,
@@ -335,12 +355,71 @@ const {
     nextPage,
     editSelected,
     openDeleteModalForSelected,
-    bulkBlock,
-    bulkUnblock,
     confirmDeleteHandler,
-    confirmBulkAction,
     showNotification,
 } = useUsers(props);
+
+// Блокировка
+const openBlockModal = () => {
+    if (selectedUsers.value.length === 0) return;
+
+    const count = selectedUsers.value.length;
+    blockMessage.value = count === 1
+        ? 'Вы уверены, что хотите заблокировать выбранного пользователя? Он не сможет войти в систему.'
+        : `Вы уверены, что хотите заблокировать ${count} пользователей? Они не смогут войти в систему.`;
+
+    itemsToBlock.value = [...selectedUsers.value];
+    blockModalOpen.value = true;
+};
+
+const confirmBlock = async () => {
+    if (itemsToBlock.value.length === 0) return;
+
+    loading.value = true;
+    try {
+        // Здесь API вызов для блокировки
+        // await usersApi.bulkBlock(itemsToBlock.value);
+        showNotification(`${itemsToBlock.value.length} пользователей заблокировано`, 'success');
+        selectedUsers.value = [];
+        blockModalOpen.value = false;
+        applyFilters();
+    } catch (error: any) {
+        showNotification(error.response?.data?.message || 'Ошибка блокировки', 'error');
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Разблокировка
+const openUnblockModal = () => {
+    if (selectedUsers.value.length === 0) return;
+
+    const count = selectedUsers.value.length;
+    unblockMessage.value = count === 1
+        ? 'Вы уверены, что хотите разблокировать выбранного пользователя? Он сможет войти в систему.'
+        : `Вы уверены, что хотите разблокировать ${count} пользователей? Они смогут войти в систему.`;
+
+    itemsToUnblock.value = [...selectedUsers.value];
+    unblockModalOpen.value = true;
+};
+
+const confirmUnblock = async () => {
+    if (itemsToUnblock.value.length === 0) return;
+
+    loading.value = true;
+    try {
+        // Здесь API вызов для разблокировки
+        // await usersApi.bulkUnblock(itemsToUnblock.value);
+        showNotification(`${itemsToUnblock.value.length} пользователей разблокировано`, 'success');
+        selectedUsers.value = [];
+        unblockModalOpen.value = false;
+        applyFilters();
+    } catch (error: any) {
+        showNotification(error.response?.data?.message || 'Ошибка разблокировки', 'error');
+    } finally {
+        loading.value = false;
+    }
+};
 
 onMounted(() => {
     const urlParams = new URLSearchParams(window.location.search);

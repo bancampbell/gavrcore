@@ -39,6 +39,17 @@
                 >
                     <SidebarLink href="/admin/media" icon="image">Медиа-менеджер</SidebarLink>
                     <SidebarLink href="/admin/galleries" icon="image">Галереи</SidebarLink>
+                    <SidebarLink href="/admin/forms" icon="module">Формы</SidebarLink>
+                    <!-- Обратная связь с счетчиком -->
+                    <SidebarLink href="/admin/submissions" icon="message">
+                        Обратная связь
+                        <span
+                            v-if="unreadCount > 0"
+                            class="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-500 rounded-full"
+                        >
+                            {{ unreadCount }}
+                        </span>
+                    </SidebarLink>
                     <SidebarLink href="#" icon="module">Менеджер модулей</SidebarLink>
                 </SidebarSection>
 
@@ -110,6 +121,11 @@ const props = defineProps<Props>();
 const page = usePage();
 const currentUrl = computed(() => window.location.pathname);
 
+// ===== ПОЛУЧАЕМ КОЛИЧЕСТВО НЕПРОЧИТАННЫХ =====
+const unreadCount = computed(() => {
+    return (page.props as any).unreadCount || 0;
+});
+
 // ===== АДАПТИВНОЕ КОЛИЧЕСТВО ОТКРЫТЫХ РАЗДЕЛОВ (ПО ВЫСОТЕ) =====
 const getMaxOpen = () => {
     const height = window.innerHeight;
@@ -156,7 +172,7 @@ watch(currentUrl, () => {
         targetSection = 'materials';
     } else if (currentUrl.value.startsWith('/admin/menu')) {
         targetSection = 'navigation';
-    } else if (currentUrl.value.startsWith('/admin/media') || currentUrl.value.startsWith('/admin/galleries')) {
+    } else if (currentUrl.value.startsWith('/admin/media') || currentUrl.value.startsWith('/admin/galleries') || currentUrl.value.startsWith('/admin/forms') || currentUrl.value.startsWith('/admin/submissions')) {
         targetSection = 'structure';
     } else if (currentUrl.value.startsWith('/admin/users') || currentUrl.value.startsWith('/admin/groups') || currentUrl.value.startsWith('/admin/access-levels')) {
         targetSection = 'users';

@@ -140,6 +140,14 @@
         >
             📷
         </button>
+        <button
+            @click="openFormModal"
+            class="px-3 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center gap-1 text-sm font-medium bg-blue-50 text-blue-700 hover:bg-blue-100"
+            title="Вставить форму"
+        >
+            <span>📋</span>
+            <span>Форма</span>
+        </button>
 
         <div class="w-px h-6 bg-gray-300 mx-1"></div>
 
@@ -205,5 +213,6 @@ defineProps<{
     openGalleryModal: () => void;
     toggleHtml: () => void;
     openFileManager: () => void;
+    openFormModal?: () => void;
 }>();
 </script>

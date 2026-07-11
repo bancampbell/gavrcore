@@ -25,12 +25,10 @@
                         {{ homepageMaterial.title }}
                     </h1>
 
-                    <div class="prose max-w-none" ref="contentRef">
-                        <template v-for="(part, index) in contentParts" :key="index">
-                            <span v-if="part.type === 'html'" v-html="part.content"></span>
-                            <GalleryRenderer v-else-if="part.type === 'gallery'" :gallery="part.data" />
-                        </template>
-                    </div>
+                    <ShortcodeRenderer
+                        :content="homepageMaterial.content"
+                        :forms="forms"
+                    />
 
                     <div v-if="showAuthor || showViews" class="mt-6 flex items-center justify-between text-sm text-gray-500">
                         <div class="flex items-center space-x-4">
@@ -53,10 +51,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, computed } from 'vue';
 import { Link, Head, usePage } from '@inertiajs/vue3';
-import axios from 'axios';
-import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
+import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 const page = usePage();
@@ -67,6 +64,10 @@ const props = defineProps({
     title: String,
     description: String,
     keywords: String,
+    forms: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const siteDescription = appSettings.site_description || '';
@@ -94,106 +95,6 @@ const formatDate = (date) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('ru-RU');
 };
-
-const contentParts = ref([]);
-const contentRef = ref(null);
-
-const parseContent = async () => {
-    const content = props.homepageMaterial?.content || '';
-    const regex = /\[gallery\s+id="(\d+)"(?:\s+name="([^"]*)")?\]/g;
-
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    while ((match = regex.exec(content)) !== null) {
-        if (match.index > lastIndex) {
-            parts.push({
-                type: 'html',
-                content: content.substring(lastIndex, match.index)
-            });
-        }
-
-        const galleryId = match[1];
-        try {
-            const response = await axios.get(`/api/galleries/${galleryId}`);
-            parts.push({
-                type: 'gallery',
-                data: response.data
-            });
-        } catch (error) {
-            console.error(`Gallery ${galleryId} not found`);
-            parts.push({
-                type: 'html',
-                content: `[gallery id="${galleryId}"]`
-            });
-        }
-
-        lastIndex = regex.lastIndex;
-    }
-
-    if (lastIndex < content.length) {
-        parts.push({
-            type: 'html',
-            content: content.substring(lastIndex)
-        });
-    }
-
-    contentParts.value = parts;
-
-    await nextTick();
-    setupImageLightbox();
-    setupImageLinks();
-};
-
-const setupImageLightbox = () => {
-    if (!contentRef.value) return;
-
-    const images = contentRef.value.querySelectorAll('img[data-lightbox="true"]:not(.gallery-renderer img)');
-    images.forEach((img) => {
-        img.removeEventListener('click', handleImageClick);
-        img.addEventListener('click', handleImageClick);
-        img.style.cursor = 'pointer';
-    });
-};
-
-const handleImageClick = (event) => {
-    const img = event.currentTarget;
-    if (img.closest('.gallery-renderer')) return;
-
-    if (window.__globalLightbox) {
-        window.__globalLightbox.open([
-            { src: img.src, alt: img.alt || 'Изображение' }
-        ], 0);
-    }
-};
-
-const setupImageLinks = () => {
-    if (!contentRef.value) return;
-
-    const links = contentRef.value.querySelectorAll('a[href$=".jpg"], a[href$=".jpeg"], a[href$=".png"], a[href$=".gif"], a[href$=".webp"], a[href$=".svg"]');
-    links.forEach((link) => {
-        link.removeEventListener('click', handleLinkClick);
-        link.addEventListener('click', handleLinkClick);
-        link.style.cursor = 'pointer';
-    });
-};
-
-const handleLinkClick = (event) => {
-    event.preventDefault();
-    const link = event.currentTarget;
-    const url = link.getAttribute('href');
-
-    if (url && window.__globalLightbox) {
-        window.__globalLightbox.open([
-            { src: url, alt: link.textContent || 'Изображение' }
-        ], 0);
-    }
-};
-
-onMounted(() => {
-    parseContent();
-});
 </script>
 
 <style scoped>

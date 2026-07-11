@@ -8,6 +8,7 @@ use App\Services\CategoryService;
 use App\Services\MenuService;
 use App\Services\SettingService;
 use App\Models\Material;
+use App\Models\Form;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,6 +32,19 @@ class MaterialController extends Controller
             ->with(['category', 'user'])
             ->first();
 
+        // Находим формы для главной
+        $forms = [];
+        if ($homepageMaterial && $homepageMaterial->content) {
+            $formIds = $this->extractFormIds($homepageMaterial->content);
+            if (!empty($formIds)) {
+                $forms = Form::whereIn('id', $formIds)
+                    ->where('status', true)
+                    ->get()
+                    ->keyBy('id')
+                    ->toArray();
+            }
+        }
+
         $settings = $this->settingService->getAllSettings();
         $siteName = $settings['site_name'] ?? 'GavrCore CMS';
         $siteDescription = $settings['site_description'] ?? '';
@@ -39,6 +53,7 @@ class MaterialController extends Controller
 
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
+            'forms' => $forms, // <--- ДОБАВЛЕНО
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $siteName,
             'description' => $siteDescription,
@@ -57,6 +72,18 @@ class MaterialController extends Controller
 
         $material->increment('views');
 
+        // Находим ID форм в контенте
+        $formIds = $this->extractFormIds($material->content);
+        $forms = [];
+
+        if (!empty($formIds)) {
+            $forms = Form::whereIn('id', $formIds)
+                ->where('status', true)
+                ->get()
+                ->keyBy('id')
+                ->toArray();
+        }
+
         $settings = $this->settingService->getAllSettings();
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
@@ -64,6 +91,7 @@ class MaterialController extends Controller
 
         return Inertia::render('Material/Show', [
             'material' => $material,
+            'forms' => $forms,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $material->title,
             'description' => $siteDescription,
@@ -137,5 +165,18 @@ class MaterialController extends Controller
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
         ]);
+    }
+
+    /**
+     * Извлекает ID форм из контента по шорткоду [form id="X"]
+     */
+    private function extractFormIds(?string $content): array
+    {
+        if (!$content) {
+            return [];
+        }
+
+        preg_match_all('/\[form id="(\d+)"\]/', $content, $matches);
+        return array_map('intval', $matches[1] ?? []);
     }
 }

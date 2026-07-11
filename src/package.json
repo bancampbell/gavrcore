@@ -33,6 +33,7 @@
         "@tiptap/vue-3": "^3.23.6",
         "axios": "^1.16.1",
         "codemirror": "^6.0.2",
-        "prettier": "^3.9.4"
+        "prettier": "^3.9.4",
+        "vuedraggable": "^4.1.0"
     }
 }

@@ -1,0 +1,464 @@
+/* ========================================
+   ФОРМЫ ДЛЯ САЙТА
+   ======================================== */
+
+/* ----- Обертка формы ----- */
+.form-wrapper {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 24px 28px;
+    margin: 20px auto;
+    max-width: 560px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-wrapper:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.form-wrapper h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* ----- Группа полей ----- */
+.form-group {
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 3px;
+}
+
+.form-group label .required {
+    color: #e11d48;
+    margin-left: 2px;
+}
+
+/* ----- Поля ввода ----- */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group input[type="url"],
+.form-group input[type="color"],
+.form-group input[type="time"],
+.form-group input[type="datetime-local"],
+.form-group input[type="range"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 7px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #1e293b;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+}
+
+.form-group input::placeholder {
+    color: #94a3b8;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3071a9;
+    box-shadow: 0 0 0 3px rgba(48, 113, 169, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* ----- Color input ----- */
+.form-group input[type="color"] {
+    padding: 4px;
+    height: 44px;
+    cursor: pointer;
+}
+
+/* ----- Range input ----- */
+.form-group input[type="range"] {
+    padding: 0;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #d1d5db;
+    border-radius: 3px;
+    outline: none;
+    border: none;
+}
+
+.form-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3071a9;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.form-group input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3071a9;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ----- Rating (звезды) ----- */
+.form-group .rating-group {
+    display: flex;
+    gap: 4px;
+}
+
+.form-group .rating-group .rating-star {
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.form-group .rating-group .rating-star:hover {
+    transform: scale(1.15);
+}
+
+.form-group .rating-group .rating-star.active {
+    color: #f59e0b;
+}
+
+.form-group .rating-group .rating-star.inactive {
+    color: #d1d5db;
+}
+
+/* ----- Toggle (переключатель) ----- */
+.form-group .toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-group .toggle-group .admin-toggle {
+    display: inline-block !important;
+    position: relative !important;
+    width: 40px !important;
+    height: 20px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    flex-shrink: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.form-group .toggle-group .admin-toggle-on {
+    background: #3071a9 !important;
+}
+
+.form-group .toggle-group .admin-toggle-off {
+    background: #cbd5e1 !important;
+}
+
+.form-group .toggle-group .admin-toggle-slider {
+    position: absolute !important;
+    left: 2px !important;
+    top: 2px !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: white !important;
+    border-radius: 50% !important;
+    transition: transform 0.2s ease !important;
+}
+
+.form-group .toggle-group .admin-toggle-slider-on {
+    transform: translateX(20px) !important;
+}
+
+.form-group .toggle-group .admin-toggle-slider-off {
+    transform: translateX(0) !important;
+}
+
+.form-group .toggle-group .toggle-label {
+    font-size: 14px;
+    color: #374151;
+}
+
+/* ----- Чекбоксы и радио ----- */
+.form-group .checkbox-group,
+.form-group .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.form-group .checkbox-group label,
+.form-group .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 400;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+}
+
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #3071a9;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* ----- Файл ----- */
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.form-group input[type="file"]::file-selector-button {
+    padding: 6px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #374151;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-right: 12px;
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+/* ----- Кнопка отправки ----- */
+.form-submit-btn {
+    width: auto;
+    min-width: 160px;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 6px;
+    background: #3071a9;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    margin-top: 4px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-submit-btn:hover {
+    background: #265a8a;
+}
+
+.form-submit-btn:active {
+    transform: scale(0.98);
+}
+
+.form-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ----- Сообщения ----- */
+.form-success {
+    margin-top: 16px;
+    padding: 10px 16px;
+    background: #f0fdf4;
+    border: 1px solid #d1fae5;
+    border-radius: 6px;
+    color: #065f46;
+    font-size: 14px;
+}
+
+.form-error {
+    margin-top: 16px;
+    padding: 10px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    color: #991b1b;
+    font-size: 14px;
+}
+
+/* ========================================
+   ЦЕНТРИРОВАНИЕ ФОРМЫ
+   ======================================== */
+
+/* Центрирование через любой родительский элемент с text-align: center */
+[style*="text-align: center"] .form-wrapper,
+[style*="text-align:center"] .form-wrapper {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+}
+
+/* Центрирование через тег center */
+center .form-wrapper {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Центрирование через класс text-center */
+.text-center .form-wrapper {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Центрирование через пропс centered */
+.form-wrapper.form-centered {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* ----- Обертка для центрирования через шорткод ----- */
+.form-centered-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.form-centered-wrapper .form-wrapper {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* ----- Кастомные классы через шорткод ----- */
+.form-wrapper.form-compact {
+    padding: 16px 20px;
+    max-width: 400px;
+}
+
+.form-wrapper.form-wide {
+    max-width: 100%;
+    padding: 32px 40px;
+}
+
+.form-wrapper.form-noborder {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.form-wrapper.form-shadow {
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ========================================
+   АДАПТИВ
+   ======================================== */
+
+@media (max-width: 640px) {
+    .form-wrapper {
+        padding: 18px 20px;
+        margin: 14px 0;
+        max-width: 100%;
+    }
+
+    .form-wrapper h3 {
+        font-size: 15px;
+        margin-bottom: 14px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group input[type="number"],
+    .form-group input[type="date"],
+    .form-group input[type="url"],
+    .form-group input[type="color"],
+    .form-group input[type="time"],
+    .form-group input[type="datetime-local"],
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px;
+        padding: 8px 12px;
+    }
+
+    .form-group .rating-group .rating-star {
+        font-size: 32px;
+    }
+
+    .form-submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Центрирование формы через flex обертку */
+.form-container {
+    display: block;
+    width: 100%;
+}
+
+.form-container[style*="flex"] .form-wrapper {
+    margin: 20px auto !important;
+}
+
+/* Если контейнер имеет центрирование */
+.form-container[style*="flex"] .form-wrapper,
+.form-container[style*="justify-content: center"] .form-wrapper {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    display: block !important;
+}
+
+/* ========================================
+   ПРИНУДИТЕЛЬНОЕ ЦЕНТРИРОВАНИЕ ФОРМЫ
+   ======================================== */
+
+/* Принудительное центрирование через родителя с text-align */
+p[style*="text-align: center"] > .form-container,
+p[style*="text-align: center"] .form-wrapper,
+div[style*="text-align: center"] .form-wrapper,
+[style*="text-align: center"] .form-wrapper {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    float: none !important;
+    clear: both !important;
+    max-width: 560px !important;
+}
+
+/* Если форма внутри flex контейнера */
+.form-container[style*="flex"] {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}

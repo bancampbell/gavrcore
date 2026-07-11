@@ -1,8 +1,9 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-slate-100 to-gray-200 flex items-center justify-center px-4">
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-100 flex items-center justify-center px-4">
         <div class="w-full max-w-md">
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-8 text-center">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <!-- Шапка с логотипом -->
+                <div class="bg-gradient-to-r from-[#294469] to-[#3688d1] px-6 py-8 text-center">
                     <div class="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 4 4 4h8c2.5 0 4-2 4-4V7c0-2-1.5-4-4-4H8c-2.5 0-4 2-4 4z"></path>
@@ -10,9 +11,10 @@
                         </svg>
                     </div>
                     <h1 class="text-2xl font-bold text-white">GavrCore CMS</h1>
-                    <p class="text-indigo-200 text-sm mt-1">Вход в панель управления</p>
+                    <p class="text-blue-200 text-sm mt-1">Вход в панель управления</p>
                 </div>
 
+                <!-- Форма -->
                 <div class="px-6 py-8">
                     <form @submit.prevent="login" class="space-y-5">
                         <div>
@@ -26,10 +28,11 @@
                                 <input
                                     v-model="form.email"
                                     type="email"
-                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3688d1] focus:border-transparent transition-all duration-200"
                                     placeholder="admin@example.com"
                                 />
                             </div>
+                            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
                         </div>
 
                         <div>
@@ -43,7 +46,7 @@
                                 <input
                                     v-model="form.password"
                                     :type="showPassword ? 'text' : 'password'"
-                                    class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                                    class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3688d1] focus:border-transparent transition-all duration-200"
                                     placeholder="••••••••"
                                 />
                                 <button
@@ -60,12 +63,13 @@
                                     </svg>
                                 </button>
                             </div>
+                            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
                         </div>
 
                         <button
                             type="submit"
                             :disabled="loading"
-                            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="w-full bg-gradient-to-r from-[#294469] to-[#3688d1] text-white py-2.5 rounded-xl font-medium hover:from-[#1e3a5f] hover:to-[#2a6d9e] focus:outline-none focus:ring-2 focus:ring-[#3688d1] focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <span v-if="loading" class="inline-block animate-spin mr-2">⏳</span>
                             {{ loading ? 'Вход...' : 'Войти' }}
@@ -83,9 +87,8 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
-import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 
 const form = ref({
@@ -96,19 +99,33 @@ const form = ref({
 const showPassword = ref(false);
 const loading = ref(false);
 const error = ref('');
+const errors = ref<{ email?: string; password?: string }>({});
 
 const login = async () => {
     loading.value = true;
     error.value = '';
+    errors.value = {};
 
     try {
-        const response = await axios.post('/api/login', form.value);
-        const token = response.data.data.access_token;
-        localStorage.setItem('token', token);
-        router.visit('/admin/dashboard');
-    } catch (err) {
+        await router.post('/login', form.value, {
+            preserveState: true,
+            onError: (err) => {
+                if (err.email) {
+                    errors.value.email = err.email;
+                }
+                if (err.password) {
+                    errors.value.password = err.password;
+                }
+                if (err.message) {
+                    error.value = err.message;
+                }
+            },
+            onFinish: () => {
+                loading.value = false;
+            },
+        });
+    } catch (err: any) {
         error.value = err.response?.data?.message || 'Ошибка входа';
-    } finally {
         loading.value = false;
     }
 };

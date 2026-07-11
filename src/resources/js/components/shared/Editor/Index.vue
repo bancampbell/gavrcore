@@ -12,6 +12,7 @@
             :open-gallery-modal="handleOpenGalleryModal"
             :toggle-html="toggleHtml"
             :open-file-manager="openFileManager"
+            :open-form-modal="openFormModal"
         />
 
         <div v-show="!showHtml" class="flex-1 overflow-auto">
@@ -29,6 +30,20 @@
                 </button>
             </div>
         </div>
+
+        <!-- Модалка выбора галереи -->
+        <GallerySelectModal
+            :show="showGalleryModal"
+            @close="showGalleryModal = false"
+            @select="insertGallery"
+        />
+
+        <!-- Модалка выбора формы -->
+        <FormSelectModal
+            :show="showFormModal"
+            @close="showFormModal = false"
+            @select="insertForm"
+        />
     </div>
 </template>
 
@@ -44,13 +59,15 @@ import Toolbar from './Toolbar.vue';
 import { ResizableImage } from './extensions';
 import { useHtmlMode, useLinkHandlers, useImageHandlers } from './composables';
 import type { EditorProps, EditorEmits } from './types/editor';
+import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
+import FormSelectModal from '@/components/shared/FormSelectModal.vue';
 
 // CodeMirror
 import { EditorView, basicSetup } from 'codemirror';
 import { html } from '@codemirror/lang-html';
 import { EditorView as EditorViewExt } from '@codemirror/view';
 
-// Prettier для форматирования HTML
+// Prettier
 import { format } from 'prettier/standalone';
 import parserHtml from 'prettier/plugins/html';
 
@@ -65,6 +82,49 @@ let editor: Editor | null = null;
 let codeEditorView: EditorView | null = null;
 
 const editorRef = ref(editor) as VueRef<Editor | null>;
+
+// Состояния модалок
+const showGalleryModal = ref(false);
+const showFormModal = ref(false);
+
+// Открытие модалки галереи
+const handleOpenGalleryModal = () => {
+    showGalleryModal.value = true;
+};
+
+// Вставка галереи
+const insertGallery = (gallery: any) => {
+    if (!editor) return;
+    const shortcode = `[gallery id="${gallery.id}" name="${gallery.name || gallery.title}"]`;
+    editor.commands.insertContent(shortcode);
+    showGalleryModal.value = false;
+};
+
+// Открытие модалки формы
+const openFormModal = () => {
+    showFormModal.value = true;
+};
+
+// Вставка формы
+const insertForm = (form: any) => {
+    if (!editor) return;
+    const shortcode = `[form id="${form.id}"]`;
+    editor.commands.insertContent(shortcode);
+    showFormModal.value = false;
+};
+
+// Вставка формы (старый метод для совместимости)
+const insertFormShortcode = (formId: number) => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    const hasSelection = from !== to;
+    if (hasSelection) {
+        const selectedText = editor.state.doc.textBetween(from, to);
+        editor.commands.insertContent(`<div style="text-align: center;">${selectedText}</div>`);
+    } else {
+        editor.commands.insertContent(`[form id="${formId}"]`);
+    }
+};
 
 const { toggleHtml, applyHtml, cancelHtml } = useHtmlMode(
     editorRef,
@@ -94,7 +154,6 @@ watch(editor, (newEditor) => {
     editorRef.value = newEditor;
 });
 
-// При открытии HTML режима создаем CodeMirror с форматированием
 watch(showHtml, async (newVal) => {
     if (newVal) {
         await nextTick();
@@ -136,7 +195,6 @@ watch(showHtml, async (newVal) => {
     }
 });
 
-// Синхронизация при изменении htmlContent извне
 watch(htmlContent, (newVal) => {
     if (codeEditorView && newVal !== codeEditorView.state.doc.toString()) {
         const transaction = codeEditorView.state.update({
@@ -166,10 +224,6 @@ const handleOpenLinkModal = () => {
     } else {
         openLinkModal('');
     }
-};
-
-const handleOpenGalleryModal = () => {
-    emit('open-gallery-modal');
 };
 
 const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
@@ -205,7 +259,8 @@ defineExpose({
     setLinkOnSelection,
     insertContent,
     updateImage,
-    updateExistingLink
+    updateExistingLink,
+    insertFormShortcode,
 });
 
 onMounted(async () => {
@@ -326,7 +381,6 @@ onBeforeUnmount(() => {
     margin-bottom: 0.5rem;
 }
 
-/* CodeMirror стили — светлая тема */
 .cm-editor {
     height: 100% !important;
     border-radius: 0.5rem !important;
@@ -337,39 +391,25 @@ onBeforeUnmount(() => {
 .cm-scroller {
     overflow: auto !important;
 }
-
-/* Светлая тема для подсветки */
 .cm-editor .cm-content {
     color: #24292e !important;
     font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
 }
-
-/* HTML теги — синие */
 .cm-editor .ͼ1 .cm-tag {
     color: #0550ae !important;
 }
-
-/* Атрибуты — красные */
 .cm-editor .ͼ1 .cm-attribute {
     color: #8250df !important;
 }
-
-/* Значения атрибутов — зеленые */
 .cm-editor .ͼ1 .cm-string {
     color: #0a3069 !important;
 }
-
-/* Комментарии — серые */
 .cm-editor .ͼ1 .cm-comment {
     color: #6e7781 !important;
 }
-
-/* Ключевые слова — синие */
 .cm-editor .ͼ1 .cm-keyword {
     color: #0550ae !important;
 }
-
-/* Операторы — черные */
 .cm-editor .ͼ1 .cm-operator {
     color: #24292e !important;
 }

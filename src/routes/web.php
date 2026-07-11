@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\FormController;
+use App\Http\Controllers\Admin\FormSubmissionController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Web\MaterialController as WebMaterialController;
 use App\Models\MenuItem;
 use App\Models\MenuType;
@@ -26,7 +29,9 @@ Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
 // Материалы с красивыми URL (без /material/)
 Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login).+');
 
+// ===== АУТЕНТИФИКАЦИЯ =====
 Route::get('/admin/login', fn () => Inertia::render('Auth/Login'))->name('login');
+Route::post('/login', [LoginController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -120,7 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('types/{id}', [MenuTypeController::class, 'show'])->name('types.show');
         Route::put('types/{id}', [MenuTypeController::class, 'update'])->name('types.update');
         Route::delete('types/{id}', [MenuTypeController::class, 'destroy'])->name('types.destroy');
-        Route::post('types/{id}/status', [MenuTypeController::class, 'updateStatus'])->name('types.status'); // <--- ДОБАВЛЕНО
+        Route::post('types/{id}/status', [MenuTypeController::class, 'updateStatus'])->name('types.status');
         Route::post('types/ordering/update', [MenuTypeController::class, 'updateOrdering'])->name('types.ordering');
 
         // Menu Items
@@ -178,4 +183,32 @@ Route::middleware('auth:sanctum')->group(function () {
     // Themes
     Route::get('/admin/themes', [ThemeController::class, 'index'])->name('admin.themes.index');
     Route::post('/admin/themes', [ThemeController::class, 'update'])->name('admin.themes.update');
+
+    // ========================================
+    // FORMS
+    // ========================================
+    Route::prefix('admin/forms')->name('admin.forms.')->group(function () {
+        Route::get('/', [FormController::class, 'index'])->name('index');
+        Route::get('/create', [FormController::class, 'create'])->name('create');
+        Route::post('/', [FormController::class, 'store'])->name('store');
+        Route::get('/{form}/edit', [FormController::class, 'edit'])->name('edit');
+        Route::put('/{form}', [FormController::class, 'update'])->name('update');
+        Route::put('/{form}/status', [FormController::class, 'updateStatus'])->name('status');
+        Route::delete('/{form}', [FormController::class, 'destroy'])->name('destroy');
+        Route::get('/list', [FormController::class, 'list'])->name('list');
+
+        Route::get('/{form}/builder', [FormController::class, 'builder'])->name('builder');
+        Route::put('/{form}/fields', [FormController::class, 'updateFields'])->name('fields.update');
+    });
+
+    // ========================================
+    // FORM SUBMISSIONS (Обратная связь)
+    // ========================================
+    Route::prefix('admin/submissions')->name('admin.submissions.')->group(function () {
+        Route::get('/', [FormSubmissionController::class, 'index'])->name('index');
+        Route::get('/{id}', [FormSubmissionController::class, 'show'])->name('show');
+        Route::delete('/{id}', [FormSubmissionController::class, 'destroy'])->name('destroy');
+        Route::post('/mark-read', [FormSubmissionController::class, 'markAsReadBulk'])->name('mark-read');
+        Route::post('/destroy-bulk', [FormSubmissionController::class, 'destroyBulk'])->name('destroy-bulk');
+    });
 });
