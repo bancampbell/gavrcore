@@ -59,6 +59,7 @@ class FormController extends Controller
         ];
         $data['status'] = $data['status'] ?? true;
         $data['is_dynamic'] = $data['is_dynamic'] ?? false;
+        $data['notification_emails'] = $data['notification_emails'] ?? [];
 
         $form = $this->formService->create($data);
 
@@ -86,12 +87,22 @@ class FormController extends Controller
             $data['alias'] = Str::slug($data['title']);
         }
 
-        // Убираем пустые значения
-        $data = array_filter($data, function ($value) {
-            return $value !== null && $value !== '';
-        });
+        // Обрабатываем notification_emails (может быть пустым массивом)
+        if (isset($data['notification_emails'])) {
+            $data['notification_emails'] = is_array($data['notification_emails'])
+                ? $data['notification_emails']
+                : [];
+        }
 
-        $form->update($data);
+        // Убираем пустые значения, но сохраняем notification_emails если он пустой массив
+        $filteredData = array_filter($data, function ($value, $key) {
+            if ($key === 'notification_emails') {
+                return true; // Всегда сохраняем, даже если пустой массив
+            }
+            return $value !== null && $value !== '';
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $form->update($filteredData);
 
         return response()->json([
             'message' => 'Форма обновлена',

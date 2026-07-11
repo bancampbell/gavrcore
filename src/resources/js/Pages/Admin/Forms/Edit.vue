@@ -80,6 +80,21 @@
                             />
                         </div>
 
+                        <!-- Уведомления -->
+                        <div class="pt-4 border-t border-slate-200">
+                            <label class="admin-form-label">Email для уведомлений</label>
+                            <input
+                                v-model="form.notificationEmailsInput"
+                                type="text"
+                                class="admin-form-input w-full"
+                                placeholder="email@example.com, email2@example.com"
+                            />
+                            <p class="text-xs text-slate-400 mt-1">
+                                Укажите один или несколько email-адресов через запятую.
+                                Письма будут отправляться при каждом новом обращении.
+                            </p>
+                        </div>
+
                         <!-- Статус -->
                         <div>
                             <label class="admin-form-label">Статус</label>
@@ -112,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -125,6 +140,7 @@ interface Form {
     description: string | null;
     status: boolean;
     fields: any[];
+    notification_emails?: string[] | null;
 }
 
 const props = defineProps<{
@@ -136,15 +152,26 @@ const props = defineProps<{
 const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 
+// Преобразуем массив email(ов) в строку для поля ввода
+const notificationEmailsString = ref('');
+
 const form = ref({
     id: props.form.id,
     title: props.form.title,
     alias: props.form.alias || '',
     description: props.form.description || '',
     status: props.form.status,
+    notificationEmailsInput: '',
 });
 
 const isAliasManuallyEdited = ref(!!props.form.alias);
+
+// При монтировании преобразуем массив в строку
+onMounted(() => {
+    if (props.form.notification_emails && Array.isArray(props.form.notification_emails)) {
+        form.value.notificationEmailsInput = props.form.notification_emails.join(', ');
+    }
+});
 
 const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
     notification.value = { show: true, message, type };
@@ -220,6 +247,17 @@ const save = async () => {
             payload.description = form.value.description.trim();
         }
 
+        // Обработка email(ов) для уведомлений
+        if (form.value.notificationEmailsInput && form.value.notificationEmailsInput.trim() !== '') {
+            const emails = form.value.notificationEmailsInput
+                .split(',')
+                .map(email => email.trim())
+                .filter(email => email !== '');
+            payload.notification_emails = emails;
+        } else {
+            payload.notification_emails = [];
+        }
+
         await axios.put(`/admin/forms/${form.value.id}`, payload);
         showNotification('Форма обновлена', 'success');
     } catch (error: any) {
@@ -249,6 +287,17 @@ const saveAndClose = async () => {
 
         if (form.value.description && form.value.description.trim() !== '') {
             payload.description = form.value.description.trim();
+        }
+
+        // Обработка email(ов) для уведомлений
+        if (form.value.notificationEmailsInput && form.value.notificationEmailsInput.trim() !== '') {
+            const emails = form.value.notificationEmailsInput
+                .split(',')
+                .map(email => email.trim())
+                .filter(email => email !== '');
+            payload.notification_emails = emails;
+        } else {
+            payload.notification_emails = [];
         }
 
         await axios.put(`/admin/forms/${form.value.id}`, payload);

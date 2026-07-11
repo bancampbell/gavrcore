@@ -21,6 +21,8 @@ class FormStoreRequest extends FormRequest
             'is_dynamic' => 'nullable|boolean',
             'fields' => 'nullable|array',
             'settings' => 'nullable|array',
+            'notification_emails' => 'nullable|array',
+            'notification_emails.*' => 'nullable|email',
         ];
     }
 }

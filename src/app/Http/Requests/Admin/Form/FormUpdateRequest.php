@@ -23,6 +23,8 @@ class FormUpdateRequest extends FormRequest
             'is_dynamic' => 'nullable|boolean',
             'fields' => 'nullable|array',
             'settings' => 'nullable|array',
+            'notification_emails' => 'nullable|array',
+            'notification_emails.*' => 'nullable|email',
         ];
     }
 
@@ -31,6 +33,7 @@ class FormUpdateRequest extends FormRequest
         return [
             'title.required' => 'Название обязательно для заполнения',
             'alias.unique' => 'Такой алиас уже существует',
+            'notification_emails.*.email' => 'Один из email-адресов имеет неверный формат',
         ];
     }
 }

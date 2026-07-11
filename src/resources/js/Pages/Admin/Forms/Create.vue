@@ -74,6 +74,21 @@
                             />
                         </div>
 
+                        <!-- Email для уведомлений -->
+                        <div>
+                            <label class="admin-form-label">Email для уведомлений</label>
+                            <input
+                                v-model="form.notificationEmailsInput"
+                                type="text"
+                                class="admin-form-input w-full"
+                                placeholder="email@example.com, email2@example.com"
+                            />
+                            <p class="text-xs text-slate-400 mt-1">
+                                Укажите один или несколько email-адресов через запятую.
+                                Письма будут отправляться при каждом новом обращении.
+                            </p>
+                        </div>
+
                         <!-- Статус -->
                         <div>
                             <label class="admin-form-label">Статус</label>
@@ -114,6 +129,7 @@ const form = ref({
     alias: '',
     description: '',
     status: true,
+    notificationEmailsInput: '',
 });
 
 const isAliasManuallyEdited = ref(false);
@@ -175,11 +191,44 @@ const save = async () => {
 
     loading.value = true;
     try {
-        const response = await axios.post('/admin/forms', form.value);
+        const payload: Record<string, any> = {
+            title: form.value.title,
+            status: form.value.status,
+        };
+
+        if (form.value.alias && form.value.alias.trim() !== '') {
+            payload.alias = form.value.alias.trim();
+        }
+
+        if (form.value.description && form.value.description.trim() !== '') {
+            payload.description = form.value.description.trim();
+        }
+
+        // Обработка email(ов) для уведомлений
+        if (form.value.notificationEmailsInput && form.value.notificationEmailsInput.trim() !== '') {
+            const emails = form.value.notificationEmailsInput
+                .split(',')
+                .map(email => email.trim())
+                .filter(email => email !== '');
+            payload.notification_emails = emails;
+        } else {
+            payload.notification_emails = [];
+        }
+
+        const response = await axios.post('/admin/forms', payload);
         showNotification('Форма создана', 'success');
-        form.value = { title: '', alias: '', description: '', status: true };
+
+        // Очищаем форму
+        form.value = {
+            title: '',
+            alias: '',
+            description: '',
+            status: true,
+            notificationEmailsInput: '',
+        };
         isAliasManuallyEdited.value = false;
     } catch (error: any) {
+        console.error('Save error:', error.response?.data || error.message);
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
         loading.value = false;
@@ -194,9 +243,34 @@ const saveAndClose = async () => {
 
     loading.value = true;
     try {
-        await axios.post('/admin/forms', form.value);
+        const payload: Record<string, any> = {
+            title: form.value.title,
+            status: form.value.status,
+        };
+
+        if (form.value.alias && form.value.alias.trim() !== '') {
+            payload.alias = form.value.alias.trim();
+        }
+
+        if (form.value.description && form.value.description.trim() !== '') {
+            payload.description = form.value.description.trim();
+        }
+
+        // Обработка email(ов) для уведомлений
+        if (form.value.notificationEmailsInput && form.value.notificationEmailsInput.trim() !== '') {
+            const emails = form.value.notificationEmailsInput
+                .split(',')
+                .map(email => email.trim())
+                .filter(email => email !== '');
+            payload.notification_emails = emails;
+        } else {
+            payload.notification_emails = [];
+        }
+
+        await axios.post('/admin/forms', payload);
         router.visit('/admin/forms?message=Форма+создана');
     } catch (error: any) {
+        console.error('Save and close error:', error.response?.data || error.message);
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
         loading.value = false;
     }

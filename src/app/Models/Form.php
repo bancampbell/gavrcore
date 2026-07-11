@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property array|null $fields
  * @property array|null $settings
+ * @property array|null $notification_emails
  * @property bool $status
  * @property bool $is_dynamic
  * @property int $submissions_count
@@ -32,6 +33,7 @@ class Form extends Model
         'description',
         'fields',
         'settings',
+        'notification_emails',
         'status',
         'is_dynamic',
         'submissions_count',
@@ -40,6 +42,7 @@ class Form extends Model
     protected $casts = [
         'fields' => 'array',
         'settings' => 'array',
+        'notification_emails' => 'array',
         'status' => 'boolean',
         'is_dynamic' => 'boolean',
         'submissions_count' => 'integer',

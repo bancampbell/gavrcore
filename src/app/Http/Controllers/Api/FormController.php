@@ -5,11 +5,17 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Form;
 use App\Models\FormSubmission;
+use App\Services\FormSubmissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class FormController extends Controller
 {
+    public function __construct(
+        protected FormSubmissionService $submissionService
+    ) {
+    }
+
     public function show($id)
     {
         $form = Form::findOrFail($id);
@@ -59,10 +65,14 @@ class FormController extends Controller
                 'user_agent' => $request->userAgent(),
                 'referer' => $request->header('referer'),
             ],
+            'read_at' => null,
         ]);
 
         // Увеличиваем счетчик отправок
         $form->increment('submissions_count');
+
+        // Отправляем уведомление (если настроены email(ы))
+        $this->submissionService->sendNotification($submission);
 
         return response()->json([
             'message' => 'Форма успешно отправлена',
