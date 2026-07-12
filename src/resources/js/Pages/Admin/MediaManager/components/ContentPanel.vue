@@ -79,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import FileItem from './FileItem.vue';
 import type { MediaItem } from '../types';
 
@@ -126,26 +126,57 @@ const onFolderDoubleClick = (item: MediaItem) => emit('open-folder', item);
 const scrollToFile = (filePath: string) => {
     if (!scrollContainer.value) return;
 
-    const elements = scrollContainer.value.querySelectorAll('[data-file-path]');
-    let targetElement: HTMLElement | null = null;
+    nextTick(() => {
+        const elements = scrollContainer.value?.querySelectorAll('[data-file-path]');
+        if (!elements) return;
 
-    for (let i = 0; i < elements.length; i++) {
-        const el = elements[i] as HTMLElement;
-        if (el.getAttribute('data-file-path') === filePath) {
-            targetElement = el;
-            break;
+        let targetElement: HTMLElement | null = null;
+
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i] as HTMLElement;
+            if (el.getAttribute('data-file-path') === filePath) {
+                targetElement = el;
+                break;
+            }
         }
-    }
 
-    if (targetElement) {
-        targetElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
-    }
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            targetElement.classList.add('highlight-file');
+
+            setTimeout(() => {
+                targetElement?.classList.remove('highlight-file');
+            }, 2000);
+        }
+    });
 };
 
 defineExpose({
     scrollToFile
 });
 </script>
+
+<style scoped>
+.highlight-file {
+    animation: highlightPulse 2s ease;
+}
+
+@keyframes highlightPulse {
+    0% {
+        background-color: rgba(59, 130, 246, 0.15);
+        border-radius: 4px;
+    }
+    50% {
+        background-color: rgba(59, 130, 246, 0.3);
+        border-radius: 4px;
+    }
+    100% {
+        background-color: transparent;
+        border-radius: 4px;
+    }
+}
+</style>

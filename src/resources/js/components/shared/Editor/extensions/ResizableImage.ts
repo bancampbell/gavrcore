@@ -1,5 +1,39 @@
 import { Image } from '@tiptap/extension-image';
 
+type Direction = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e';
+
+const HANDLE_SIZE = 14;
+const MIN_SIZE = 50;
+const HANDLE_OFFSET = -7;
+
+const HANDLES: { direction: Direction; cursor: string; position: Record<string, string> }[] = [
+    { direction: 'nw', cursor: 'nw-resize', position: { top: `${HANDLE_OFFSET}px`, left: `${HANDLE_OFFSET}px` } },
+    { direction: 'ne', cursor: 'ne-resize', position: { top: `${HANDLE_OFFSET}px`, right: `${HANDLE_OFFSET}px` } },
+    { direction: 'sw', cursor: 'sw-resize', position: { bottom: `${HANDLE_OFFSET}px`, left: `${HANDLE_OFFSET}px` } },
+    { direction: 'se', cursor: 'se-resize', position: { bottom: `${HANDLE_OFFSET}px`, right: `${HANDLE_OFFSET}px` } },
+    { direction: 'n', cursor: 'n-resize', position: { top: `${HANDLE_OFFSET}px`, left: '50%', transform: 'translateX(-50%)' } },
+    { direction: 's', cursor: 's-resize', position: { bottom: `${HANDLE_OFFSET}px`, left: '50%', transform: 'translateX(-50%)' } },
+    { direction: 'w', cursor: 'w-resize', position: { left: `${HANDLE_OFFSET}px`, top: '50%', transform: 'translateY(-50%)' } },
+    { direction: 'e', cursor: 'e-resize', position: { right: `${HANDLE_OFFSET}px`, top: '50%', transform: 'translateY(-50%)' } },
+];
+
+const alignStyles: Record<string, string> = {
+    left: 'margin-right: auto;',
+    center: 'margin-left: auto; margin-right: auto;',
+    right: 'margin-left: auto;',
+};
+
+function getAlign(style: string): string | null {
+    if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) return 'center';
+    if (style.includes('margin-right: auto')) return 'left';
+    if (style.includes('margin-left: auto')) return 'right';
+    return null;
+}
+
+function getAlignStyle(align: string): string {
+    return alignStyles[align] || '';
+}
+
 export const ResizableImage = Image.extend({
     addAttributes() {
         return {
@@ -8,27 +42,26 @@ export const ResizableImage = Image.extend({
             title: { default: null },
             width: {
                 default: null,
-                parseHTML: (element: HTMLElement) => element.getAttribute('width'),
-                renderHTML: (attributes: any) => {
-                    if (!attributes.width) return {};
-                    return { width: attributes.width };
-                },
+                parseHTML: (el: HTMLElement) => el.getAttribute('width'),
+                renderHTML: (attrs: any) => attrs.width ? { width: attrs.width } : {},
             },
             height: {
                 default: null,
-                parseHTML: (element: HTMLElement) => element.getAttribute('height'),
-                renderHTML: (attributes: any) => {
-                    if (!attributes.height) return {};
-                    return { height: attributes.height };
+                parseHTML: (el: HTMLElement) => el.getAttribute('height'),
+                renderHTML: (attrs: any) => attrs.height ? { height: attrs.height } : {},
+            },
+            align: {
+                default: null,
+                parseHTML: (el: HTMLElement) => getAlign(el.getAttribute('style') || ''),
+                renderHTML: (attrs: any) => {
+                    if (!attrs.align) return {};
+                    return { style: `display: block; ${getAlignStyle(attrs.align)}` };
                 },
             },
-            // Добавляем атрибут data-lightbox для всех изображений
             'data-lightbox': {
                 default: 'true',
-                parseHTML: (element: HTMLElement) => element.getAttribute('data-lightbox'),
-                renderHTML: () => {
-                    return { 'data-lightbox': 'true' };
-                },
+                parseHTML: (el: HTMLElement) => el.getAttribute('data-lightbox'),
+                renderHTML: () => ({ 'data-lightbox': 'true' }),
             },
         };
     },
@@ -38,6 +71,11 @@ export const ResizableImage = Image.extend({
             const container = document.createElement('div');
             container.style.position = 'relative';
             container.style.display = 'inline-block';
+            container.style.maxWidth = '100%';
+            container.style.border = '2px solid transparent';
+            container.style.borderRadius = '4px';
+            container.style.transition = 'border-color 0.2s';
+            container.style.userSelect = 'none';
 
             const img = document.createElement('img');
             img.src = node.attrs.src;
@@ -45,80 +83,230 @@ export const ResizableImage = Image.extend({
             img.title = node.attrs.title || '';
             img.style.maxWidth = '100%';
             img.style.height = 'auto';
+            img.style.display = 'block';
+            img.style.pointerEvents = 'auto'; // ВКЛЮЧАЕМ, ЧТОБЫ РАБОТАЛИ СОБЫТИЯ
             img.setAttribute('data-lightbox', 'true');
 
             if (node.attrs.width) img.style.width = `${node.attrs.width}px`;
             if (node.attrs.height) img.style.height = `${node.attrs.height}px`;
+            if (node.attrs.align) {
+                img.style.cssText += `display: block; ${getAlignStyle(node.attrs.align)}`;
+            }
 
-            const resizeHandle = document.createElement('div');
-            resizeHandle.style.position = 'absolute';
-            resizeHandle.style.width = '12px';
-            resizeHandle.style.height = '12px';
-            resizeHandle.style.backgroundColor = '#3b82f6';
-            resizeHandle.style.borderRadius = '50%';
-            resizeHandle.style.border = '2px solid white';
-            resizeHandle.style.cursor = 'nw-resize';
-            resizeHandle.style.zIndex = '10';
-            resizeHandle.style.opacity = '0';
-            resizeHandle.style.transition = 'opacity 0.2s';
-
-            const updateHandlePosition = () => {
-                const imgRect = img.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                resizeHandle.style.right = `${containerRect.right - imgRect.right}px`;
-                resizeHandle.style.bottom = `${containerRect.bottom - imgRect.bottom}px`;
-            };
-
-            container.addEventListener('mouseenter', () => {
-                resizeHandle.style.opacity = '1';
-                updateHandlePosition();
-            });
-            container.addEventListener('mouseleave', () => {
-                resizeHandle.style.opacity = '0';
-            });
+            const tooltip = document.createElement('div');
+            tooltip.style.position = 'absolute';
+            tooltip.style.bottom = '-30px';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translateX(-50%)';
+            tooltip.style.background = 'rgba(0,0,0,0.85)';
+            tooltip.style.color = '#fff';
+            tooltip.style.padding = '3px 10px';
+            tooltip.style.borderRadius = '4px';
+            tooltip.style.fontSize = '12px';
+            tooltip.style.fontFamily = 'monospace';
+            tooltip.style.pointerEvents = 'none';
+            tooltip.style.opacity = '0';
+            tooltip.style.transition = 'opacity 0.25s';
+            tooltip.style.whiteSpace = 'nowrap';
+            tooltip.style.zIndex = '20';
+            tooltip.textContent = `${img.offsetWidth} × ${img.offsetHeight}`;
+            container.appendChild(tooltip);
 
             let isResizing = false;
-            let startX = 0;
-            let startWidth = 0;
+            let resizeData: any = null;
+
+            const updateTooltip = () => {
+                tooltip.textContent = `${img.offsetWidth} × ${img.offsetHeight}`;
+            };
+
+            const updateImageAttrs = (width: number, height: number) => {
+                const pos = getPos();
+                if (typeof pos !== 'number') return;
+
+                const tr = editor.view.state.tr;
+                tr.setNodeMarkup(pos, undefined, {
+                    ...node.attrs,
+                    width: width,
+                    height: height,
+                });
+                editor.view.dispatch(tr);
+            };
+
+            const createHandle = (direction: Direction, cursor: string, position: Record<string, string>) => {
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                handle.dataset.direction = direction;
+                handle.style.position = 'absolute';
+                handle.style.zIndex = '15';
+                handle.style.opacity = '0';
+                handle.style.transition = 'opacity 0.15s, transform 0.15s';
+                handle.style.width = `${HANDLE_SIZE}px`;
+                handle.style.height = `${HANDLE_SIZE}px`;
+                handle.style.borderRadius = '50%';
+                handle.style.background = '#3b82f6';
+                handle.style.border = '2px solid white';
+                handle.style.boxShadow = '0 0 6px rgba(0,0,0,0.3)';
+                handle.style.cursor = cursor;
+                handle.style.pointerEvents = 'auto';
+
+                Object.entries(position).forEach(([key, value]) => {
+                    handle.style[key as any] = value;
+                });
+
+                handle.addEventListener('mouseenter', () => {
+                    handle.style.transform = 'scale(1.3)';
+                });
+                handle.addEventListener('mouseleave', () => {
+                    if (!isResizing) handle.style.transform = 'scale(1)';
+                });
+
+                handle.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const rect = img.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+
+                    isResizing = true;
+                    resizeData = {
+                        direction,
+                        startX: e.clientX,
+                        startY: e.clientY,
+                        startWidth: img.offsetWidth || 200,
+                        startHeight: img.offsetHeight || 150,
+                        startLeft: rect.left - containerRect.left,
+                        startTop: rect.top - containerRect.top,
+                        aspectRatio: (img.offsetWidth || 200) / (img.offsetHeight || 150),
+                    };
+
+                    tooltip.style.opacity = '1';
+                    updateTooltip();
+                    handle.style.transform = 'scale(1.3)';
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+
+                return handle;
+            };
 
             const onMouseMove = (e: MouseEvent) => {
-                if (!isResizing) return;
-                const dx = e.clientX - startX;
-                const newWidth = Math.max(50, startWidth + dx);
-                img.style.width = `${newWidth}px`;
-                img.style.height = 'auto';
+                if (!isResizing || !resizeData) return;
 
-                if (getPos) {
-                    const pos = getPos();
-                    if (typeof pos === 'number') {
-                        editor.commands.updateAttributes(node.type, { width: newWidth, height: null });
-                    }
+                const { direction, startX, startY, startWidth, startHeight, startLeft, startTop, aspectRatio } = resizeData;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                const isShift = e.shiftKey;
+
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newLeft = startLeft;
+                let newTop = startTop;
+
+                if (direction.includes('e')) {
+                    newWidth = Math.max(MIN_SIZE, startWidth + dx);
+                    if (isShift) newHeight = Math.max(MIN_SIZE, newWidth / aspectRatio);
                 }
-                updateHandlePosition();
+                if (direction.includes('w')) {
+                    newWidth = Math.max(MIN_SIZE, startWidth - dx);
+                    if (isShift) newHeight = Math.max(MIN_SIZE, newWidth / aspectRatio);
+                    newLeft = startLeft + (startWidth - newWidth);
+                }
+                if (direction.includes('s')) {
+                    newHeight = Math.max(MIN_SIZE, startHeight + dy);
+                    if (isShift) newWidth = Math.max(MIN_SIZE, newHeight * aspectRatio);
+                }
+                if (direction.includes('n')) {
+                    newHeight = Math.max(MIN_SIZE, startHeight - dy);
+                    if (isShift) newWidth = Math.max(MIN_SIZE, newHeight * aspectRatio);
+                    newTop = startTop + (startHeight - newHeight);
+                }
+
+                img.style.width = `${newWidth}px`;
+                img.style.height = `${newHeight}px`;
+                if (direction.includes('w') || direction.includes('n')) {
+                    img.style.position = 'relative';
+                    if (direction.includes('w')) img.style.left = `${newLeft}px`;
+                    if (direction.includes('n')) img.style.top = `${newTop}px`;
+                }
+
+                updateTooltip();
+                updateImageAttrs(newWidth, newHeight);
             };
 
             const onMouseUp = () => {
                 isResizing = false;
+                resizeData = null;
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
+
+                setTimeout(() => {
+                    tooltip.style.opacity = '0';
+                }, 600);
+
+                container.querySelectorAll('.resize-handle').forEach((h) => {
+                    (h as HTMLElement).style.transform = 'scale(1)';
+                });
             };
 
-            resizeHandle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
+            HANDLES.forEach(({ direction, cursor, position }) => {
+                const handle = createHandle(direction, cursor, position);
+                container.appendChild(handle);
+            });
+
+            // При наведении — показываем хендлы и бордер
+            container.addEventListener('mouseenter', () => {
+                container.style.borderColor = '#3b82f6';
+                container.querySelectorAll('.resize-handle').forEach((h) => {
+                    (h as HTMLElement).style.opacity = '1';
+                });
+            });
+
+            // При уходе мыши — скрываем хендлы и бордер, НО НЕ ТРОГАЕМ ВЫДЕЛЕНИЕ
+            container.addEventListener('mouseleave', () => {
+                if (!isResizing) {
+                    if (!img.classList.contains('selected-image')) {
+                        container.style.borderColor = 'transparent';
+                    }
+                    container.querySelectorAll('.resize-handle').forEach((h) => {
+                        (h as HTMLElement).style.opacity = '0';
+                    });
+                    tooltip.style.opacity = '0';
+                }
+            });
+
+            // ПРИ КЛИКЕ — ВЫДЕЛЯЕМ КАРТИНКУ
+            img.addEventListener('click', (e) => {
                 e.stopPropagation();
-                isResizing = true;
-                startX = e.clientX;
-                startWidth = img.offsetWidth;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
+                // Убираем выделение со всех изображений
+                document.querySelectorAll('.tiptap img').forEach(i => {
+                    i.classList.remove('selected-image');
+                    const parent = i.closest('div');
+                    if (parent) parent.style.borderColor = 'transparent';
+                });
+                // Выделяем текущее
+                img.classList.add('selected-image');
+                container.style.borderColor = '#3b82f6';
+                // Сохраняем данные
+                const imgData = {
+                    url: img.src,
+                    alt: img.alt || '',
+                    title: img.title || '',
+                    width: img.style.width || '',
+                    height: img.style.height || '',
+                    align: '',
+                };
+                // Отправляем событие в Index.vue
+                const event = new CustomEvent('image-selected', { detail: imgData });
+                document.dispatchEvent(event);
             });
 
             container.appendChild(img);
-            container.appendChild(resizeHandle);
 
-            window.addEventListener('resize', updateHandlePosition);
-            const observer = new MutationObserver(updateHandlePosition);
-            observer.observe(container, { attributes: true, attributeFilter: ['style'] });
+            img.addEventListener('load', updateTooltip);
+
+            const observer = new ResizeObserver(updateTooltip);
+            observer.observe(img);
 
             return {
                 dom: container,
@@ -128,14 +316,21 @@ export const ResizableImage = Image.extend({
                     img.alt = updatedNode.attrs.alt || '';
                     img.title = updatedNode.attrs.title || '';
                     img.setAttribute('data-lightbox', 'true');
+
                     if (updatedNode.attrs.width) img.style.width = `${updatedNode.attrs.width}px`;
-                    img.style.height = 'auto';
-                    updateHandlePosition();
+                    if (updatedNode.attrs.height) img.style.height = `${updatedNode.attrs.height}px`;
+                    if (updatedNode.attrs.align) {
+                        img.style.cssText += `display: block; ${getAlignStyle(updatedNode.attrs.align)}`;
+                    }
+
+                    updateTooltip();
                     return true;
                 },
                 destroy: () => {
-                    window.removeEventListener('resize', updateHandlePosition);
                     observer.disconnect();
+                    img.removeEventListener('load', updateTooltip);
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
                 },
             };
         };

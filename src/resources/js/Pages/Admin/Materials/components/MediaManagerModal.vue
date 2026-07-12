@@ -6,82 +6,11 @@
                 <button @click="close" class="close-btn">×</button>
             </div>
 
-            <div v-if="mode === 'image'" class="media-manager-extra-header">
-                <div class="image-options-grid">
-                    <div class="image-options-left">
-                        <div class="option-row">
-                            <label class="option-label">Адрес</label>
-                            <input
-                                v-model="imageUrl"
-                                type="text"
-                                class="option-input"
-                                placeholder="/storage/uploads/image.jpg"
-                                readonly
-                            />
-                        </div>
-                        <div class="option-row">
-                            <label class="option-label">Текст</label>
-                            <input
-                                v-model="imageAlt"
-                                type="text"
-                                class="option-input"
-                                placeholder="Alt текст"
-                            />
-                        </div>
-                        <div class="option-row">
-                            <label class="option-label">Размеры</label>
-                            <div class="size-group">
-                                <div class="size-field">
-                                    <span>Ширина</span>
-                                    <input
-                                        v-model="imageWidth"
-                                        type="number"
-                                        class="size-input"
-                                        placeholder="auto"
-                                        @input="onWidthChange"
-                                    />
-                                </div>
-                                <div class="size-field">
-                                    <span>Высота</span>
-                                    <input
-                                        v-model="imageHeight"
-                                        type="number"
-                                        class="size-input"
-                                        placeholder="auto"
-                                        @input="onHeightChange"
-                                    />
-                                </div>
-                                <label class="proportional-checkbox">
-                                    <input type="checkbox" v-model="proportional" />
-                                    <span>Пропорционально</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="image-options-right">
-                        <div class="preview-container" v-if="imageUrl">
-                            <img
-                                :src="imageUrl"
-                                :alt="imageAlt"
-                                class="preview-image"
-                                ref="previewImage"
-                                @load="onImageLoad"
-                            />
-                        </div>
-                        <div v-else class="preview-placeholder">
-                            Изображение не выбрано
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="media-manager-content">
                 <MediaManager
                     ref="mediaManagerRef"
                     :user="user"
                     :selected-url="selectedUrl"
-                    :accepted-files="acceptedFiles"
                     mode="picker"
                     @select="onSelect"
                     @fileSelected="onFileSelected"
@@ -127,117 +56,35 @@ const emit = defineEmits<{
 const mediaManagerRef = ref<InstanceType<typeof MediaManager> | null>(null);
 const selectedFile = ref<{ url: string; name: string; path: string } | null>(null);
 
-const imageUrl = ref('');
-const imageAlt = ref('');
-const imageWidth = ref('');
-const imageHeight = ref('');
-const proportional = ref(true);
-const originalWidth = ref(0);
-const originalHeight = ref(0);
-const previewImage = ref<HTMLImageElement | null>(null);
-
-const acceptedFiles = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+watch(() => props.show, async (val) => {
+    if (val && props.selectedUrl) {
+        await nextTick();
+        setTimeout(() => {
+            if (mediaManagerRef.value) {
+                mediaManagerRef.value.selectFileByUrl?.(props.selectedUrl);
+            }
+        }, 500);
+    }
+});
 
 const close = () => {
     selectedFile.value = null;
-    imageUrl.value = '';
-    imageAlt.value = '';
-    imageWidth.value = '';
-    imageHeight.value = '';
-    proportional.value = true;
-    originalWidth.value = 0;
-    originalHeight.value = 0;
     emit('close');
 };
 
-const loadImageDimensions = (url: string) => {
-    return new Promise<{ width: number; height: number }>((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-            resolve({ width: img.width, height: img.height });
-        };
-        img.onerror = () => {
-            resolve({ width: 0, height: 0 });
-        };
-        img.src = url;
-    });
-};
-
-const onFileSelected = async (file: { url: string; name: string; path: string } | null) => {
+const onSelect = (file: { url: string; name: string; path: string }) => {
     selectedFile.value = file;
-    if (file && props.mode === 'image') {
-        imageUrl.value = file.url;
-        imageAlt.value = file.name;
-
-        const dimensions = await loadImageDimensions(file.url);
-        if (dimensions.width > 0 && dimensions.height > 0) {
-            originalWidth.value = dimensions.width;
-            originalHeight.value = dimensions.height;
-            imageWidth.value = String(dimensions.width);
-            imageHeight.value = String(dimensions.height);
-        }
-
-        proportional.value = true;
-        await nextTick();
-    }
 };
 
-const onSelect = async (file: { url: string; name: string; path: string }) => {
-    selectedFile.value = file;
-    if (props.mode === 'image') {
-        imageUrl.value = file.url;
-        imageAlt.value = file.name;
-
-        const dimensions = await loadImageDimensions(file.url);
-        if (dimensions.width > 0 && dimensions.height > 0) {
-            originalWidth.value = dimensions.width;
-            originalHeight.value = dimensions.height;
-            imageWidth.value = String(dimensions.width);
-            imageHeight.value = String(dimensions.height);
-        }
-
-        proportional.value = true;
-        await nextTick();
-    }
-};
-
-const onImageLoad = () => {
-    if (previewImage.value) {
-        originalWidth.value = previewImage.value.naturalWidth;
-        originalHeight.value = previewImage.value.naturalHeight;
-        if (!imageWidth.value) imageWidth.value = String(originalWidth.value);
-        if (!imageHeight.value) imageHeight.value = String(originalHeight.value);
-    }
-};
-
-const onWidthChange = () => {
-    if (proportional.value && originalWidth.value > 0 && imageWidth.value) {
-        const ratio = originalHeight.value / originalWidth.value;
-        imageHeight.value = String(Math.round(parseFloat(imageWidth.value) * ratio));
-    }
-};
-
-const onHeightChange = () => {
-    if (proportional.value && originalHeight.value > 0 && imageHeight.value) {
-        const ratio = originalWidth.value / originalHeight.value;
-        imageWidth.value = String(Math.round(parseFloat(imageHeight.value) * ratio));
+const onFileSelected = (file: { url: string; name: string; path: string } | null) => {
+    if (file) {
+        selectedFile.value = file;
     }
 };
 
 const insertFile = () => {
     if (selectedFile.value) {
-        if (props.mode === 'image') {
-            emit('select', {
-                ...selectedFile.value,
-                options: {
-                    alt: imageAlt.value,
-                    width: imageWidth.value,
-                    height: imageHeight.value
-                }
-            });
-        } else {
-            emit('select', selectedFile.value);
-        }
+        emit('select', selectedFile.value);
         close();
     }
 };
@@ -303,130 +150,6 @@ const insertFile = () => {
 .close-btn:hover {
     color: #4b5563;
     background: #e5e7eb;
-}
-
-.media-manager-extra-header {
-    padding: 1rem 1.5rem;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
-}
-
-.image-options-grid {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.image-options-left {
-    flex: 1;
-    min-width: 0;
-}
-
-.image-options-right {
-    width: 200px;
-    flex-shrink: 0;
-}
-
-.option-row {
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.option-label {
-    width: 70px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #374151;
-    flex-shrink: 0;
-}
-
-.option-input {
-    flex: 1;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-    background: white;
-}
-
-.option-input:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
-}
-
-.option-input[readonly] {
-    background: #f3f4f6;
-    cursor: default;
-}
-
-.size-group {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.size-field {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.size-field span {
-    font-size: 0.75rem;
-    color: #6b7280;
-}
-
-.size-input {
-    width: 80px;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    padding: 0.375rem 0.5rem;
-    font-size: 0.8rem;
-}
-
-.proportional-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-    color: #374151;
-    cursor: pointer;
-}
-
-.preview-container {
-    width: 100%;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f9fafb;
-    border-radius: 0.375rem;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
-}
-
-.preview-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.preview-placeholder {
-    width: 100%;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f9fafb;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    color: #9ca3af;
-    border: 1px solid #e5e7eb;
 }
 
 .media-manager-content {

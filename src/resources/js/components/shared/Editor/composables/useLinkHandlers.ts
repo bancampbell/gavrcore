@@ -19,9 +19,16 @@ export function useLinkHandlers(emit: EditorEmits) {
         title: link.getAttribute('title') || '',
     });
 
+    const clearSelection = (): void => {
+        document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
+        selectedLinkData.value = null;
+        savedLinkPosition = null;
+    };
+
     const handleLinkMouseDown = (e: MouseEvent): void => {
         const target = e.target as HTMLElement;
         const link = target.closest('a');
+
         if (link) {
             e.preventDefault();
             e.stopPropagation();
@@ -30,8 +37,7 @@ export function useLinkHandlers(emit: EditorEmits) {
             document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
             link.classList.add('selected-link');
         } else {
-            document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
-            selectedLinkData.value = null;
+            clearSelection();
         }
     };
 
@@ -46,7 +52,7 @@ export function useLinkHandlers(emit: EditorEmits) {
     const saveLinkPosition = (editor: Editor, linkText: string): void => {
         const { state } = editor;
         state.doc.descendants((node, pos) => {
-            if (node.isText && node.text === linkText && node.marks) {
+            if (node.isText && node.text === linkText) {
                 const hasLink = node.marks.some((mark: any) => mark.type.name === 'link');
                 if (hasLink) {
                     savedLinkPosition = { from: pos, to: pos + node.text.length };
@@ -55,6 +61,12 @@ export function useLinkHandlers(emit: EditorEmits) {
             }
             return true;
         });
+    };
+
+    const buildLinkHtml = (url: string, text: string, target: string, title: string): string => {
+        const linkTarget = target === '_blank' ? '_blank' : '_self';
+        const linkTitle = title || '';
+        return `<a href="${url}" target="${linkTarget}" title="${linkTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${text}</a>`;
     };
 
     const setLinkOnSelection = (
@@ -66,21 +78,14 @@ export function useLinkHandlers(emit: EditorEmits) {
     ): void => {
         if (!editor) return;
 
-        const linkTarget = target === '_blank' ? '_blank' : '_self';
-        const linkTitle = title || '';
         const text = linkText || url;
-
         const { from, to } = editor.state.selection;
         const hasSelection = from !== to;
+        const selectedText = hasSelection ? editor.state.doc.textBetween(from, to) : text;
+        const linkHtml = buildLinkHtml(url, selectedText, target, title);
 
-        if (hasSelection) {
-            const selectedText = editor.state.doc.textBetween(from, to);
-            const linkHtml = `<a href="${url}" target="${linkTarget}" title="${linkTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${selectedText}</a>`;
-            editor.commands.insertContent(linkHtml);
-        } else {
-            const linkHtml = `<a href="${url}" target="${linkTarget}" title="${linkTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${text}</a>`;
-            editor.commands.insertContent(linkHtml);
-        }
+        editor.commands.insertContent(linkHtml);
+        savedLinkPosition = null;
     };
 
     const updateExistingLink = (
@@ -93,45 +98,49 @@ export function useLinkHandlers(emit: EditorEmits) {
     ): void => {
         if (!editor) return;
 
-        const linkTarget = newTarget === '_blank' ? '_blank' : '_self';
-        const linkTitle = newTitle || '';
+        const newTextToInsert = newText || oldText;
+        const linkHtml = buildLinkHtml(newUrl, newTextToInsert, newTarget, newTitle);
 
-        if (savedLinkPosition) {
-            const { from, to } = savedLinkPosition;
+        const updateLinkAtPosition = (from: number, to: number): void => {
             editor.commands.setTextSelection({ from, to });
-            editor.commands.unsetLink();
+            editor.commands.insertContent(linkHtml);
 
-            if (newText && newText !== oldText) {
-                editor.commands.insertContent(newText);
-                const newFrom = editor.state.selection.from - newText.length;
-                editor.commands.setTextSelection({ from: newFrom, to: editor.state.selection.from });
-            }
+            selectedLinkData.value = {
+                oldText: newTextToInsert,
+                url: newUrl,
+                text: newTextToInsert,
+                target: newTarget || '_self',
+                title: newTitle || '',
+            };
 
-            editor.commands.setLink({
-                href: newUrl,
-                target: linkTarget,
-                title: linkTitle,
-                rel: 'noopener noreferrer nofollow'
-            });
             savedLinkPosition = null;
+        };
+
+        // Если есть сохраненная позиция — используем её
+        if (savedLinkPosition) {
+            updateLinkAtPosition(savedLinkPosition.from, savedLinkPosition.to);
             return;
         }
 
-        // Fallback: замена по регулярному выражению
-        const escapedOldText = oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const oldLinkRegex = new RegExp(`<a[^>]*>${escapedOldText}</a>`, 'g');
-        const newLinkHtml = `<a href="${newUrl}" target="${linkTarget}" title="${linkTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${newText}</a>`;
-        const newContent = editor.getHTML().replace(oldLinkRegex, newLinkHtml);
+        // Fallback: ищем ссылку по тексту
+        const { state } = editor;
+        let found = false;
 
-        if (newContent !== editor.getHTML()) {
-            editor.commands.setContent(newContent);
+        state.doc.descendants((node, pos) => {
+            if (node.isText && node.text === oldText) {
+                const hasLink = node.marks.some((mark: any) => mark.type.name === 'link');
+                if (hasLink) {
+                    updateLinkAtPosition(pos, pos + oldText.length);
+                    found = true;
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        if (!found) {
+            setLinkOnSelection(editor, newUrl, newTextToInsert, newTarget, newTitle);
         }
-    };
-
-    const clearSelectedLink = (): void => {
-        document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
-        selectedLinkData.value = null;
-        savedLinkPosition = null;
     };
 
     return {
@@ -140,7 +149,7 @@ export function useLinkHandlers(emit: EditorEmits) {
         openLinkModal,
         setLinkOnSelection,
         updateExistingLink,
-        clearSelectedLink,
+        clearSelection,
         saveLinkPosition,
     };
 }

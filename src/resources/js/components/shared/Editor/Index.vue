@@ -2,12 +2,13 @@
     <div class="border border-gray-200 rounded-lg overflow-hidden bg-white flex flex-col h-full">
         <Toolbar
             :editor="editor"
-            :selected-link-data="selectedLinkData"
-            :selected-image-align="selectedImageAlign"
+            :selected-link-data="linkHandlers.selectedLinkData.value"
+            :selected-image-data="imageHandlers.selectedImageData.value"
+            :selected-image-align="imageHandlers.selectedImageAlign.value"
             :align-image-left="() => imageHandlers.alignImageLeft(editor!)"
             :center-image="() => imageHandlers.centerImage(editor!)"
             :align-image-right="() => imageHandlers.alignImageRight(editor!)"
-            :open-link-modal="handleOpenLinkModal"
+            :open-link-modal="linkHandlers.openLinkModal"
             :open-image-modal="() => imageHandlers.openImageModal(emit)"
             :open-gallery-modal="handleOpenGalleryModal"
             :toggle-html="toggleHtml"
@@ -31,14 +32,12 @@
             </div>
         </div>
 
-        <!-- Модалка выбора галереи -->
         <GallerySelectModal
             :show="showGalleryModal"
             @close="showGalleryModal = false"
             @select="insertGallery"
         />
 
-        <!-- Модалка выбора формы -->
         <FormSelectModal
             :show="showFormModal"
             @close="showFormModal = false"
@@ -83,16 +82,13 @@ let codeEditorView: EditorView | null = null;
 
 const editorRef = ref(editor) as VueRef<Editor | null>;
 
-// Состояния модалок
 const showGalleryModal = ref(false);
 const showFormModal = ref(false);
 
-// Открытие модалки галереи
 const handleOpenGalleryModal = () => {
     showGalleryModal.value = true;
 };
 
-// Вставка галереи
 const insertGallery = (gallery: any) => {
     if (!editor) return;
     const shortcode = `[gallery id="${gallery.id}" name="${gallery.name || gallery.title}"]`;
@@ -100,12 +96,10 @@ const insertGallery = (gallery: any) => {
     showGalleryModal.value = false;
 };
 
-// Открытие модалки формы
 const openFormModal = () => {
     showFormModal.value = true;
 };
 
-// Вставка формы
 const insertForm = (form: any) => {
     if (!editor) return;
     const shortcode = `[form id="${form.id}"]`;
@@ -113,7 +107,6 @@ const insertForm = (form: any) => {
     showFormModal.value = false;
 };
 
-// Вставка формы (старый метод для совместимости)
 const insertFormShortcode = (formId: number) => {
     if (!editor) return;
     const { from, to } = editor.state.selection;
@@ -124,6 +117,10 @@ const insertFormShortcode = (formId: number) => {
     } else {
         editor.commands.insertContent(`[form id="${formId}"]`);
     }
+};
+
+const openFileManager = () => {
+    // TODO: implement file manager
 };
 
 const { toggleHtml, applyHtml, cancelHtml } = useHtmlMode(
@@ -137,18 +134,13 @@ const { toggleHtml, applyHtml, cancelHtml } = useHtmlMode(
     }
 );
 
-const {
-    selectedLinkData,
-    handleLinkMouseDown,
-    openLinkModal,
-    setLinkOnSelection: linkHandlersSetLink,
-    updateExistingLink: linkHandlersUpdateExistingLink,
-    clearSelectedLink,
-    saveLinkPosition,
-} = useLinkHandlers(emit);
+const linkHandlers = useLinkHandlers(emit);
+const { clearSelection: clearLinkSelection } = linkHandlers;
 
 const imageHandlers = useImageHandlers();
-const { selectedImageAlign, handleImageClick, updateImage: imageHandlersUpdate } = imageHandlers;
+const { clearSelection: clearImageSelection } = imageHandlers;
+
+let clickHandler: ((e: MouseEvent) => void) | null = null;
 
 watch(editor, (newEditor) => {
     editorRef.value = newEditor;
@@ -209,50 +201,61 @@ watch(htmlContent, (newVal) => {
 });
 
 const handleOpenLinkModal = () => {
-    if (editor && selectedLinkData.value) {
-        saveLinkPosition(editor, selectedLinkData.value.oldText);
-        openLinkModal();
+    if (editor && linkHandlers.selectedLinkData.value) {
+        linkHandlers.saveLinkPosition(editor, linkHandlers.selectedLinkData.value.oldText);
+        linkHandlers.openLinkModal();
     } else if (editor) {
         const { from, to } = editor.state.selection;
         const hasSelection = from !== to;
         if (hasSelection) {
             const selectedText = editor.state.doc.textBetween(from, to);
-            openLinkModal(selectedText);
+            linkHandlers.openLinkModal(selectedText);
         } else {
-            openLinkModal('');
+            linkHandlers.openLinkModal('');
         }
     } else {
-        openLinkModal('');
+        linkHandlers.openLinkModal('');
     }
 };
 
 const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
     if (editor) {
-        linkHandlersSetLink(editor, url, linkText, target, title);
+        linkHandlers.setLinkOnSelection(editor, url, linkText, target, title);
     }
 };
 
 const updateExistingLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
     if (editor) {
-        linkHandlersUpdateExistingLink(editor, data.oldText, data.newUrl, data.newText, data.newTarget, data.newTitle);
+        linkHandlers.updateExistingLink(editor, data.oldText, data.newUrl, data.newText, data.newTarget, data.newTitle);
     }
 };
 
 const updateImage = (oldUrl: string, newData: any) => {
     if (editor) {
-        imageHandlersUpdate(editor, oldUrl, newData);
+        imageHandlers.updateImage(editor, oldUrl, newData);
     }
 };
 
-const insertContent = (html: string) => {
+const getCursorPosition = () => {
     if (editor) {
+        return editor.state.selection.from;
+    }
+    return 0;
+};
+
+const insertContent = (html: string, position?: number) => {
+    if (typeof html !== 'string') {
+        console.error('[Editor] insertContent received non-string:', html);
+        return;
+    }
+
+    if (editor) {
+        const pos = position ?? editor.state.selection.from;
+        editor.commands.focus();
+        editor.commands.setTextSelection(pos);
         editor.commands.insertContent(html);
         emit('update:modelValue', editor.getHTML());
     }
-};
-
-const openFileManager = () => {
-    // TODO: implement file manager
 };
 
 defineExpose({
@@ -261,6 +264,7 @@ defineExpose({
     updateImage,
     updateExistingLink,
     insertFormShortcode,
+    getCursorPosition,
 });
 
 onMounted(async () => {
@@ -296,11 +300,64 @@ onMounted(async () => {
 
     editorRef.value = editor;
 
-    const editorContainer = document.querySelector('.tiptap');
-    if (editorContainer) {
-        editorContainer.addEventListener('mousedown', (e) => handleLinkMouseDown(e as MouseEvent), true);
-        editorContainer.addEventListener('click', (e) => handleImageClick(e as MouseEvent), true);
+    document.addEventListener('image-selected', (e: any) => {
+        imageHandlers.selectedImageData.value = e.detail;
+    });
+
+    if (clickHandler) {
+        document.removeEventListener('click', clickHandler);
     }
+
+    clickHandler = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const link = target.closest('a');
+        const img = target.closest('img');
+        const isInsideTiptap = target.closest('.tiptap');
+
+        if (!isInsideTiptap) {
+            clearLinkSelection();
+            clearImageSelection();
+            return;
+        }
+
+        if (link) {
+            e.preventDefault();
+            const linkData = {
+                oldText: link.innerText,
+                url: link.getAttribute('href') || '',
+                text: link.innerText,
+                target: link.getAttribute('target') || '_self',
+                title: link.getAttribute('title') || '',
+            };
+            linkHandlers.selectedLinkData.value = linkData;
+            document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
+            link.classList.add('selected-link');
+            clearImageSelection();
+            return;
+        }
+
+        if (img) {
+            e.preventDefault();
+            const imgData = {
+                url: img.src,
+                alt: img.alt || '',
+                title: img.title || '',
+                width: img.style.width || '',
+                height: img.style.height || '',
+                align: '',
+            };
+            imageHandlers.selectedImageData.value = imgData;
+            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
+            img.classList.add('selected-image');
+            clearLinkSelection();
+            return;
+        }
+
+        clearLinkSelection();
+        clearImageSelection();
+    };
+
+    document.addEventListener('click', clickHandler);
 });
 
 watch(() => props.modelValue, (newValue) => {
@@ -310,10 +367,9 @@ watch(() => props.modelValue, (newValue) => {
 });
 
 onBeforeUnmount(() => {
-    const editorContainer = document.querySelector('.tiptap');
-    if (editorContainer) {
-        editorContainer.removeEventListener('mousedown', handleLinkMouseDown, true);
-        editorContainer.removeEventListener('click', handleImageClick, true);
+    if (clickHandler) {
+        document.removeEventListener('click', clickHandler);
+        clickHandler = null;
     }
     editor?.destroy();
     if (codeEditorView) {
@@ -379,38 +435,5 @@ onBeforeUnmount(() => {
 }
 .tiptap p {
     margin-bottom: 0.5rem;
-}
-
-.cm-editor {
-    height: 100% !important;
-    border-radius: 0.5rem !important;
-    overflow: hidden !important;
-    font-size: 13px !important;
-    background: #ffffff !important;
-}
-.cm-scroller {
-    overflow: auto !important;
-}
-.cm-editor .cm-content {
-    color: #24292e !important;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
-}
-.cm-editor .ͼ1 .cm-tag {
-    color: #0550ae !important;
-}
-.cm-editor .ͼ1 .cm-attribute {
-    color: #8250df !important;
-}
-.cm-editor .ͼ1 .cm-string {
-    color: #0a3069 !important;
-}
-.cm-editor .ͼ1 .cm-comment {
-    color: #6e7781 !important;
-}
-.cm-editor .ͼ1 .cm-keyword {
-    color: #0550ae !important;
-}
-.cm-editor .ͼ1 .cm-operator {
-    color: #24292e !important;
 }
 </style>

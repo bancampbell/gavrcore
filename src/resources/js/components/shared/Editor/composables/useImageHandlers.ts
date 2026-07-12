@@ -39,156 +39,148 @@ export function useImageHandlers() {
         };
     };
 
-    const alignImageLeft = (editor: Editor) => {
-        if (!editor) return;
-
-        const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
-
-        if (selectedImg) {
-            selectedImageAlign.value = 'left';
-            const container = selectedImg.parentElement;
-            if (container) {
-                container.style.display = 'block';
-                container.style.textAlign = 'left';
-            }
-
-            selectedImg.style.display = 'block';
-            selectedImg.style.marginLeft = '0';
-            selectedImg.style.marginRight = 'auto';
-
-            const { state } = editor;
-            const { tr } = state;
-
-            state.doc.descendants((node, pos) => {
-                if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
-                    tr.setNodeMarkup(pos, undefined, {
-                        ...node.attrs,
-                        style: `display: block; margin-left: 0; margin-right: auto; width: ${selectedImg.style.width || 'auto'}; height: auto;`,
-                    });
-                }
-            });
-
-            editor.view.dispatch(tr);
-        } else {
-            selectedImageAlign.value = '';
-            editor.chain().focus().setTextAlign('left').run();
-        }
+    const clearSelection = (): void => {
+        document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
+        selectedImageData.value = null;
+        selectedImageAlign.value = '';
     };
 
-    const centerImage = (editor: Editor) => {
-        if (!editor) return;
-
-        const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
-
-        if (selectedImg) {
-            selectedImageAlign.value = 'center';
-            const container = selectedImg.parentElement;
-            if (container) {
-                container.style.display = 'block';
-                container.style.textAlign = 'center';
-            }
-
-            selectedImg.style.display = 'block';
-            selectedImg.style.marginLeft = 'auto';
-            selectedImg.style.marginRight = 'auto';
-
-            const { state } = editor;
-            const { tr } = state;
-
-            state.doc.descendants((node, pos) => {
-                if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
-                    tr.setNodeMarkup(pos, undefined, {
-                        ...node.attrs,
-                        style: `display: block; margin-left: auto; margin-right: auto; width: ${selectedImg.style.width || 'auto'}; height: auto;`,
-                    });
-                }
-            });
-
-            editor.view.dispatch(tr);
-        } else {
-            selectedImageAlign.value = '';
-            editor.chain().focus().setTextAlign('center').run();
-        }
-    };
-
-    const alignImageRight = (editor: Editor) => {
-        if (!editor) return;
-
-        const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
-
-        if (selectedImg) {
-            selectedImageAlign.value = 'right';
-            const container = selectedImg.parentElement;
-            if (container) {
-                container.style.display = 'block';
-                container.style.textAlign = 'right';
-            }
-
-            selectedImg.style.display = 'block';
-            selectedImg.style.marginLeft = 'auto';
-            selectedImg.style.marginRight = '0';
-
-            const { state } = editor;
-            const { tr } = state;
-
-            state.doc.descendants((node, pos) => {
-                if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
-                    tr.setNodeMarkup(pos, undefined, {
-                        ...node.attrs,
-                        style: `display: block; margin-left: auto; margin-right: 0; width: ${selectedImg.style.width || 'auto'}; height: auto;`,
-                    });
-                }
-            });
-
-            editor.view.dispatch(tr);
-        } else {
-            selectedImageAlign.value = '';
-            editor.chain().focus().setTextAlign('right').run();
-        }
-    };
-
-    const handleImageClick = (e: MouseEvent) => {
+    const handleImageClick = (e: MouseEvent): void => {
         const target = e.target as HTMLElement;
         const img = target.closest('img');
+
         if (img) {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             selectedImageData.value = getImageData(img);
             document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
             img.classList.add('selected-image');
-            if ((window as any).__selectedLinkData) {
-                document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
-                (window as any).__selectedLinkData = null;
-            }
         } else {
-            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
-            selectedImageData.value = null;
-            selectedImageAlign.value = '';
+            clearSelection();
         }
     };
 
+    const setImageAlign = (editor: Editor, align: 'left' | 'center' | 'right') => {
+        if (!editor) return;
+
+        const selectedImg = document.querySelector('.tiptap img.selected-image') as HTMLImageElement;
+
+        if (selectedImg) {
+            selectedImageAlign.value = align;
+
+            const { state } = editor;
+            const { tr } = state;
+
+            const marginStyles: Record<string, string> = {
+                left: 'margin-left: 0; margin-right: auto;',
+                center: 'margin-left: auto; margin-right: auto;',
+                right: 'margin-left: auto; margin-right: 0;',
+            };
+
+            const style = `display: block; ${marginStyles[align]}`;
+
+            state.doc.descendants((node, pos) => {
+                if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
+                    tr.setNodeMarkup(pos, undefined, {
+                        ...node.attrs,
+                        style: style,
+                        align: align,
+                    });
+                }
+            });
+
+            editor.view.dispatch(tr);
+        } else {
+            selectedImageAlign.value = '';
+            editor.chain().focus().setTextAlign(align).run();
+        }
+    };
+
+    const alignImageLeft = (editor: Editor) => setImageAlign(editor, 'left');
+    const centerImage = (editor: Editor) => setImageAlign(editor, 'center');
+    const alignImageRight = (editor: Editor) => setImageAlign(editor, 'right');
+
     const openImageModal = (emit: any) => {
         if (selectedImageData.value) {
-            emit('openImageManager', selectedImageData.value);
+            emit('openImageModal', selectedImageData.value);
         } else {
-            emit('openImageManager');
+            emit('openImageModal');
         }
     };
 
     const updateImage = (editor: Editor, oldUrl: string, newData: ImageData) => {
         if (!editor) return;
 
-        let style = '';
-        if (newData.width && newData.width !== '') style += `width: ${newData.width}px; `;
-        if (newData.height && newData.height !== '') style += `height: ${newData.height}px; `;
+        const { state } = editor;
+        let found = false;
 
-        const styleAttr = style ? ` style="${style.trim()}"` : '';
-        const newImgHtml = `<img src="${newData.url}" alt="${newData.alt}" title="${newData.title}"${styleAttr} />`;
+        // Нормализуем URL для поиска
+        const normalizeUrl = (url: string) => {
+            let normalized = url;
+            // Убираем http:// или https:// и домен
+            normalized = normalized.replace(/^https?:\/\/[^\/]+/, '');
+            return normalized;
+        };
 
-        const currentHtml = editor.getHTML();
-        const oldImgRegex = new RegExp(`<img[^>]*src="${oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`, 'g');
-        const updatedHtml = currentHtml.replace(oldImgRegex, newImgHtml);
-        editor.commands.setContent(updatedHtml);
+        const normalizedOldUrl = normalizeUrl(oldUrl);
+
+        state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image') {
+                const nodeUrl = node.attrs.src || '';
+                const normalizedNodeUrl = normalizeUrl(nodeUrl);
+
+                // Сравниваем нормализованные URL или оригинальные
+                if (normalizedNodeUrl === normalizedOldUrl || nodeUrl === oldUrl) {
+                    const newAttrs = {
+                        ...node.attrs,
+                        src: newData.url,
+                        alt: newData.alt || node.attrs.alt,
+                        title: newData.title || node.attrs.title,
+                        width: newData.width || node.attrs.width,
+                        height: newData.height || node.attrs.height,
+                    };
+
+                    const { tr } = state;
+                    tr.setNodeMarkup(pos, undefined, newAttrs);
+                    editor.view.dispatch(tr);
+                    found = true;
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        if (!found) {
+            // Fallback: ищем по src в HTML
+            const currentHtml = editor.getHTML();
+            const escapedOldUrl = oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const escapedNormalizedOldUrl = normalizedOldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            // Пробуем оба варианта
+            const patterns = [
+                new RegExp(`<img[^>]*src=["']${escapedOldUrl}["'][^>]*>`, 'g'),
+                new RegExp(`<img[^>]*src=["']${escapedNormalizedOldUrl}["'][^>]*>`, 'g'),
+            ];
+
+            let updatedHtml = currentHtml;
+            let replaced = false;
+
+            for (const pattern of patterns) {
+                if (pattern.test(currentHtml)) {
+                    // Сбрасываем lastIndex после test
+                    pattern.lastIndex = 0;
+                    const newImgHtml = `<img src="${newData.url}" alt="${newData.alt || ''}" title="${newData.title || ''}" />`;
+                    updatedHtml = currentHtml.replace(pattern, newImgHtml);
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (replaced) {
+                editor.commands.setContent(updatedHtml);
+            }
+        }
     };
 
     return {
@@ -200,5 +192,6 @@ export function useImageHandlers() {
         handleImageClick,
         openImageModal,
         updateImage,
+        clearSelection,
     };
 }

@@ -35,7 +35,7 @@
             <!-- Основной контент -->
             <div class="admin-page-content">
                 <div class="admin-page-card w-full">
-                    <!-- Верхняя панель: заголовок + слаг + показывать на главной -->
+                    <!-- Верхняя панель -->
                     <div class="p-6 border-b border-slate-200">
                         <div class="flex flex-wrap items-center gap-6">
                             <div class="flex items-center gap-3">
@@ -81,13 +81,13 @@
 
                     <!-- Редактор + правая панель -->
                     <div class="flex flex-col lg:flex-row gap-6 p-6 min-h-[calc(100vh-280px)]">
-                        <!-- Редактор -->
                         <div class="flex-1">
                             <div class="border border-slate-300 rounded-lg overflow-hidden h-full">
                                 <Editor
                                     ref="editorRef"
                                     v-model="form.content"
                                     @open-link-modal="openLinkModal"
+                                    @open-image-modal="openImageModal"
                                     @open-image-manager="openImageManager"
                                     @edit-link="handleEditLink"
                                     @open-gallery-modal="openGalleryModal"
@@ -250,13 +250,20 @@
             @edit="updateLink"
         />
 
+        <ImageModal
+            :show="showImageModal"
+            :edit-data="editImageData"
+            @close="closeImageModal"
+            @insert="onImageInsert"
+        />
+
         <MediaManagerModal
             :show="showImageManager"
             :user="user"
-            :selected-url="editImageData?.url"
-            mode="image"
+            :selected-url="selectedMediaUrl"
+            mode="file"
             @close="closeImageManager"
-            @select="onImageSelect"
+            @select="onMediaManagerSelect"
         />
 
         <GallerySelectModal
@@ -277,6 +284,7 @@ import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category, Material } from '../../../types';
 import Editor from '../../../components/shared/Editor/Index.vue';
 import LinkModal from './components/LinkModal.vue';
+import ImageModal from './components/ImageModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
 import GallerySelectModal from '../../../components/shared/GallerySelectModal.vue';
 
@@ -289,11 +297,13 @@ const props = defineProps<{
 
 const loading = ref(false);
 const showLinkModal = ref(false);
+const showImageModal = ref(false);
 const showImageManager = ref(false);
 const showGalleryModal = ref(false);
 const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
 const editImageData = ref<any>(null);
+const selectedMediaUrl = ref('');
 const editorRef = ref<any>(null);
 const selectedLinkText = ref('');
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
@@ -333,70 +343,10 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
+// ===== ССЫЛКИ =====
 const openLinkModal = (selectedText?: string) => {
     editLinkData.value = null;
     selectedLinkText.value = selectedText || '';
-    showLinkModal.value = true;
-};
-
-const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
-    editImageData.value = imageData || null;
-    showImageManager.value = true;
-};
-
-const openGalleryModal = () => {
-    showGalleryModal.value = true;
-};
-
-const closeGalleryModal = () => {
-    showGalleryModal.value = false;
-};
-
-const insertGallery = (galleryId: number, galleryName: string) => {
-    if (editorRef.value) {
-        const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
-        editorRef.value.insertContent(shortcode);
-    }
-    closeGalleryModal();
-};
-
-const closeImageManager = () => {
-    showImageManager.value = false;
-    editImageData.value = null;
-};
-
-const onImageSelect = (file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }) => {
-    if (editImageData.value) {
-        let style = '';
-        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
-        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
-
-        editorRef.value?.updateImage(editImageData.value.url, {
-            url: file.url,
-            alt: file.options?.alt || file.name,
-            title: '',
-            width: file.options?.width || '',
-            height: file.options?.height || '',
-            align: ''
-        });
-    } else {
-        let style = '';
-        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
-        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
-
-        let imgHtml = `<img src="${file.url}" alt="${file.options?.alt || file.name}"`;
-        if (style) {
-            imgHtml += ` style="${style.trim()}"`;
-        }
-        imgHtml += ` />`;
-
-        editorRef.value?.insertContent(imgHtml);
-    }
-    closeImageManager();
-};
-
-const handleEditLink = (data: { oldText: string; url: string; text: string; target: string; title: string }) => {
-    editLinkData.value = data;
     showLinkModal.value = true;
 };
 
@@ -416,6 +366,135 @@ const updateLink = (data: { oldText: string; newUrl: string; newText: string; ne
     }
 };
 
+const handleEditLink = (data: { oldText: string; url: string; text: string; target: string; title: string }) => {
+    editLinkData.value = data;
+    showLinkModal.value = true;
+};
+
+// ===== ИЗОБРАЖЕНИЯ =====
+const savedCursorPosition = ref(0);
+
+const openImageModal = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+    if (editorRef.value) {
+        savedCursorPosition.value = editorRef.value.getCursorPosition?.() || 0;
+    }
+    editImageData.value = imageData || null;
+    showImageModal.value = true;
+};
+
+const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+    editImageData.value = imageData || null;
+    if (imageData?.url) {
+        const urlParts = imageData.url.split('/');
+        urlParts.pop();
+        selectedMediaUrl.value = urlParts.join('/') || '/';
+    } else {
+        selectedMediaUrl.value = '';
+    }
+    showImageManager.value = true;
+};
+
+const closeImageModal = () => {
+    showImageModal.value = false;
+    editImageData.value = null;
+};
+
+const onImageInsert = (data: {
+    url: string;
+    alt: string;
+    title: string;
+    width?: string;
+    height?: string;
+    align?: string;
+    oldUrl?: string;
+}) => {
+    if (data.oldUrl) {
+        editorRef.value?.updateImage(data.oldUrl, {
+            url: data.url,
+            alt: data.alt || '',
+            title: data.title || '',
+            width: data.width || '',
+            height: data.height || '',
+            align: data.align || ''
+        });
+        closeImageModal();
+        return;
+    }
+
+    let style = '';
+    if (data.width && data.width !== '') style += `width: ${data.width}px; `;
+    if (data.height && data.height !== '') style += `height: ${data.height}px; `;
+
+    let imgHtml = `<img src="${data.url}" alt="${data.alt || ''}" title="${data.title || ''}"`;
+    if (style) {
+        imgHtml += ` style="${style.trim()}"`;
+    }
+    if (data.align && data.align !== '') {
+        if (data.align === 'left') imgHtml += ` class="align-left"`;
+        else if (data.align === 'center') imgHtml += ` class="align-center"`;
+        else if (data.align === 'right') imgHtml += ` class="align-right"`;
+    }
+    imgHtml += ` />`;
+
+    if (editorRef.value) {
+        editorRef.value.insertContent(imgHtml, savedCursorPosition.value);
+    }
+    closeImageModal();
+};
+
+const closeImageManager = () => {
+    showImageManager.value = false;
+    editImageData.value = null;
+    selectedMediaUrl.value = '';
+};
+
+const onMediaManagerSelect = (file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }) => {
+    if (editImageData.value) {
+        const oldUrl = editImageData.value.url;
+
+        editorRef.value?.updateImage(oldUrl, {
+            url: file.url,
+            alt: file.options?.alt || file.name,
+            title: editImageData.value.title || '',
+            width: file.options?.width || '',
+            height: file.options?.height || '',
+            align: editImageData.value.align || ''
+        });
+        editImageData.value = null;
+    } else {
+        let style = '';
+        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
+        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
+
+        let imgHtml = `<img src="${file.url}" alt="${file.options?.alt || file.name}"`;
+        if (style) {
+            imgHtml += ` style="${style.trim()}"`;
+        }
+        imgHtml += ` />`;
+
+        editorRef.value?.insertContent(imgHtml, savedCursorPosition.value);
+    }
+    closeImageManager();
+};
+
+// ===== ГАЛЕРЕЯ =====
+const openGalleryModal = () => {
+    showGalleryModal.value = true;
+};
+
+const closeGalleryModal = () => {
+    showGalleryModal.value = false;
+};
+
+const insertGallery = (galleryId: number, galleryName: string) => {
+    if (editorRef.value) {
+        const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
+        editorRef.value.insertContent(shortcode, savedCursorPosition.value);
+    }
+    closeGalleryModal();
+};
+
+// ===== ОСТАЛЬНОЕ =====
 const generateSlug = (text: string): string => {
     let slug = text
         .toLowerCase()

@@ -128,6 +128,7 @@
         </button>
         <button
             @click="openImageModal"
+            :class="{ 'bg-blue-100 text-blue-700': selectedImageData !== null }"
             class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
             title="Изображение"
         >
@@ -200,10 +201,12 @@
 <script setup lang="ts">
 import { Editor } from '@tiptap/core';
 import type { LinkData } from './types/editor';
+import type { ImageData } from './types/editor';
 
 defineProps<{
     editor: Editor | null;
     selectedLinkData: LinkData | null;
+    selectedImageData: ImageData | null;
     selectedImageAlign: string;
     alignImageLeft: () => void;
     centerImage: () => void;

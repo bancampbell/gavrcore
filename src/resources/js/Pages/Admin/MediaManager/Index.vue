@@ -1,4 +1,3 @@
-<!-- resources/js/Pages/Admin/MediaManager/Index.vue -->
 <template>
     <Head>
         <title>{{ title }}</title>
@@ -6,12 +5,10 @@
 
     <AdminLayout v-if="mode !== 'picker'" :user="user">
         <div class="flex flex-col h-full w-full">
-            <!-- Панель действий -->
             <div class="admin-page-actions flex-shrink-0 w-full">
                 <h1 class="admin-page-title">Медиа менеджер</h1>
             </div>
 
-            <!-- Основной контент -->
             <div class="admin-page-content">
                 <div class="admin-page-card w-full">
                     <div class="media-manager-container">
@@ -25,9 +22,7 @@
 
                         <div class="media-manager-main">
                             <div class="media-manager-sidebar">
-                                <div class="sidebar-header">
-                                    Каталоги
-                                </div>
+                                <div class="sidebar-header">Каталоги</div>
                                 <div class="sidebar-content">
                                     <div v-if="loadingFolders" class="text-center py-4">
                                         <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
@@ -78,8 +73,6 @@
                                 @copy="handleCopy"
                             />
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -115,8 +108,7 @@
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 
-    <!-- Picker mode без лейаута -->
-    <div v-else class="media-manager-picker-wrapper">
+    <div v-if="mode === 'picker'" class="media-manager-picker-wrapper">
         <div class="media-manager-container picker-mode">
             <MediaHeader
                 :current-path-display="currentPathDisplay"
@@ -128,9 +120,7 @@
 
             <div class="media-manager-main">
                 <div class="media-manager-sidebar">
-                    <div class="sidebar-header">
-                        Каталоги
-                    </div>
+                    <div class="sidebar-header">Каталоги</div>
                     <div class="sidebar-content">
                         <div v-if="loadingFolders" class="text-center py-4">
                             <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
@@ -241,11 +231,15 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'select', file: { url: string; name: string; path: string }): void;
     (e: 'fileSelected', file: { url: string; name: string; path: string } | null): void;
+    (e: 'close'): void;
+    (e: 'loaded'): void;
 }>();
 
 const expandedFolders = ref<string[]>([]);
 const isSelectingFile = ref(false);
 const contentPanelRef = ref<InstanceType<typeof ContentPanel> | null>(null);
+let lastSelectedUrl = '';
+let dataLoaded = false;
 
 const {
     allFolders,
@@ -291,7 +285,7 @@ const {
     setSortOrder,
     toggleSelect: originalToggleSelect,
     selectFolder,
-    openFolder,  // <--- ДОБАВЛЕНО
+    openFolder,
     selectFileItem: originalSelectFileItem,
     getSelectedFile,
     clearSelectedFile,
@@ -362,11 +356,9 @@ const selectFileByUrl = async (url: string) => {
                     path: file.path
                 };
 
+                selectedItems.value = [];
                 selectedFileForPicker.value = fileData;
-
-                if (!selectedItems.value.includes(file.path)) {
-                    originalToggleSelect(file.path, file);
-                }
+                originalToggleSelect(file.path, file);
 
                 emit('fileSelected', fileData);
                 scrollToSelectedFile();
@@ -387,11 +379,9 @@ const selectFileByUrl = async (url: string) => {
                     path: file.path
                 };
 
+                selectedItems.value = [];
                 selectedFileForPicker.value = fileData;
-
-                if (!selectedItems.value.includes(file.path)) {
-                    originalToggleSelect(file.path, file);
-                }
+                originalToggleSelect(file.path, file);
 
                 emit('fileSelected', fileData);
                 scrollToSelectedFile();
@@ -411,15 +401,26 @@ const toggleFolderExpand = (folderPath: string) => {
     }
 };
 
-watch([() => props.selectedUrl, () => contents.value.length], async ([newUrl, hasContents]) => {
-    if (newUrl && props.mode === 'picker' && hasContents > 0 && !isSelectingFile.value) {
-        await nextTick();
-        await selectFileByUrl(newUrl as string);
+watch(() => props.selectedUrl, async (newUrl) => {
+    if (!newUrl || props.mode !== 'picker' || isSelectingFile.value) return;
+    if (newUrl === lastSelectedUrl) return;
+
+    if (!dataLoaded) {
+        await loadData();
+        dataLoaded = true;
+        emit('loaded');
     }
+
+    lastSelectedUrl = newUrl;
+    selectedFileForPicker.value = null;
+    selectedItems.value = [];
+
+    await nextTick();
+    await selectFileByUrl(newUrl);
 }, { immediate: true });
 
 watch(currentPath, async () => {
-    if (props.selectedUrl && props.mode === 'picker' && !isSelectingFile.value) {
+    if (props.selectedUrl && props.mode === 'picker' && !isSelectingFile.value && dataLoaded) {
         await nextTick();
         await selectFileByUrl(props.selectedUrl);
     }
@@ -431,6 +432,9 @@ const toggleSelect = (path: string, item: MediaItem) => {
             const isSelected = selectedItems.value.includes(path);
 
             if (!isSelected) {
+                selectedItems.value = [];
+                selectedFileForPicker.value = null;
+
                 const fileData = {
                     url: `/storage/uploads/${item.path}`,
                     name: item.name,
@@ -466,14 +470,16 @@ const selectFileItem = (item: MediaItem) => {
                 originalToggleSelect(item.path, item);
             }
             emit('fileSelected', null);
-        } else {
-            selectedFileForPicker.value = fileData;
-            if (!selectedItems.value.includes(item.path)) {
-                originalToggleSelect(item.path, item);
-            }
-            emit('fileSelected', fileData);
-            setTimeout(() => scrollToSelectedFile(), 100);
+            return;
         }
+
+        selectedItems.value = [];
+        selectedFileForPicker.value = null;
+
+        selectedFileForPicker.value = fileData;
+        originalToggleSelect(item.path, item);
+        emit('fileSelected', fileData);
+        setTimeout(() => scrollToSelectedFile(), 100);
     } else {
         originalSelectFileItem(item);
     }
@@ -486,20 +492,19 @@ const confirmSelection = () => {
     }
 };
 
-watch(selectedFileForPicker, (newFile) => {
-    if (props.mode === 'picker') {
-        emit('fileSelected', newFile);
-    }
-});
-
 defineExpose({
     confirmSelection,
     getSelectedFile,
-    selectedFileForPicker
+    selectedFileForPicker,
+    selectFileByUrl
 });
 
 onMounted(async () => {
-    await loadData();
+    if (!dataLoaded) {
+        await loadData();
+        dataLoaded = true;
+        emit('loaded');
+    }
 
     if (props.selectedUrl && props.mode === 'picker') {
         await nextTick();
