@@ -1,192 +1,224 @@
 <template>
-    <EmptyLayout :user="user">
+    <AdminLayout :user="user">
         <Head>
             <title>{{ title }}</title>
         </Head>
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <h1 class="text-xl font-semibold text-gray-800">Менеджер меню: Создать пункт меню</h1>
-            </div>
-            <div class="px-6 pb-4 flex gap-2">
-                <button @click="save" :disabled="loading" class="px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50">
-                    Сохранить
-                </button>
-                <button @click="saveAndClose" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и закрыть
-                </button>
-                <button @click="saveAndCreate" :disabled="loading" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition disabled:opacity-50">
-                    Сохранить и создать
-                </button>
-                <Link :href="`/admin/menu/types/${menuTypeId}/items`" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    Отменить
-                </Link>
-            </div>
-        </div>
 
-        <div class="bg-white border-b border-gray-200">
-            <div class="px-6 py-4">
-                <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Заголовок *</label>
-                        <input
-                            v-model="form.title"
-                            @input="updateAlias"
-                            type="text"
-                            class="w-96 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Введите заголовок..."
-                        />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Алиас</label>
-                        <input
-                            v-model="form.alias"
-                            type="text"
-                            class="w-64 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="останется пустым - сгенерируется автоматически"
-                        />
-                    </div>
+        <div class="flex flex-col h-full w-full">
+            <!-- Панель действий -->
+            <div class="admin-page-actions flex-shrink-0 w-full">
+                <h1 class="admin-page-title">Менеджер меню: Создать пункт меню</h1>
+                <div class="flex flex-wrap gap-2.5">
+                    <button
+                        @click="save"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-primary"
+                    >
+                        Сохранить
+                    </button>
+                    <button
+                        @click="saveAndClose"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и закрыть
+                    </button>
+                    <button
+                        @click="saveAndCreate"
+                        :disabled="loading"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Сохранить и создать
+                    </button>
+                    <button
+                        @click="cancel"
+                        class="admin-btn admin-btn-secondary"
+                    >
+                        Отменить
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <div class="flex-1 flex gap-6 px-6 py-6 min-h-[calc(100vh-250px)]">
-            <div class="flex-1">
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <div class="p-6 space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Тип пункта меню *</label>
-                            <select
-                                v-model="form.link_type"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            >
-                                <option value="url">URL</option>
-                                <option value="material">Материал</option>
-                                <option value="separator">Разделитель</option>
-                                <option value="heading">Заголовок</option>
-                                <option value="external">Внешний URL</option>
-                            </select>
-                        </div>
-
-                        <div v-if="form.link_type !== 'separator' && form.link_type !== 'heading'">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ссылка</label>
-                            <div class="flex gap-2 max-w-md">
+            <!-- Основной контент -->
+            <div class="admin-page-content">
+                <div class="admin-page-card w-full">
+                    <!-- Верхняя панель -->
+                    <div class="p-6 border-b border-slate-200">
+                        <div class="flex flex-wrap items-center gap-6">
+                            <div class="flex items-center gap-3">
+                                <label class="admin-form-label whitespace-nowrap">Заголовок *</label>
                                 <input
-                                    v-model="form.link_value_display"
+                                    v-model="form.title"
+                                    @input="updateAlias"
                                     type="text"
-                                    class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    :placeholder="form.link_type === 'material' ? 'Выберите материал' : 'https://...'"
-                                    :readonly="form.link_type === 'material'"
+                                    class="admin-form-input"
+                                    style="width: 384px;"
+                                    placeholder="Введите заголовок..."
                                 />
-                                <button
-                                    v-if="form.link_type === 'material'"
-                                    @click="showMaterialModal = true"
-                                    type="button"
-                                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm whitespace-nowrap"
-                                >
-                                    Выбрать
-                                </button>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <label class="admin-form-label whitespace-nowrap">Алиас</label>
+                                <input
+                                    v-model="form.alias"
+                                    type="text"
+                                    class="admin-form-input"
+                                    style="width: 256px;"
+                                    placeholder="останется пустым - сгенерируется автоматически"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Основная часть -->
+                    <div class="flex flex-col lg:flex-row gap-6 p-6 min-h-[calc(100vh-280px)]">
+                        <div class="flex-1">
+                            <div class="space-y-4">
+                                <!-- Тип пункта меню -->
+                                <div>
+                                    <label class="admin-form-label">Тип пункта меню *</label>
+                                    <select
+                                        v-model="form.link_type"
+                                        class="admin-form-select w-full max-w-md"
+                                    >
+                                        <option value="url">URL</option>
+                                        <option value="material">Материал</option>
+                                        <option value="separator">Разделитель</option>
+                                        <option value="heading">Заголовок</option>
+                                        <option value="external">Внешний URL</option>
+                                    </select>
+                                </div>
+
+                                <!-- Ссылка -->
+                                <div v-if="form.link_type !== 'separator' && form.link_type !== 'heading'">
+                                    <label class="admin-form-label">Ссылка</label>
+                                    <div class="flex gap-2 max-w-md">
+                                        <input
+                                            v-model="form.link_value_display"
+                                            type="text"
+                                            class="admin-form-input flex-1"
+                                            :placeholder="form.link_type === 'material' ? 'Выберите материал' : 'https://...'"
+                                            :readonly="form.link_type === 'material'"
+                                        />
+                                        <button
+                                            v-if="form.link_type === 'material'"
+                                            @click="showMaterialModal = true"
+                                            type="button"
+                                            class="admin-btn admin-btn-secondary whitespace-nowrap"
+                                        >
+                                            Выбрать
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Целевое окно -->
+                                <div>
+                                    <label class="admin-form-label">Целевое окно</label>
+                                    <select
+                                        v-model="form.target"
+                                        class="admin-form-select w-full max-w-md"
+                                    >
+                                        <option value="_self">Текущее окно</option>
+                                        <option value="_blank">Новое окно</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Целевое окно</label>
-                            <select
-                                v-model="form.target"
-                                class="w-full max-w-md border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            >
-                                <option value="_self">Текущее окно</option>
-                                <option value="_blank">Новое окно</option>
-                            </select>
+                        <!-- Правая панель -->
+                        <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
+                            <!-- Меню -->
+                            <div>
+                                <h3 class="admin-form-label">Меню</h3>
+                                <select
+                                    v-model="form.menu_type_id"
+                                    @change="onMenuTypeChange"
+                                    class="admin-form-select w-full"
+                                >
+                                    <option v-for="type in menuTypes" :key="type.id" :value="type.id">
+                                        {{ type.title }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Позиция -->
+                            <div>
+                                <h3 class="admin-form-label">Позиция</h3>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="first"
+                                            v-model="positionType"
+                                            class="rounded border-gray-300"
+                                        />
+                                        <span class="text-sm text-slate-700">Первым (в начало списка)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="after"
+                                            v-model="positionType"
+                                            class="rounded border-gray-300"
+                                        />
+                                        <span class="text-sm text-slate-700">После элемента</span>
+                                    </label>
+                                </div>
+
+                                <select
+                                    v-if="positionType === 'after'"
+                                    v-model="form.after_id"
+                                    class="admin-form-select w-full mt-2"
+                                >
+                                    <option :value="null">— Выберите элемент —</option>
+                                    <option v-for="item in orderOptions" :key="item.id" :value="item.id">
+                                        {{ '—'.repeat(item.level || 0) }} {{ item.title }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Родительский элемент -->
+                            <div>
+                                <h3 class="admin-form-label">Родительский элемент</h3>
+                                <select
+                                    v-model="form.parent_id"
+                                    class="admin-form-select w-full"
+                                >
+                                    <option :value="null">— Корневой уровень —</option>
+                                    <option v-for="item in parentOptions" :key="item.id" :value="item.id">
+                                        {{ '—'.repeat(item.level || 0) }} {{ item.title }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Статус -->
+                            <div>
+                                <h3 class="admin-form-label">Статус</h3>
+                                <select
+                                    v-model="form.status"
+                                    class="admin-form-select w-full"
+                                    :class="{
+                                        'admin-form-select-status-published': form.status === true,
+                                        'admin-form-select-status-draft': form.status === false
+                                    }"
+                                >
+                                    <option :value="true" class="bg-white text-slate-800">Опубликовано</option>
+                                    <option :value="false" class="bg-white text-slate-800">Не опубликовано</option>
+                                </select>
+                            </div>
+
+                            <!-- Доступ -->
+                            <div>
+                                <h3 class="admin-form-label">Доступ</h3>
+                                <select
+                                    v-model="form.access"
+                                    class="admin-form-select w-full"
+                                >
+                                    <option value="all">Все</option>
+                                    <option value="guest">Только гости</option>
+                                    <option value="registered">Только зарегистрированные</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-80">
-                <div class="space-y-4">
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Меню</h3>
-                        <select
-                            v-model="form.menu_type_id"
-                            @change="onMenuTypeChange"
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-                            <option v-for="type in menuTypes" :key="type.id" :value="type.id">
-                                {{ type.title }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Позиция</h3>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    value="first"
-                                    v-model="positionType"
-                                    class="rounded border-gray-300"
-                                />
-                                <span class="text-sm text-gray-700">Первым (в начало списка)</span>
-                            </label>
-                            <label class="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    value="after"
-                                    v-model="positionType"
-                                    class="rounded border-gray-300"
-                                />
-                                <span class="text-sm text-gray-700">После элемента</span>
-                            </label>
-                        </div>
-
-                        <select
-                            v-if="positionType === 'after'"
-                            v-model="form.after_id"
-                            class="mt-2 w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-                            <option :value="null">— Выберите элемент —</option>
-                            <option v-for="item in orderOptions" :key="item.id" :value="item.id">
-                                {{ '—'.repeat(item.level || 0) }} {{ item.title }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Родительский элемент</h3>
-                        <select
-                            v-model="form.parent_id"
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-                            <option :value="null">— Корневой уровень —</option>
-                            <option v-for="item in parentOptions" :key="item.id" :value="item.id">
-                                {{ '—'.repeat(item.level || 0) }} {{ item.title }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Статус</h3>
-                        <select
-                            v-model="form.status"
-                            class="w-full border rounded px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 transition"
-                            :class="form.status ? 'bg-green-600 text-white border-green-700' : 'bg-red-600 text-white border-red-700'"
-                        >
-                            <option :value="true" class="bg-white text-gray-800">Опубликовано</option>
-                            <option :value="false" class="bg-white text-gray-800">Не опубликовано</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <h3 class="text-sm font-medium text-gray-800 mb-2">Доступ</h3>
-                        <select
-                            v-model="form.access"
-                            class="w-full border border-gray-300 rounded px-3 py-1.5 text-sm"
-                        >
-                            <option value="all">Все</option>
-                            <option value="guest">Только гости</option>
-                            <option value="registered">Только зарегистрированные</option>
-                        </select>
                     </div>
                 </div>
             </div>
@@ -199,14 +231,14 @@
             @close="showMaterialModal = false"
             @select="selectMaterial"
         />
-    </EmptyLayout>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import { Link, router } from '@inertiajs/vue3';
-import EmptyLayout from '@/layouts/EmptyLayout.vue';
+import { router } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import MaterialSelectorModal from './components/MaterialSelectorModal.vue';
 import { menuTypesApi, menuItemsApi, type MenuType, type MenuItem } from '@/api/menu';
@@ -247,6 +279,10 @@ watch(() => form.value.link_type, (newType) => {
         form.value.link_value_display = '';
     }
 });
+
+const cancel = () => {
+    router.visit(`/admin/menu/types/${form.value.menu_type_id}/items`);
+};
 
 const onMenuTypeChange = () => {
     loadParentOptions();
@@ -355,7 +391,6 @@ const updateAlias = () => {
     form.value.alias = alias;
 };
 
-// ИСПРАВЛЕНО: используем slug вместо alias
 const selectMaterial = (material: { id: number; title: string; slug: string }) => {
     form.value.link_value = material.slug;
     form.value.link_value_display = material.title;

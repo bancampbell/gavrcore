@@ -72,18 +72,23 @@ export function useImageHandlers() {
             const { state } = editor;
             const { tr } = state;
 
-            const marginStyles: Record<string, string> = {
-                left: 'margin-left: 0; margin-right: auto;',
-                center: 'margin-left: auto; margin-right: auto;',
-                right: 'margin-left: auto; margin-right: 0;',
-            };
+            const width = selectedImg.getAttribute('width') || '';
+            const height = selectedImg.getAttribute('height') || '';
 
-            const style = `display: block; ${marginStyles[align]}`;
+            let style = 'display: block; ';
+            if (width) style += `width: ${width}px; `;
+            if (height) style += `height: ${height}px; `;
+
+            if (align === 'left') style += 'margin-left: 0; margin-right: auto;';
+            else if (align === 'center') style += 'margin-left: auto; margin-right: auto;';
+            else if (align === 'right') style += 'margin-left: auto; margin-right: 0;';
 
             state.doc.descendants((node, pos) => {
                 if (node.type.name === 'image' && node.attrs.src === selectedImg.src) {
                     tr.setNodeMarkup(pos, undefined, {
                         ...node.attrs,
+                        width: width || undefined,
+                        height: height || undefined,
                         style: style,
                         align: align,
                     });
@@ -91,6 +96,14 @@ export function useImageHandlers() {
             });
 
             editor.view.dispatch(tr);
+
+            setTimeout(() => {
+                const imgEl = document.querySelector(`.tiptap img[src="${selectedImg.src}"]`) as HTMLImageElement;
+                if (imgEl) {
+                    imgEl.style.cssText = style;
+                }
+            }, 50);
+
         } else {
             selectedImageAlign.value = '';
             editor.chain().focus().setTextAlign(align).run();
@@ -109,39 +122,47 @@ export function useImageHandlers() {
         }
     };
 
+    const normalizeUrl = (url: string) => {
+        if (!url) return '';
+        return url.replace(/^https?:\/\/[^\/]+/, '');
+    };
+
     const updateImage = (editor: Editor, oldUrl: string, newData: ImageData) => {
         if (!editor) return;
 
         const { state } = editor;
         let found = false;
-
-        // Нормализуем URL для поиска
-        const normalizeUrl = (url: string) => {
-            let normalized = url;
-            // Убираем http:// или https:// и домен
-            normalized = normalized.replace(/^https?:\/\/[^\/]+/, '');
-            return normalized;
-        };
-
         const normalizedOldUrl = normalizeUrl(oldUrl);
+
+        const width = newData.width || '';
+        const height = newData.height || '';
+
+        let style = 'display: block; ';
+        if (width) style += `width: ${width}px; `;
+        if (height) style += `height: ${height}px; `;
+
+        if (newData.align === 'left') style += 'margin-left: 0; margin-right: auto;';
+        else if (newData.align === 'center') style += 'margin-left: auto; margin-right: auto;';
+        else if (newData.align === 'right') style += 'margin-left: auto; margin-right: 0;';
 
         state.doc.descendants((node, pos) => {
             if (node.type.name === 'image') {
                 const nodeUrl = node.attrs.src || '';
                 const normalizedNodeUrl = normalizeUrl(nodeUrl);
 
-                // Сравниваем нормализованные URL или оригинальные
                 if (normalizedNodeUrl === normalizedOldUrl || nodeUrl === oldUrl) {
-                    const newAttrs = {
-                        ...node.attrs,
+                    const { tr } = state;
+
+                    const newAttrs: any = {
                         src: newData.url,
-                        alt: newData.alt || node.attrs.alt,
-                        title: newData.title || node.attrs.title,
-                        width: newData.width || node.attrs.width,
-                        height: newData.height || node.attrs.height,
+                        alt: newData.alt || node.attrs.alt || '',
+                        title: newData.title || node.attrs.title || '',
+                        width: width || undefined,
+                        height: height || undefined,
+                        style: style,
+                        align: newData.align || '',
                     };
 
-                    const { tr } = state;
                     tr.setNodeMarkup(pos, undefined, newAttrs);
                     editor.view.dispatch(tr);
                     found = true;
@@ -152,32 +173,37 @@ export function useImageHandlers() {
         });
 
         if (!found) {
-            // Fallback: ищем по src в HTML
             const currentHtml = editor.getHTML();
-            const escapedOldUrl = oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const escapedNormalizedOldUrl = normalizedOldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-            // Пробуем оба варианта
+            let newImgHtml = `<img src="${newData.url}"`;
+            if (newData.alt && newData.alt !== '') newImgHtml += ` alt="${newData.alt}"`;
+            if (newData.title && newData.title !== '') newImgHtml += ` title="${newData.title}"`;
+            if (width) newImgHtml += ` width="${width}"`;
+            if (height) newImgHtml += ` height="${height}"`;
+            newImgHtml += ` style="${style}" />`;
+
+            const escapedOldUrl = oldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const escapedNormalized = normalizedOldUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
             const patterns = [
                 new RegExp(`<img[^>]*src=["']${escapedOldUrl}["'][^>]*>`, 'g'),
-                new RegExp(`<img[^>]*src=["']${escapedNormalizedOldUrl}["'][^>]*>`, 'g'),
+                new RegExp(`<img[^>]*src=["']${escapedNormalized}["'][^>]*>`, 'g'),
             ];
 
             let updatedHtml = currentHtml;
             let replaced = false;
 
             for (const pattern of patterns) {
+                pattern.lastIndex = 0;
                 if (pattern.test(currentHtml)) {
-                    // Сбрасываем lastIndex после test
                     pattern.lastIndex = 0;
-                    const newImgHtml = `<img src="${newData.url}" alt="${newData.alt || ''}" title="${newData.title || ''}" />`;
                     updatedHtml = currentHtml.replace(pattern, newImgHtml);
                     replaced = true;
                     break;
                 }
             }
 
-            if (replaced) {
+            if (replaced && updatedHtml !== currentHtml) {
                 editor.commands.setContent(updatedHtml);
             }
         }

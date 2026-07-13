@@ -18,15 +18,15 @@ const HANDLES: { direction: Direction; cursor: string; position: Record<string, 
 ];
 
 const alignStyles: Record<string, string> = {
-    left: 'margin-right: auto;',
+    left: 'margin-left: 0; margin-right: auto;',
     center: 'margin-left: auto; margin-right: auto;',
-    right: 'margin-left: auto;',
+    right: 'margin-left: auto; margin-right: 0;',
 };
 
 function getAlign(style: string): string | null {
     if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) return 'center';
-    if (style.includes('margin-right: auto')) return 'left';
-    if (style.includes('margin-left: auto')) return 'right';
+    if (style.includes('margin-left: 0')) return 'left';
+    if (style.includes('margin-right: 0')) return 'right';
     return null;
 }
 
@@ -52,30 +52,42 @@ export const ResizableImage = Image.extend({
             },
             align: {
                 default: null,
-                parseHTML: (el: HTMLElement) => getAlign(el.getAttribute('style') || ''),
+                parseHTML: (el: HTMLElement) => {
+                    const style = el.getAttribute('style') || '';
+                    return getAlign(style);
+                },
                 renderHTML: (attrs: any) => {
                     if (!attrs.align) return {};
                     return { style: `display: block; ${getAlignStyle(attrs.align)}` };
                 },
-            },
-            'data-lightbox': {
-                default: 'true',
-                parseHTML: (el: HTMLElement) => el.getAttribute('data-lightbox'),
-                renderHTML: () => ({ 'data-lightbox': 'true' }),
             },
         };
     },
 
     addNodeView() {
         return ({ editor, node, getPos }) => {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.maxWidth = '100%';
+            wrapper.style.display = 'block';
+
             const container = document.createElement('div');
             container.style.position = 'relative';
             container.style.display = 'inline-block';
             container.style.maxWidth = '100%';
-            container.style.border = '2px solid transparent';
+            container.style.border = '1px solid transparent';
             container.style.borderRadius = '4px';
             container.style.transition = 'border-color 0.2s';
             container.style.userSelect = 'none';
+
+            const align = node.attrs.align || '';
+            if (align === 'center') {
+                wrapper.style.textAlign = 'center';
+            } else if (align === 'left') {
+                wrapper.style.textAlign = 'left';
+            } else if (align === 'right') {
+                wrapper.style.textAlign = 'right';
+            }
 
             const img = document.createElement('img');
             img.src = node.attrs.src;
@@ -84,8 +96,7 @@ export const ResizableImage = Image.extend({
             img.style.maxWidth = '100%';
             img.style.height = 'auto';
             img.style.display = 'block';
-            img.style.pointerEvents = 'auto'; // ВКЛЮЧАЕМ, ЧТОБЫ РАБОТАЛИ СОБЫТИЯ
-            img.setAttribute('data-lightbox', 'true');
+            img.style.pointerEvents = 'auto';
 
             if (node.attrs.width) img.style.width = `${node.attrs.width}px`;
             if (node.attrs.height) img.style.height = `${node.attrs.height}px`;
@@ -143,8 +154,8 @@ export const ResizableImage = Image.extend({
                 handle.style.width = `${HANDLE_SIZE}px`;
                 handle.style.height = `${HANDLE_SIZE}px`;
                 handle.style.borderRadius = '50%';
-                handle.style.background = '#3b82f6';
-                handle.style.border = '2px solid white';
+                handle.style.background = '#577ebc';
+                handle.style.border = '1px solid white';
                 handle.style.boxShadow = '0 0 6px rgba(0,0,0,0.3)';
                 handle.style.cursor = cursor;
                 handle.style.pointerEvents = 'auto';
@@ -254,15 +265,13 @@ export const ResizableImage = Image.extend({
                 container.appendChild(handle);
             });
 
-            // При наведении — показываем хендлы и бордер
             container.addEventListener('mouseenter', () => {
-                container.style.borderColor = '#3b82f6';
+                container.style.borderColor = '#5373a5';
                 container.querySelectorAll('.resize-handle').forEach((h) => {
                     (h as HTMLElement).style.opacity = '1';
                 });
             });
 
-            // При уходе мыши — скрываем хендлы и бордер, НО НЕ ТРОГАЕМ ВЫДЕЛЕНИЕ
             container.addEventListener('mouseleave', () => {
                 if (!isResizing) {
                     if (!img.classList.contains('selected-image')) {
@@ -275,33 +284,40 @@ export const ResizableImage = Image.extend({
                 }
             });
 
-            // ПРИ КЛИКЕ — ВЫДЕЛЯЕМ КАРТИНКУ
             img.addEventListener('click', (e) => {
                 e.stopPropagation();
-                // Убираем выделение со всех изображений
                 document.querySelectorAll('.tiptap img').forEach(i => {
                     i.classList.remove('selected-image');
                     const parent = i.closest('div');
                     if (parent) parent.style.borderColor = 'transparent';
                 });
-                // Выделяем текущее
                 img.classList.add('selected-image');
-                container.style.borderColor = '#3b82f6';
-                // Сохраняем данные
+                container.style.borderColor = '#748bb1';
+
+                const style = img.getAttribute('style') || '';
+                let imgAlign = '';
+                if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
+                    imgAlign = 'center';
+                } else if (style.includes('margin-left: 0')) {
+                    imgAlign = 'left';
+                } else if (style.includes('margin-right: 0')) {
+                    imgAlign = 'right';
+                }
+
                 const imgData = {
                     url: img.src,
                     alt: img.alt || '',
                     title: img.title || '',
                     width: img.style.width || '',
                     height: img.style.height || '',
-                    align: '',
+                    align: imgAlign,
                 };
-                // Отправляем событие в Index.vue
                 const event = new CustomEvent('image-selected', { detail: imgData });
                 document.dispatchEvent(event);
             });
 
             container.appendChild(img);
+            wrapper.appendChild(container);
 
             img.addEventListener('load', updateTooltip);
 
@@ -309,18 +325,51 @@ export const ResizableImage = Image.extend({
             observer.observe(img);
 
             return {
-                dom: container,
+                dom: wrapper,
                 update: (updatedNode) => {
                     if (updatedNode.type !== node.type) return false;
+
                     img.src = updatedNode.attrs.src;
                     img.alt = updatedNode.attrs.alt || '';
                     img.title = updatedNode.attrs.title || '';
-                    img.setAttribute('data-lightbox', 'true');
 
-                    if (updatedNode.attrs.width) img.style.width = `${updatedNode.attrs.width}px`;
-                    if (updatedNode.attrs.height) img.style.height = `${updatedNode.attrs.height}px`;
-                    if (updatedNode.attrs.align) {
-                        img.style.cssText += `display: block; ${getAlignStyle(updatedNode.attrs.align)}`;
+                    const align = updatedNode.attrs.align || '';
+                    let width = updatedNode.attrs.width || '';
+                    let height = updatedNode.attrs.height || '';
+
+                    if (!width) {
+                        const currentStyle = img.getAttribute('style') || '';
+                        const wMatch = currentStyle.match(/width:\s*(\d+)px/);
+                        if (wMatch) width = wMatch[1];
+                    }
+                    if (!height) {
+                        const currentStyle = img.getAttribute('style') || '';
+                        const hMatch = currentStyle.match(/height:\s*(\d+)px/);
+                        if (hMatch) height = hMatch[1];
+                    }
+
+                    let style = 'display: block; ';
+                    if (width) style += `width: ${width}px; `;
+                    if (height) style += `height: ${height}px; `;
+                    if (align) {
+                        if (align === 'left') style += 'margin-left: 0; margin-right: auto;';
+                        else if (align === 'center') style += 'margin-left: auto; margin-right: auto;';
+                        else if (align === 'right') style += 'margin-left: auto; margin-right: 0;';
+                    }
+
+                    img.setAttribute('style', style);
+
+                    if (width) img.setAttribute('width', width);
+                    if (height) img.setAttribute('height', height);
+
+                    if (align === 'center') {
+                        wrapper.style.textAlign = 'center';
+                    } else if (align === 'left') {
+                        wrapper.style.textAlign = 'left';
+                    } else if (align === 'right') {
+                        wrapper.style.textAlign = 'right';
+                    } else {
+                        wrapper.style.textAlign = '';
                     }
 
                     updateTooltip();

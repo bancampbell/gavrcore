@@ -141,6 +141,7 @@ const imageHandlers = useImageHandlers();
 const { clearSelection: clearImageSelection } = imageHandlers;
 
 let clickHandler: ((e: MouseEvent) => void) | null = null;
+let observer: MutationObserver | null = null;
 
 watch(editor, (newEditor) => {
     editorRef.value = newEditor;
@@ -258,6 +259,28 @@ const insertContent = (html: string, position?: number) => {
     }
 };
 
+const fixImageStyles = () => {
+    if (!editorElement.value) return;
+    const imgs = editorElement.value.querySelectorAll('img');
+    imgs.forEach((img: HTMLImageElement) => {
+        if (img.hasAttribute('data-lightbox')) {
+            img.removeAttribute('data-lightbox');
+        }
+        const style = img.getAttribute('style') || '';
+        if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
+            let newStyle = style
+                .replace(/max-width:\s*[^;]+;?/g, '')
+                .replace(/pointer-events:\s*[^;]+;?/g, '')
+                .replace(/;\s*;/g, ';')
+                .trim();
+            if (newStyle.endsWith(';')) newStyle = newStyle.slice(0, -1);
+            if (newStyle !== style) {
+                img.setAttribute('style', newStyle);
+            }
+        }
+    });
+};
+
 defineExpose({
     setLinkOnSelection,
     insertContent,
@@ -295,6 +318,7 @@ onMounted(async () => {
             if (!showHtml.value) {
                 emit('update:modelValue', editor.getHTML());
             }
+            nextTick(fixImageStyles);
         },
     });
 
@@ -302,6 +326,16 @@ onMounted(async () => {
 
     document.addEventListener('image-selected', (e: any) => {
         imageHandlers.selectedImageData.value = e.detail;
+    });
+
+    observer = new MutationObserver(() => {
+        fixImageStyles();
+    });
+
+    observer.observe(editorElement.value, {
+        attributes: true,
+        attributeFilter: ['style', 'data-lightbox', 'width', 'height'],
+        subtree: true,
     });
 
     if (clickHandler) {
@@ -338,13 +372,23 @@ onMounted(async () => {
 
         if (img) {
             e.preventDefault();
+            const style = img.getAttribute('style') || '';
+            let align = '';
+            if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
+                align = 'center';
+            } else if (style.includes('margin-left: 0')) {
+                align = 'left';
+            } else if (style.includes('margin-right: 0')) {
+                align = 'right';
+            }
+
             const imgData = {
                 url: img.src,
                 alt: img.alt || '',
                 title: img.title || '',
                 width: img.style.width || '',
                 height: img.style.height || '',
-                align: '',
+                align: align,
             };
             imageHandlers.selectedImageData.value = imgData;
             document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
@@ -363,6 +407,7 @@ onMounted(async () => {
 watch(() => props.modelValue, (newValue) => {
     if (editor && !showHtml.value && newValue !== editor.getHTML()) {
         editor.commands.setContent(newValue || '<p></p>');
+        nextTick(fixImageStyles);
     }
 });
 
@@ -370,6 +415,10 @@ onBeforeUnmount(() => {
     if (clickHandler) {
         document.removeEventListener('click', clickHandler);
         clickHandler = null;
+    }
+    if (observer) {
+        observer.disconnect();
+        observer = null;
     }
     editor?.destroy();
     if (codeEditorView) {
@@ -394,9 +443,32 @@ onBeforeUnmount(() => {
     transition: outline 0.2s;
 }
 .tiptap img.selected-image {
-    outline: 3px solid #4f46e5;
+    outline: 1px solid #4b497e;
     outline-offset: 2px;
 }
+
+/* ВЫРАВНИВАНИЕ ИЗОБРАЖЕНИЙ */
+.tiptap img.align-left,
+.tiptap img[style*="margin-left: 0"][style*="margin-right: auto"] {
+    display: block !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+.tiptap img.align-center,
+.tiptap img[style*="margin-left: auto"][style*="margin-right: auto"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.tiptap img.align-right,
+.tiptap img[style*="margin-left: auto"][style*="margin-right: 0"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
 .tiptap a {
     color: #2563eb;
     text-decoration: underline;

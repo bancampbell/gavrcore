@@ -158,7 +158,8 @@ const openFileManager = () => {
 };
 
 const onMediaSelect = (file: { url: string; name: string; path: string; options?: any }) => {
-    imageUrl.value = file.path;
+    const path = file.path || file.url.replace('/storage/uploads/', '');
+    imageUrl.value = path;
     if (!imageAlt.value) {
         imageAlt.value = file.name;
     }
@@ -170,13 +171,24 @@ const onMediaSelect = (file: { url: string; name: string; path: string; options?
     showMediaManager.value = false;
 };
 
+const normalizePath = (url: string): string => {
+    let path = url;
+    path = path.replace(/^https?:\/\/[^\/]+/, '');
+    return path;
+};
+
 const insertImage = () => {
     if (!imageUrl.value) {
         alert('Введите URL изображения');
         return;
     }
 
-    const fullUrl = imageUrl.value.startsWith('/') ? imageUrl.value : `/storage/uploads/${imageUrl.value}`;
+    let fullUrl = normalizePath(imageUrl.value);
+    if (!fullUrl.startsWith('/storage/uploads/') && !fullUrl.startsWith('/')) {
+        fullUrl = `/storage/uploads/${fullUrl}`;
+    } else if (!fullUrl.startsWith('/storage/uploads/') && fullUrl.startsWith('/')) {
+        fullUrl = `/storage/uploads${fullUrl}`;
+    }
 
     emit('insert', {
         url: fullUrl,

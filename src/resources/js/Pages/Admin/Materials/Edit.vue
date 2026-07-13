@@ -409,14 +409,15 @@ const onImageInsert = (data: {
     oldUrl?: string;
 }) => {
     if (data.oldUrl) {
-        editorRef.value?.updateImage(data.oldUrl, {
+        const updateData = {
             url: data.url,
             alt: data.alt || '',
             title: data.title || '',
             width: data.width || '',
             height: data.height || '',
             align: data.align || ''
-        });
+        };
+        editorRef.value?.updateImage(data.oldUrl, updateData);
         closeImageModal();
         return;
     }
@@ -434,6 +435,8 @@ const onImageInsert = (data: {
         else if (data.align === 'center') imgHtml += ` class="align-center"`;
         else if (data.align === 'right') imgHtml += ` class="align-right"`;
     }
+    if (data.width && data.width !== '') imgHtml += ` width="${data.width}"`;
+    if (data.height && data.height !== '') imgHtml += ` height="${data.height}"`;
     imgHtml += ` />`;
 
     if (editorRef.value) {
@@ -470,6 +473,8 @@ const onMediaManagerSelect = (file: { url: string; name: string; path: string; o
         if (style) {
             imgHtml += ` style="${style.trim()}"`;
         }
+        if (file.options?.width && file.options.width !== '') imgHtml += ` width="${file.options.width}"`;
+        if (file.options?.height && file.options.height !== '') imgHtml += ` height="${file.options.height}"`;
         imgHtml += ` />`;
 
         editorRef.value?.insertContent(imgHtml, savedCursorPosition.value);
