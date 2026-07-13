@@ -145,12 +145,6 @@ const scrollToFile = (filePath: string) => {
                 behavior: 'smooth',
                 block: 'center'
             });
-
-            targetElement.classList.add('highlight-file');
-
-            setTimeout(() => {
-                targetElement?.classList.remove('highlight-file');
-            }, 2000);
         }
     });
 };
@@ -159,24 +153,3 @@ defineExpose({
     scrollToFile
 });
 </script>
-
-<style scoped>
-.highlight-file {
-    animation: highlightPulse 2s ease;
-}
-
-@keyframes highlightPulse {
-    0% {
-        background-color: rgba(59, 130, 246, 0.15);
-        border-radius: 4px;
-    }
-    50% {
-        background-color: rgba(59, 130, 246, 0.3);
-        border-radius: 4px;
-    }
-    100% {
-        background-color: transparent;
-        border-radius: 4px;
-    }
-}
-</style>
