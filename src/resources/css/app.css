@@ -15,11 +15,184 @@
 @import './gallery.css';
 
 /* Пустые параграфы в контенте */
-.prose p:empty {
+p:empty {
     min-height: 1.5em;
 }
 
-.prose p:empty::before {
+p:empty::before {
     content: "\00a0";
     display: inline-block;
 }
+
+/* ============================================
+   КАСТОМНЫЕ КЛАССЫ ДЛЯ КОНТЕНТА
+   Используйте эти классы в HTML режиме
+   ============================================ */
+
+/* === ГРИДЫ === */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.grid-2-1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.grid-1-2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+}
+
+/* === КАРТОЧКИ В ГРИДЕ === */
+.grid-card {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.grid-card-blue {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.grid-card-pink {
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.grid-card-green {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.grid-card-gray {
+    background: #f8fafc;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+/* === КОЛОНКИ === */
+.col-2 {
+    columns: 2;
+    column-gap: 30px;
+}
+
+.col-3 {
+    columns: 3;
+    column-gap: 30px;
+}
+
+/* === ФЛЕКСЫ === */
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.flex-start {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.flex-end {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* === ОТСТУПЫ === */
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mt-4 { margin-top: 32px; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.mb-4 { margin-bottom: 32px; }
+
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+.p-4 { padding: 32px; }
+
+/* === ВЫРАВНИВАНИЕ ТЕКСТА === */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* === ЦВЕТА === */
+.text-primary { color: #0c4a6e; }
+.text-secondary { color: #831843; }
+.text-success { color: #065f46; }
+
+.bg-blue { background: linear-gradient(135deg, #e0f2fe, #bae6fd); }
+.bg-pink { background: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+.bg-green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.bg-gray { background: #f8fafc; }
+.bg-white { background: white; }
+
+/* === РАЗМЕРЫ === */
+.w-100 { width: 100%; }
+.w-50 { width: 50%; }
+.w-33 { width: 33.33%; }
+.w-25 { width: 25%; }
+
+/* === БОРДЕРЫ === */
+.rounded { border-radius: 8px; }
+.rounded-lg { border-radius: 12px; }
+.shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }

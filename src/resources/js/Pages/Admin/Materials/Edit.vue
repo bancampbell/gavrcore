@@ -5,73 +5,31 @@
         </Head>
 
         <div class="flex flex-col h-full w-full">
-            <!-- Панель действий -->
             <div class="admin-page-actions flex-shrink-0 w-full">
                 <h1 class="admin-page-title">Менеджер материалов: Редактировать материал</h1>
                 <div class="flex flex-wrap gap-2.5">
-                    <button
-                        @click="save"
-                        :disabled="loading"
-                        class="admin-btn admin-btn-primary"
-                    >
-                        Сохранить
-                    </button>
-                    <button
-                        @click="saveAndClose"
-                        :disabled="loading"
-                        class="admin-btn admin-btn-secondary"
-                    >
-                        Сохранить и закрыть
-                    </button>
-                    <button
-                        @click="cancel"
-                        class="admin-btn admin-btn-secondary"
-                    >
-                        Отменить
-                    </button>
+                    <button @click="save" :disabled="loading" class="admin-btn admin-btn-primary">Сохранить</button>
+                    <button @click="saveAndClose" :disabled="loading" class="admin-btn admin-btn-secondary">Сохранить и закрыть</button>
+                    <button @click="cancel" class="admin-btn admin-btn-secondary">Отменить</button>
                 </div>
             </div>
 
-            <!-- Основной контент -->
             <div class="admin-page-content">
                 <div class="admin-page-card w-full">
-                    <!-- Верхняя панель -->
                     <div class="p-6 border-b border-slate-200">
                         <div class="flex flex-wrap items-center gap-6">
                             <div class="flex items-center gap-3">
                                 <label class="admin-form-label whitespace-nowrap">Заголовок *</label>
-                                <input
-                                    v-model="form.title"
-                                    @input="updateSlug"
-                                    type="text"
-                                    class="admin-form-input"
-                                    style="width: 384px;"
-                                    placeholder="Введите заголовок..."
-                                />
+                                <input v-model="form.title" @input="updateSlug" type="text" class="admin-form-input" style="width: 384px;" placeholder="Введите заголовок..." />
                             </div>
                             <div class="flex items-center gap-3">
                                 <label class="admin-form-label whitespace-nowrap">Слаг (ЧПУ)</label>
-                                <input
-                                    v-model="form.slug"
-                                    @input="onSlugInput"
-                                    type="text"
-                                    class="admin-form-input"
-                                    style="width: 256px;"
-                                    placeholder="останется пустым - сгенерируется автоматически"
-                                />
+                                <input v-model="form.slug" @input="onSlugInput" type="text" class="admin-form-input" style="width: 256px;" placeholder="останется пустым - сгенерируется автоматически" />
                             </div>
                             <div class="flex items-center gap-3">
                                 <label class="admin-form-label whitespace-nowrap">На главной</label>
-                                <button
-                                    @click="form.show_on_homepage = form.show_on_homepage === '1' ? '0' : '1'"
-                                    type="button"
-                                    class="admin-toggle"
-                                    :class="form.show_on_homepage === '1' ? 'admin-toggle-on' : 'admin-toggle-off'"
-                                >
-                                    <span
-                                        class="admin-toggle-slider"
-                                        :class="form.show_on_homepage === '1' ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
-                                    />
+                                <button @click="form.show_on_homepage = form.show_on_homepage === '1' ? '0' : '1'" type="button" class="admin-toggle" :class="form.show_on_homepage === '1' ? 'admin-toggle-on' : 'admin-toggle-off'">
+                                    <span class="admin-toggle-slider" :class="form.show_on_homepage === '1' ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                 </button>
                                 <span class="text-sm text-slate-700">{{ form.show_on_homepage === '1' ? 'Да' : 'Нет' }}</span>
                             </div>
@@ -79,11 +37,12 @@
                         <p class="text-xs text-slate-400 mt-2">Только один материал может быть отмечен на главной</p>
                     </div>
 
-                    <!-- Редактор + правая панель -->
                     <div class="flex flex-col lg:flex-row gap-6 p-6 min-h-[calc(100vh-280px)]">
                         <div class="flex-1">
                             <div class="border border-slate-300 rounded-lg overflow-hidden h-full">
                                 <Editor
+                                    v-if="!showRawHtml"
+                                    :key="editorKey"
                                     ref="editorRef"
                                     v-model="form.content"
                                     @open-link-modal="openLinkModal"
@@ -91,42 +50,39 @@
                                     @open-image-manager="openImageManager"
                                     @edit-link="handleEditLink"
                                     @open-gallery-modal="openGalleryModal"
+                                    @toggle-raw-html="toggleRawHtml"
+                                />
+                                <RawHtmlEditor
+                                    v-else
+                                    :model-value="rawHtmlContent"
+                                    @update:model-value="applyRawHtml"
+                                    @close="closeRawHtml"
                                 />
                             </div>
                         </div>
 
-                        <!-- Правая панель -->
                         <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
-                            <!-- Состояние -->
                             <div>
                                 <h3 class="admin-form-label">Состояние</h3>
-                                <select
-                                    v-model="form.state"
-                                    class="admin-form-select w-full"
-                                    :class="{
-                                        'admin-form-select-status-published': form.state === 'published',
-                                        'admin-form-select-status-draft': form.state === 'draft',
-                                        'admin-form-select-status-archived': form.state === 'archived'
-                                    }"
-                                >
+                                <select v-model="form.state" class="admin-form-select w-full" :class="{
+                                    'admin-form-select-status-published': form.state === 'published',
+                                    'admin-form-select-status-draft': form.state === 'draft',
+                                    'admin-form-select-status-archived': form.state === 'archived'
+                                }">
                                     <option value="published" class="bg-white text-slate-800">Опубликовано</option>
                                     <option value="draft" class="bg-white text-slate-800">Не опубликовано</option>
                                     <option value="archived" class="bg-white text-slate-800">Архив</option>
                                 </select>
                             </div>
 
-                            <!-- Категория -->
                             <div>
                                 <h3 class="admin-form-label">Категория *</h3>
                                 <select v-model="form.category_id" class="admin-form-select w-full">
                                     <option :value="null">Выберите категорию</option>
-                                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                                        {{ cat.name }}
-                                    </option>
+                                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                 </select>
                             </div>
 
-                            <!-- Доступ -->
                             <div>
                                 <h3 class="admin-form-label">Доступ</h3>
                                 <select v-model="form.access" class="admin-form-select w-full">
@@ -136,82 +92,37 @@
                                 </select>
                             </div>
 
-                            <!-- Отображение -->
                             <div>
                                 <h3 class="admin-form-label">Отображение</h3>
                                 <div class="border border-slate-300 rounded-lg p-3 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm font-medium text-slate-700">Глобальные настройки</span>
-                                        <button
-                                            @click="form.use_global_settings = !form.use_global_settings"
-                                            type="button"
-                                            class="admin-toggle"
-                                            :class="form.use_global_settings ? 'admin-toggle-on' : 'admin-toggle-off'"
-                                        >
-                                            <span
-                                                class="admin-toggle-slider"
-                                                :class="form.use_global_settings ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
-                                            />
+                                        <button @click="form.use_global_settings = !form.use_global_settings" type="button" class="admin-toggle" :class="form.use_global_settings ? 'admin-toggle-on' : 'admin-toggle-off'">
+                                            <span class="admin-toggle-slider" :class="form.use_global_settings ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
                                         <span class="text-sm text-slate-700">Дата создания</span>
-                                        <button
-                                            @click="form.show_date = !form.show_date"
-                                            :disabled="form.use_global_settings"
-                                            type="button"
-                                            class="admin-toggle"
-                                            :class="form.show_date ? 'admin-toggle-on' : 'admin-toggle-off'"
-                                        >
-                                            <span
-                                                class="admin-toggle-slider"
-                                                :class="form.show_date ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
-                                            />
+                                        <button @click="form.show_date = !form.show_date" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_date ? 'admin-toggle-on' : 'admin-toggle-off'">
+                                            <span class="admin-toggle-slider" :class="form.show_date ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
                                         <span class="text-sm text-slate-700">Автор</span>
-                                        <button
-                                            @click="form.show_author = !form.show_author"
-                                            :disabled="form.use_global_settings"
-                                            type="button"
-                                            class="admin-toggle"
-                                            :class="form.show_author ? 'admin-toggle-on' : 'admin-toggle-off'"
-                                        >
-                                            <span
-                                                class="admin-toggle-slider"
-                                                :class="form.show_author ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
-                                            />
+                                        <button @click="form.show_author = !form.show_author" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_author ? 'admin-toggle-on' : 'admin-toggle-off'">
+                                            <span class="admin-toggle-slider" :class="form.show_author ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
                                         <span class="text-sm text-slate-700">Категория</span>
-                                        <button
-                                            @click="form.show_category = !form.show_category"
-                                            :disabled="form.use_global_settings"
-                                            type="button"
-                                            class="admin-toggle"
-                                            :class="form.show_category ? 'admin-toggle-on' : 'admin-toggle-off'"
-                                        >
-                                            <span
-                                                class="admin-toggle-slider"
-                                                :class="form.show_category ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
-                                            />
+                                        <button @click="form.show_category = !form.show_category" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_category ? 'admin-toggle-on' : 'admin-toggle-off'">
+                                            <span class="admin-toggle-slider" :class="form.show_category ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
                                         <span class="text-sm text-slate-700">Просмотры</span>
-                                        <button
-                                            @click="form.show_views = !form.show_views"
-                                            :disabled="form.use_global_settings"
-                                            type="button"
-                                            class="admin-toggle"
-                                            :class="form.show_views ? 'admin-toggle-on' : 'admin-toggle-off'"
-                                        >
-                                            <span
-                                                class="admin-toggle-slider"
-                                                :class="form.show_views ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'"
-                                            />
+                                        <button @click="form.show_views = !form.show_views" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_views ? 'admin-toggle-on' : 'admin-toggle-off'">
+                                            <span class="admin-toggle-slider" :class="form.show_views ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
                                 </div>
@@ -221,14 +132,9 @@
                                 </p>
                             </div>
 
-                            <!-- Метки -->
                             <div>
                                 <h3 class="admin-form-label">Метки</h3>
-                                <input
-                                    type="text"
-                                    class="admin-form-input w-full"
-                                    placeholder="Введите метки через запятую"
-                                />
+                                <input type="text" class="admin-form-input w-full" placeholder="Введите метки через запятую" />
                                 <p class="text-xs text-slate-400 mt-1">Введите метки через запятую</p>
                             </div>
                         </div>
@@ -239,43 +145,18 @@
 
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
 
-        <LinkModal
-            :show="showLinkModal"
-            :categories="categories"
-            :materials="materials"
-            :edit-data="editLinkData"
-            :selected-text="selectedLinkText"
-            @close="closeLinkModal"
-            @insert="insertLink"
-            @edit="updateLink"
-        />
+        <LinkModal :show="showLinkModal" :categories="categories" :materials="materials" :edit-data="editLinkData" :selected-text="selectedLinkText" @close="closeLinkModal" @insert="insertLink" @edit="updateLink" />
 
-        <ImageModal
-            :show="showImageModal"
-            :edit-data="editImageData"
-            @close="closeImageModal"
-            @insert="onImageInsert"
-        />
+        <ImageModal :show="showImageModal" :edit-data="editImageData" @close="closeImageModal" @insert="onImageInsert" />
 
-        <MediaManagerModal
-            :show="showImageManager"
-            :user="user"
-            :selected-url="selectedMediaUrl"
-            mode="file"
-            @close="closeImageManager"
-            @select="onMediaManagerSelect"
-        />
+        <MediaManagerModal :show="showImageManager" :user="user" :selected-url="selectedMediaUrl" mode="file" @close="closeImageManager" @select="onMediaManagerSelect" />
 
-        <GallerySelectModal
-            :show="showGalleryModal"
-            @close="closeGalleryModal"
-            @select="insertGallery"
-        />
+        <GallerySelectModal :show="showGalleryModal" @close="closeGalleryModal" @select="insertGallery" />
     </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
@@ -283,6 +164,7 @@ import AdminLayout from '../../../layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import type { User, Category, Material } from '../../../types';
 import Editor from '../../../components/shared/Editor/Index.vue';
+import RawHtmlEditor from '../../../components/shared/Editor/RawHtmlEditor.vue';
 import LinkModal from './components/LinkModal.vue';
 import ImageModal from './components/ImageModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
@@ -294,6 +176,8 @@ const props = defineProps<{
     material: Material;
     categories: Category[];
 }>();
+
+console.log('[Edit] props.material.content length:', props.material.content?.length || 0);
 
 const loading = ref(false);
 const showLinkModal = ref(false);
@@ -308,9 +192,10 @@ const editorRef = ref<any>(null);
 const selectedLinkText = ref('');
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
+const editorKey = ref(0);
 
 const form = ref({
-    title: props.material.title,
+    title: props.material.title || '',
     slug: props.material.slug || '',
     content: props.material.content || '',
     category_id: props.material.category_id,
@@ -324,8 +209,53 @@ const form = ref({
     show_views: props.material.show_views ?? true,
 });
 
+console.log('[Edit] form.content after init length:', form.value.content?.length || 0);
+
 const isSlugManuallyEdited = ref(!!form.value.slug);
 
+// ===== HTML РЕЖИМ =====
+const showRawHtml = ref(false);
+const rawHtmlContent = ref('');
+
+const toggleRawHtml = () => {
+    console.log('[toggleRawHtml] ===== START =====');
+    console.log('[toggleRawHtml] showRawHtml.value:', showRawHtml.value);
+
+    if (!showRawHtml.value) {
+        const content = form.value.content || '';
+        console.log('[toggleRawHtml] content length:', content.length);
+        rawHtmlContent.value = content;
+        showRawHtml.value = true;
+    } else {
+        showRawHtml.value = false;
+    }
+    console.log('[toggleRawHtml] ===== END =====');
+};
+
+const closeRawHtml = () => {
+    showRawHtml.value = false;
+};
+
+const applyRawHtml = (html: string) => {
+    console.log('[applyRawHtml] received html length:', html?.length || 0);
+    console.log('[applyRawHtml] BEFORE form.content length:', form.value.content?.length || 0);
+
+    form.value.content = html;
+    console.log('[applyRawHtml] AFTER form.content length:', form.value.content?.length || 0);
+
+    showRawHtml.value = false;
+    editorKey.value++;
+
+    nextTick(() => {
+        console.log('[applyRawHtml] nextTick - editorRef exists?', !!editorRef.value);
+        if (editorRef.value) {
+            console.log('[applyRawHtml] calling insertContent with length:', html.length);
+            editorRef.value.insertContent(html);
+        }
+    });
+};
+
+// ===== ОСТАЛЬНОЕ =====
 const loadMaterials = async () => {
     try {
         const response = await axios.get('/admin/materials/list');
@@ -603,6 +533,7 @@ const saveAndClose = async () => {
 };
 
 onMounted(() => {
+    console.log('[Edit] onMounted - props.material.content length:', props.material.content?.length || 0);
     loadMaterials();
 });
 </script>

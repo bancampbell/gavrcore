@@ -178,13 +178,18 @@
         >
             ✖️
         </button>
+
+        <!-- ===== НОВАЯ КНОПКА HTML ===== -->
         <button
             @click="toggleHtml"
-            class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
+            class="px-3 h-8 rounded transition flex items-center justify-center gap-1 text-sm font-medium"
+            :class="isRawHtmlMode ? 'bg-purple-600 text-white' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'"
             title="HTML код"
         >
-            &lt;/&gt;
+            <span>&lt;/&gt;</span>
+            <span>{{ isRawHtmlMode ? 'Визуально' : 'HTML' }}</span>
         </button>
+        <!-- ========================== -->
 
         <div class="w-px h-6 bg-gray-300 mx-1"></div>
 
@@ -217,5 +222,6 @@ defineProps<{
     toggleHtml: () => void;
     openFileManager: () => void;
     openFormModal?: () => void;
+    isRawHtmlMode?: boolean;
 }>();
 </script>

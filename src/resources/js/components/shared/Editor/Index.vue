@@ -14,22 +14,12 @@
             :toggle-html="toggleHtml"
             :open-file-manager="openFileManager"
             :open-form-modal="openFormModal"
+            :is-raw-html-mode="isRawHtmlMode"
+            @toggle-raw-html="emit('toggleRawHtml')"
         />
 
-        <div v-show="!showHtml" class="flex-1 overflow-auto">
+        <div class="flex-1 overflow-auto">
             <div class="tiptap p-4 h-full" ref="editorElement"></div>
-        </div>
-
-        <div v-show="showHtml" class="flex-1 p-4 overflow-hidden">
-            <div ref="codeEditorRef" class="h-full w-full"></div>
-            <div class="mt-2 flex justify-end gap-2">
-                <button @click="applyHtml" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">
-                    Применить
-                </button>
-                <button @click="cancelHtml" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">
-                    Отмена
-                </button>
-            </div>
         </div>
 
         <GallerySelectModal
@@ -56,35 +46,36 @@ import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 import Toolbar from './Toolbar.vue';
 import { ResizableImage } from './extensions';
-import { useHtmlMode, useLinkHandlers, useImageHandlers } from './composables';
+import { CustomDiv } from './extensions/CustomDiv';
+import { PreserveAttributes } from './extensions/PreserveAttributes';
+import { useLinkHandlers, useImageHandlers } from './composables';
 import type { EditorProps, EditorEmits } from './types/editor';
 import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
 import FormSelectModal from '@/components/shared/FormSelectModal.vue';
 
-// CodeMirror
-import { EditorView, basicSetup } from 'codemirror';
-import { html } from '@codemirror/lang-html';
-import { EditorView as EditorViewExt } from '@codemirror/view';
-
-// Prettier
-import { format } from 'prettier/standalone';
-import parserHtml from 'prettier/plugins/html';
 
 const props = defineProps<EditorProps>();
 const emit = defineEmits<EditorEmits>();
 
 const editorElement = ref<HTMLElement>();
-const showHtml = ref(false);
-const htmlContent = ref('');
-const codeEditorRef = ref<HTMLElement>();
 let editor: Editor | null = null;
-let codeEditorView: EditorView | null = null;
 
 const editorRef = ref(editor) as VueRef<Editor | null>;
 
 const showGalleryModal = ref(false);
 const showFormModal = ref(false);
+const isRawHtmlMode = ref(false);
 
+// ===== HTML РЕЖИМ =====
+const toggleHtml = () => {
+    emit('toggleRawHtml');
+};
+
+const getHTML = () => {
+    return editor?.getHTML() || '';
+};
+
+// ===== ГАЛЕРЕЯ =====
 const handleOpenGalleryModal = () => {
     showGalleryModal.value = true;
 };
@@ -96,6 +87,7 @@ const insertGallery = (gallery: any) => {
     showGalleryModal.value = false;
 };
 
+// ===== ФОРМЫ =====
 const openFormModal = () => {
     showFormModal.value = true;
 };
@@ -123,83 +115,13 @@ const openFileManager = () => {
     // TODO: implement file manager
 };
 
-const { toggleHtml, applyHtml, cancelHtml } = useHtmlMode(
-    editorRef,
-    showHtml,
-    htmlContent,
-    (event, value) => {
-        if (event === 'update:modelValue') {
-            emit('update:modelValue', value);
-        }
-    }
-);
-
+// ===== ССЫЛКИ =====
 const linkHandlers = useLinkHandlers(emit);
 const { clearSelection: clearLinkSelection } = linkHandlers;
 
+// ===== ИЗОБРАЖЕНИЯ =====
 const imageHandlers = useImageHandlers();
 const { clearSelection: clearImageSelection } = imageHandlers;
-
-let clickHandler: ((e: MouseEvent) => void) | null = null;
-let observer: MutationObserver | null = null;
-
-watch(editor, (newEditor) => {
-    editorRef.value = newEditor;
-});
-
-watch(showHtml, async (newVal) => {
-    if (newVal) {
-        await nextTick();
-        if (codeEditorRef.value && !codeEditorView) {
-            let formattedHtml = htmlContent.value;
-            try {
-                formattedHtml = await format(htmlContent.value, {
-                    parser: 'html',
-                    plugins: [parserHtml],
-                    printWidth: 80,
-                    tabWidth: 2,
-                    useTabs: false,
-                });
-            } catch (e) {
-                console.warn('HTML formatting failed:', e);
-            }
-            htmlContent.value = formattedHtml;
-
-            codeEditorView = new EditorView({
-                doc: formattedHtml,
-                extensions: [
-                    basicSetup,
-                    html(),
-                    EditorViewExt.lineWrapping,
-                    EditorView.updateListener.of((update) => {
-                        if (update.docChanged) {
-                            htmlContent.value = update.state.doc.toString();
-                        }
-                    }),
-                ],
-                parent: codeEditorRef.value,
-            });
-        }
-    } else {
-        if (codeEditorView) {
-            codeEditorView.destroy();
-            codeEditorView = null;
-        }
-    }
-});
-
-watch(htmlContent, (newVal) => {
-    if (codeEditorView && newVal !== codeEditorView.state.doc.toString()) {
-        const transaction = codeEditorView.state.update({
-            changes: {
-                from: 0,
-                to: codeEditorView.state.doc.length,
-                insert: newVal,
-            },
-        });
-        codeEditorView.dispatch(transaction);
-    }
-});
 
 const handleOpenLinkModal = () => {
     if (editor && linkHandlers.selectedLinkData.value) {
@@ -259,6 +181,7 @@ const insertContent = (html: string, position?: number) => {
     }
 };
 
+// ===== FIX СТИЛЕЙ ИЗОБРАЖЕНИЙ =====
 const fixImageStyles = () => {
     if (!editorElement.value) return;
     const imgs = editorElement.value.querySelectorAll('img');
@@ -288,7 +211,11 @@ defineExpose({
     updateExistingLink,
     insertFormShortcode,
     getCursorPosition,
+    getHTML,
 });
+
+// ===== КЛИК ХЕНДЛЕР =====
+let clickHandler: ((e: MouseEvent) => void) | null = null;
 
 onMounted(async () => {
     await nextTick();
@@ -296,6 +223,7 @@ onMounted(async () => {
         console.error('Editor element not found!');
         return;
     }
+
     editor = new Editor({
         element: editorElement.value,
         extensions: [
@@ -304,6 +232,8 @@ onMounted(async () => {
                 underline: false,
                 strike: false,
             }),
+            PreserveAttributes,
+            CustomDiv,
             ResizableImage,
             Link.configure({
                 openOnClick: false,
@@ -315,9 +245,7 @@ onMounted(async () => {
         ],
         content: props.modelValue || '<p>Начните писать здесь...</p>',
         onUpdate: ({ editor }) => {
-            if (!showHtml.value) {
-                emit('update:modelValue', editor.getHTML());
-            }
+            emit('update:modelValue', editor.getHTML());
             nextTick(fixImageStyles);
         },
     });
@@ -326,16 +254,6 @@ onMounted(async () => {
 
     document.addEventListener('image-selected', (e: any) => {
         imageHandlers.selectedImageData.value = e.detail;
-    });
-
-    observer = new MutationObserver(() => {
-        fixImageStyles();
-    });
-
-    observer.observe(editorElement.value, {
-        attributes: true,
-        attributeFilter: ['style', 'data-lightbox', 'width', 'height'],
-        subtree: true,
     });
 
     if (clickHandler) {
@@ -404,108 +322,25 @@ onMounted(async () => {
     document.addEventListener('click', clickHandler);
 });
 
+// ===== СЛЕДИМ ЗА ИЗМЕНЕНИЕМ modelValue ИЗВНЕ =====
 watch(() => props.modelValue, (newValue) => {
-    if (editor && !showHtml.value && newValue !== editor.getHTML()) {
+    console.log('[Editor] watch modelValue triggered, length:', newValue?.length || 0);
+    if (editor && newValue !== editor.getHTML()) {
+        console.log('[Editor] updating content, length:', newValue?.length || 0);
         editor.commands.setContent(newValue || '<p></p>');
         nextTick(fixImageStyles);
     }
-});
+}, { immediate: true });
 
 onBeforeUnmount(() => {
     if (clickHandler) {
         document.removeEventListener('click', clickHandler);
         clickHandler = null;
     }
-    if (observer) {
-        observer.disconnect();
-        observer = null;
-    }
     editor?.destroy();
-    if (codeEditorView) {
-        codeEditorView.destroy();
-        codeEditorView = null;
-    }
 });
 </script>
 
 <style>
-.tiptap {
-    min-height: 100%;
-    outline: none;
-}
-.tiptap:focus {
-    outline: none;
-}
-.tiptap img {
-    max-width: 100%;
-    height: auto;
-    cursor: pointer;
-    transition: outline 0.2s;
-}
-.tiptap img.selected-image {
-    outline: 1px solid #4b497e;
-    outline-offset: 2px;
-}
-
-/* ВЫРАВНИВАНИЕ ИЗОБРАЖЕНИЙ */
-.tiptap img.align-left,
-.tiptap img[style*="margin-left: 0"][style*="margin-right: auto"] {
-    display: block !important;
-    margin-left: 0 !important;
-    margin-right: auto !important;
-}
-
-.tiptap img.align-center,
-.tiptap img[style*="margin-left: auto"][style*="margin-right: auto"] {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.tiptap img.align-right,
-.tiptap img[style*="margin-left: auto"][style*="margin-right: 0"] {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: 0 !important;
-}
-
-.tiptap a {
-    color: #2563eb;
-    text-decoration: underline;
-    cursor: pointer;
-}
-.tiptap a.selected-link {
-    outline: 2px solid #4f46e5;
-    background-color: rgba(79, 70, 229, 0.1);
-}
-.tiptap ul, .tiptap ol {
-    padding-left: 1.5rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-.tiptap li {
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-.tiptap h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-.tiptap h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-.tiptap h3 {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-top: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-.tiptap p {
-    margin-bottom: 0.5rem;
-}
+@import '../../../../css/editor.css';
 </style>

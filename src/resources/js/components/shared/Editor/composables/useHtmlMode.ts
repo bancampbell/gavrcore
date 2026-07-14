@@ -9,21 +9,43 @@ export function useHtmlMode(
 ) {
     const toggleHtml = () => {
         if (!showHtml.value) {
-            // Загружаем текущий HTML из редактора
-            const currentHtml = editor.value?.getHTML();
-            htmlContent.value = currentHtml || '';
+            // Открываем HTML режим - берем текущий контент
+            const currentHtml = editor.value?.getHTML() || '';
+            htmlContent.value = currentHtml;
             showHtml.value = true;
         } else {
+            // Закрываем без сохранения
             showHtml.value = false;
         }
     };
 
     const applyHtml = () => {
-        if (editor.value) {
-            editor.value.commands.setContent(htmlContent.value);
-            emit('update:modelValue', htmlContent.value);
+        if (!editor.value) {
+            showHtml.value = false;
+            return;
         }
-        showHtml.value = false;
+
+        try {
+            const content = htmlContent.value || '<p></p>';
+
+            // === ГЛАВНОЕ: СОХРАНЯЕМ HTML КАК ЕСТЬ ===
+            // Обновляем модель напрямую, минуя Tiptap
+            emit('update:modelValue', content);
+
+            // Пытаемся обновить редактор, но если не получается — не страшно
+            try {
+                editor.value.commands.setContent(content);
+            } catch (e) {
+                // Данные уже сохранены через emit
+                console.warn('Tiptap не применил HTML, но данные сохранены');
+            }
+
+            showHtml.value = false;
+
+        } catch (error) {
+            console.error('Ошибка при применении HTML:', error);
+            alert('Ошибка при применении HTML');
+        }
     };
 
     const cancelHtml = () => {

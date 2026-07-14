@@ -139,6 +139,11 @@ export const ResizableImage = Image.extend({
                     ...node.attrs,
                     width: width,
                     height: height,
+                    src: node.attrs.src,
+                    alt: node.attrs.alt,
+                    title: node.attrs.title,
+                    align: node.attrs.align,
+                    style: img.getAttribute('style') || '',
                 });
                 editor.view.dispatch(tr);
             };
@@ -371,6 +376,9 @@ export const ResizableImage = Image.extend({
                     } else {
                         wrapper.style.textAlign = '';
                     }
+
+                    // Обновляем ссылку на актуальный node
+                    node = updatedNode;
 
                     updateTooltip();
                     return true;

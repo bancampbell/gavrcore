@@ -1,0 +1,201 @@
+/* ============================================
+   СТИЛИ ДЛЯ РЕДАКТОРА TIPTAP
+   ============================================ */
+
+/* === БАЗОВЫЕ СТИЛИ === */
+.tiptap {
+    min-height: 100%;
+    outline: none;
+}
+.tiptap:focus {
+    outline: none;
+}
+
+/* === ИЗОБРАЖЕНИЯ === */
+.tiptap img {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+    transition: outline 0.2s;
+}
+.tiptap img.selected-image {
+    outline: 1px solid #4b497e;
+    outline-offset: 2px;
+}
+
+.tiptap img.align-left,
+.tiptap img[style*="margin-left: 0"][style*="margin-right: auto"] {
+    display: block !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+.tiptap img.align-center,
+.tiptap img[style*="margin-left: auto"][style*="margin-right: auto"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.tiptap img.align-right,
+.tiptap img[style*="margin-left: auto"][style*="margin-right: 0"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+/* === ССЫЛКИ === */
+.tiptap a {
+    color: #2563eb;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.tiptap a.selected-link {
+    outline: 2px solid #4f46e5;
+    background-color: rgba(79, 70, 229, 0.1);
+}
+
+/* === СПИСКИ === */
+.tiptap ul, .tiptap ol {
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.tiptap li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* === ЗАГОЛОВКИ === */
+.tiptap h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.tiptap h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.tiptap h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.tiptap p {
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   КАСТОМНЫЕ КЛАССЫ ДЛЯ РЕДАКТОРА
+   ============================================ */
+
+/* === ГРИДЫ === */
+.tiptap .grid-2,
+.tiptap .grid-3,
+.tiptap .grid-4,
+.tiptap .grid-2-1,
+.tiptap .grid-1-2 {
+    display: grid !important;
+    gap: 20px !important;
+}
+
+.tiptap .grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+.tiptap .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+.tiptap .grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+.tiptap .grid-2-1 { grid-template-columns: 2fr 1fr !important; }
+.tiptap .grid-1-2 { grid-template-columns: 1fr 2fr !important; }
+
+/* === КАРТОЧКИ === */
+.tiptap .grid-card-blue {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd) !important;
+    padding: 24px !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+}
+.tiptap .grid-card-pink {
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8) !important;
+    padding: 24px !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+}
+.tiptap .grid-card-green {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0) !important;
+    padding: 24px !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+}
+.tiptap .grid-card-gray {
+    background: #f8fafc !important;
+    padding: 24px !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+
+/* === ФЛЕКСЫ === */
+.tiptap .flex-center {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 20px !important;
+    flex-wrap: wrap !important;
+}
+.tiptap .flex-between {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 20px !important;
+    flex-wrap: wrap !important;
+}
+
+/* === ФОНЫ === */
+.tiptap .bg-gray { background: #f8fafc !important; }
+.tiptap .bg-white { background: white !important; }
+
+/* === БОРДЕРЫ И ТЕНИ === */
+.tiptap .rounded { border-radius: 8px !important; }
+.tiptap .rounded-lg { border-radius: 12px !important; }
+.tiptap .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important; }
+.tiptap .shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+
+/* === ВЫРАВНИВАНИЕ ТЕКСТА === */
+.tiptap .text-center { text-align: center !important; }
+
+/* === ЦВЕТА ТЕКСТА === */
+.tiptap .text-primary { color: #0c4a6e !important; }
+.tiptap .text-secondary { color: #831843 !important; }
+.tiptap .text-success { color: #065f46 !important; }
+
+/* === ОТСТУПЫ === */
+.tiptap .p-1 { padding: 8px !important; }
+.tiptap .p-2 { padding: 16px !important; }
+.tiptap .p-3 { padding: 24px !important; }
+.tiptap .p-4 { padding: 32px !important; }
+
+.tiptap .mt-1 { margin-top: 8px !important; }
+.tiptap .mt-2 { margin-top: 16px !important; }
+.tiptap .mt-3 { margin-top: 24px !important; }
+.tiptap .mt-4 { margin-top: 32px !important; }
+
+.tiptap .mb-1 { margin-bottom: 8px !important; }
+.tiptap .mb-2 { margin-bottom: 16px !important; }
+.tiptap .mb-3 { margin-bottom: 24px !important; }
+
+/* === ШИРИНА === */
+.tiptap .w-33 { width: 33.33% !important; }
+.tiptap .w-50 { width: 50% !important; }
+.tiptap .w-100 { width: 100% !important; }
+
+/* Пустые параграфы в редакторе */
+.tiptap p:empty {
+    min-height: 1.5em;
+}
+
+.tiptap p:empty::before {
+    content: "\00a0";
+    display: inline-block;
+}
