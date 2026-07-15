@@ -177,8 +177,6 @@ const props = defineProps<{
     categories: Category[];
 }>();
 
-console.log('[Edit] props.material.content length:', props.material.content?.length || 0);
-
 const loading = ref(false);
 const showLinkModal = ref(false);
 const showImageModal = ref(false);
@@ -209,8 +207,6 @@ const form = ref({
     show_views: props.material.show_views ?? true,
 });
 
-console.log('[Edit] form.content after init length:', form.value.content?.length || 0);
-
 const isSlugManuallyEdited = ref(!!form.value.slug);
 
 // ===== HTML РЕЖИМ =====
@@ -218,18 +214,13 @@ const showRawHtml = ref(false);
 const rawHtmlContent = ref('');
 
 const toggleRawHtml = () => {
-    console.log('[toggleRawHtml] ===== START =====');
-    console.log('[toggleRawHtml] showRawHtml.value:', showRawHtml.value);
-
     if (!showRawHtml.value) {
         const content = form.value.content || '';
-        console.log('[toggleRawHtml] content length:', content.length);
         rawHtmlContent.value = content;
         showRawHtml.value = true;
     } else {
         showRawHtml.value = false;
     }
-    console.log('[toggleRawHtml] ===== END =====');
 };
 
 const closeRawHtml = () => {
@@ -237,19 +228,12 @@ const closeRawHtml = () => {
 };
 
 const applyRawHtml = (html: string) => {
-    console.log('[applyRawHtml] received html length:', html?.length || 0);
-    console.log('[applyRawHtml] BEFORE form.content length:', form.value.content?.length || 0);
-
     form.value.content = html;
-    console.log('[applyRawHtml] AFTER form.content length:', form.value.content?.length || 0);
-
     showRawHtml.value = false;
     editorKey.value++;
 
     nextTick(() => {
-        console.log('[applyRawHtml] nextTick - editorRef exists?', !!editorRef.value);
         if (editorRef.value) {
-            console.log('[applyRawHtml] calling insertContent with length:', html.length);
             editorRef.value.insertContent(html);
         }
     });
@@ -304,15 +288,24 @@ const handleEditLink = (data: { oldText: string; url: string; text: string; targ
 // ===== ИЗОБРАЖЕНИЯ =====
 const savedCursorPosition = ref(0);
 
-const openImageModal = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+const openImageModal = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string; float?: string; margin?: string }) => {
     if (editorRef.value) {
         savedCursorPosition.value = editorRef.value.getCursorPosition?.() || 0;
     }
-    editImageData.value = imageData || null;
+    editImageData.value = imageData ? {
+        url: imageData.url,
+        alt: imageData.alt || '',
+        title: imageData.title || '',
+        width: imageData.width || '',
+        height: imageData.height || '',
+        align: imageData.align || '',
+        float: imageData.float || '',
+        margin: imageData.margin || '',
+    } : null;
     showImageModal.value = true;
 };
 
-const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string }) => {
+const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string; float?: string; margin?: string }) => {
     editImageData.value = imageData || null;
     if (imageData?.url) {
         const urlParts = imageData.url.split('/');
@@ -329,6 +322,51 @@ const closeImageModal = () => {
     editImageData.value = null;
 };
 
+// Функция для построения стиля изображения
+const buildImageStyle = (data: {
+    width?: string;
+    height?: string;
+    align?: string;
+    float?: string;
+    margin?: string;
+}) => {
+    let style = '';
+
+    if (data.width && data.width !== '') {
+        style += `width: ${data.width}px; `;
+    }
+    if (data.height && data.height !== '') {
+        style += `height: ${data.height}px; `;
+    }
+
+    style += 'display: block; ';
+
+    if (data.align === 'left') {
+        style += 'margin-left: 0; margin-right: auto; ';
+    } else if (data.align === 'center') {
+        style += 'margin-left: auto; margin-right: auto; ';
+    } else if (data.align === 'right') {
+        style += 'margin-left: auto; margin-right: 0; ';
+    }
+
+    // Если float передан и не пустой - добавляем
+    if (data.float && data.float !== '') {
+        if (data.float === 'left') {
+            style += 'float: left; ';
+            if (data.margin && data.margin !== '') {
+                style += `margin-right: ${data.margin}px; `;
+            }
+        } else if (data.float === 'right') {
+            style += 'float: right; ';
+            if (data.margin && data.margin !== '') {
+                style += `margin-left: ${data.margin}px; `;
+            }
+        }
+    }
+
+    return style.trim();
+};
+
 const onImageInsert = (data: {
     url: string;
     alt: string;
@@ -336,8 +374,20 @@ const onImageInsert = (data: {
     width?: string;
     height?: string;
     align?: string;
+    float?: string;
+    margin?: string;
     oldUrl?: string;
+    _pos?: number;
 }) => {
+    if (data._pos !== undefined && data._pos !== -1) {
+        (window as any).__selectedImagePos = data._pos;
+    }
+
+    // Нормализуем данные
+    const floatValue = data.float && data.float !== '' ? data.float : '';
+    const marginValue = data.margin && data.margin !== '' ? data.margin : '';
+    const alignValue = data.align && data.align !== '' ? data.align : '';
+
     if (data.oldUrl) {
         const updateData = {
             url: data.url,
@@ -345,28 +395,29 @@ const onImageInsert = (data: {
             title: data.title || '',
             width: data.width || '',
             height: data.height || '',
-            align: data.align || ''
+            align: alignValue,
+            float: floatValue,
+            margin: marginValue,
         };
         editorRef.value?.updateImage(data.oldUrl, updateData);
         closeImageModal();
         return;
     }
 
-    let style = '';
-    if (data.width && data.width !== '') style += `width: ${data.width}px; `;
-    if (data.height && data.height !== '') style += `height: ${data.height}px; `;
+    const style = buildImageStyle({
+        width: data.width,
+        height: data.height,
+        align: alignValue,
+        float: floatValue,
+        margin: marginValue,
+    });
 
-    let imgHtml = `<img src="${data.url}" alt="${data.alt || ''}" title="${data.title || ''}"`;
-    if (style) {
-        imgHtml += ` style="${style.trim()}"`;
-    }
-    if (data.align && data.align !== '') {
-        if (data.align === 'left') imgHtml += ` class="align-left"`;
-        else if (data.align === 'center') imgHtml += ` class="align-center"`;
-        else if (data.align === 'right') imgHtml += ` class="align-right"`;
-    }
+    let imgHtml = `<img src="${data.url}"`;
+    if (data.alt && data.alt !== '') imgHtml += ` alt="${data.alt}"`;
+    if (data.title && data.title !== '') imgHtml += ` title="${data.title}"`;
     if (data.width && data.width !== '') imgHtml += ` width="${data.width}"`;
     if (data.height && data.height !== '') imgHtml += ` height="${data.height}"`;
+    if (style) imgHtml += ` style="${style}"`;
     imgHtml += ` />`;
 
     if (editorRef.value) {
@@ -391,18 +442,19 @@ const onMediaManagerSelect = (file: { url: string; name: string; path: string; o
             title: editImageData.value.title || '',
             width: file.options?.width || '',
             height: file.options?.height || '',
-            align: editImageData.value.align || ''
+            align: editImageData.value.align || '',
+            float: editImageData.value.float || '',
+            margin: editImageData.value.margin || '',
         });
         editImageData.value = null;
     } else {
-        let style = '';
-        if (file.options?.width && file.options.width !== '') style += `width: ${file.options.width}px; `;
-        if (file.options?.height && file.options.height !== '') style += `height: ${file.options.height}px; `;
+        const style = buildImageStyle({
+            width: file.options?.width || '',
+            height: file.options?.height || '',
+        });
 
         let imgHtml = `<img src="${file.url}" alt="${file.options?.alt || file.name}"`;
-        if (style) {
-            imgHtml += ` style="${style.trim()}"`;
-        }
+        if (style) imgHtml += ` style="${style}"`;
         if (file.options?.width && file.options.width !== '') imgHtml += ` width="${file.options.width}"`;
         if (file.options?.height && file.options.height !== '') imgHtml += ` height="${file.options.height}"`;
         imgHtml += ` />`;
@@ -533,7 +585,6 @@ const saveAndClose = async () => {
 };
 
 onMounted(() => {
-    console.log('[Edit] onMounted - props.material.content length:', props.material.content?.length || 0);
     loadMaterials();
 });
 </script>

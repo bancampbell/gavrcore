@@ -250,6 +250,8 @@ onMounted(async () => {
         },
     });
 
+    // Устанавливаем глобальную ссылку на редактор
+    (window as any).__editor = editor;
     editorRef.value = editor;
 
     document.addEventListener('image-selected', (e: any) => {
@@ -265,6 +267,8 @@ onMounted(async () => {
         const link = target.closest('a');
         const img = target.closest('img');
         const isInsideTiptap = target.closest('.tiptap');
+
+        console.log('[Editor click] target:', target.tagName, 'isImg:', !!img, 'isInside:', !!isInsideTiptap);
 
         if (!isInsideTiptap) {
             clearLinkSelection();
@@ -289,28 +293,9 @@ onMounted(async () => {
         }
 
         if (img) {
+            console.log('[Editor click] Image clicked, src:', img.src);
             e.preventDefault();
-            const style = img.getAttribute('style') || '';
-            let align = '';
-            if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
-                align = 'center';
-            } else if (style.includes('margin-left: 0')) {
-                align = 'left';
-            } else if (style.includes('margin-right: 0')) {
-                align = 'right';
-            }
-
-            const imgData = {
-                url: img.src,
-                alt: img.alt || '',
-                title: img.title || '',
-                width: img.style.width || '',
-                height: img.style.height || '',
-                align: align,
-            };
-            imageHandlers.selectedImageData.value = imgData;
-            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
-            img.classList.add('selected-image');
+            imageHandlers.handleImageClick(e);
             clearLinkSelection();
             return;
         }
@@ -336,6 +321,10 @@ onBeforeUnmount(() => {
     if (clickHandler) {
         document.removeEventListener('click', clickHandler);
         clickHandler = null;
+    }
+    // Удаляем глобальную ссылку
+    if ((window as any).__editor) {
+        delete (window as any).__editor;
     }
     editor?.destroy();
 });

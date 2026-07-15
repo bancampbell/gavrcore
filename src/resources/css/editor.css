@@ -23,6 +23,7 @@
     outline-offset: 2px;
 }
 
+/* ===== ВЫРАВНИВАНИЕ ИЗОБРАЖЕНИЙ (margin) ===== */
 .tiptap img.align-left,
 .tiptap img[style*="margin-left: 0"][style*="margin-right: auto"] {
     display: block !important;
@@ -42,6 +43,23 @@
     display: block !important;
     margin-left: auto !important;
     margin-right: 0 !important;
+}
+
+/* ===== ОБТЕКАНИЕ ЧЕРЕЗ WRAPPER (float на обертке) ===== */
+/* Отступы берутся из inline-стилей wrapper, CSS не переопределяет их */
+.tiptap .resize-wrapper[style*="float: left"] {
+    float: left !important;
+    margin-bottom: 10px !important;
+}
+
+.tiptap .resize-wrapper[style*="float: right"] {
+    float: right !important;
+    margin-bottom: 10px !important;
+}
+
+.tiptap .resize-wrapper img {
+    display: block !important;
+    margin: 0 !important;
 }
 
 /* === ССЫЛКИ === */
@@ -194,8 +212,14 @@
 .tiptap p:empty {
     min-height: 1.5em;
 }
-
 .tiptap p:empty::before {
     content: "\00a0";
     display: inline-block;
+}
+
+/* clearfix для обтекания */
+.tiptap .clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
 }

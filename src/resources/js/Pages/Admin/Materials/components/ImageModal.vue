@@ -76,6 +76,27 @@
                         <option value="right">Справа</option>
                     </select>
                 </div>
+
+                <div class="form-row">
+                    <label class="admin-form-label">Обтекание текстом</label>
+                    <select v-model="imageFloat" class="admin-form-select w-32">
+                        <option value="">-- Не выбрано --</option>
+                        <option value="left">Изображение слева</option>
+                        <option value="right">Изображение справа</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label class="admin-form-label">Отступ от текста (px)</label>
+                    <input
+                        v-model="imageMargin"
+                        type="number"
+                        class="admin-form-input w-24"
+                        placeholder="10"
+                        min="0"
+                        max="100"
+                    />
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -109,12 +130,26 @@ const props = defineProps<{
         width?: string;
         height?: string;
         align?: string;
+        float?: string;
+        margin?: string;
+        _pos?: number;
     } | null;
 }>();
 
 const emit = defineEmits<{
     (e: 'close'): void;
-    (e: 'insert', data: { url: string; alt: string; title: string; width?: string; height?: string; align?: string; oldUrl?: string }): void;
+    (e: 'insert', data: {
+        url: string;
+        alt: string;
+        title: string;
+        width?: string;
+        height?: string;
+        align?: string;
+        float?: string;
+        margin?: string;
+        oldUrl?: string;
+        _pos?: number;
+    }): void;
 }>();
 
 const user = inject('user') as any;
@@ -125,29 +160,45 @@ const imageTitle = ref('');
 const imageWidth = ref('');
 const imageHeight = ref('');
 const imageAlign = ref('');
+const imageFloat = ref('');
+const imageMargin = ref('');
 const showMediaManager = ref(false);
 
 const isEditMode = computed(() => !!props.editData?.url);
 
+const loadData = () => {
+    if (props.editData) {
+        imageUrl.value = props.editData.url || '';
+        imageAlt.value = props.editData.alt || '';
+        imageTitle.value = props.editData.title || '';
+        imageWidth.value = props.editData.width ? String(props.editData.width).replace('px', '') : '';
+        imageHeight.value = props.editData.height ? String(props.editData.height).replace('px', '') : '';
+        imageAlign.value = props.editData.align || '';
+        imageFloat.value = props.editData.float || '';
+        imageMargin.value = props.editData.margin || '';
+    } else {
+        imageUrl.value = '';
+        imageAlt.value = '';
+        imageTitle.value = '';
+        imageWidth.value = '';
+        imageHeight.value = '';
+        imageAlign.value = '';
+        imageFloat.value = '';
+        imageMargin.value = '';
+    }
+};
+
 watch(() => props.show, (val) => {
     if (val) {
-        if (props.editData) {
-            imageUrl.value = props.editData.url || '';
-            imageAlt.value = props.editData.alt || '';
-            imageTitle.value = props.editData.title || '';
-            imageWidth.value = props.editData.width ? String(props.editData.width).replace('px', '') : '';
-            imageHeight.value = props.editData.height ? String(props.editData.height).replace('px', '') : '';
-            imageAlign.value = props.editData.align || '';
-        } else {
-            imageUrl.value = '';
-            imageAlt.value = '';
-            imageTitle.value = '';
-            imageWidth.value = '';
-            imageHeight.value = '';
-            imageAlign.value = '';
-        }
+        loadData();
     }
-});
+}, { immediate: true });
+
+watch(() => props.editData, () => {
+    if (props.show) {
+        loadData();
+    }
+}, { deep: true, immediate: true });
 
 const close = () => {
     emit('close');
@@ -197,7 +248,10 @@ const insertImage = () => {
         width: imageWidth.value,
         height: imageHeight.value,
         align: imageAlign.value,
-        oldUrl: props.editData?.url || undefined
+        float: imageFloat.value,
+        margin: imageMargin.value,
+        oldUrl: props.editData?.url || undefined,
+        _pos: props.editData?._pos || undefined
     });
     close();
 };
@@ -281,7 +335,7 @@ const insertImage = () => {
 }
 
 .form-row .admin-form-label {
-    width: 120px;
+    width: 160px;
     flex-shrink: 0;
     margin-bottom: 0;
     font-size: 0.8rem;
@@ -323,6 +377,12 @@ const insertImage = () => {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     background: white;
+}
+
+.admin-form-select:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
 .btn-icon {

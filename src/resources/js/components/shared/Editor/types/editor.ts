@@ -5,6 +5,8 @@ export interface ImageData {
     width?: string;
     height?: string;
     align?: string;
+    float?: string;
+    margin?: string;
 }
 
 export interface LinkData {
