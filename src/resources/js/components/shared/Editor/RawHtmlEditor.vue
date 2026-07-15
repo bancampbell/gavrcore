@@ -11,7 +11,7 @@
                 </button>
             </div>
         </div>
-        <div ref="codeEditorRef" class="flex-1"></div>
+        <div ref="codeEditorRef" class="flex-1 overflow-auto"></div>
     </div>
 </template>
 
@@ -106,3 +106,24 @@ onBeforeUnmount(() => {
     }
 });
 </script>
+
+<style scoped>
+/* Стили для CodeMirror */
+:deep(.cm-editor) {
+    height: 100% !important;
+    min-height: 500px !important;
+}
+
+:deep(.cm-scroller) {
+    overflow: auto !important;
+    max-height: 100% !important;
+}
+
+:deep(.cm-content) {
+    padding: 12px !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    min-height: 100% !important;
+}
+</style>

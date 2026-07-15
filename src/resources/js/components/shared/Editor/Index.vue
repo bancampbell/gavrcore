@@ -19,7 +19,7 @@
         />
 
         <div class="flex-1 overflow-auto">
-            <div class="tiptap p-4 h-full" ref="editorElement"></div>
+            <div class="tiptap prose p-4 h-full max-w-none" ref="editorElement"></div>
         </div>
 
         <GallerySelectModal

@@ -97,7 +97,7 @@ const formatDate = (date) => {
 };
 </script>
 
-<style scoped>
+<style>
 .prose {
     max-width: none;
 }
@@ -115,5 +115,42 @@ const formatDate = (date) => {
 .prose a[href$=".webp"],
 .prose a[href$=".svg"] {
     cursor: pointer;
+}
+
+.prose h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.prose h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.prose h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.prose p {
+    margin-bottom: 0.5rem;
+}
+
+.prose ul,
+.prose ol {
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.prose li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
 }
 </style>

@@ -17,7 +17,14 @@ const containerRef = ref<HTMLElement | null>(null);
 const appInstances: any[] = [];
 
 const renderContent = () => {
-    if (!containerRef.value) return;
+    console.log('[ShortcodeRenderer] renderContent called');
+    console.log('[ShortcodeRenderer] props.content:', props.content);
+    console.log('[ShortcodeRenderer] props.content length:', props.content?.length || 0);
+
+    if (!containerRef.value) {
+        console.warn('[ShortcodeRenderer] containerRef is null');
+        return;
+    }
 
     appInstances.forEach(app => app.unmount());
     appInstances.length = 0;
@@ -44,15 +51,20 @@ const renderContent = () => {
         }
     );
 
-    containerRef.value.innerHTML = html;
+    console.log('[ShortcodeRenderer] html after replacements:', html);
+
+    // ОБЕРТКА: добавляем класс prose к содержимому
+    containerRef.value.innerHTML = `<div class="prose max-w-none">${html}</div>`;
+
+    console.log('[ShortcodeRenderer] containerRef.innerHTML set, length:', containerRef.value.innerHTML.length);
 
     // Рендерим формы
     const formPlaceholders = containerRef.value.querySelectorAll('.form-placeholder');
+    console.log('[ShortcodeRenderer] formPlaceholders found:', formPlaceholders.length);
     formPlaceholders.forEach((placeholder) => {
         const formId = placeholder.getAttribute('data-form-id');
         if (!formId) return;
 
-        // Ищем родительский элемент с центрированием
         let centered = false;
         let parent = placeholder.parentElement;
         while (parent) {
@@ -68,11 +80,9 @@ const renderContent = () => {
             parent = parent.parentElement;
         }
 
-        // Создаем контейнер
         const container = document.createElement('div');
         container.className = 'form-container';
 
-        // Если нужно центрировать
         if (centered) {
             container.style.display = 'flex';
             container.style.justifyContent = 'center';
@@ -80,10 +90,8 @@ const renderContent = () => {
             container.style.textAlign = 'center';
         }
 
-        // Заменяем placeholder на контейнер
         placeholder.replaceWith(container);
 
-        // Монтируем форму
         const app = createApp({
             render() {
                 return h(FormRenderer, {
@@ -98,6 +106,7 @@ const renderContent = () => {
 
     // Рендерим галереи
     const galleryPlaceholders = containerRef.value.querySelectorAll('.gallery-placeholder');
+    console.log('[ShortcodeRenderer] galleryPlaceholders found:', galleryPlaceholders.length);
     galleryPlaceholders.forEach((placeholder) => {
         const galleryId = placeholder.getAttribute('data-gallery-id');
         if (!galleryId) return;
@@ -126,14 +135,77 @@ const renderContent = () => {
 };
 
 onMounted(() => {
+    console.log('[ShortcodeRenderer] onMounted');
     renderContent();
 });
 
-watch(() => props.content, () => {
+watch(() => props.content, (newVal, oldVal) => {
+    console.log('[ShortcodeRenderer] watch props.content changed');
+    console.log('[ShortcodeRenderer] oldVal:', oldVal);
+    console.log('[ShortcodeRenderer] newVal:', newVal);
     renderContent();
 });
 
 onBeforeUnmount(() => {
+    console.log('[ShortcodeRenderer] onBeforeUnmount, cleaning up');
     appInstances.forEach(app => app.unmount());
 });
 </script>
+
+<style scoped>
+.shortcode-renderer {
+    width: 100%;
+}
+
+.shortcode-renderer .prose {
+    max-width: none;
+}
+
+.shortcode-renderer .prose img {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+}
+
+.shortcode-renderer .prose a[href$=".jpg"],
+.shortcode-renderer .prose a[href$=".jpeg"],
+.shortcode-renderer .prose a[href$=".png"],
+.shortcode-renderer .prose a[href$=".gif"],
+.shortcode-renderer .prose a[href$=".webp"],
+.shortcode-renderer .prose a[href$=".svg"] {
+    cursor: pointer;
+}
+
+/* Стили для заголовков */
+.shortcode-renderer .prose h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.shortcode-renderer .prose h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.shortcode-renderer .prose h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+.shortcode-renderer .prose p {
+    margin-bottom: 0.5rem;
+}
+.shortcode-renderer .prose ul,
+.shortcode-renderer .prose ol {
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.shortcode-renderer .prose li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+</style>

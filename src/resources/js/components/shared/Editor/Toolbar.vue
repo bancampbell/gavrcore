@@ -95,24 +95,37 @@
 
         <div class="w-px h-6 bg-gray-300 mx-1"></div>
 
+        <!-- Маркированный список -->
         <button
             @click="editor?.chain().focus().toggleBulletList().run()"
             :class="{ 'bg-gray-200': editor?.isActive('bulletList') }"
             class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
             title="Маркированный список"
         >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="5" cy="7" r="2.5"/>
+                <circle cx="5" cy="12" r="2.5"/>
+                <circle cx="5" cy="17" r="2.5"/>
+                <line x1="12" y1="7" x2="20" y2="7"/>
+                <line x1="12" y1="12" x2="20" y2="12"/>
+                <line x1="12" y1="17" x2="20" y2="17"/>
             </svg>
         </button>
+
+        <!-- Нумерованный список -->
         <button
             @click="editor?.chain().focus().toggleOrderedList().run()"
             :class="{ 'bg-gray-200': editor?.isActive('orderedList') }"
             class="w-8 h-8 rounded hover:bg-gray-200 transition flex items-center justify-center"
             title="Нумерованный список"
         >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6h14M7 12h14M7 18h14" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <text x="2" y="9" font-size="7" font-weight="bold" fill="currentColor">1</text>
+                <text x="2" y="16" font-size="7" font-weight="bold" fill="currentColor">2</text>
+                <text x="2" y="23" font-size="7" font-weight="bold" fill="currentColor">3</text>
+                <line x1="10" y1="7" x2="20" y2="7"/>
+                <line x1="10" y1="14" x2="20" y2="14"/>
+                <line x1="10" y1="21" x2="20" y2="21"/>
             </svg>
         </button>
 
@@ -179,7 +192,7 @@
             ✖️
         </button>
 
-        <!-- ===== НОВАЯ КНОПКА HTML ===== -->
+        <!-- Кнопка HTML -->
         <button
             @click="toggleHtml"
             class="px-3 h-8 rounded transition flex items-center justify-center gap-1 text-sm font-medium"
@@ -189,7 +202,6 @@
             <span>&lt;/&gt;</span>
             <span>{{ isRawHtmlMode ? 'Визуально' : 'HTML' }}</span>
         </button>
-        <!-- ========================== -->
 
         <div class="w-px h-6 bg-gray-300 mx-1"></div>
 
