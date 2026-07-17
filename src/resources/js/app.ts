@@ -2,8 +2,7 @@ import { createApp, h, type Component } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import GlobalLightbox from './components/shared/GlobalLightbox.vue';
-import '../css/gallery.css';
-import '../css/forms.css';
+import '../css/app.css';
 
 createInertiaApp({
     resolve: (name: string) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')) as any,

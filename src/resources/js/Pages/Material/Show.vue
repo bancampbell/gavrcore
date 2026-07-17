@@ -1,5 +1,9 @@
 <template>
-    <AppLayout>
+    <AppLayout
+        :main-menu="mainMenu"
+        :app-settings="appSettings"
+        :current-theme="currentTheme"
+    >
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description || siteDescription" />
@@ -19,7 +23,6 @@
                     {{ material.title }}
                 </h1>
 
-                <!-- ShortcodeRenderer -->
                 <ShortcodeRenderer
                     :content="material.content"
                     :forms="forms"
@@ -44,6 +47,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
+const mainMenu = page.props.mainMenu || [];
+const currentTheme = page.props.currentTheme || 'default';
 
 const props = defineProps({
     material: Object,

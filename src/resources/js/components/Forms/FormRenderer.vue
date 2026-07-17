@@ -1,6 +1,7 @@
 <template>
-    <div class="form-wrapper" :class="{ 'form-centered': centered }">
+    <div class="form-renderer">
         <h3 v-if="form?.title">{{ form.title }}</h3>
+        <p v-if="form?.description" class="form-subtitle">{{ form.description }}</p>
 
         <div v-if="loading" class="text-center py-4">
             <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
@@ -258,6 +259,7 @@ interface FormField {
 interface Form {
     id: number;
     title: string;
+    description?: string;
     fields: FormField[];
 }
 

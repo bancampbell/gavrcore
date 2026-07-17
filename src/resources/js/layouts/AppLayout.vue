@@ -1,103 +1,88 @@
 <template>
-    <div class="site-wrapper">
-        <header class="site-header">
-            <div class="container">
-                <div class="header-inner">
-                    <!-- Логотип -->
-                    <Link href="/" class="logo">
-                        {{ appSettings.site_name || 'GavrCore CMS' }}
-                    </Link>
-
-                    <!-- Десктопное меню -->
-                    <nav class="menu">
-                        <MenuItem
-                            v-for="item in mainMenu"
-                            :key="item.id"
-                            :item="item"
-                        />
-                    </nav>
-
-                    <!-- Бургер -->
-                    <button class="burger" @click="mobileMenuOpen = !mobileMenuOpen">
-                        ☰
-                    </button>
-                </div>
-
-                <!-- Мобильное меню -->
-                <div class="mobile-menu" :class="{ open: mobileMenuOpen }">
-                    <div v-for="item in mainMenu" :key="item.id">
-                        <Link
-                            :href="getLinkUrl(item)"
-                            :target="item.target"
-                            @click="mobileMenuOpen = false"
-                        >
-                            {{ item.title }}
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main class="site-main">
-            <div class="container">
-                <slot />
-            </div>
-        </main>
-
-        <footer class="site-footer">
-            <div class="container">
-                <p>&copy; {{ new Date().getFullYear() }} {{ appSettings.site_name || 'GavrCore CMS' }}. Все права защищены.</p>
-            </div>
-        </footer>
+    <component
+        :is="CurrentLayout"
+        v-if="CurrentLayout"
+        :main-menu="mainMenu"
+        :app-settings="appSettings"
+        :current-theme="currentTheme"
+    >
+        <slot />
+    </component>
+    <div v-else class="flex items-center justify-center min-h-screen">
+        <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p class="mt-2 text-gray-500">Загрузка...</p>
+        </div>
     </div>
 </template>
 
 <script setup>
+import {ref, watch, onMounted} from 'vue';
 
-import {ref, onMounted, watch} from 'vue';
-import {Link, usePage} from '@inertiajs/vue3';
-import MenuItem from '@/components/shared/MenuItem.vue';
+const props = defineProps({
+    mainMenu: {
+        type: Array,
+        default: () => []
+    },
+    appSettings: {
+        type: Object,
+        default: () => ({})
+    },
+    currentTheme: {
+        type: String,
+        default: 'default'
+    }
+});
 
-const page = usePage();
-const mainMenu = page.props.mainMenu || [];
-const appSettings = page.props.appSettings || {};
-const currentTheme = page.props.currentTheme || 'default';
+const CurrentLayout = ref(null);
 
-const mobileMenuOpen = ref(false);
-
-const getLinkUrl = (item) => {
-    if (item.link_type === 'url') return item.link_value || '/';
-    if (item.link_type === 'material') return `/${item.link_value}`;
-    if (item.link_type === 'category') return `/category/${item.link_value}`;
-    return '#';
+const layouts = {
+    default: () => import('@/themes/default/layouts/AppLayout.vue'),
+    warm: () => import('@/themes/warm/layouts/AppLayout.vue'),
 };
 
-// Применяем тему
-const applyTheme = (theme) => {
-    document.documentElement.setAttribute('data-theme', theme);
+const loadLayout = async (theme) => {
+    document.querySelectorAll('.dynamic-theme').forEach(el => el.remove());
 
-    // Динамически подгружаем CSS темы
-    const linkId = 'dynamic-theme';
-    const oldLink = document.getElementById(linkId);
-    if (oldLink) {
-        oldLink.remove();
-    }
+    const themeFiles = [
+        'variables.css',
+        'theme.css',
+        'layout.css',
+        'header.css',
+        'footer.css',
+        'components.css',
+        'content.css',
+        'forms.css'
+    ];
 
-    const link = document.createElement('link');
-    link.id = linkId;
-    link.rel = 'stylesheet';
-    link.href = `/css/themes/${theme}/theme.css`;
-    document.head.appendChild(link);
+    const baseUrl = `/css/themes/${theme}`;
+
+    const loadPromises = themeFiles.map((file) => {
+        return new Promise((resolve) => {
+            const link = document.createElement('link');
+            link.className = 'dynamic-theme';
+            link.rel = 'stylesheet';
+            link.href = `${baseUrl}/${file}`;
+            link.onload = resolve;
+            link.onerror = resolve;
+            document.head.appendChild(link);
+        });
+    });
+
+    await Promise.all(loadPromises);
+
+    const loadLayoutFn = layouts[theme] || layouts.default;
+    const module = await loadLayoutFn();
+    CurrentLayout.value = module.default;
 };
 
 onMounted(() => {
-    applyTheme(currentTheme);
+    loadLayout(props.currentTheme);
 });
 
-// Следим за изменением темы через props
-watch(() => currentTheme, (newTheme) => {
+watch(() => props.currentTheme, (newTheme) => {
     if (newTheme) {
-        applyTheme(newTheme);
+        loadLayout(newTheme);
     }
 });
 </script>

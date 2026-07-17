@@ -1,48 +1,51 @@
 /* ========================================
-   БАЗОВЫЕ СТИЛИ ФОРМ ДЛЯ ТЕМЫ DEFAULT
+   СТИЛИ ФОРМ ДЛЯ ТЕМЫ WARM
+   Теплые, оранжево-песочные тона
    ======================================== */
 
 /* ----- Обертка формы ----- */
 .form-wrapper {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 24px 28px;
+    background: #fefaf0;
+    border: 2px solid #f59e0b;
+    border-radius: 16px;
+    padding: 32px 36px;
     margin: 20px auto;
-    max-width: 560px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    max-width: 600px;
+    box-shadow: 0 8px 30px rgba(245, 158, 11, 0.12);
+    transition: all 0.3s ease;
 }
 
 .form-wrapper:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: #d97706;
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.18);
+    transform: translateY(-2px);
 }
 
 .form-wrapper h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 18px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f1f5f9;
+    font-size: 22px;
+    font-weight: 700;
+    color: #78350f;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #fde68a;
+    letter-spacing: -0.01em;
 }
 
 /* ----- Группа полей ----- */
 .form-group {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 
 .form-group label {
     display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 3px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #78350f;
+    margin-bottom: 4px;
 }
 
 .form-group label .required {
-    color: #e11d48;
+    color: #dc2626;
     margin-left: 2px;
 }
 
@@ -60,38 +63,40 @@
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 7px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    padding: 10px 16px;
+    border: 2px solid #fcd34d;
+    border-radius: 10px;
     font-size: 14px;
     background: #ffffff;
-    color: #1e293b;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    color: #451a03;
+    transition: all 0.2s ease;
     font-family: inherit;
 }
 
 .form-group input::placeholder {
-    color: #94a3b8;
+    color: #d97706;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3071a9;
-    box-shadow: 0 0 0 3px rgba(48, 113, 169, 0.1);
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+    background: #fffcf5;
 }
 
 .form-group textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 100px;
 }
 
 /* ----- Color input ----- */
 .form-group input[type="color"] {
     padding: 4px;
-    height: 44px;
+    height: 48px;
     cursor: pointer;
+    border-radius: 10px;
 }
 
 /* ----- Range input ----- */
@@ -99,7 +104,7 @@
     padding: 0;
     height: 6px;
     -webkit-appearance: none;
-    background: #d1d5db;
+    background: #fcd34d;
     border-radius: 3px;
     outline: none;
     border: none;
@@ -107,33 +112,33 @@
 
 .form-group input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: #3071a9;
+    background: #f59e0b;
     cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 .form-group input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: #3071a9;
+    background: #f59e0b;
     cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 /* ----- Rating (звезды) ----- */
 .form-group .rating-group {
     display: flex;
-    gap: 4px;
+    gap: 6px;
 }
 
 .form-group .rating-group .rating-star {
-    font-size: 28px;
+    font-size: 32px;
     cursor: pointer;
     transition: all 0.15s ease;
     background: none;
@@ -151,22 +156,22 @@
 }
 
 .form-group .rating-group .rating-star.inactive {
-    color: #d1d5db;
+    color: #fcd34d;
 }
 
 /* ----- Toggle (переключатель) ----- */
 .form-group .toggle-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .form-group .toggle-group .admin-toggle {
     display: inline-block !important;
     position: relative !important;
-    width: 40px !important;
-    height: 20px !important;
-    border-radius: 10px !important;
+    width: 48px !important;
+    height: 26px !important;
+    border-radius: 13px !important;
     cursor: pointer !important;
     transition: background 0.2s ease !important;
     flex-shrink: 0 !important;
@@ -175,26 +180,27 @@
 }
 
 .form-group .toggle-group .admin-toggle-on {
-    background: #3071a9 !important;
+    background: #f59e0b !important;
 }
 
 .form-group .toggle-group .admin-toggle-off {
-    background: #cbd5e1 !important;
+    background: #fcd34d !important;
 }
 
 .form-group .toggle-group .admin-toggle-slider {
     position: absolute !important;
-    left: 2px !important;
-    top: 2px !important;
-    width: 16px !important;
-    height: 16px !important;
+    left: 3px !important;
+    top: 3px !important;
+    width: 20px !important;
+    height: 20px !important;
     background: white !important;
     border-radius: 50% !important;
     transition: transform 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-group .toggle-group .admin-toggle-slider-on {
-    transform: translateX(20px) !important;
+    transform: translateX(22px) !important;
 }
 
 .form-group .toggle-group .admin-toggle-slider-off {
@@ -203,7 +209,8 @@
 
 .form-group .toggle-group .toggle-label {
     font-size: 14px;
-    color: #374151;
+    color: #78350f;
+    font-weight: 500;
 }
 
 /* ----- Чекбоксы и радио ----- */
@@ -211,7 +218,7 @@
 .form-group .radio-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     margin-top: 2px;
 }
 
@@ -219,18 +226,19 @@
 .form-group .radio-group label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-weight: 400;
     font-size: 14px;
-    color: #374151;
+    color: #78350f;
     cursor: pointer;
+    padding: 2px 0;
 }
 
 .form-group input[type="checkbox"],
 .form-group input[type="radio"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #3071a9;
+    width: 18px;
+    height: 18px;
+    accent-color: #f59e0b;
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -238,141 +246,89 @@
 /* ----- Файл ----- */
 .form-group input[type="file"] {
     width: 100%;
-    padding: 6px 0;
+    padding: 8px 0;
     font-size: 14px;
-    color: #64748b;
+    color: #78350f;
 }
 
 .form-group input[type="file"]::file-selector-button {
-    padding: 6px 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: #f8fafc;
-    color: #374151;
-    font-weight: 500;
+    padding: 8px 18px;
+    border: 2px solid #fcd34d;
+    border-radius: 8px;
+    background: #fefaf0;
+    color: #78350f;
+    font-weight: 600;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.15s ease;
-    margin-right: 12px;
+    margin-right: 14px;
 }
 
 .form-group input[type="file"]::file-selector-button:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
+    background: #fef3c7;
+    border-color: #f59e0b;
 }
 
 /* ----- Кнопка отправки ----- */
 .form-submit-btn {
     width: auto;
-    min-width: 160px;
-    padding: 8px 24px;
+    min-width: 180px;
+    padding: 12px 36px;
     border: none;
-    border-radius: 6px;
-    background: #3071a9;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
     color: #ffffff;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
-    margin-top: 4px;
-    height: 38px;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+    height: 48px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
 .form-submit-btn:hover {
-    background: #265a8a;
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
 }
 
 .form-submit-btn:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
 }
 
 .form-submit-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 /* ----- Сообщения ----- */
 .form-success {
     margin-top: 16px;
-    padding: 10px 16px;
-    background: #f0fdf4;
-    border: 1px solid #d1fae5;
-    border-radius: 6px;
-    color: #065f46;
+    padding: 12px 18px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    color: #78350f;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .form-error {
     margin-top: 16px;
-    padding: 10px 16px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
+    padding: 12px 18px;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
     color: #991b1b;
     font-size: 14px;
-}
-
-/* ========================================
-   ЦЕНТРИРОВАНИЕ ФОРМЫ
-   ======================================== */
-
-[style*="text-align: center"] .form-wrapper,
-[style*="text-align:center"] .form-wrapper {
-    margin-left: auto !important;
-    margin-right: auto !important;
-    display: block !important;
-}
-
-center .form-wrapper {
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.text-center .form-wrapper {
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.form-wrapper.form-centered {
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-
-.form-centered-wrapper {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.form-centered-wrapper .form-wrapper {
-    margin-left: 0;
-    margin-right: 0;
-}
-
-/* ----- Кастомные классы ----- */
-.form-wrapper.form-compact {
-    padding: 16px 20px;
-    max-width: 400px;
-}
-
-.form-wrapper.form-wide {
-    max-width: 100%;
-    padding: 32px 40px;
-}
-
-.form-wrapper.form-noborder {
-    border: none;
-    box-shadow: none;
-    padding: 0;
-}
-
-.form-wrapper.form-shadow {
-    border: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    font-weight: 500;
 }
 
 /* ========================================
@@ -381,14 +337,15 @@ center .form-wrapper {
 
 @media (max-width: 640px) {
     .form-wrapper {
-        padding: 18px 20px;
-        margin: 14px 0;
+        padding: 22px 18px;
+        margin: 12px 0;
         max-width: 100%;
+        border-radius: 12px;
     }
 
     .form-wrapper h3 {
-        font-size: 15px;
-        margin-bottom: 14px;
+        font-size: 18px;
+        margin-bottom: 16px;
     }
 
     .form-group input[type="text"],
@@ -403,37 +360,18 @@ center .form-wrapper {
     .form-group select,
     .form-group textarea {
         font-size: 16px;
-        padding: 8px 12px;
+        padding: 10px 14px;
     }
 
     .form-group .rating-group .rating-star {
-        font-size: 32px;
+        font-size: 34px;
     }
 
     .form-submit-btn {
         width: 100%;
+        min-width: unset;
         justify-content: center;
+        font-size: 14px;
+        height: 44px;
     }
-}
-
-/* ========================================
-   ПРИНУДИТЕЛЬНОЕ ЦЕНТРИРОВАНИЕ
-   ======================================== */
-
-p[style*="text-align: center"] > .form-container,
-p[style*="text-align: center"] .form-wrapper,
-div[style*="text-align: center"] .form-wrapper,
-[style*="text-align: center"] .form-wrapper {
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    float: none !important;
-    clear: both !important;
-    max-width: 560px !important;
-}
-
-.form-container[style*="flex"] {
-    display: flex !important;
-    justify-content: center !important;
-    width: 100% !important;
 }

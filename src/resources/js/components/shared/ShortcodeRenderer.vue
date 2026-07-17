@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { createApp, h } from 'vue';
-import FormRenderer from '@/components/Forms/FormRenderer.vue';
+import FormWrapper from '@/themes/default/components/FormWrapper.vue';
 import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
 
 const props = defineProps<{
@@ -58,7 +58,7 @@ const renderContent = () => {
 
     console.log('[ShortcodeRenderer] containerRef.innerHTML set, length:', containerRef.value.innerHTML.length);
 
-    // Рендерим формы
+    // Рендерим формы через FormWrapper
     const formPlaceholders = containerRef.value.querySelectorAll('.form-placeholder');
     console.log('[ShortcodeRenderer] formPlaceholders found:', formPlaceholders.length);
     formPlaceholders.forEach((placeholder) => {
@@ -94,7 +94,7 @@ const renderContent = () => {
 
         const app = createApp({
             render() {
-                return h(FormRenderer, {
+                return h(FormWrapper, {
                     formId: Number(formId),
                     centered: centered
                 });

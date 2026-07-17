@@ -51,6 +51,8 @@ class HandleInertiaRequests extends Middleware
             'mainMenu' => $menuService->getMenuTree('main-menu'),
             'appSettings' => $appSettings,
             'title' => $title,
+            'currentTheme' => $settingService->getTheme(), // ← ДОБАВИТЬ ЭТУ СТРОКУ
+
         ]);
     }
 
