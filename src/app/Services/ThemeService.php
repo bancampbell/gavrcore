@@ -24,17 +24,6 @@ class ThemeService
                 ]
             ],
             [
-                'id' => 'dark',
-                'name' => 'Тёмная',
-                'description' => 'Тёмная тема для комфортной работы',
-                'colors' => [
-                    'primary' => '#818cf8',
-                    'secondary' => '#a78bfa',
-                    'bg' => '#0f0f12',
-                    'surface' => '#1a1a1e',
-                ]
-            ],
-            [
                 'id' => 'warm',
                 'name' => 'Тёплая',
                 'description' => 'Уютная тёплая тема в песочных тонах',

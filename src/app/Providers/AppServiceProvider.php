@@ -30,11 +30,17 @@ use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
 use App\Services\SettingService;
 use App\Services\FormSubmissionService;
+use App\Seo\Services\MetaService;
+use App\Seo\Providers\MaterialSeoProvider;
+use App\Seo\Providers\CategorySeoProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use App\Services\MenuService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -47,8 +53,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MenuTypeRepositoryInterface::class, MenuTypeRepository::class);
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
-        // ДОБАВЛЕНО: биндинг для FormSubmission
         $this->app->bind(FormSubmissionRepositoryInterface::class, FormSubmissionRepository::class);
+
+        // Регистрируем SEO сервис с провайдерами
+        $this->app->singleton(MetaService::class, function ($app) {
+            $service = new MetaService();
+            $service->registerProvider(new MaterialSeoProvider($app->make(SettingService::class)));
+            $service->registerProvider(new CategorySeoProvider($app->make(SettingService::class)));
+            return $service;
+        });
     }
 
     public function boot(): void
@@ -86,5 +99,21 @@ class AppServiceProvider extends ServiceProvider
                 }
             },
         ]);
+
+        // ===== RATE LIMITING =====
+        // Лимит для авторизации
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        // Лимит для отправки форм
+        RateLimiter::for('form-submit', function (Request $request) {
+            return Limit::perMinute(3)->by($request->ip());
+        });
+
+        // Лимит для регистрации
+        RateLimiter::for('register', function (Request $request) {
+            return Limit::perMinute(3)->by($request->ip());
+        });
     }
 }

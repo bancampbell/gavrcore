@@ -16,10 +16,14 @@ use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Web\MaterialController as WebMaterialController;
+use App\Http\Controllers\Web\SitemapController;
 use App\Models\MenuItem;
 use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Публичные роуты
 Route::get('/', [WebMaterialController::class, 'index'])->name('home');
@@ -27,11 +31,12 @@ Route::get('/category/{slug}', [WebMaterialController::class, 'category'])->name
 Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
 
 // Материалы с красивыми URL (без /material/)
-Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login).+');
+Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login|sitemap).+');
 
 // ===== АУТЕНТИФИКАЦИЯ =====
 Route::get('/admin/login', fn () => Inertia::render('Auth/Login'))->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [LoginController::class, 'login'])
+    ->middleware('throttle:login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');

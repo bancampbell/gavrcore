@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\ClearsSitemapCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class Material extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, SoftDeletes, LogsActivity, ClearsSitemapCache;
 
     protected $fillable = [
         'title',
@@ -31,7 +32,11 @@ class Material extends Model
         'show_category',
         'show_views',
         'use_global_settings',
-        'template', // ← ДОБАВЛЕНО
+        'template',
+        // SEO поля
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
     ];
 
     protected $casts = [
@@ -57,7 +62,10 @@ class Material extends Model
                 'published_at',
                 'featured',
                 'show_on_homepage',
-                'template', // ← ДОБАВИЛ В ЛОГИ
+                'template',
+                'meta_title',
+                'meta_description',
+                'meta_keywords',
             ])
             ->logOnlyDirty()
             ->setDescriptionForEvent(function (string $eventName) {

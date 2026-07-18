@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { createApp, h } from 'vue';
 import FormWrapper from '@/themes/default/components/FormWrapper.vue';
 import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
@@ -15,6 +15,52 @@ const props = defineProps<{
 
 const containerRef = ref<HTMLElement | null>(null);
 const appInstances: any[] = [];
+
+// ===== ЛИНКБОКС =====
+const setupLightbox = () => {
+    if (!containerRef.value) return;
+
+    const images = containerRef.value.querySelectorAll('.prose img');
+    console.log('[ShortcodeRenderer] Setting up lightbox for images:', images.length);
+
+    images.forEach((img: HTMLImageElement) => {
+        // Убираем старый обработчик если есть
+        if ((img as any).__lightboxHandler) {
+            img.removeEventListener('click', (img as any).__lightboxHandler);
+        }
+
+        const handler = () => {
+            console.log('[ShortcodeRenderer] Image clicked:', img.src);
+
+            // Собираем все изображения в этой секции
+            const allImages = containerRef.value?.querySelectorAll('.prose img') || [];
+            const imageList: { src: string; alt: string }[] = [];
+
+            allImages.forEach((el: HTMLImageElement) => {
+                // Берем src из data-src (если есть) или из src
+                const src = el.getAttribute('data-src') || el.src;
+                const alt = el.alt || '';
+                imageList.push({ src, alt });
+            });
+
+            // Находим индекс текущего изображения
+            const currentSrc = img.getAttribute('data-src') || img.src;
+            const currentIndex = imageList.findIndex(item => item.src === currentSrc);
+
+            console.log('[ShortcodeRenderer] Opening lightbox, index:', currentIndex, 'total:', imageList.length);
+
+            // Открываем линкбокс через глобальный API
+            if (window.__globalLightbox && window.__globalLightbox.open) {
+                window.__globalLightbox.open(imageList, currentIndex >= 0 ? currentIndex : 0);
+            } else {
+                console.warn('[ShortcodeRenderer] Lightbox not found');
+            }
+        };
+
+        img.addEventListener('click', handler);
+        (img as any).__lightboxHandler = handler;
+    });
+};
 
 const renderContent = () => {
     console.log('[ShortcodeRenderer] renderContent called');
@@ -132,6 +178,11 @@ const renderContent = () => {
                 });
         });
     });
+
+    // Настраиваем линкбокс после рендера
+    nextTick(() => {
+        setupLightbox();
+    });
 };
 
 onMounted(() => {
@@ -155,57 +206,5 @@ onBeforeUnmount(() => {
 <style scoped>
 .shortcode-renderer {
     width: 100%;
-}
-
-.shortcode-renderer .prose {
-    max-width: none;
-}
-
-.shortcode-renderer .prose img {
-    max-width: 100%;
-    height: auto;
-    cursor: pointer;
-}
-
-.shortcode-renderer .prose a[href$=".jpg"],
-.shortcode-renderer .prose a[href$=".jpeg"],
-.shortcode-renderer .prose a[href$=".png"],
-.shortcode-renderer .prose a[href$=".gif"],
-.shortcode-renderer .prose a[href$=".webp"],
-.shortcode-renderer .prose a[href$=".svg"] {
-    cursor: pointer;
-}
-
-/* Стили для заголовков */
-.shortcode-renderer .prose h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-.shortcode-renderer .prose h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-.shortcode-renderer .prose h3 {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-top: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-.shortcode-renderer .prose p {
-    margin-bottom: 0.5rem;
-}
-.shortcode-renderer .prose ul,
-.shortcode-renderer .prose ol {
-    padding-left: 1.5rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-.shortcode-renderer .prose li {
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
 }
 </style>

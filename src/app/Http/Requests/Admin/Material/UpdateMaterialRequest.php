@@ -12,9 +12,6 @@ class UpdateMaterialRequest extends FormRequest
         return true;
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function rules(): array
     {
         /** @var Material|null $material */
@@ -22,9 +19,9 @@ class UpdateMaterialRequest extends FormRequest
 
         return [
             'title' => 'sometimes|required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:materials,slug,'.($material ? $material->id : 'NULL'),
+            'slug' => 'nullable|string|max:255|unique:materials,slug,' . ($material ? $material->id : 'NULL'),
             'content' => 'nullable|string',
-            'category_id' => 'sometimes|required|exists:categories,id',
+            'category_id' => 'nullable|exists:categories,id',
             'state' => 'nullable|in:published,draft,archived',
             'access' => 'nullable|in:public,registered,special',
             'featured' => 'nullable|in:0,1',
@@ -34,18 +31,18 @@ class UpdateMaterialRequest extends FormRequest
             'show_category' => 'nullable|boolean',
             'show_views' => 'nullable|boolean',
             'use_global_settings' => 'nullable|boolean',
-            'template' => 'nullable|string|in:default,warm,landing', // ← ДОБАВЛЕНО
+            'template' => 'nullable|string|in:default,warm,landing',
+            // SEO поля
+            'meta_title' => 'nullable|string|max:70',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|string|max:255',
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return [
             'title.required' => 'Название обязательно',
-            'category_id.required' => 'Категория обязательна',
             'category_id.exists' => 'Выбранная категория не существует',
         ];
     }

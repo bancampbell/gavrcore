@@ -34,4 +34,5 @@ class MaterialController extends Controller
         $material = Material::where('slug', $slug)->firstOrFail();
         return response()->json($material);
     }
+
 }

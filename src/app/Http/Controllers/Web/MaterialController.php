@@ -7,8 +7,10 @@ use App\Services\MaterialService;
 use App\Services\CategoryService;
 use App\Services\MenuService;
 use App\Services\SettingService;
+use App\Services\BreadcrumbService;
 use App\Models\Material;
 use App\Models\Form;
+use App\Seo\Services\MetaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,6 +37,8 @@ class MaterialController extends Controller
         $currentTheme = $this->settingService->getTheme();
 
         if ($homepageType === 'landing') {
+            $allForms = Form::where('status', true)->get()->keyBy('id')->toArray();
+
             return Inertia::render('Landing', [
                 'appSettings' => $settings,
                 'currentTheme' => $currentTheme,
@@ -42,6 +46,18 @@ class MaterialController extends Controller
                 'title' => $siteName,
                 'description' => $siteDescription,
                 'keywords' => $siteKeywords,
+                'forms' => $allForms,
+                'meta' => [
+                    'title' => $siteName,
+                    'description' => $siteDescription,
+                    'keywords' => $siteKeywords,
+                    'og_title' => $siteName,
+                    'og_description' => $siteDescription,
+                    'og_type' => 'website',
+                    'twitter_card' => 'summary_large_image',
+                    'canonical' => url('/'),
+                ],
+                'breadcrumbs' => app(BreadcrumbService::class)->forHome(),
             ]);
         }
 
@@ -62,6 +78,25 @@ class MaterialController extends Controller
             }
         }
 
+        // Для главной страницы используем SEO из материала или глобальные
+        if ($homepageMaterial) {
+            $meta = app(MetaService::class)->for($homepageMaterial);
+            $metaArray = $meta->toArray();
+            $breadcrumbs = app(BreadcrumbService::class)->forHome();
+        } else {
+            $metaArray = [
+                'title' => $siteName,
+                'description' => $siteDescription,
+                'keywords' => $siteKeywords,
+                'og_title' => $siteName,
+                'og_description' => $siteDescription,
+                'og_type' => 'website',
+                'twitter_card' => 'summary_large_image',
+                'canonical' => url('/'),
+            ];
+            $breadcrumbs = app(BreadcrumbService::class)->forHome();
+        }
+
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
             'forms' => $forms,
@@ -71,6 +106,8 @@ class MaterialController extends Controller
             'keywords' => $siteKeywords,
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
+            'meta' => $metaArray,
+            'breadcrumbs' => $breadcrumbs,
         ]);
     }
 
@@ -95,20 +132,23 @@ class MaterialController extends Controller
         }
 
         $settings = $this->settingService->getAllSettings();
-        $siteDescription = $settings['site_description'] ?? '';
-        $siteKeywords = $settings['seo_keywords'] ?? '';
         $currentTheme = $this->settingService->getTheme();
+
+        // Получаем SEO данные через MetaService
+        $meta = app(MetaService::class)->for($material);
+
+        // Хлебные крошки
+        $breadcrumbs = app(BreadcrumbService::class)->forMaterial($material);
 
         return Inertia::render('Material/Show', [
             'material' => $material,
             'template' => $material->template ?? 'default',
             'forms' => $forms,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
-            'title' => $material->title,
-            'description' => $siteDescription,
-            'keywords' => $siteKeywords,
+            'meta' => $meta->toArray(),
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
+            'breadcrumbs' => $breadcrumbs,
         ]);
     }
 
@@ -128,9 +168,13 @@ class MaterialController extends Controller
         $categories = $this->categoryService->getAllForSelect();
 
         $settings = $this->settingService->getAllSettings();
-        $siteDescription = $settings['site_description'] ?? '';
-        $siteKeywords = $settings['seo_keywords'] ?? '';
         $currentTheme = $this->settingService->getTheme();
+
+        // Получаем SEO данные для категории
+        $meta = app(MetaService::class)->for($category);
+
+        // Хлебные крошки
+        $breadcrumbs = app(BreadcrumbService::class)->forCategory($category);
 
         return Inertia::render('Category/Show', [
             'category' => $category,
@@ -138,11 +182,10 @@ class MaterialController extends Controller
             'categories' => $categories,
             'filters' => $filters,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
-            'title' => $category->name,
-            'description' => $siteDescription,
-            'keywords' => $siteKeywords,
+            'meta' => $meta->toArray(),
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
+            'breadcrumbs' => $breadcrumbs,
         ]);
     }
 
@@ -159,11 +202,13 @@ class MaterialController extends Controller
         $categories = $this->categoryService->getAllForSelect();
 
         $title = $search ? "Поиск: $search" : 'Поиск';
-
         $settings = $this->settingService->getAllSettings();
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
         $currentTheme = $this->settingService->getTheme();
+
+        // Хлебные крошки
+        $breadcrumbs = app(BreadcrumbService::class)->forSearch($search);
 
         return Inertia::render('Search/Index', [
             'materials' => $materials,
@@ -175,6 +220,17 @@ class MaterialController extends Controller
             'keywords' => $siteKeywords,
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
+            'meta' => [
+                'title' => $title,
+                'description' => $siteDescription,
+                'keywords' => $siteKeywords,
+                'og_title' => $title,
+                'og_description' => $siteDescription,
+                'og_type' => 'website',
+                'twitter_card' => 'summary_large_image',
+                'canonical' => url()->current(),
+            ],
+            'breadcrumbs' => $breadcrumbs,
         ]);
     }
 

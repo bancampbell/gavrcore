@@ -61,7 +61,7 @@
                             </div>
                         </div>
 
-                        <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
+                        <div class="w-full lg:w-80 flex-shrink-0 space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
                             <div>
                                 <h3 class="admin-form-label">Состояние</h3>
                                 <select v-model="form.state" class="admin-form-select w-full" :class="{
@@ -92,9 +92,24 @@
                                 </select>
                             </div>
 
-                            <div>
-                                <h3 class="admin-form-label">Отображение</h3>
-                                <div class="border border-slate-300 rounded-lg p-3 space-y-2">
+                            <!-- ===== АККОРДЕОН: ОТОБРАЖЕНИЕ ===== -->
+                            <div class="border border-slate-200 rounded-lg overflow-hidden">
+                                <button
+                                    @click="accordion.toggleSection('display')"
+                                    class="w-full flex items-center justify-between px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                    <span>Отображение</span>
+                                    <svg
+                                        class="w-4 h-4 transition-transform duration-200"
+                                        :class="accordion.isOpen('display') ? 'rotate-180' : ''"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div v-show="accordion.isOpen('display')" class="px-3 pb-3 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <span class="text-sm font-medium text-slate-700">Глобальные настройки</span>
                                         <button @click="form.use_global_settings = !form.use_global_settings" type="button" class="admin-toggle" :class="form.use_global_settings ? 'admin-toggle-on' : 'admin-toggle-off'">
@@ -125,17 +140,87 @@
                                             <span class="admin-toggle-slider" :class="form.show_views ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
+                                    <p class="text-xs text-slate-400 mt-1">
+                                        <span v-if="form.use_global_settings">Используются глобальные настройки</span>
+                                        <span v-else>Индивидуальные настройки</span>
+                                    </p>
                                 </div>
-                                <p class="text-xs text-slate-400 mt-1">
-                                    <span v-if="form.use_global_settings">Используются глобальные настройки</span>
-                                    <span v-else>Индивидуальные настройки</span>
-                                </p>
                             </div>
 
-                            <div>
-                                <h3 class="admin-form-label">Метки</h3>
-                                <input type="text" class="admin-form-input w-full" placeholder="Введите метки через запятую" />
-                                <p class="text-xs text-slate-400 mt-1">Введите метки через запятую</p>
+                            <!-- ===== АККОРДЕОН: SEO ===== -->
+                            <div class="border border-slate-200 rounded-lg overflow-hidden">
+                                <button
+                                    @click="accordion.toggleSection('seo')"
+                                    class="w-full flex items-center justify-between px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                    <span>SEO</span>
+                                    <svg
+                                        class="w-4 h-4 transition-transform duration-200"
+                                        :class="accordion.isOpen('seo') ? 'rotate-180' : ''"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div v-show="accordion.isOpen('seo')" class="px-3 pb-3 space-y-3">
+                                    <div>
+                                        <label class="text-sm font-medium text-slate-700 block mb-1">Meta Title</label>
+                                        <input
+                                            v-model="form.meta_title"
+                                            type="text"
+                                            class="admin-form-input w-full"
+                                            placeholder="Заголовок для поисковиков"
+                                            maxlength="70"
+                                        />
+                                        <p class="text-xs text-slate-400 mt-1">{{ form.meta_title?.length || 0 }}/70</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-slate-700 block mb-1">Meta Description</label>
+                                        <input
+                                            v-model="form.meta_description"
+                                            type="text"
+                                            class="admin-form-input w-full"
+                                            placeholder="Описание для поисковиков (до 160 символов)"
+                                            maxlength="160"
+                                        />
+                                        <p class="text-xs text-slate-400 mt-1">{{ form.meta_description?.length || 0 }}/160</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-slate-700 block mb-1">Meta Keywords</label>
+                                        <input
+                                            v-model="form.meta_keywords"
+                                            type="text"
+                                            class="admin-form-input w-full"
+                                            placeholder="Ключевые слова через запятую"
+                                        />
+                                    </div>
+                                    <p class="text-xs text-slate-400">Если поля пустые - используются глобальные настройки</p>
+                                </div>
+                            </div>
+
+                            <!-- ===== АККОРДЕОН: МЕТКИ ===== -->
+                            <div class="border border-slate-200 rounded-lg overflow-hidden">
+                                <button
+                                    @click="accordion.toggleSection('tags')"
+                                    class="w-full flex items-center justify-between px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                    <span>Метки</span>
+                                    <svg
+                                        class="w-4 h-4 transition-transform duration-200"
+                                        :class="accordion.isOpen('tags') ? 'rotate-180' : ''"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <div v-show="accordion.isOpen('tags')" class="px-3 pb-3">
+                                    <input type="text" class="admin-form-input w-full" placeholder="Введите метки через запятую" />
+                                    <p class="text-xs text-slate-400 mt-1">Введите метки через запятую</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -169,6 +254,7 @@ import LinkModal from './components/LinkModal.vue';
 import ImageModal from './components/ImageModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
 import GallerySelectModal from '../../../components/shared/GallerySelectModal.vue';
+import { useSidebarSections } from '../../../composables/useSidebarSections';
 
 const props = defineProps<{
     user: User;
@@ -176,6 +262,9 @@ const props = defineProps<{
     material: Material;
     categories: Category[];
 }>();
+
+// ===== АККОРДЕОН (используем существующий композабл) =====
+const accordion = useSidebarSections(10); // 10 - чтобы не было ограничений
 
 const loading = ref(false);
 const showLinkModal = ref(false);
@@ -205,6 +294,10 @@ const form = ref({
     show_author: props.material.show_author ?? true,
     show_category: props.material.show_category ?? true,
     show_views: props.material.show_views ?? true,
+    // SEO поля
+    meta_title: props.material.meta_title || '',
+    meta_description: props.material.meta_description || '',
+    meta_keywords: props.material.meta_keywords || '',
 });
 
 const isSlugManuallyEdited = ref(!!form.value.slug);
@@ -537,6 +630,10 @@ const save = async () => {
             show_author: form.value.show_author,
             show_category: form.value.show_category,
             show_views: form.value.show_views,
+            // SEO поля
+            meta_title: form.value.meta_title,
+            meta_description: form.value.meta_description,
+            meta_keywords: form.value.meta_keywords,
         };
 
         await axios.put(`/admin/materials/${props.material.id}`, dataToSend);
@@ -571,6 +668,10 @@ const saveAndClose = async () => {
             show_author: form.value.show_author,
             show_category: form.value.show_category,
             show_views: form.value.show_views,
+            // SEO поля
+            meta_title: form.value.meta_title,
+            meta_description: form.value.meta_description,
+            meta_keywords: form.value.meta_keywords,
         };
 
         await axios.put(`/admin/materials/${props.material.id}`, dataToSend);

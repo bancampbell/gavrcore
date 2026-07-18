@@ -1,9 +1,26 @@
 <template>
     <div class="landing-page">
         <Head>
-            <title>{{ title }}</title>
-            <meta name="description" :content="description || siteDescription" />
-            <meta name="keywords" :content="keywords || siteKeywords" />
+            <title>{{ meta?.title || title }}</title>
+            <meta name="description" :content="meta?.description || description || siteDescription" />
+            <meta name="keywords" :content="meta?.keywords || keywords || siteKeywords" />
+
+            <!-- Open Graph -->
+            <meta property="og:title" :content="meta?.og_title || meta?.title || title" />
+            <meta property="og:description" :content="meta?.og_description || meta?.description || description || siteDescription" />
+            <meta property="og:url" :content="meta?.canonical || window.location.href" />
+            <meta property="og:type" :content="meta?.og_type || 'website'" />
+            <meta property="og:image" :content="meta?.og_image || ''" />
+            <meta property="og:site_name" :content="appSettings?.site_name || 'GavrCore CMS'" />
+
+            <!-- Twitter Cards -->
+            <meta name="twitter:card" :content="meta?.twitter_card || 'summary_large_image'" />
+            <meta name="twitter:title" :content="meta?.og_title || meta?.title || title" />
+            <meta name="twitter:description" :content="meta?.og_description || meta?.description || description || siteDescription" />
+            <meta name="twitter:image" :content="meta?.og_image || ''" />
+
+            <!-- Canonical -->
+            <link rel="canonical" :href="meta?.canonical || window.location.href" />
         </Head>
 
         <!-- НАВИГАЦИЯ -->
@@ -52,6 +69,16 @@
             </div>
         </section>
 
+        <!-- ШОРТКОДЫ (ФОРМЫ, ГАЛЕРЕИ) -->
+        <section class="shortcode-section">
+            <div class="container">
+                <ShortcodeRenderer
+                    :content="landingContent"
+                    :forms="forms || {}"
+                />
+            </div>
+        </section>
+
         <!-- ПРЕИМУЩЕСТВА -->
         <section class="advantages-section">
             <div class="container">
@@ -64,6 +91,7 @@
                 </div>
             </div>
         </section>
+
         <!-- ФОРМА -->
         <section id="contacts" class="form-section">
             <div class="container">
@@ -141,6 +169,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
+import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -152,6 +181,14 @@ const props = defineProps({
     title: String,
     description: String,
     keywords: String,
+    forms: {
+        type: Object,
+        default: () => ({})
+    },
+    meta: {
+        type: Object,
+        default: () => ({}),
+    }
 });
 
 const siteName = props.appSettings?.site_name || 'GavrCore CMS';
@@ -198,7 +235,6 @@ const advantages = [
     'Оперативное выполнение заказов'
 ];
 
-// ===== МЕТОД ПЛАВНОГО СКРОЛЛА =====
 const scrollTo = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -212,17 +248,11 @@ const scrollTo = (sectionId) => {
     }
 };
 
-const submitForm = () => {
-    loading.value = true;
-    setTimeout(() => {
-        loading.value = false;
-        alert('Спасибо! Ваша заявка принята. Мы свяжемся с вами в ближайшее время.');
-        form.name = '';
-        form.phone = '';
-        form.message = '';
-        form.agreement = false;
-    }, 1500);
-};
+const landingContent = `
+    <h2 class="text-2xl font-bold text-center mb-6">Свяжитесь с нами</h2>
+    <p class="text-center text-gray-600 mb-8">Оставьте заявку и мы свяжемся с вами</p>
+   [gallery id="1"]
+`;
 </script>
 
 <style scoped>
@@ -404,6 +434,19 @@ const submitForm = () => {
     font-size: 14px;
     color: #4a5a7a;
     line-height: 1.5;
+}
+
+/* ===== SHORTCODE ===== */
+.shortcode-section {
+    padding: 60px 20px;
+    background: white;
+    border-top: 1px solid #eef2f6;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.shortcode-section .container {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 /* ===== ADVANTAGES ===== */
