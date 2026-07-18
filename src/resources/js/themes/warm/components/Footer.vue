@@ -2,17 +2,21 @@
     <footer class="site-footer-warm">
         <div class="container">
             <div class="footer-grid-warm">
-                <div class="footer-brand-warm">
-                    <h3>☀️ {{ appSettings.site_name || 'GavrCore CMS' }}</h3>
+                <div class="footer-col-warm">
+                    <h4>{{ appSettings.site_name || 'GavrCore CMS' }}</h4>
                     <p>{{ appSettings.site_description || '' }}</p>
                 </div>
-                <div class="footer-links-warm">
+                <div class="footer-col-warm">
                     <h4>Навигация</h4>
                     <ul>
                         <li v-for="item in mainMenu" :key="item.id">
                             <Link :href="getLinkUrl(item)">{{ item.title }}</Link>
                         </li>
                     </ul>
+                </div>
+                <div class="footer-col-warm">
+                    <h4>Контакты</h4>
+                    <p>{{ appSettings.contact_email || 'info@example.com' }}</p>
                 </div>
             </div>
             <div class="footer-bottom-warm">

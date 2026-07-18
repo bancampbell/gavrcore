@@ -2247,3 +2247,64 @@
     padding-right: 6px;
     border-top: 1px solid #e5e7eb;
 }
+
+
+
+/* ========================================
+  Переключатель лейдинга
+   ======================================== */
+.admin-page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.homepage-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.homepage-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.homepage-cards {
+    display: flex;
+    gap: 4px;
+}
+
+.homepage-card {
+    padding: 4px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    text-align: center;
+}
+
+.homepage-card:hover {
+    border-color: #b3c4d4;
+    background: #f8fafc;
+}
+
+.homepage-card.active {
+    border-color: #a5c1e1;
+    background: #5e9eda;
+}
+
+.homepage-card-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.homepage-card.active .homepage-card-title {
+    color: #ffffff;
+    font-weight: 600;
+}

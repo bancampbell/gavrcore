@@ -1,9 +1,5 @@
 <template>
-    <AppLayout
-        :main-menu="mainMenu"
-        :app-settings="appSettings"
-        :current-theme="currentTheme"
-    >
+    <LayoutSwitcher>
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description || siteDescription" />
@@ -51,14 +47,13 @@
                 <p class="text-sm mt-2">Выберите материал в админке и отметьте "Показывать на главной".</p>
             </div>
         </div>
-    </AppLayout>
+    </LayoutSwitcher>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
 import { Link, Head, usePage } from '@inertiajs/vue3';
+import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
 import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -102,61 +97,3 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('ru-RU');
 };
 </script>
-
-<style>
-.prose {
-    max-width: none;
-}
-
-.prose img {
-    max-width: 100%;
-    height: auto;
-    cursor: pointer;
-}
-
-.prose a[href$=".jpg"],
-.prose a[href$=".jpeg"],
-.prose a[href$=".png"],
-.prose a[href$=".gif"],
-.prose a[href$=".webp"],
-.prose a[href$=".svg"] {
-    cursor: pointer;
-}
-
-.prose h1 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.prose h2 {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.prose h3 {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-top: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.prose p {
-    margin-bottom: 0.5rem;
-}
-
-.prose ul,
-.prose ol {
-    padding-left: 1.5rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.prose li {
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
-}
-</style>

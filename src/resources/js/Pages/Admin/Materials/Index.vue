@@ -7,39 +7,64 @@
         <div class="flex flex-col h-full w-full">
             <!-- Панель действий + фильтры -->
             <div class="admin-page-actions flex-shrink-0 w-full">
+                <!-- ЗАГОЛОВОК -->
                 <h1 class="admin-page-title">Менеджер материалов</h1>
-                <div class="flex flex-wrap gap-2.5">
 
-                    <Link href="/admin/materials/create" class="admin-btn admin-btn-primary no-style">
-                        + Создать материал
-                    </Link>
-                    <template v-if="selectedMaterials.length > 0">
-                        <button
-                            @click="editSelected"
-                            :disabled="selectedMaterials.length !== 1"
-                            class="admin-btn admin-btn-secondary"
-                        >
-                            Изменить
-                        </button>
-                        <button
-                            @click="publishSelected"
-                            class="admin-btn admin-btn-secondary"
-                        >
-                            Опубликовать
-                        </button>
-                        <button
-                            @click="unpublishSelected"
-                            class="admin-btn admin-btn-secondary"
-                        >
-                            Снять с публикации
-                        </button>
-                        <button
-                            @click="moveToTrash"
-                            class="admin-btn admin-btn-danger"
-                        >
-                            В корзину
-                        </button>
-                    </template>
+                <!-- КНОПКИ + ПЕРЕКЛЮЧАТЕЛЬ -->
+                <div class="flex flex-wrap items-center justify-between gap-2.5">
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <Link href="/admin/materials/create" class="admin-btn admin-btn-primary no-style">
+                            + Создать материал
+                        </Link>
+                        <template v-if="selectedMaterials.length > 0">
+                            <button
+                                @click="editSelected"
+                                :disabled="selectedMaterials.length !== 1"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                Изменить
+                            </button>
+                            <button
+                                @click="publishSelected"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                Опубликовать
+                            </button>
+                            <button
+                                @click="unpublishSelected"
+                                class="admin-btn admin-btn-secondary"
+                            >
+                                Снять с публикации
+                            </button>
+                            <button
+                                @click="moveToTrash"
+                                class="admin-btn admin-btn-danger"
+                            >
+                                В корзину
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- ПЕРЕКЛЮЧАТЕЛЬ ГЛАВНОЙ СТРАНИЦЫ -->
+                    <div class="homepage-control">
+                        <span class="homepage-label">Главная</span>
+                        <div class="homepage-cards">
+                            <div
+                                class="homepage-card"
+                                :class="{ active: homepageType === 'material' }"
+                                @click="setHomepageType('material')"
+                            >
+                                <span class="homepage-card-title">Материал</span>
+                            </div>
+                            <div
+                                class="homepage-card"
+                                :class="{ active: homepageType === 'landing' }"
+                                @click="setHomepageType('landing')"
+                            >
+                                <span class="homepage-card-title">Лендинг</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Фильтры -->
@@ -94,10 +119,10 @@
                 </div>
             </div>
 
-            <!-- Контент (скроллится) -->
+            <!-- Контент -->
             <div class="admin-page-content">
                 <div class="admin-page-card w-full">
-                    <!-- Мобильная версия (карточки) -->
+                    <!-- Мобильная версия -->
                     <div class="lg:hidden divide-y divide-slate-100">
                         <div v-for="material in materials.data" :key="material.id" class="p-4 hover:bg-slate-50">
                             <div class="flex items-start gap-3">
@@ -120,7 +145,7 @@
                                         }">
                                             {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
                                         </span>
-                                        <span :class="material.show_on_homepage ? 'text-[#3071a9] font-medium' : 'text-slate-400'">
+                                        <span v-if="homepageType === 'material'" :class="material.show_on_homepage ? 'text-[#3071a9] font-medium' : 'text-slate-400'">
                                             {{ material.show_on_homepage ? 'На главной' : '' }}
                                         </span>
                                     </div>
@@ -129,7 +154,7 @@
                         </div>
                     </div>
 
-                    <!-- Десктопная версия - ЕДИНАЯ ТАБЛИЦА -->
+                    <!-- Десктопная версия -->
                     <div class="hidden lg:block admin-table-scroll">
                         <table class="admin-table-fixed">
                             <thead>
@@ -142,7 +167,7 @@
                                 <th class="col-author">Автор</th>
                                 <th class="col-created">Дата создания</th>
                                 <th class="col-views">Просмотров</th>
-                                <th class="col-home">На главной</th>
+                                <th v-if="homepageType === 'material'" class="col-home">На главной</th>
                                 <th class="col-id">ID</th>
                             </tr>
                             </thead>
@@ -152,7 +177,6 @@
                                 :key="material.id"
                                 :class="{ 'bg-blue-50/50': selectedMaterials.includes(material.id) }"
                             >
-                                <!-- Чекбокс -->
                                 <td class="col-checkbox">
                                     <input
                                         type="checkbox"
@@ -161,8 +185,6 @@
                                         class="admin-checkbox"
                                     />
                                 </td>
-
-                                <!-- Название - ссылка только на текст, клик по ячейке = выбор -->
                                 <td class="col-title" @click="toggleSelect(material.id)">
                                     <Link :href="`/admin/materials/${material.id}/edit`" class="title-text" style="display: inline-block !important;" @click.stop>
                                         {{ material.title }}
@@ -170,8 +192,6 @@
                                     <span class="title-slug">Слаг: {{ material.slug || '—' }}</span>
                                     <span class="title-category">Категория: {{ material.category?.name || 'Без категории' }}</span>
                                 </td>
-
-                                <!-- Статус - единый класс -->
                                 <td class="col-status" @click="toggleSelect(material.id)">
                                     <span class="status-badge" :class="{
                                         'status-published': material.state === 'published',
@@ -190,18 +210,10 @@
                                         {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
                                     </span>
                                 </td>
-
-                                <td class="col-author" @click="toggleSelect(material.id)" :title="material.user?.name">
-                                    {{ material.user?.name || '—' }}
-                                </td>
-
-                                <td class="col-created" @click="toggleSelect(material.id)">
-                                    {{ formatDate(material.created_at) }}
-                                </td>
-
+                                <td class="col-author" @click="toggleSelect(material.id)">{{ material.user?.name || '—' }}</td>
+                                <td class="col-created" @click="toggleSelect(material.id)">{{ formatDate(material.created_at) }}</td>
                                 <td class="col-views" @click="toggleSelect(material.id)">{{ material.views }}</td>
-
-                                <td class="col-home" @click.stop>
+                                <td v-if="homepageType === 'material'" class="col-home" @click.stop>
                                     <div
                                         class="admin-toggle"
                                         :class="material.show_on_homepage ? 'admin-toggle-on' : 'admin-toggle-off'"
@@ -213,13 +225,10 @@
                                         ></span>
                                     </div>
                                 </td>
-
                                 <td class="col-id" @click="toggleSelect(material.id)">{{ material.id }}</td>
                             </tr>
-
-                            <!-- Пустая строка, если нет данных -->
                             <tr v-if="materials.data.length === 0">
-                                <td colspan="8" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                <td :colspan="homepageType === 'material' ? 8 : 7" style="text-align: center; padding: 40px 0; color: #94a3b8;">
                                     Материалов не найдено
                                 </td>
                             </tr>
@@ -233,21 +242,11 @@
                             Показано {{ materials.from || 0 }} - {{ materials.to || 0 }} из {{ materials.total || 0 }}
                         </div>
                         <div class="admin-pagination-controls">
-                            <button
-                                @click="prevPage"
-                                :disabled="materials.current_page === 1"
-                                class="admin-pagination-btn"
-                            >
+                            <button @click="prevPage" :disabled="materials.current_page === 1" class="admin-pagination-btn">
                                 ← Назад
                             </button>
-                            <span class="admin-pagination-current">
-                                {{ materials.current_page }} / {{ materials.last_page }}
-                            </span>
-                            <button
-                                @click="nextPage"
-                                :disabled="materials.current_page === materials.last_page"
-                                class="admin-pagination-btn"
-                            >
+                            <span class="admin-pagination-current">{{ materials.current_page }} / {{ materials.last_page }}</span>
+                            <button @click="nextPage" :disabled="materials.current_page === materials.last_page" class="admin-pagination-btn">
                                 Вперед →
                             </button>
                         </div>
@@ -261,9 +260,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import { Link } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
+import axios from 'axios';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
 import { useMaterials } from '../../../composables/useMaterials';
@@ -303,6 +302,8 @@ const {
     toggleHomepage
 } = useMaterials(props);
 
+const homepageType = ref('material');
+
 const toggleSelect = (id: number) => {
     const index = selectedMaterials.value.indexOf(id);
     if (index === -1) {
@@ -312,7 +313,29 @@ const toggleSelect = (id: number) => {
     }
 };
 
+const setHomepageType = async (type: string) => {
+    homepageType.value = type;
+    try {
+        await axios.post('/admin/settings/homepage-type', { type });
+        showNotification('Тип главной страницы обновлён', 'success');
+        setTimeout(() => window.location.reload(), 500);
+    } catch (error) {
+        showNotification('Ошибка при сохранении', 'error');
+        homepageType.value = type === 'material' ? 'landing' : 'material';
+    }
+};
+
+const loadHomepageType = async () => {
+    try {
+        const response = await axios.get('/admin/settings/homepage-type');
+        homepageType.value = response.data.type || 'material';
+    } catch (error) {
+        console.error('Error loading homepage type:', error);
+    }
+};
+
 onMounted(() => {
+    loadHomepageType();
     if (message) {
         showNotification(decodeURIComponent(message), 'success');
         const url = new URL(window.location.href);
@@ -321,3 +344,5 @@ onMounted(() => {
     }
 });
 </script>
+
+

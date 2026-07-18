@@ -180,6 +180,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
 
+    // Homepage type
+    Route::get('/admin/settings/homepage-type', [SettingController::class, 'getHomepageType'])->name('admin.settings.homepage-type.get');
+    Route::post('/admin/settings/homepage-type', [SettingController::class, 'updateHomepageType'])->name('admin.settings.homepage-type.update');
+
     // Themes
     Route::get('/admin/themes', [ThemeController::class, 'index'])->name('admin.themes.index');
     Route::post('/admin/themes', [ThemeController::class, 'update'])->name('admin.themes.update');

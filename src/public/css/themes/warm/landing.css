@@ -1,0 +1,136 @@
+/* ============================================
+   СТИЛИ ДЛЯ ЛЕНДИНГА
+   ============================================ */
+
+/* ----- Хедер лендинга ----- */
+.landing-header {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #f0ece6;
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.landing-header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.landing-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1a1a2e;
+    text-decoration: none;
+}
+
+.landing-logo-icon {
+    font-size: 1.8rem;
+}
+
+.landing-nav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.landing-nav a {
+    color: #4a4a6a;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.landing-nav a:hover {
+    color: #e94560;
+}
+
+.landing-btn-primary {
+    padding: 8px 24px;
+    background: #e94560;
+    color: #fff !important;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.landing-btn-primary:hover {
+    background: #c73652;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233, 69, 96, 0.3);
+    color: #fff !important;
+}
+
+.landing-burger {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #1a1a2e;
+}
+
+.landing-mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #f0ece6;
+    margin-top: 16px;
+}
+
+.landing-mobile-menu.open {
+    display: flex;
+}
+
+.landing-mobile-menu a {
+    color: #4a4a6a;
+    text-decoration: none;
+    padding: 8px 0;
+    font-weight: 500;
+}
+
+/* ----- Футер лендинга ----- */
+.landing-footer {
+    background: #1a1a2e;
+    color: #8a8aaa;
+    padding: 40px 0;
+    margin-top: 60px;
+}
+
+.landing-footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.landing-footer h4 {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.landing-footer p {
+    font-size: 0.9rem;
+}
+
+/* ----- Адаптив ----- */
+@media (max-width: 768px) {
+    .landing-nav {
+        display: none;
+    }
+    .landing-burger {
+        display: block;
+    }
+    .landing-footer-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+}

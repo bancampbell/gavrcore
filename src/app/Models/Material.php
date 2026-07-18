@@ -31,6 +31,7 @@ class Material extends Model
         'show_category',
         'show_views',
         'use_global_settings',
+        'template', // ← ДОБАВЛЕНО
     ];
 
     protected $casts = [
@@ -56,6 +57,7 @@ class Material extends Model
                 'published_at',
                 'featured',
                 'show_on_homepage',
+                'template', // ← ДОБАВИЛ В ЛОГИ
             ])
             ->logOnlyDirty()
             ->setDescriptionForEvent(function (string $eventName) {

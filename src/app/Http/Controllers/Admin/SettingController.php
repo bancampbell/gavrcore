@@ -62,4 +62,31 @@ class SettingController extends Controller
 
         return redirect()->back()->with('success', 'Settings saved');
     }
+
+    public function updateHomepageType(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:material,landing'
+        ]);
+
+        $this->settingService->updateSettings([
+            'homepage_type' => $request->type
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Тип главной страницы обновлен',
+            'type' => $request->type
+        ]);
+    }
+
+    public function getHomepageType()
+    {
+        $settings = $this->settingService->getAllSettings();
+        $type = $settings['homepage_type'] ?? 'material';
+
+        return response()->json([
+            'type' => $type
+        ]);
+    }
 }

@@ -34,6 +34,7 @@ class UpdateMaterialRequest extends FormRequest
             'show_category' => 'nullable|boolean',
             'show_views' => 'nullable|boolean',
             'use_global_settings' => 'nullable|boolean',
+            'template' => 'nullable|string|in:default,warm,landing', // ← ДОБАВЛЕНО
         ];
     }
 

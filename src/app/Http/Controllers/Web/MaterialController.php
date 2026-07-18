@@ -27,12 +27,29 @@ class MaterialController extends Controller
 
     public function index(): Response
     {
+        $settings = $this->settingService->getAllSettings();
+        $homepageType = $settings['homepage_type'] ?? 'material';
+        $siteName = $settings['site_name'] ?? 'GavrCore CMS';
+        $siteDescription = $settings['site_description'] ?? '';
+        $siteKeywords = $settings['seo_keywords'] ?? '';
+        $currentTheme = $this->settingService->getTheme();
+
+        if ($homepageType === 'landing') {
+            return Inertia::render('Landing', [
+                'appSettings' => $settings,
+                'currentTheme' => $currentTheme,
+                'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+                'title' => $siteName,
+                'description' => $siteDescription,
+                'keywords' => $siteKeywords,
+            ]);
+        }
+
         $homepageMaterial = Material::where('show_on_homepage', true)
             ->where('state', 'published')
             ->with(['category', 'user'])
             ->first();
 
-        // Находим формы для главной
         $forms = [];
         if ($homepageMaterial && $homepageMaterial->content) {
             $formIds = $this->extractFormIds($homepageMaterial->content);
@@ -45,15 +62,9 @@ class MaterialController extends Controller
             }
         }
 
-        $settings = $this->settingService->getAllSettings();
-        $siteName = $settings['site_name'] ?? 'GavrCore CMS';
-        $siteDescription = $settings['site_description'] ?? '';
-        $siteKeywords = $settings['seo_keywords'] ?? '';
-        $currentTheme = $this->settingService->getTheme();
-
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial,
-            'forms' => $forms, // <--- ДОБАВЛЕНО
+            'forms' => $forms,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $siteName,
             'description' => $siteDescription,
@@ -72,7 +83,6 @@ class MaterialController extends Controller
 
         $material->increment('views');
 
-        // Находим ID форм в контенте
         $formIds = $this->extractFormIds($material->content);
         $forms = [];
 
@@ -91,6 +101,7 @@ class MaterialController extends Controller
 
         return Inertia::render('Material/Show', [
             'material' => $material,
+            'template' => $material->template ?? 'default',
             'forms' => $forms,
             'mainMenu' => $this->menuService->getMenuTree('main-menu'),
             'title' => $material->title,
@@ -167,9 +178,6 @@ class MaterialController extends Controller
         ]);
     }
 
-    /**
-     * Извлекает ID форм из контента по шорткоду [form id="X"]
-     */
     private function extractFormIds(?string $content): array
     {
         if (!$content) {

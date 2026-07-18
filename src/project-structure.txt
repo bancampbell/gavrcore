@@ -4,10 +4,7 @@
 ├── app
 │   ├── Actions
 │   │   ├── Auth
-│   │   │   ├── LoginUserAction.php
-│   │   │   └── RegisterUserAction.php
 │   │   └── FileManager
-│   │       └── CreateFolderAction.php
 │   ├── Contracts
 │   │   ├── CategoryRepositoryInterface.php
 │   │   ├── FormSubmissionRepositoryInterface.php
@@ -27,20 +24,9 @@
 │   │   └── UserData.php
 │   ├── Http
 │   │   ├── Controllers
-│   │   │   ├── Admin
-│   │   │   ├── Api
-│   │   │   ├── Auth
-│   │   │   ├── Controller.php
-│   │   │   └── Web
 │   │   ├── Middleware
-│   │   │   ├── HandleInertiaRequests.php
-│   │   │   └── ShareMenuMiddleware.php
 │   │   ├── Requests
-│   │   │   ├── Admin
-│   │   │   └── Auth
 │   │   └── Resources
-│   │       ├── Admin
-│   │       └── UserResource.php
 │   ├── Mail
 │   │   └── FormSubmissionNotification.php
 │   ├── Models
@@ -171,53 +157,25 @@
 │   │   ├── admin.css
 │   │   ├── admin-variables.css
 │   │   ├── app.css
+│   │   ├── content.css
 │   │   ├── editor.css
 │   │   ├── forms.css
 │   │   ├── gallery.css
 │   │   └── themes
-│   │       ├── dark
-│   │       ├── default
-│   │       └── warm
 │   ├── js
 │   │   ├── api
-│   │   │   ├── categories.ts
-│   │   │   ├── groups.ts
-│   │   │   ├── materials.ts
-│   │   │   ├── menu.ts
-│   │   │   └── users.ts
 │   │   ├── app.ts
 │   │   ├── components
-│   │   │   ├── Admin
-│   │   │   ├── Forms
-│   │   │   ├── Gallery
-│   │   │   └── shared
 │   │   ├── composables
-│   │   │   ├── useCategories.ts
-│   │   │   ├── useGalleryParser.ts
-│   │   │   ├── useGroups.ts
-│   │   │   ├── useMaterials.ts
-│   │   │   ├── useMenuTypes.ts
-│   │   │   ├── useSidebarSections.ts
-│   │   │   ├── useSubmissions.ts
-│   │   │   └── useUsers.ts
 │   │   ├── layouts
-│   │   │   ├── AdminLayout.vue
-│   │   │   ├── AppLayout.vue
-│   │   │   └── EmptyLayout.vue
 │   │   ├── Pages
-│   │   │   ├── Admin
-│   │   │   ├── Auth
-│   │   │   ├── Index.vue
-│   │   │   └── Material
 │   │   ├── shims-vue.d.ts
+│   │   ├── themes
 │   │   ├── types
-│   │   │   ├── index.ts
-│   │   │   └── menu.ts
 │   │   └── vite-env.d.ts
 │   └── views
 │       ├── app.blade.php
 │       ├── emails
-│       │   └── form-submission.blade.php
 │       └── welcome.blade.php
 ├── routes
 │   ├── api.php
@@ -242,4 +200,4 @@
 ├── tsconfig.json
 └── vite.config.js
 
-60 directories, 183 files
+44 directories, 157 files

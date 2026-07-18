@@ -31,7 +31,6 @@ class SettingService
         foreach ($settings as $key => $value) {
             $setting = Setting::where('key', $key)->first();
 
-            // Для boolean полей преобразуем в строку '1' или '0'
             if (is_bool($value)) {
                 $value = $value ? '1' : '0';
             }
@@ -58,9 +57,6 @@ class SettingService
         }
     }
 
-    /**
-     * Get current theme
-     */
     public function getTheme(): string
     {
         return Setting::where('key', 'theme')->first()?->value ?? 'default';
@@ -72,6 +68,7 @@ class SettingService
             ['key' => 'site_name', 'value' => 'GavrCore CMS', 'type' => 'string', 'group' => 'general', 'label' => 'Название сайта', 'order' => 1],
             ['key' => 'site_description', 'value' => '', 'type' => 'text', 'group' => 'general', 'label' => 'Описание сайта', 'order' => 2],
             ['key' => 'admin_email', 'value' => 'admin@example.com', 'type' => 'string', 'group' => 'general', 'label' => 'Email администратора', 'order' => 3],
+            ['key' => 'homepage_type', 'value' => 'material', 'type' => 'string', 'group' => 'general', 'label' => 'Тип главной страницы', 'order' => 4],
             ['key' => 'seo_keywords', 'value' => '', 'type' => 'string', 'group' => 'seo', 'label' => 'Ключевые слова', 'order' => 1],
             ['key' => 'materials_per_page', 'value' => '10', 'type' => 'number', 'group' => 'materials', 'label' => 'Материалов на странице', 'order' => 1],
             ['key' => 'date_format', 'value' => 'd.m.Y', 'type' => 'string', 'group' => 'materials', 'label' => 'Формат даты', 'order' => 2],

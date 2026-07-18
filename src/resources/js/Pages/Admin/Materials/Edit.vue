@@ -349,7 +349,6 @@ const buildImageStyle = (data: {
         style += 'margin-left: auto; margin-right: 0; ';
     }
 
-    // Если float передан и не пустой - добавляем
     if (data.float && data.float !== '') {
         if (data.float === 'left') {
             style += 'float: left; ';
@@ -383,7 +382,6 @@ const onImageInsert = (data: {
         (window as any).__selectedImagePos = data._pos;
     }
 
-    // Нормализуем данные
     const floatValue = data.float && data.float !== '' ? data.float : '';
     const marginValue = data.margin && data.margin !== '' ? data.margin : '';
     const alignValue = data.align && data.align !== '' ? data.align : '';

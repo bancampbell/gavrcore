@@ -1,9 +1,5 @@
 <template>
-    <AppLayout
-        :main-menu="mainMenu"
-        :app-settings="appSettings"
-        :current-theme="currentTheme"
-    >
+    <LayoutSwitcher>
         <Head>
             <title>{{ title }}</title>
             <meta name="description" :content="description || siteDescription" />
@@ -36,19 +32,16 @@
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </LayoutSwitcher>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import {Head, usePage} from '@inertiajs/vue3';
+import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
 import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
-const mainMenu = page.props.mainMenu || [];
-const currentTheme = page.props.currentTheme || 'default';
 
 const props = defineProps({
     material: Object,
@@ -58,6 +51,10 @@ const props = defineProps({
     forms: {
         type: Object,
         default: () => ({}),
+    },
+    template: {
+        type: String,
+        default: 'default',
     },
 });
 
@@ -87,24 +84,3 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('ru-RU');
 };
 </script>
-
-<style scoped>
-.prose {
-    max-width: none;
-}
-
-.prose img {
-    max-width: 100%;
-    height: auto;
-    cursor: pointer;
-}
-
-.prose a[href$=".jpg"],
-.prose a[href$=".jpeg"],
-.prose a[href$=".png"],
-.prose a[href$=".gif"],
-.prose a[href$=".webp"],
-.prose a[href$=".svg"] {
-    cursor: pointer;
-}
-</style>

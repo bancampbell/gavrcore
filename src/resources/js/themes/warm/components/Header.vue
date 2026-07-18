@@ -36,8 +36,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import {ref} from 'vue';
+import {Link} from '@inertiajs/vue3';
 import MenuItem from '@/components/shared/MenuItem.vue';
 
 defineProps({
