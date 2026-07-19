@@ -10,61 +10,38 @@
                 <!-- ЗАГОЛОВОК -->
                 <h1 class="admin-page-title">Менеджер материалов</h1>
 
-                <!-- КНОПКИ + ПЕРЕКЛЮЧАТЕЛЬ -->
-                <div class="flex flex-wrap items-center justify-between gap-2.5">
-                    <div class="flex flex-wrap items-center gap-2.5">
-                        <Link href="/admin/materials/create" class="admin-btn admin-btn-primary no-style">
-                            + Создать материал
-                        </Link>
-                        <template v-if="selectedMaterials.length > 0">
-                            <button
-                                @click="editSelected"
-                                :disabled="selectedMaterials.length !== 1"
-                                class="admin-btn admin-btn-secondary"
-                            >
-                                Изменить
-                            </button>
-                            <button
-                                @click="publishSelected"
-                                class="admin-btn admin-btn-secondary"
-                            >
-                                Опубликовать
-                            </button>
-                            <button
-                                @click="unpublishSelected"
-                                class="admin-btn admin-btn-secondary"
-                            >
-                                Снять с публикации
-                            </button>
-                            <button
-                                @click="moveToTrash"
-                                class="admin-btn admin-btn-danger"
-                            >
-                                В корзину
-                            </button>
-                        </template>
-                    </div>
-
-                    <!-- ПЕРЕКЛЮЧАТЕЛЬ ГЛАВНОЙ СТРАНИЦЫ -->
-                    <div class="homepage-control">
-                        <span class="homepage-label">Главная</span>
-                        <div class="homepage-cards">
-                            <div
-                                class="homepage-card"
-                                :class="{ active: homepageType === 'material' }"
-                                @click="setHomepageType('material')"
-                            >
-                                <span class="homepage-card-title">Материал</span>
-                            </div>
-                            <div
-                                class="homepage-card"
-                                :class="{ active: homepageType === 'landing' }"
-                                @click="setHomepageType('landing')"
-                            >
-                                <span class="homepage-card-title">Лендинг</span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- КНОПКИ -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <Link href="/admin/materials/create" class="admin-btn admin-btn-primary no-style">
+                        + Создать материал
+                    </Link>
+                    <template v-if="selectedMaterials.length > 0">
+                        <button
+                            @click="editSelected"
+                            :disabled="selectedMaterials.length !== 1"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Изменить
+                        </button>
+                        <button
+                            @click="publishSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Опубликовать
+                        </button>
+                        <button
+                            @click="unpublishSelected"
+                            class="admin-btn admin-btn-secondary"
+                        >
+                            Снять с публикации
+                        </button>
+                        <button
+                            @click="moveToTrash"
+                            class="admin-btn admin-btn-danger"
+                        >
+                            В корзину
+                        </button>
+                    </template>
                 </div>
 
                 <!-- Фильтры -->
@@ -145,7 +122,7 @@
                                         }">
                                             {{ material.state === 'published' ? 'Опубликовано' : material.state === 'draft' ? 'Не опубликовано' : 'Архив' }}
                                         </span>
-                                        <span v-if="homepageType === 'material'" :class="material.show_on_homepage ? 'text-[#3071a9] font-medium' : 'text-slate-400'">
+                                        <span v-if="!isLanding" :class="material.show_on_homepage ? 'text-[#3071a9] font-medium' : 'text-slate-400'">
                                             {{ material.show_on_homepage ? 'На главной' : '' }}
                                         </span>
                                     </div>
@@ -167,7 +144,7 @@
                                 <th class="col-author">Автор</th>
                                 <th class="col-created">Дата создания</th>
                                 <th class="col-views">Просмотров</th>
-                                <th v-if="homepageType === 'material'" class="col-home">На главной</th>
+                                <th v-if="!isLanding" class="col-home">На главной</th>
                                 <th class="col-id">ID</th>
                             </tr>
                             </thead>
@@ -213,7 +190,7 @@
                                 <td class="col-author" @click="toggleSelect(material.id)">{{ material.user?.name || '—' }}</td>
                                 <td class="col-created" @click="toggleSelect(material.id)">{{ formatDate(material.created_at) }}</td>
                                 <td class="col-views" @click="toggleSelect(material.id)">{{ material.views }}</td>
-                                <td v-if="homepageType === 'material'" class="col-home" @click.stop>
+                                <td v-if="!isLanding" class="col-home" @click.stop>
                                     <div
                                         class="admin-toggle"
                                         :class="material.show_on_homepage ? 'admin-toggle-on' : 'admin-toggle-off'"
@@ -228,7 +205,7 @@
                                 <td class="col-id" @click="toggleSelect(material.id)">{{ material.id }}</td>
                             </tr>
                             <tr v-if="materials.data.length === 0">
-                                <td :colspan="homepageType === 'material' ? 8 : 7" style="text-align: center; padding: 40px 0; color: #94a3b8;">
+                                <td :colspan="!isLanding ? 8 : 7" style="text-align: center; padding: 40px 0; color: #94a3b8;">
                                     Материалов не найдено
                                 </td>
                             </tr>
@@ -276,6 +253,7 @@ const props = defineProps<{
     authors: User[];
     filters?: MaterialFilters;
     perPage?: number;
+    isLanding?: boolean;
 }>();
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -299,10 +277,8 @@ const {
     unpublishSelected,
     editSelected,
     showNotification,
-    toggleHomepage
+    toggleHomepage,
 } = useMaterials(props);
-
-const homepageType = ref('material');
 
 const toggleSelect = (id: number) => {
     const index = selectedMaterials.value.indexOf(id);
@@ -313,29 +289,7 @@ const toggleSelect = (id: number) => {
     }
 };
 
-const setHomepageType = async (type: string) => {
-    homepageType.value = type;
-    try {
-        await axios.post('/admin/settings/homepage-type', { type });
-        showNotification('Тип главной страницы обновлён', 'success');
-        setTimeout(() => window.location.reload(), 500);
-    } catch (error) {
-        showNotification('Ошибка при сохранении', 'error');
-        homepageType.value = type === 'material' ? 'landing' : 'material';
-    }
-};
-
-const loadHomepageType = async () => {
-    try {
-        const response = await axios.get('/admin/settings/homepage-type');
-        homepageType.value = response.data.type || 'material';
-    } catch (error) {
-        console.error('Error loading homepage type:', error);
-    }
-};
-
 onMounted(() => {
-    loadHomepageType();
     if (message) {
         showNotification(decodeURIComponent(message), 'success');
         const url = new URL(window.location.href);
@@ -344,5 +298,3 @@ onMounted(() => {
     }
 });
 </script>
-
-

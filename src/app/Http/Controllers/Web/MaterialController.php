@@ -8,6 +8,7 @@ use App\Services\CategoryService;
 use App\Services\MenuService;
 use App\Services\SettingService;
 use App\Services\BreadcrumbService;
+use App\Services\ThemeService;
 use App\Models\Material;
 use App\Models\Form;
 use App\Seo\Services\MetaService;
@@ -30,16 +31,17 @@ class MaterialController extends Controller
     public function index(): Response
     {
         $settings = $this->settingService->getAllSettings();
-        $homepageType = $settings['homepage_type'] ?? 'material';
         $siteName = $settings['site_name'] ?? 'GavrCore CMS';
         $siteDescription = $settings['site_description'] ?? '';
         $siteKeywords = $settings['seo_keywords'] ?? '';
         $currentTheme = $this->settingService->getTheme();
 
-        if ($homepageType === 'landing') {
+        // Проверяем, выбрана ли тема лендинга
+        $themeService = app(ThemeService::class);
+        if ($themeService->isLandingTheme()) {
             $allForms = Form::where('status', true)->get()->keyBy('id')->toArray();
 
-            return Inertia::render('Landing', [
+            return Inertia::render('landing/Index', [
                 'appSettings' => $settings,
                 'currentTheme' => $currentTheme,
                 'mainMenu' => $this->menuService->getMenuTree('main-menu'),
@@ -78,7 +80,6 @@ class MaterialController extends Controller
             }
         }
 
-        // Для главной страницы используем SEO из материала или глобальные
         if ($homepageMaterial) {
             $meta = app(MetaService::class)->for($homepageMaterial);
             $metaArray = $meta->toArray();
@@ -134,10 +135,7 @@ class MaterialController extends Controller
         $settings = $this->settingService->getAllSettings();
         $currentTheme = $this->settingService->getTheme();
 
-        // Получаем SEO данные через MetaService
         $meta = app(MetaService::class)->for($material);
-
-        // Хлебные крошки
         $breadcrumbs = app(BreadcrumbService::class)->forMaterial($material);
 
         return Inertia::render('Material/Show', [
@@ -170,10 +168,7 @@ class MaterialController extends Controller
         $settings = $this->settingService->getAllSettings();
         $currentTheme = $this->settingService->getTheme();
 
-        // Получаем SEO данные для категории
         $meta = app(MetaService::class)->for($category);
-
-        // Хлебные крошки
         $breadcrumbs = app(BreadcrumbService::class)->forCategory($category);
 
         return Inertia::render('Category/Show', [
@@ -207,7 +202,6 @@ class MaterialController extends Controller
         $siteKeywords = $settings['seo_keywords'] ?? '';
         $currentTheme = $this->settingService->getTheme();
 
-        // Хлебные крошки
         $breadcrumbs = app(BreadcrumbService::class)->forSearch($search);
 
         return Inertia::render('Search/Index', [

@@ -15,7 +15,7 @@ class ThemeService
             [
                 'id' => 'default',
                 'name' => 'Светлая',
-                'description' => 'Стандартная светлая тема',
+                'description' => 'Стандартная светлая тема с материалами',
                 'colors' => [
                     'primary' => '#4f46e5',
                     'secondary' => '#7c3aed',
@@ -26,12 +26,23 @@ class ThemeService
             [
                 'id' => 'warm',
                 'name' => 'Тёплая',
-                'description' => 'Уютная тёплая тема в песочных тонах',
+                'description' => 'Уютная тёплая тема с материалами',
                 'colors' => [
                     'primary' => '#d97706',
                     'secondary' => '#ea580c',
                     'bg' => '#fef3c7',
                     'surface' => '#fffbeb',
+                ]
+            ],
+            [
+                'id' => 'landing',
+                'name' => 'Лендинг',
+                'description' => 'Одностраничный сайт (лендинг), материалы скрыты',
+                'colors' => [
+                    'primary' => '#f97316',
+                    'secondary' => '#dc2626',
+                    'bg' => '#faf9fe',
+                    'surface' => '#ffffff',
                 ]
             ]
         ];
@@ -54,5 +65,13 @@ class ThemeService
             ['key' => 'theme'],
             ['value' => $theme]
         );
+    }
+
+    /**
+     * Check if current theme is landing
+     */
+    public function isLandingTheme(): bool
+    {
+        return $this->getCurrentTheme() === 'landing';
     }
 }

@@ -33,7 +33,7 @@ class ThemeController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'theme' => 'required|string|in:default,dark,warm',
+            'theme' => 'required|string|in:default,warm,landing',
         ]);
 
         $this->themeService->setCurrentTheme($validated['theme']);

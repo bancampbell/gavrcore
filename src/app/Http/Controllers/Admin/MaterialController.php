@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
 use App\Services\MaterialService;
+use App\Services\ThemeService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -44,6 +45,7 @@ class MaterialController extends Controller
             'perPage' => (int) $perPage,
             'user' => auth()->user(),
             'title' => 'Менеджер материалов',
+            'isLanding' => app(ThemeService::class)->isLandingTheme(),
         ]);
     }
 
@@ -58,7 +60,6 @@ class MaterialController extends Controller
         foreach ($materials as $material) {
             $material->update(['state' => 'trash']);
 
-            // Логируем перемещение в корзину
             Activity::causedBy(auth()->user())
                 ->performedOn($material)
                 ->log('Перемещен в корзину: ' . $material->title);
@@ -93,7 +94,6 @@ class MaterialController extends Controller
         foreach ($materials as $material) {
             $material->update(['state' => 'draft']);
 
-            // Логируем восстановление
             Activity::causedBy(auth()->user())
                 ->performedOn($material)
                 ->log('Восстановлен из корзины: ' . $material->title);
@@ -119,7 +119,6 @@ class MaterialController extends Controller
 
             $material->forceDelete();
 
-            // Логируем полное удаление
             Activity::causedBy(auth()->user())
                 ->withProperties(['material_id' => $material->id])
                 ->log('Полностью удален материал: ' . $title);
@@ -141,7 +140,6 @@ class MaterialController extends Controller
 
         Material::where('state', 'trash')->forceDelete();
 
-        // Логируем очистку корзины
         Activity::causedBy(auth()->user())
             ->withProperties([
                 'count' => $count,
@@ -165,7 +163,6 @@ class MaterialController extends Controller
             $material->update(['state' => 'published']);
         }
 
-        // Логируем публикацию
         $titles = $materials->pluck('title')->toArray();
         Activity::causedBy(auth()->user())
             ->withProperties(['materials' => $titles, 'count' => $count])
@@ -189,7 +186,6 @@ class MaterialController extends Controller
             $material->update(['state' => 'draft']);
         }
 
-        // Логируем снятие с публикации
         $titles = $materials->pluck('title')->toArray();
         Activity::causedBy(auth()->user())
             ->withProperties(['materials' => $titles, 'count' => $count])

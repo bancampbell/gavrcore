@@ -4,9 +4,25 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import GlobalLightbox from './components/shared/GlobalLightbox.vue';
 import '../css/app.css';
 
-
 createInertiaApp({
-    resolve: (name: string) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')) as any,
+    resolve: (name: string) => {
+        // Сначала ищем в Pages
+        const pages = import.meta.glob('./Pages/**/*.vue');
+        // Потом в themes
+        const themes = import.meta.glob('./themes/**/*.vue');
+
+        // Пробуем найти в Pages
+        if (pages[`./Pages/${name}.vue`]) {
+            return resolvePageComponent(`./Pages/${name}.vue`, pages);
+        }
+
+        // Пробуем найти в themes
+        if (themes[`./themes/${name}.vue`]) {
+            return resolvePageComponent(`./themes/${name}.vue`, themes);
+        }
+
+        throw new Error(`Page not found: ./Pages/${name}.vue or ./themes/${name}.vue`);
+    },
     setup({ el, App, props, plugin }) {
         const app = createApp({
             render: () => h(App as Component, props)

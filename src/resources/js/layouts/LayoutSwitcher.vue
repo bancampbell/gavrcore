@@ -12,13 +12,14 @@
 
 <script setup>
 import { ref, watch, onMounted, shallowRef } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import {usePage} from '@inertiajs/vue3';
 
 const page = usePage();
 
 const layouts = {
     default: () => import('@/layouts/DefaultLayout.vue'),
     warm: () => import('@/layouts/WarmLayout.vue'),
+    landing: () => import('@/layouts/LandingLayout.vue'),
     admin: () => import('@/layouts/AdminLayout.vue'),
     empty: () => import('@/layouts/EmptyLayout.vue'),
 };
@@ -28,16 +29,10 @@ const CurrentLayout = shallowRef(null);
 const loadThemeCSS = (theme) => {
     document.querySelectorAll('.dynamic-theme').forEach(el => el.remove());
 
-    const themeFiles = [
-        'variables.css',
-        'theme.css',
-        'layout.css',
-        'header.css',
-        'footer.css',
-        'components.css',
-        'content.css',
-        'forms.css'
-    ];
+    // Для лендинга свои CSS файлы
+    const themeFiles = theme === 'landing'
+        ? ['variables.css', 'theme.css', 'landing.css']
+        : ['variables.css', 'theme.css', 'layout.css', 'header.css', 'footer.css', 'components.css', 'content.css', 'forms.css'];
 
     const baseUrl = `/css/themes/${theme}`;
 

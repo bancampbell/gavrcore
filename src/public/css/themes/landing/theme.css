@@ -1,0 +1,9 @@
+/* Базовые стили для лендинга */
+.landing-wrapper {
+    background: var(--landing-bg);
+    color: var(--landing-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+}
+
+/* Все стили из landing.css можно объединить сюда или оставить раздельно */
