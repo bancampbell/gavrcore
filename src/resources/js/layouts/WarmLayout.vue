@@ -76,8 +76,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import {ref} from 'vue';
+import {Link, usePage} from '@inertiajs/vue3';
 import MenuItem from '@/components/shared/MenuItem.vue';
 import CookieConsent from '@/components/shared/CookieConsent.vue';
 

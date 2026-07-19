@@ -12,7 +12,7 @@
 
 <script setup>
 import { ref, watch, onMounted, shallowRef } from 'vue';
-import {usePage} from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 
@@ -27,6 +27,7 @@ const layouts = {
 const CurrentLayout = shallowRef(null);
 
 const loadThemeCSS = (theme) => {
+    // Удаляем старые CSS
     document.querySelectorAll('.dynamic-theme').forEach(el => el.remove());
 
     // Для лендинга свои CSS файлы
@@ -47,6 +48,8 @@ const loadThemeCSS = (theme) => {
 
 const loadLayout = async (layoutName) => {
     const globalTheme = page.props.currentTheme || 'default';
+
+    // Всегда перезагружаем CSS для текущей темы
     loadThemeCSS(globalTheme);
 
     try {
@@ -66,6 +69,7 @@ onMounted(() => {
 
 watch(() => page.props.currentTheme, (newTheme) => {
     if (newTheme) {
+        // Принудительно перезагружаем CSS и layout
         loadLayout(newTheme);
     }
 });

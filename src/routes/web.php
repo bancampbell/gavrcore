@@ -20,6 +20,7 @@ use App\Http\Controllers\Auth\User\RegisterController;
 use App\Http\Controllers\Web\CookieConsentController;
 use App\Http\Controllers\Web\MaterialController as WebMaterialController;
 use App\Http\Controllers\Web\SitemapController;
+use App\Http\Controllers\Web\DashboardController as WebDashboardController;
 use App\Models\MenuItem;
 use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
@@ -41,13 +42,23 @@ Route::post('/logout', [UserLoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
 Route::post('/register', [RegisterController::class, 'store']);
 
+// ===== ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ =====
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [WebDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/profile', [WebDashboardController::class, 'profile'])->name('dashboard.profile');
+    Route::get('/dashboard/settings', [WebDashboardController::class, 'settings'])->name('dashboard.settings');
+
+    Route::put('/dashboard/profile', [WebDashboardController::class, 'updateProfile'])->name('dashboard.profile.update');
+    Route::put('/dashboard/settings', [WebDashboardController::class, 'updateSettings'])->name('dashboard.settings.update');
+});
+
 // Публичные роуты
 Route::get('/', [WebMaterialController::class, 'index'])->name('home');
 Route::get('/category/{slug}', [WebMaterialController::class, 'category'])->name('category.show');
 Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
 
 // Материалы с красивыми URL (без /material/)
-Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login|register|sitemap|cookie-consent).+');
+Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login|register|sitemap|cookie-consent|dashboard).+');
 
 // ===== АДМИНСКАЯ АУТЕНТИФИКАЦИЯ =====
 Route::get('/admin/login', [AdminLoginController::class, 'create'])->name('admin.login');

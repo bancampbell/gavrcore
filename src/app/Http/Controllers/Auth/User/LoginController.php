@@ -25,7 +25,21 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('home');
+
+            // Проверяем, откуда пришёл пользователь
+            $referer = $request->headers->get('referer');
+
+            // Если пришёл со страницы логина или с главной — редирект на главную
+            if ($referer && (
+                    str_contains($referer, '/login') ||
+                    str_contains($referer, '/register') ||
+                    $referer === route('home')
+                )) {
+                return redirect()->route('home');
+            }
+
+            // Иначе — туда, куда пытался попасть (или в дашборд)
+            return redirect()->intended('/dashboard');
         }
 
         return back()->withErrors([

@@ -71,6 +71,7 @@
                                     <label class="admin-form-label">Тип пункта меню *</label>
                                     <select
                                         v-model="form.link_type"
+                                        @change="onLinkTypeChange"
                                         class="admin-form-select w-full max-w-md"
                                     >
                                         <option value="url">URL</option>
@@ -86,7 +87,7 @@
                                     <label class="admin-form-label">Ссылка</label>
                                     <div class="flex gap-2 max-w-md">
                                         <input
-                                            v-model="form.link_value_display"
+                                            v-model="form.link_value"
                                             type="text"
                                             class="admin-form-input flex-1"
                                             :placeholder="form.link_type === 'material' ? 'Выберите материал' : 'https://...'"
@@ -238,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
@@ -271,7 +272,6 @@ const form = ref({
     alias: props.menuItem.alias,
     link_type: props.menuItem.link_type,
     link_value: props.menuItem.link_value || '',
-    link_value_display: '',
     target: props.menuItem.target,
     status: props.menuItem.status,
     access: props.menuItem.access,
@@ -279,12 +279,12 @@ const form = ref({
     after_id: null as number | null,
 });
 
-watch(() => form.value.link_type, (newType) => {
-    if (newType !== 'material') {
+const onLinkTypeChange = () => {
+    // Очищаем ссылку только для разделителя и заголовка
+    if (form.value.link_type === 'separator' || form.value.link_type === 'heading') {
         form.value.link_value = '';
-        form.value.link_value_display = '';
     }
-});
+};
 
 const cancel = () => {
     router.visit(`/admin/menu/types/${form.value.menu_type_id}/items`);
@@ -299,26 +299,10 @@ const loadMenuTypes = async () => {
     try {
         const response = await menuTypesApi.getAll();
         menuTypes.value = response.data.data;
-        await loadMaterialTitle();
         await loadParentOptions();
         await loadOrderOptions();
     } catch (error) {
         console.error('Error loading menu types:', error);
-    }
-};
-
-const loadMaterialTitle = async () => {
-    if (form.value.link_type === 'material' && form.value.link_value) {
-        try {
-            const response = await axios.get(`/api/materials/by-slug/${form.value.link_value}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
-            if (response.data) {
-                form.value.link_value_display = response.data.title;
-            }
-        } catch (error) {
-            form.value.link_value_display = form.value.link_value;
-        }
     }
 };
 
@@ -407,7 +391,6 @@ const updateAlias = () => {
 
 const selectMaterial = (material: { id: number; title: string; slug: string }) => {
     form.value.link_value = material.slug;
-    form.value.link_value_display = material.title;
 };
 
 const prepareSubmitData = () => {

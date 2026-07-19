@@ -31,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
             CheckCookieConsent::class,
         ]);
 
+        $middleware->redirectGuestsTo(fn () => route('login'));
+
         $middleware->alias([
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'admin' => AdminMiddleware::class,
