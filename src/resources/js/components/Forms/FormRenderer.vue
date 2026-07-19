@@ -39,9 +39,12 @@
                             :id="field.name"
                             v-model="formData[field.name]"
                             type="email"
-                            :placeholder="field.placeholder || ''"
+                            :placeholder="user?.email || 'Ваш email'"
                             :required="field.required || false"
                         />
+                        <p v-if="field.type === 'email'" class="form-hint">
+                            По умолчанию — ваш email, можно изменить
+                        </p>
 
                         <!-- Телефон -->
                         <input
@@ -234,7 +237,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+
+const page = usePage();
+const user = page.props.auth?.user;
 
 interface Condition {
     field: string;
@@ -316,7 +323,11 @@ const loadForm = async () => {
         if (form.value?.fields) {
             form.value.fields.forEach(field => {
                 const name = field.name || 'field_' + Math.random().toString(36).substr(2, 5);
-                if (field.type === 'checkbox') {
+
+                // Если поле email — подставляем email пользователя
+                if (field.type === 'email' && user?.email) {
+                    formData[name] = user.email;
+                } else if (field.type === 'checkbox') {
                     formData[name] = [];
                 } else {
                     formData[name] = '';
@@ -370,7 +381,9 @@ const submitForm = async () => {
         if (form.value?.fields) {
             form.value.fields.forEach(field => {
                 const name = field.name || 'field_' + Math.random().toString(36).substr(2, 5);
-                if (field.type === 'checkbox') {
+                if (field.type === 'email' && user?.email) {
+                    formData[name] = user.email;
+                } else if (field.type === 'checkbox') {
                     formData[name] = [];
                 } else {
                     formData[name] = '';
@@ -388,3 +401,11 @@ onMounted(() => {
     loadForm();
 });
 </script>
+
+<style scoped>
+.form-hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+}
+</style>

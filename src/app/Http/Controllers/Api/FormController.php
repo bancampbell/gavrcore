@@ -7,6 +7,7 @@ use App\Models\Form;
 use App\Models\FormSubmission;
 use App\Services\FormSubmissionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class FormController extends Controller
@@ -56,10 +57,16 @@ class FormController extends Controller
             ], 422);
         }
 
+        // Подготовка данных для сохранения
+        $data = $request->except('_token');
+        $userId = Auth::check() ? Auth::id() : null;
+
         // Сохраняем ответ
         $submission = FormSubmission::create([
             'form_id' => $form->id,
-            'data' => $request->except('_token'),
+            'user_id' => $userId,
+            'data' => $data,
+            'status' => FormSubmission::STATUS_NEW,
             'meta' => [
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),

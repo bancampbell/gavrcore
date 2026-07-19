@@ -139,6 +139,17 @@
                 </div>
             </section>
 
+            <!-- ===== БЛОК С ШОРТКОДАМИ ===== -->
+            <section class="shortcode-section">
+                <div class="container">
+                    <ShortcodeRenderer
+                        :content="landingContent"
+                        :forms="forms || {}"
+                    />
+                </div>
+            </section>
+
+            <!-- ===== КОНТАКТЫ ===== -->
             <section id="contact" class="contact">
                 <div class="container">
                     <div class="contact-inner">
@@ -178,6 +189,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
+import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
@@ -212,6 +224,15 @@ const menuItems = [
     { id: 'work', label: 'Проекты', href: '#work' },
     { id: 'contact', label: 'Связаться', href: '#contact' },
 ];
+
+// ===== КОНТЕНТ С ШОРТКОДАМИ =====
+const landingContent = `
+    <div class="shortcode-wrapper">
+        <h2 class="text-2xl font-bold text-center mb-6">Свяжитесь с нами</h2>
+        <p class="text-center text-gray-600 mb-8">Оставьте заявку и мы свяжемся с вами</p>
+        [form id="5"]
+    </div>
+`;
 
 const scrollTo = (href, id) => {
     const target = document.querySelector(href);

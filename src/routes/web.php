@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [WebDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/profile', [WebDashboardController::class, 'profile'])->name('dashboard.profile');
     Route::get('/dashboard/settings', [WebDashboardController::class, 'settings'])->name('dashboard.settings');
+    Route::get('/dashboard/tickets', [WebDashboardController::class, 'tickets'])->name('dashboard.tickets');
+    Route::get('/dashboard/tickets/new', [WebDashboardController::class, 'ticketsCreate'])->name('dashboard.tickets.create');
 
     Route::put('/dashboard/profile', [WebDashboardController::class, 'updateProfile'])->name('dashboard.profile.update');
     Route::put('/dashboard/settings', [WebDashboardController::class, 'updateSettings'])->name('dashboard.settings.update');

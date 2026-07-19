@@ -9,19 +9,29 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int $form_id
+ * @property int|null $user_id
  * @property array $data
+ * @property string $status
  * @property array|null $meta
  * @property Carbon|null $read_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
  * @property-read Form $form
+ * @property-read User|null $user
  */
 class FormSubmission extends Model
 {
+    const STATUS_NEW = 'new';
+    const STATUS_IN_PROGRESS = 'in_progress';
+    const STATUS_COMPLETED = 'completed';
+    const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
         'form_id',
+        'user_id',
         'data',
+        'status',
         'meta',
         'read_at',
     ];
@@ -38,6 +48,14 @@ class FormSubmission extends Model
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    /**
+     * Связь с пользователем
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -61,13 +79,40 @@ class FormSubmission extends Model
     }
 
     /**
+     * Получить статус на русском
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_NEW => 'Новая',
+            self::STATUS_IN_PROGRESS => 'В работе',
+            self::STATUS_COMPLETED => 'Завершена',
+            self::STATUS_REJECTED => 'Отклонена',
+            default => $this->status,
+        };
+    }
+
+    /**
+     * Получить цвет статуса для отображения
+     */
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_NEW => 'blue',
+            self::STATUS_IN_PROGRESS => 'yellow',
+            self::STATUS_COMPLETED => 'green',
+            self::STATUS_REJECTED => 'red',
+            default => 'gray',
+        };
+    }
+
+    /**
      * Получить имя отправителя из данных формы
      */
     public function getSenderNameAttribute(): string
     {
         $data = $this->data;
 
-        // Ищем поле name, имя, fullname, fio
         $nameFields = ['name', 'Name', 'NAME', 'fullname', 'FullName', 'FULLNAME', 'fio', 'FIO', 'Fio'];
         foreach ($nameFields as $field) {
             if (isset($data[$field]) && !empty($data[$field])) {
@@ -75,7 +120,6 @@ class FormSubmission extends Model
             }
         }
 
-        // Если ничего не нашли - берем email или phone
         if (isset($data['email']) && !empty($data['email'])) {
             return (string) $data['email'];
         }
@@ -127,8 +171,6 @@ class FormSubmission extends Model
     public function getDisplayNameAttribute(): string
     {
         $name = $this->sender_name;
-
-        // Если имя = email или телефон - показываем без изменений
         $email = $this->sender_email;
         $phone = $this->sender_phone;
 
@@ -140,12 +182,57 @@ class FormSubmission extends Model
             return $name;
         }
 
-        // Если есть имя + email - показываем имя (email)
         if ($email && $name !== $email) {
             return $name . ' (' . $email . ')';
         }
 
         return $name;
+    }
+
+    /**
+     * Получить текстовое содержимое заявки
+     */
+    public function getContentAttribute(): string
+    {
+        $data = $this->data;
+
+        // Пытаемся найти текст
+        $textFields = ['message', 'Message', 'MESSAGE', 'text', 'Text', 'TEXT', 'content', 'Content', 'CONTENT', 'comment', 'Comment', 'COMMENT'];
+        foreach ($textFields as $field) {
+            if (isset($data[$field]) && !empty($data[$field])) {
+                return (string) $data[$field];
+            }
+        }
+
+        // Если есть только имя и телефон — формируем из них
+        $parts = [];
+        if ($this->sender_name) $parts[] = 'Имя: ' . $this->sender_name;
+        if ($this->sender_email) $parts[] = 'Email: ' . $this->sender_email;
+        if ($this->sender_phone) $parts[] = 'Телефон: ' . $this->sender_phone;
+
+        return implode("\n", $parts) ?: 'Нет текста';
+    }
+
+    /**
+     * Получить тему заявки (первая строка или название поля)
+     */
+    public function getSubjectAttribute(): string
+    {
+        $data = $this->data;
+
+        $subjectFields = ['subject', 'Subject', 'SUBJECT', 'title', 'Title', 'TITLE', 'topic', 'Topic', 'TOPIC'];
+        foreach ($subjectFields as $field) {
+            if (isset($data[$field]) && !empty($data[$field])) {
+                return (string) $data[$field];
+            }
+        }
+
+        $firstLine = strtok($this->content, "\n");
+        if ($firstLine && strlen($firstLine) > 0) {
+            return $firstLine;
+        }
+
+        return 'Заявка #' . $this->id;
     }
 
     /**
@@ -162,5 +249,21 @@ class FormSubmission extends Model
     public function scopeRead($query)
     {
         return $query->whereNotNull('read_at');
+    }
+
+    /**
+     * Scope: по статусу
+     */
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope: по пользователю
+     */
+    public function scopeForUser($query, $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Form;
+use App\Models\FormSubmission;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,9 +24,22 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
+        $userId = auth()->id();
+
+        $totalTickets = FormSubmission::where('user_id', $userId)->count();
+        $inProgressTickets = FormSubmission::where('user_id', $userId)
+            ->where('status', 'in_progress')
+            ->count();
+        $completedTickets = FormSubmission::where('user_id', $userId)
+            ->where('status', 'completed')
+            ->count();
+
         return Inertia::render('Dashboard/Index', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
+            'totalTickets' => $totalTickets,
+            'inProgressTickets' => $inProgressTickets,
+            'completedTickets' => $completedTickets,
         ]);
     }
 
@@ -41,6 +56,37 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard/Settings', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
+        ]);
+    }
+
+    /**
+     * Список заявок пользователя
+     */
+    public function tickets(): Response
+    {
+        $submissions = FormSubmission::where('user_id', auth()->id())
+            ->with('form')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return Inertia::render('Dashboard/TicketsIndex', [
+            'user' => auth()->user(),
+            'currentTheme' => $this->settingService->getTheme(),
+            'submissions' => $submissions,
+        ]);
+    }
+
+    /**
+     * Страница создания новой заявки
+     */
+    public function ticketsCreate(): Response
+    {
+        $forms = Form::where('status', true)->get()->keyBy('id')->toArray();
+
+        return Inertia::render('Dashboard/TicketsCreate', [
+            'user' => auth()->user(),
+            'currentTheme' => $this->settingService->getTheme(),
+            'forms' => $forms,
         ]);
     }
 

@@ -30,9 +30,9 @@ const loadThemeCSS = (theme) => {
     // Удаляем старые CSS
     document.querySelectorAll('.dynamic-theme').forEach(el => el.remove());
 
-    // Для лендинга свои CSS файлы
+    // Для лендинга свои CSS файлы (добавлен forms.css)
     const themeFiles = theme === 'landing'
-        ? ['variables.css', 'theme.css', 'landing.css']
+        ? ['variables.css', 'theme.css', 'landing.css', 'forms.css']
         : ['variables.css', 'theme.css', 'layout.css', 'header.css', 'footer.css', 'components.css', 'content.css', 'forms.css'];
 
     const baseUrl = `/css/themes/${theme}`;
