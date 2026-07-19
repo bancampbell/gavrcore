@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Api\FormController;
+use App\Http\Controllers\Api\MaterialController;
+use App\Http\Controllers\Auth\Api\RegisterController;
+use App\Http\Controllers\Auth\Admin\LoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [RegisterController::class, 'register'])

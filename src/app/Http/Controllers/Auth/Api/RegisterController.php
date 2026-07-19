@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth\Api;
 
 use App\Actions\Auth\RegisterUserAction;
 use App\Http\Controllers\Controller;

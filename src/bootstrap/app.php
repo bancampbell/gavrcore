@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\ShareMenuMiddleware;
+use App\Http\Middleware\CheckCookieConsent;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -26,10 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             ShareMenuMiddleware::class,
+            CheckCookieConsent::class,
         ]);
 
         $middleware->alias([
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            'admin' => AdminMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

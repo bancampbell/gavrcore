@@ -69,6 +69,9 @@
                 </div>
             </div>
         </footer>
+
+        <!-- Cookie Consent -->
+        <CookieConsent />
     </div>
 </template>
 
@@ -76,6 +79,7 @@
 import { ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import MenuItem from '@/components/shared/MenuItem.vue';
+import CookieConsent from '@/components/shared/CookieConsent.vue';
 
 const page = usePage();
 const mainMenu = page.props.mainMenu || [];

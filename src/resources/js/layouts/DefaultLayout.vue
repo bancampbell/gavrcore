@@ -7,13 +7,17 @@
             </div>
         </main>
         <Footer :app-settings="appSettings" />
+
+        <!-- Cookie Consent -->
+        <CookieConsent />
     </div>
 </template>
 
 <script setup>
-import { usePage } from '@inertiajs/vue3';
+import {usePage} from '@inertiajs/vue3';
 import Header from '@/themes/default/components/Header.vue';
 import Footer from '@/themes/default/components/Footer.vue';
+import CookieConsent from '@/components/shared/CookieConsent.vue';
 
 const page = usePage();
 

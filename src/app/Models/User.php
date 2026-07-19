@@ -62,4 +62,12 @@ class User extends Authenticatable
     {
         return in_array($key, $this->all_permissions);
     }
+
+    /**
+     * Проверяет, является ли пользователь администратором
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasPermission('admin.access');
+    }
 }

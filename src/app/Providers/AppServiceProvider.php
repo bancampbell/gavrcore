@@ -73,6 +73,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
 
         Inertia::share([
+            'auth' => function () {
+                return [
+                    'user' => auth()->user() ? auth()->user()->only(['id', 'name', 'email']) : null,
+                ];
+            },
             'mainMenu' => function () {
                 try {
                     $menuService = app(MenuService::class);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth\Admin;
 
 use App\Actions\Auth\LoginUserAction;
 use App\Http\Controllers\Controller;
@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Activitylog\Facades\CauserResolver;
 
 class LoginController extends Controller
 {
@@ -19,17 +18,23 @@ class LoginController extends Controller
     }
 
     /**
-     * Авторизация через Inertia
+     * Показать страницу входа в админку
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Admin/Auth/Login');
+    }
+
+    /**
+     * Авторизация в админке
      */
     public function login(LoginRequest $request)
     {
         try {
             $user = $this->loginAction->execute($request->only('email', 'password'), $request);
 
-            // Региенерируем сессию для безопасности
             $request->session()->regenerate();
 
-            // Логируем вход в админку
             activity()
                 ->causedBy($user)
                 ->withProperties([
@@ -38,20 +43,17 @@ class LoginController extends Controller
                 ])
                 ->log('Вход в админку');
 
-            // Редирект на дашборд
-            return redirect()->intended('/admin/dashboard');
+            return redirect('/admin/dashboard');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Возвращаем ошибки валидации обратно на страницу логина
             return back()->withErrors($e->errors())->withInput();
         }
     }
 
     /**
-     * Выход из системы
+     * Выход из админки
      */
     public function logout(Request $request)
     {
-        // Логируем выход
         if (auth()->check()) {
             activity()
                 ->causedBy(auth()->user())

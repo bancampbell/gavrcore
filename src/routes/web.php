@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\AccessLevelController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FormController;
+use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\MaterialController;
@@ -12,9 +14,10 @@ use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\FormController;
-use App\Http\Controllers\Admin\FormSubmissionController;
-use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
+use App\Http\Controllers\Auth\User\LoginController as UserLoginController;
+use App\Http\Controllers\Auth\User\RegisterController;
+use App\Http\Controllers\Web\CookieConsentController;
 use App\Http\Controllers\Web\MaterialController as WebMaterialController;
 use App\Http\Controllers\Web\SitemapController;
 use App\Models\MenuItem;
@@ -22,8 +25,21 @@ use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// ===== COOKIE CONSENT =====
+Route::post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])->name('cookie.consent.accept');
+Route::post('/cookie-consent/decline', [CookieConsentController::class, 'decline'])->name('cookie.consent.decline');
+
 // Sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// ===== ПОЛЬЗОВАТЕЛЬСКАЯ АУТЕНТИФИКАЦИЯ =====
+Route::get('/login', [UserLoginController::class, 'create'])->name('login');
+Route::post('/login', [UserLoginController::class, 'store']);
+Route::post('/logout', [UserLoginController::class, 'logout'])->name('logout');
+
+// ===== РЕГИСТРАЦИЯ =====
+Route::get('/register', [RegisterController::class, 'create'])->name('register');
+Route::post('/register', [RegisterController::class, 'store']);
 
 // Публичные роуты
 Route::get('/', [WebMaterialController::class, 'index'])->name('home');
@@ -31,14 +47,15 @@ Route::get('/category/{slug}', [WebMaterialController::class, 'category'])->name
 Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
 
 // Материалы с красивыми URL (без /material/)
-Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login|sitemap).+');
+Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login|register|sitemap|cookie-consent).+');
 
-// ===== АУТЕНТИФИКАЦИЯ =====
-Route::get('/admin/login', fn () => Inertia::render('Auth/Login'))->name('login');
-Route::post('/login', [LoginController::class, 'login'])
-    ->middleware('throttle:login');
+// ===== АДМИНСКАЯ АУТЕНТИФИКАЦИЯ =====
+Route::get('/admin/login', [AdminLoginController::class, 'create'])->name('admin.login');
+Route::post('/admin/login', [AdminLoginController::class, 'login'])->middleware('throttle:login');
+Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
-Route::middleware('auth:sanctum')->group(function () {
+// ===== ЗАЩИЩЁННЫЕ АДМИНСКИЕ РОУТЫ =====
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Gallery Manager
