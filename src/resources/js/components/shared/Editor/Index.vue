@@ -454,6 +454,9 @@ onMounted(async () => {
             img.classList.add('selected-image');
             editorState.clearLinkSelection();
 
+            const imgSrc = img.getAttribute('src') || '';
+            editorState.selectImage(imgSrc);
+
             const wr = img.closest('.resize-wrapper');
             selectedImageAlign.value = wr?.getAttribute('data-align') || '';
             selectedImageFloat.value = wr?.getAttribute('data-float') || '';
