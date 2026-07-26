@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
+import inertia from '@inertiajs/vite';
 import fs from 'fs';
 import path from 'path';
 
@@ -11,6 +12,12 @@ export default defineConfig({
             refresh: true,
         }),
         vue(),
+        inertia({
+            pages: [
+                'resources/js/Pages/**/*.vue',
+                'resources/js/themes/**/*.vue',
+            ],
+        }),
         {
             name: 'copy-themes',
             closeBundle() {

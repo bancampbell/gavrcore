@@ -194,12 +194,6 @@ watch(() => props.show, (val) => {
     }
 }, { immediate: true });
 
-watch(() => props.editData, () => {
-    if (props.show) {
-        loadData();
-    }
-}, { deep: true, immediate: true });
-
 const close = () => {
     emit('close');
 };

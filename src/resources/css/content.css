@@ -144,6 +144,38 @@ p:empty::before {
 .text-left { text-align: left; }
 .text-right { text-align: right; }
 
+/* === ВЫРАВНИВАНИЕ ИЗОБРАЖЕНИЙ === */
+img[data-align="center"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+img[data-align="left"] {
+    display: block !important;
+    margin-left: 0 !important;
+    margin-right: auto !important;
+}
+
+img[data-align="right"] {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+/* === ОБТЕКАНИЕ ИЗОБРАЖЕНИЙ === */
+img[data-float="left"] {
+    float: left !important;
+    margin-right: 16px !important;
+    margin-bottom: 12px !important;
+}
+
+img[data-float="right"] {
+    float: right !important;
+    margin-left: 16px !important;
+    margin-bottom: 12px !important;
+}
+
 /* === ЦВЕТА === */
 .text-primary { color: #0c4a6e; }
 .text-secondary { color: #831843; }

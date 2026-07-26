@@ -27,4 +27,5 @@ export interface EditorEmits {
     (e: 'openImageManager', imageData?: ImageData): void;
     (e: 'editLink', data: LinkData): void;
     (e: 'open-gallery-modal'): void;
+    (e: 'toggleRawHtml'): void;
 }

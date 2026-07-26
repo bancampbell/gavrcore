@@ -8,11 +8,13 @@
             <p class="mt-2 text-gray-500">Загрузка...</p>
         </div>
     </div>
+    <GlobalLightbox />
 </template>
 
 <script setup>
 import { ref, watch, onMounted, shallowRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import GlobalLightbox from '@/components/shared/GlobalLightbox.vue';
 
 const page = usePage();
 

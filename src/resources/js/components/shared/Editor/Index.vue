@@ -1,25 +1,39 @@
 <template>
     <div class="border border-gray-200 rounded-lg overflow-hidden bg-white flex flex-col h-full">
-        <Toolbar
-            :editor="editor"
-            :selected-link-data="linkHandlers.selectedLinkData.value"
-            :selected-image-data="imageHandlers.selectedImageData.value"
-            :selected-image-align="imageHandlers.selectedImageAlign.value"
-            :align-image-left="() => imageHandlers.alignImageLeft(editor!)"
-            :center-image="() => imageHandlers.centerImage(editor!)"
-            :align-image-right="() => imageHandlers.alignImageRight(editor!)"
-            :open-link-modal="linkHandlers.openLinkModal"
-            :open-image-modal="() => imageHandlers.openImageModal(emit)"
-            :open-gallery-modal="handleOpenGalleryModal"
-            :toggle-html="toggleHtml"
-            :open-file-manager="openFileManager"
-            :open-form-modal="openFormModal"
-            :is-raw-html-mode="isRawHtmlMode"
-            @toggle-raw-html="emit('toggleRawHtml')"
+        <RawHtmlEditor
+            v-if="editorState.isHtmlMode.value"
+            :model-value="editorState.htmlContent.value"
+            @update:model-value="editorState.htmlContent.value = $event"
+            @apply="handleApplyHtml"
+            @close="editorState.isHtmlMode.value = false"
         />
 
-        <div class="flex-1 overflow-auto">
-            <div class="tiptap prose p-4 h-full max-w-none" ref="editorElement"></div>
+        <div v-show="!editorState.isHtmlMode.value" class="flex-1 overflow-auto">
+            <Toolbar
+                :editor="editorAdapter.getEditor()"
+                :selected-link-data="selectedLinkDataForToolbar"
+                :selected-image-data="selectedImageDataForToolbar"
+                :selected-image-align="selectedImageAlign"
+                :selected-image-float="selectedImageFloat"
+                :align-image-left="() => alignImage('left')"
+                :center-image="() => alignImage('center')"
+                :align-image-right="() => alignImage('right')"
+                :float-image-left="() => floatImage('left')"
+                :float-image-right="() => floatImage('right')"
+                :align-text-left="() => alignText('left')"
+                :align-text-center="() => alignText('center')"
+                :align-text-right="() => alignText('right')"
+                :open-link-modal="handleOpenLinkModal"
+                :open-image-modal="handleOpenImageModal"
+                :open-gallery-modal="handleOpenGalleryModal"
+                :toggle-html="toggleHtmlMode"
+                :open-file-manager="openFileManager"
+                :open-form-modal="openFormModal"
+                :is-raw-html-mode="editorState.isHtmlMode.value"
+                @toggle-raw-html="emit('toggleRawHtml')"
+            />
+
+            <div class="tiptap p-4 h-full max-w-none" ref="editorElement"></div>
         </div>
 
         <GallerySelectModal
@@ -33,11 +47,19 @@
             @close="showFormModal = false"
             @select="insertForm"
         />
+
+        <ImageModal
+            :key="imageModalKey"
+            :show="showImageModal"
+            :edit-data="imageEditData"
+            @close="closeImageModal"
+            @insert="handleImageInsert"
+        />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, type Ref as VueRef } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -48,181 +70,297 @@ import Toolbar from './Toolbar.vue';
 import { ResizableImage } from './extensions';
 import { CustomDiv } from './extensions/CustomDiv';
 import { PreserveAttributes } from './extensions/PreserveAttributes';
-import { useLinkHandlers, useImageHandlers } from './composables';
 import type { EditorProps, EditorEmits } from './types/editor';
 import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
 import FormSelectModal from '@/components/shared/FormSelectModal.vue';
-
+import ImageModal from '@/Pages/Admin/Materials/components/ImageModal.vue';
+import RawHtmlEditor from './RawHtmlEditor.vue';
+import DOMPurify from 'dompurify';
+import { useEditor } from '@/composables/useEditor';
+import { ImageData } from '@/domain/values/ImageData';
+import { LinkData } from '@/domain/values/LinkData';
 
 const props = defineProps<EditorProps>();
 const emit = defineEmits<EditorEmits>();
 
+const editorState = useEditor();
+const { editorAdapter, imageAdapter, linkAdapter } = editorState;
+
 const editorElement = ref<HTMLElement>();
 let editor: Editor | null = null;
 
-const editorRef = ref(editor) as VueRef<Editor | null>;
-
 const showGalleryModal = ref(false);
 const showFormModal = ref(false);
-const isRawHtmlMode = ref(false);
+const showImageModal = ref(false);
+const imageEditData = ref<any>(null);
+const imageModalKey = ref(0);
+let contentUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// ===== HTML РЕЖИМ =====
-const toggleHtml = () => {
-    emit('toggleRawHtml');
-};
+const selectedImageAlign = ref('');
+const selectedImageFloat = ref('');
 
-const getHTML = () => {
-    return editor?.getHTML() || '';
-};
+const selectedImageDataForToolbar = computed(() => {
+    const data = editorState.selectedImage.value;
+    if (!data) return null;
+    return {
+        url: data.url,
+        alt: data.alt,
+        title: data.title,
+        width: data.width ? String(data.width) : '',
+        height: data.height ? String(data.height) : '',
+        align: data.styleProps.align || '',
+        float: data.styleProps.float || '',
+        margin: data.styleProps.margin ? String(data.styleProps.margin) : '',
+    };
+});
 
-// ===== ГАЛЕРЕЯ =====
-const handleOpenGalleryModal = () => {
+const selectedLinkDataForToolbar = computed(() => {
+    const data = editorState.selectedLink.value;
+    if (!data) return null;
+    return {
+        oldText: data.oldText || data.text,
+        url: data.url,
+        text: data.text,
+        target: data.target,
+        title: data.title,
+    };
+});
+
+function toggleHtmlMode(): void {
+    if (!editorState.isHtmlMode.value) {
+        editorState.htmlContent.value = editorState.getCurrentHtml();
+        editorState.isHtmlMode.value = true;
+    } else {
+        handleApplyHtml();
+    }
+}
+
+function handleApplyHtml(): void {
+    editorState.applyHtml(editorState.htmlContent.value);
+    editorState.isHtmlMode.value = false;
+}
+
+function handleOpenGalleryModal(): void {
     showGalleryModal.value = true;
-};
+}
 
-const insertGallery = (gallery: any) => {
-    if (!editor) return;
+function insertGallery(gallery: any): void {
     const shortcode = `[gallery id="${gallery.id}" name="${gallery.name || gallery.title}"]`;
-    editor.commands.insertContent(shortcode);
+    editorAdapter.insertContent(shortcode);
     showGalleryModal.value = false;
-};
+    emit('update:modelValue', editorAdapter.getHTML());
+}
 
-// ===== ФОРМЫ =====
-const openFormModal = () => {
+function openFormModal(): void {
     showFormModal.value = true;
-};
+}
 
-const insertForm = (form: any) => {
-    if (!editor) return;
+function insertForm(form: any): void {
     const shortcode = `[form id="${form.id}"]`;
-    editor.commands.insertContent(shortcode);
+    editorAdapter.insertContent(shortcode);
     showFormModal.value = false;
-};
+    emit('update:modelValue', editorAdapter.getHTML());
+}
 
-const insertFormShortcode = (formId: number) => {
-    if (!editor) return;
-    const { from, to } = editor.state.selection;
-    const hasSelection = from !== to;
-    if (hasSelection) {
-        const selectedText = editor.state.doc.textBetween(from, to);
-        editor.commands.insertContent(`<div style="text-align: center;">${selectedText}</div>`);
+function insertFormShortcode(formId: number): void {
+    const selection = editorAdapter.getSelection();
+    if (!selection.isEmpty) {
+        editorAdapter.insertContent(`<div style="text-align: center;">${selection.text}</div>`);
     } else {
-        editor.commands.insertContent(`[form id="${formId}"]`);
+        editorAdapter.insertContent(`[form id="${formId}"]`);
     }
-};
+    emit('update:modelValue', editorAdapter.getHTML());
+}
 
-const openFileManager = () => {
+function openFileManager(): void {
     // TODO: implement file manager
-};
+}
 
-// ===== ССЫЛКИ =====
-const linkHandlers = useLinkHandlers(emit);
-const { clearSelection: clearLinkSelection } = linkHandlers;
+function handleOpenImageModal(): void {
+    const imgData = editorState.selectedImage.value;
+    const pos = editorState.selectedImagePos.value;
 
-// ===== ИЗОБРАЖЕНИЯ =====
-const imageHandlers = useImageHandlers();
-const { clearSelection: clearImageSelection } = imageHandlers;
-
-const handleOpenLinkModal = () => {
-    if (editor && linkHandlers.selectedLinkData.value) {
-        linkHandlers.saveLinkPosition(editor, linkHandlers.selectedLinkData.value.oldText);
-        linkHandlers.openLinkModal();
-    } else if (editor) {
-        const { from, to } = editor.state.selection;
-        const hasSelection = from !== to;
-        if (hasSelection) {
-            const selectedText = editor.state.doc.textBetween(from, to);
-            linkHandlers.openLinkModal(selectedText);
-        } else {
-            linkHandlers.openLinkModal('');
-        }
+    if (imgData) {
+        imageEditData.value = {
+            url: imgData.url,
+            alt: imgData.alt,
+            title: imgData.title,
+            width: imgData.width ? String(imgData.width) : '',
+            height: imgData.height ? String(imgData.height) : '',
+            align: imgData.styleProps.align || '',
+            float: imgData.styleProps.float || '',
+            margin: imgData.styleProps.margin ? String(imgData.styleProps.margin) : '',
+            _pos: pos,
+        };
     } else {
-        linkHandlers.openLinkModal('');
-    }
-};
-
-const setLinkOnSelection = (url: string, linkText: string, target: string, title: string) => {
-    if (editor) {
-        linkHandlers.setLinkOnSelection(editor, url, linkText, target, title);
-    }
-};
-
-const updateExistingLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
-    if (editor) {
-        linkHandlers.updateExistingLink(editor, data.oldText, data.newUrl, data.newText, data.newTarget, data.newTitle);
-    }
-};
-
-const updateImage = (oldUrl: string, newData: any) => {
-    if (editor) {
-        imageHandlers.updateImage(editor, oldUrl, newData);
-    }
-};
-
-const getCursorPosition = () => {
-    if (editor) {
-        return editor.state.selection.from;
-    }
-    return 0;
-};
-
-const insertContent = (html: string, position?: number) => {
-    if (typeof html !== 'string') {
-        console.error('[Editor] insertContent received non-string:', html);
-        return;
+        imageEditData.value = null;
     }
 
-    if (editor) {
-        const pos = position ?? editor.state.selection.from;
-        editor.commands.focus();
-        editor.commands.setTextSelection(pos);
-        editor.commands.insertContent(html);
-        emit('update:modelValue', editor.getHTML());
-    }
-};
+    imageModalKey.value++;
+    showImageModal.value = true;
+}
 
-// ===== FIX СТИЛЕЙ ИЗОБРАЖЕНИЙ =====
-const fixImageStyles = () => {
-    if (!editorElement.value) return;
-    const imgs = editorElement.value.querySelectorAll('img');
-    imgs.forEach((img: HTMLImageElement) => {
-        if (img.hasAttribute('data-lightbox')) {
-            img.removeAttribute('data-lightbox');
-        }
-        const style = img.getAttribute('style') || '';
-        if (style.includes('margin-left: auto') && style.includes('margin-right: auto')) {
-            let newStyle = style
-                .replace(/max-width:\s*[^;]+;?/g, '')
-                .replace(/pointer-events:\s*[^;]+;?/g, '')
-                .replace(/;\s*;/g, ';')
-                .trim();
-            if (newStyle.endsWith(';')) newStyle = newStyle.slice(0, -1);
-            if (newStyle !== style) {
-                img.setAttribute('style', newStyle);
-            }
-        }
+function closeImageModal(): void {
+    showImageModal.value = false;
+    imageEditData.value = null;
+}
+
+function handleImageInsert(data: any): void {
+    const { url, alt, title, width, height, align, float, margin, oldUrl, _pos } = data;
+
+    const imageData = ImageData.create({
+        url,
+        alt: alt || '',
+        title: title || '',
+        width: width || null,
+        height: height || null,
+        align: align || undefined,
+        float: float || undefined,
+        margin: margin || undefined,
     });
-};
+
+    if (oldUrl) {
+        editorState.updateImage(oldUrl, imageData);
+    } else {
+        editorState.insertImage(imageData, _pos ?? undefined);
+    }
+
+    emit('update:modelValue', editorAdapter.getHTML());
+    closeImageModal();
+}
+
+function alignImage(align: 'left' | 'center' | 'right'): void {
+    const ed = editorAdapter.getEditor();
+    if (!ed) return;
+
+    const hasSelectedImage = document.querySelector('.tiptap img.selected-image');
+    if (hasSelectedImage) {
+        ed.commands.updateAttributes('image', { align, float: null });
+        selectedImageAlign.value = align;
+        selectedImageFloat.value = '';
+    }
+
+    emit('update:modelValue', editorAdapter.getHTML());
+}
+
+function floatImage(float: 'left' | 'right'): void {
+    const ed = editorAdapter.getEditor();
+    if (!ed) return;
+
+    const hasSelectedImage = document.querySelector('.tiptap img.selected-image');
+    if (hasSelectedImage) {
+        ed.commands.updateAttributes('image', { float, align: null });
+        selectedImageFloat.value = float;
+        selectedImageAlign.value = '';
+    }
+
+    emit('update:modelValue', editorAdapter.getHTML());
+}
+
+function alignText(align: 'left' | 'center' | 'right'): void {
+    const ed = editorAdapter.getEditor();
+    if (!ed) return;
+
+    editorState.clearImageSelection();
+    selectedImageAlign.value = '';
+    selectedImageFloat.value = '';
+
+    ed.chain().focus().setTextAlign(align).run();
+    emit('update:modelValue', editorAdapter.getHTML());
+}
+
+function handleOpenLinkModal(): void {
+    const linkData = editorState.selectedLink.value;
+    if (linkData) {
+        emit('editLink', {
+            oldText: linkData.oldText || linkData.text,
+            url: linkData.url,
+            text: linkData.text,
+            target: linkData.target,
+            title: linkData.title,
+        });
+    } else {
+        const selection = editorAdapter.getSelection();
+        emit('openLinkModal', selection.isEmpty ? '' : selection.text);
+    }
+}
+
+function setLinkOnSelection(url: string, linkText: string, target: string, title: string): void {
+    const linkData = LinkData.create({ url, text: linkText, target, title });
+    editorState.insertLink(linkData);
+    emit('update:modelValue', editorAdapter.getHTML());
+}
+
+function updateExistingLink(data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }): void {
+    const linkData = LinkData.create({
+        url: data.newUrl,
+        text: data.newText,
+        target: data.newTarget,
+        title: data.newTitle,
+        oldText: data.oldText,
+    });
+    editorState.updateLink(data.oldText, linkData);
+    emit('update:modelValue', editorAdapter.getHTML());
+}
+
+function getHTML(): string {
+    return editorAdapter.getHTML();
+}
+
+function getCursorPosition(): number {
+    return editorAdapter.getSelection().from;
+}
+
+function insertContent(html: string, position?: number): void {
+    if (typeof html !== 'string') return;
+
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: [
+            'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+            'a', 'img', 'div', 'span',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'section', 'article', 'header', 'footer', 'nav',
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'title', 'src', 'alt', 'width', 'height', 'style', 'class', 'id', 'data-align', 'data-float'],
+        ALLOW_DATA_ATTR: false,
+        ADD_URI_SAFE_ATTR: ['src', 'href'],
+    });
+
+    editorAdapter.insertContent(sanitizedHtml, position);
+    emit('update:modelValue', editorAdapter.getHTML());
+}
 
 defineExpose({
     setLinkOnSelection,
     insertContent,
-    updateImage,
+    updateImage: (oldUrl: string, newData: any) => {
+        const imageData = ImageData.create({
+            url: newData.url,
+            alt: newData.alt || '',
+            title: newData.title || '',
+            width: newData.width || null,
+            height: newData.height || null,
+            align: newData.align || undefined,
+            float: newData.float || undefined,
+            margin: newData.margin || undefined,
+        });
+        editorState.updateImage(oldUrl, imageData);
+        emit('update:modelValue', editorAdapter.getHTML());
+    },
     updateExistingLink,
     insertFormShortcode,
     getCursorPosition,
     getHTML,
 });
 
-// ===== КЛИК ХЕНДЛЕР =====
 let clickHandler: ((e: MouseEvent) => void) | null = null;
+let resizeEndHandler: ((e: Event) => void) | null = null;
 
 onMounted(async () => {
     await nextTick();
-    if (!editorElement.value) {
-        console.error('Editor element not found!');
-        return;
-    }
+    if (!editorElement.value) return;
 
     editor = new Editor({
         element: editorElement.value,
@@ -244,77 +382,116 @@ onMounted(async () => {
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
         ],
         content: props.modelValue || '<p>Начните писать здесь...</p>',
-        onUpdate: ({ editor }) => {
-            emit('update:modelValue', editor.getHTML());
-            nextTick(fixImageStyles);
+        onUpdate: ({ editor: ed }) => {
+            emit('update:modelValue', ed.getHTML());
         },
     });
 
-    // Устанавливаем глобальную ссылку на редактор
-    (window as any).__editor = editor;
-    editorRef.value = editor;
-
-    document.addEventListener('image-selected', (e: any) => {
-        imageHandlers.selectedImageData.value = e.detail;
-    });
-
-    if (clickHandler) {
-        document.removeEventListener('click', clickHandler);
-    }
+    editorAdapter.init(editor);
+    imageAdapter.init(editor);
+    linkAdapter.init(editor);
 
     clickHandler = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
+
+        if (
+            target.closest('.modal-overlay') ||
+            target.closest('.modal-content') ||
+            target.closest('.toolbar') ||
+            target.closest('.btn-toolbar')
+        ) {
+            return;
+        }
+
         const link = target.closest('a');
         const img = target.closest('img');
         const isInsideTiptap = target.closest('.tiptap');
 
-        console.log('[Editor click] target:', target.tagName, 'isImg:', !!img, 'isInside:', !!isInsideTiptap);
-
         if (!isInsideTiptap) {
-            clearLinkSelection();
-            clearImageSelection();
+            editorState.clearLinkSelection();
+            editorState.clearImageSelection();
+            selectedImageAlign.value = '';
+            selectedImageFloat.value = '';
             return;
         }
 
         if (link) {
             e.preventDefault();
-            const linkData = {
-                oldText: link.innerText,
+            const linkData = LinkData.create({
                 url: link.getAttribute('href') || '',
                 text: link.innerText,
                 target: link.getAttribute('target') || '_self',
                 title: link.getAttribute('title') || '',
-            };
-            linkHandlers.selectedLinkData.value = linkData;
+                oldText: link.innerText,
+            });
             document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
             link.classList.add('selected-link');
-            clearImageSelection();
+            editorState.selectLink(linkData);
+            editorState.clearImageSelection();
+            selectedImageAlign.value = '';
+            selectedImageFloat.value = '';
             return;
         }
 
         if (img) {
-            console.log('[Editor click] Image clicked, src:', img.src);
             e.preventDefault();
-            imageHandlers.handleImageClick(e);
-            clearLinkSelection();
+            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
+            img.classList.add('selected-image');
+            editorState.clearLinkSelection();
+
+            const wr = img.closest('.resize-wrapper');
+            selectedImageAlign.value = wr?.getAttribute('data-align') || '';
+            selectedImageFloat.value = wr?.getAttribute('data-float') || '';
             return;
         }
 
-        clearLinkSelection();
-        clearImageSelection();
+        editorState.clearLinkSelection();
+        editorState.clearImageSelection();
+        selectedImageAlign.value = '';
+        selectedImageFloat.value = '';
     };
 
     document.addEventListener('click', clickHandler);
+
+    resizeEndHandler = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (!detail || typeof detail.pos !== 'number') return;
+
+        const width = parseInt(detail.width, 10);
+        const height = parseInt(detail.height, 10);
+        if (isNaN(width) || isNaN(height)) return;
+
+        const node = editorAdapter.getNodeAt(detail.pos);
+        if (!node) return;
+
+        const currentStyle = node.attrs.style || '';
+        const cleanStyle = currentStyle
+            .replace(/width:\s*\d+px;?/, '')
+            .replace(/height:\s*\d+px;?/, '')
+            .trim();
+
+        const newStyle = `width: ${width}px; height: ${height}px;${cleanStyle ? ' ' + cleanStyle : ''}`;
+
+        editorAdapter.updateNode(detail.pos, {
+            ...node.attrs,
+            width: String(width),
+            height: String(height),
+            style: newStyle.trim(),
+        });
+
+        emit('update:modelValue', editorAdapter.getHTML());
+    };
+    document.addEventListener('image-resize-end', resizeEndHandler);
 });
 
-// ===== СЛЕДИМ ЗА ИЗМЕНЕНИЕМ modelValue ИЗВНЕ =====
 watch(() => props.modelValue, (newValue) => {
-    console.log('[Editor] watch modelValue triggered, length:', newValue?.length || 0);
-    if (editor && newValue !== editor.getHTML()) {
-        console.log('[Editor] updating content, length:', newValue?.length || 0);
-        editor.commands.setContent(newValue || '<p></p>');
-        nextTick(fixImageStyles);
-    }
+    if (contentUpdateTimeout) clearTimeout(contentUpdateTimeout);
+    contentUpdateTimeout = setTimeout(() => {
+        if (editor && newValue !== editor.getHTML()) {
+            editor.commands.setContent(newValue || '<p></p>');
+        }
+        contentUpdateTimeout = null;
+    }, 300);
 }, { immediate: true });
 
 onBeforeUnmount(() => {
@@ -322,11 +499,15 @@ onBeforeUnmount(() => {
         document.removeEventListener('click', clickHandler);
         clickHandler = null;
     }
-    // Удаляем глобальную ссылку
-    if ((window as any).__editor) {
-        delete (window as any).__editor;
+    if (resizeEndHandler) {
+        document.removeEventListener('image-resize-end', resizeEndHandler);
+        resizeEndHandler = null;
     }
-    editor?.destroy();
+    if (contentUpdateTimeout) {
+        clearTimeout(contentUpdateTimeout);
+        contentUpdateTimeout = null;
+    }
+    editorAdapter.destroy();
 });
 </script>
 

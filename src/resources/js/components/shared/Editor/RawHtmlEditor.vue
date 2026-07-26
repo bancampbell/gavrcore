@@ -20,8 +20,6 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { EditorView, basicSetup } from 'codemirror';
 import { html } from '@codemirror/lang-html';
 import { EditorView as EditorViewExt } from '@codemirror/view';
-
-// Prettier
 import { format } from 'prettier/standalone';
 import parserHtml from 'prettier/plugins/html';
 
@@ -31,6 +29,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
+    (e: 'apply'): void;
     (e: 'close'): void;
 }>();
 
@@ -42,29 +41,22 @@ let isApplying = false;
 const apply = () => {
     if (isApplying) return;
     isApplying = true;
-    console.log('[RawHtmlEditor] apply clicked, value length:', currentValue.value?.length || 0);
     emit('update:modelValue', currentValue.value);
-    emit('close');
+    emit('apply');
     setTimeout(() => {
         isApplying = false;
     }, 300);
 };
 
 const cancel = () => {
-    console.log('[RawHtmlEditor] cancel clicked');
     emit('close');
 };
 
 onMounted(async () => {
-    console.log('[RawHtmlEditor] ===== MOUNTED =====');
-    console.log('[RawHtmlEditor] props.modelValue length:', props.modelValue?.length || 0);
-    console.log('[RawHtmlEditor] props.modelValue first 100 chars:', props.modelValue?.substring(0, 100) || 'empty');
-
     await nextTick();
     if (!codeEditorRef.value) return;
 
     let formattedHtml = props.modelValue || '';
-    console.log('[RawHtmlEditor] formattedHtml length:', formattedHtml.length);
 
     try {
         formattedHtml = await format(formattedHtml, {
@@ -78,7 +70,6 @@ onMounted(async () => {
         console.warn('HTML formatting failed:', e);
     }
     currentValue.value = formattedHtml;
-    console.log('[RawHtmlEditor] final currentValue length:', currentValue.value?.length || 0);
 
     codeEditorView = new EditorView({
         doc: formattedHtml,
@@ -96,7 +87,6 @@ onMounted(async () => {
     });
 
     codeEditorView.focus();
-    console.log('[RawHtmlEditor] ===== MOUNTED END =====');
 });
 
 onBeforeUnmount(() => {
@@ -108,7 +98,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Стили для CodeMirror */
 :deep(.cm-editor) {
     height: 100% !important;
     min-height: 500px !important;

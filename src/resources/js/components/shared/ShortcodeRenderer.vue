@@ -7,54 +7,47 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { createApp, h } from 'vue';
 import FormWrapper from '@/themes/default/components/FormWrapper.vue';
 import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
+import { container } from '@/services/container';
+import { TYPES } from '@/services/types';
+import type { LightboxService } from '@/services/LightboxService';
+import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 const props = defineProps<{
     content: string;
     forms: Record<number, any>;
 }>();
 
+const lightboxService = container.get<LightboxService>(TYPES.LightboxService);
+
 const containerRef = ref<HTMLElement | null>(null);
 const appInstances: any[] = [];
+const galleryCache = new Map<string, any>();
 
-// ===== ЛИНКБОКС =====
 const setupLightbox = () => {
     if (!containerRef.value) return;
 
     const images = containerRef.value.querySelectorAll('.prose img');
-    console.log('[ShortcodeRenderer] Setting up lightbox for images:', images.length);
 
     images.forEach((img: HTMLImageElement) => {
-        // Убираем старый обработчик если есть
         if ((img as any).__lightboxHandler) {
             img.removeEventListener('click', (img as any).__lightboxHandler);
         }
 
         const handler = () => {
-            console.log('[ShortcodeRenderer] Image clicked:', img.src);
-
-            // Собираем все изображения в этой секции
             const allImages = containerRef.value?.querySelectorAll('.prose img') || [];
             const imageList: { src: string; alt: string }[] = [];
 
             allImages.forEach((el: HTMLImageElement) => {
-                // Берем src из data-src (если есть) или из src
                 const src = el.getAttribute('data-src') || el.src;
                 const alt = el.alt || '';
                 imageList.push({ src, alt });
             });
 
-            // Находим индекс текущего изображения
             const currentSrc = img.getAttribute('data-src') || img.src;
             const currentIndex = imageList.findIndex(item => item.src === currentSrc);
 
-            console.log('[ShortcodeRenderer] Opening lightbox, index:', currentIndex, 'total:', imageList.length);
-
-            // Открываем линкбокс через глобальный API
-            if (window.__globalLightbox && window.__globalLightbox.open) {
-                window.__globalLightbox.open(imageList, currentIndex >= 0 ? currentIndex : 0);
-            } else {
-                console.warn('[ShortcodeRenderer] Lightbox not found');
-            }
+            lightboxService.open(imageList, currentIndex >= 0 ? currentIndex : 0);
         };
 
         img.addEventListener('click', handler);
@@ -63,10 +56,6 @@ const setupLightbox = () => {
 };
 
 const renderContent = () => {
-    console.log('[ShortcodeRenderer] renderContent called');
-    console.log('[ShortcodeRenderer] props.content:', props.content);
-    console.log('[ShortcodeRenderer] props.content length:', props.content?.length || 0);
-
     if (!containerRef.value) {
         console.warn('[ShortcodeRenderer] containerRef is null');
         return;
@@ -77,7 +66,6 @@ const renderContent = () => {
 
     let html = props.content || '';
 
-    // Заменяем шорткоды форм
     html = html.replace(
         /\[form\s+id="(\d+)"(?:\s+([^\]]*))?\]/g,
         (match, formId) => {
@@ -89,7 +77,6 @@ const renderContent = () => {
         }
     );
 
-    // Заменяем шорткоды галерей
     html = html.replace(
         /\[gallery\s+id="(\d+)"(?:\s+name="([^"]*)")?\]/g,
         (match, galleryId) => {
@@ -97,19 +84,32 @@ const renderContent = () => {
         }
     );
 
-    console.log('[ShortcodeRenderer] html after replacements:', html);
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: [
+            'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+            'a', 'img', 'div', 'span',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'section', 'article', 'header', 'footer', 'nav',
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'title', 'src', 'alt', 'width', 'height', 'style', 'class', 'id', 'data-form-id', 'data-gallery-id'],
+        ALLOW_DATA_ATTR: true,
+        ADD_URI_SAFE_ATTR: ['src', 'href'],
+    });
 
-    // ОБЕРТКА: добавляем класс prose к содержимому
-    containerRef.value.innerHTML = `<div class="prose max-w-none">${html}</div>`;
+    containerRef.value.innerHTML = `<div class="prose max-w-none">${sanitizedHtml}</div>`;
 
-    console.log('[ShortcodeRenderer] containerRef.innerHTML set, length:', containerRef.value.innerHTML.length);
-
-    // Рендерим формы через FormWrapper
+    // Рендерим формы
     const formPlaceholders = containerRef.value.querySelectorAll('.form-placeholder');
-    console.log('[ShortcodeRenderer] formPlaceholders found:', formPlaceholders.length);
     formPlaceholders.forEach((placeholder) => {
         const formId = placeholder.getAttribute('data-form-id');
         if (!formId) return;
+
+        if (!/^\d+$/.test(formId)) {
+            placeholder.innerHTML = `<div class="text-red-500 text-sm">⚠️ Некорректный ID формы</div>`;
+            return;
+        }
 
         let centered = false;
         let parent = placeholder.parentElement;
@@ -152,54 +152,77 @@ const renderContent = () => {
 
     // Рендерим галереи
     const galleryPlaceholders = containerRef.value.querySelectorAll('.gallery-placeholder');
-    console.log('[ShortcodeRenderer] galleryPlaceholders found:', galleryPlaceholders.length);
+    const galleryIds: string[] = [];
+    const placeholderMap = new Map<string, Element>();
+
     galleryPlaceholders.forEach((placeholder) => {
         const galleryId = placeholder.getAttribute('data-gallery-id');
-        if (!galleryId) return;
+        if (galleryId && /^\d+$/.test(galleryId)) {
+            galleryIds.push(galleryId);
+            placeholderMap.set(galleryId, placeholder);
+        } else if (galleryId) {
+            placeholder.innerHTML = `<div class="text-red-500 text-sm">⚠️ Некорректный ID галереи</div>`;
+        }
+    });
 
-        const container = document.createElement('div');
-        container.className = 'gallery-container';
-        placeholder.parentNode?.replaceChild(container, placeholder);
-
-        import('axios').then(({ default: axios }) => {
-            axios.get(`/api/galleries/${galleryId}`)
+    if (galleryIds.length > 0) {
+        const fetchPromises = galleryIds.map((galleryId) => {
+            if (galleryCache.has(galleryId)) {
+                return Promise.resolve({ galleryId, data: galleryCache.get(galleryId) });
+            }
+            return axios.get(`/api/galleries/${galleryId}`)
                 .then(response => {
+                    galleryCache.set(galleryId, response.data);
+                    return { galleryId, data: response.data };
+                })
+                .catch(() => {
+                    return { galleryId, data: null };
+                });
+        });
+
+        Promise.allSettled(fetchPromises).then((results) => {
+            results.forEach((result) => {
+                const galleryId = (result as any).value?.galleryId || (result as any).reason?.galleryId;
+                if (!galleryId) return;
+
+                const placeholder = placeholderMap.get(galleryId);
+                if (!placeholder) return;
+
+                const container = document.createElement('div');
+                container.className = 'gallery-container';
+                placeholder.parentNode?.replaceChild(container, placeholder);
+
+                if (result.status === 'fulfilled' && result.value?.data) {
                     const app = createApp({
                         render() {
-                            return h(GalleryRenderer, { gallery: response.data });
+                            return h(GalleryRenderer, { gallery: result.value.data });
                         }
                     });
                     app.mount(container);
                     appInstances.push(app);
-                })
-                .catch(error => {
-                    console.error(`Gallery ${galleryId} not found`);
+                } else {
                     container.innerHTML = `<div class="text-red-500 text-sm">⚠️ Галерея не найдена</div>`;
-                });
+                }
+            });
         });
-    });
+    }
 
-    // Настраиваем линкбокс после рендера
     nextTick(() => {
         setupLightbox();
     });
 };
 
 onMounted(() => {
-    console.log('[ShortcodeRenderer] onMounted');
     renderContent();
 });
 
-watch(() => props.content, (newVal, oldVal) => {
-    console.log('[ShortcodeRenderer] watch props.content changed');
-    console.log('[ShortcodeRenderer] oldVal:', oldVal);
-    console.log('[ShortcodeRenderer] newVal:', newVal);
+watch(() => props.content, () => {
     renderContent();
 });
 
 onBeforeUnmount(() => {
-    console.log('[ShortcodeRenderer] onBeforeUnmount, cleaning up');
     appInstances.forEach(app => app.unmount());
+    galleryCache.clear();
 });
 </script>
 
