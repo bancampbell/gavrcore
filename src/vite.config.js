@@ -21,15 +21,26 @@ export default defineConfig({
         {
             name: 'copy-themes',
             closeBundle() {
-                const source = 'resources/css/themes';
-                const dest = 'public/css/themes';
+                const themesSource = 'resources/css/themes';
+                const themesDest = 'public/css/themes';
 
-                if (fs.existsSync(source)) {
-                    if (fs.existsSync(dest)) {
-                        fs.rmSync(dest, { recursive: true, force: true });
+                if (fs.existsSync(themesSource)) {
+                    if (fs.existsSync(themesDest)) {
+                        fs.rmSync(themesDest, { recursive: true, force: true });
                     }
-                    fs.cpSync(source, dest, { recursive: true });
+                    fs.cpSync(themesSource, themesDest, { recursive: true });
                     console.log('✅ Themes copied to public/css/themes');
+                }
+
+                const sharedSource = 'resources/css/shared';
+                const sharedDest = 'public/css/shared';
+
+                if (fs.existsSync(sharedSource)) {
+                    if (fs.existsSync(sharedDest)) {
+                        fs.rmSync(sharedDest, { recursive: true, force: true });
+                    }
+                    fs.cpSync(sharedSource, sharedDest, { recursive: true });
+                    console.log('✅ Shared copied to public/css/shared');
                 }
             }
         }

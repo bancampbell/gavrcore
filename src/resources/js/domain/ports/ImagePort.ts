@@ -5,4 +5,5 @@ export interface ImagePort {
     updateImage(pos: number, data: ImageData): void;
     getImageAt(pos: number): ImageData | null;
     findImagePosition(url: string): number;
+    findImageById(imageId: string): number;
 }

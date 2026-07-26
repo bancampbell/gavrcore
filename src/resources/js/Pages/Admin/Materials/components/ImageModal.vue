@@ -66,37 +66,6 @@
                         placeholder="auto"
                     />
                 </div>
-
-                <div class="form-row">
-                    <label class="admin-form-label">Выравнивание</label>
-                    <select v-model="imageAlign" class="admin-form-select w-32">
-                        <option value="">-- Не выбрано --</option>
-                        <option value="left">Слева</option>
-                        <option value="center">По центру</option>
-                        <option value="right">Справа</option>
-                    </select>
-                </div>
-
-                <div class="form-row">
-                    <label class="admin-form-label">Обтекание текстом</label>
-                    <select v-model="imageFloat" class="admin-form-select w-32">
-                        <option value="">-- Не выбрано --</option>
-                        <option value="left">Изображение слева</option>
-                        <option value="right">Изображение справа</option>
-                    </select>
-                </div>
-
-                <div class="form-row">
-                    <label class="admin-form-label">Отступ от текста (px)</label>
-                    <input
-                        v-model="imageMargin"
-                        type="number"
-                        class="admin-form-input w-24"
-                        placeholder="10"
-                        min="0"
-                        max="100"
-                    />
-                </div>
             </div>
 
             <div class="modal-footer">
@@ -129,9 +98,6 @@ const props = defineProps<{
         title: string;
         width?: string;
         height?: string;
-        align?: string;
-        float?: string;
-        margin?: string;
         _pos?: number;
     } | null;
 }>();
@@ -144,9 +110,6 @@ const emit = defineEmits<{
         title: string;
         width?: string;
         height?: string;
-        align?: string;
-        float?: string;
-        margin?: string;
         oldUrl?: string;
         _pos?: number;
     }): void;
@@ -159,32 +122,24 @@ const imageAlt = ref('');
 const imageTitle = ref('');
 const imageWidth = ref('');
 const imageHeight = ref('');
-const imageAlign = ref('');
-const imageFloat = ref('');
-const imageMargin = ref('');
 const showMediaManager = ref(false);
 
 const isEditMode = computed(() => !!props.editData?.url);
 
 const loadData = () => {
+    console.log('[ImageModal] loadData editData:', props.editData);
     if (props.editData) {
         imageUrl.value = props.editData.url || '';
         imageAlt.value = props.editData.alt || '';
         imageTitle.value = props.editData.title || '';
         imageWidth.value = props.editData.width ? String(props.editData.width).replace('px', '') : '';
         imageHeight.value = props.editData.height ? String(props.editData.height).replace('px', '') : '';
-        imageAlign.value = props.editData.align || '';
-        imageFloat.value = props.editData.float || '';
-        imageMargin.value = props.editData.margin || '';
     } else {
         imageUrl.value = '';
         imageAlt.value = '';
         imageTitle.value = '';
         imageWidth.value = '';
         imageHeight.value = '';
-        imageAlign.value = '';
-        imageFloat.value = '';
-        imageMargin.value = '';
     }
 };
 
@@ -235,15 +190,22 @@ const insertImage = () => {
         fullUrl = `/storage/uploads${fullUrl}`;
     }
 
+    console.log('[ImageModal] insertImage data:', {
+        url: fullUrl,
+        alt: imageAlt.value,
+        title: imageTitle.value,
+        width: imageWidth.value,
+        height: imageHeight.value,
+        oldUrl: props.editData?.url || undefined,
+        _pos: props.editData?._pos || undefined,
+    });
+
     emit('insert', {
         url: fullUrl,
         alt: imageAlt.value,
         title: imageTitle.value,
         width: imageWidth.value,
         height: imageHeight.value,
-        align: imageAlign.value,
-        float: imageFloat.value,
-        margin: imageMargin.value,
         oldUrl: props.editData?.url || undefined,
         _pos: props.editData?._pos || undefined
     });
@@ -420,9 +382,5 @@ const insertImage = () => {
 
 .w-24 {
     width: 96px;
-}
-
-.w-32 {
-    width: 128px;
 }
 </style>

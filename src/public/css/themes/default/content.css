@@ -2,6 +2,8 @@
    ТЕМА DEFAULT - СТИЛИ ДЛЯ КОНТЕНТА
    ============================================ */
 
+@import '../../shared/content.css';
+
 /* === ПУСТЫЕ ПАРАГРАФЫ === */
 p:empty {
     min-height: 1.5em;
@@ -9,115 +11,6 @@ p:empty {
 p:empty::before {
     content: "\00a0";
     display: inline-block;
-}
-
-/* === ГРИДЫ === */
-.grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-}
-.grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-.grid-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-}
-.grid-2-1 {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-}
-.grid-1-2 {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 20px;
-}
-
-/* === КАРТОЧКИ === */
-.grid-card {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    text-align: center;
-}
-.grid-card-blue {
-    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    text-align: center;
-}
-.grid-card-pink {
-    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    text-align: center;
-}
-.grid-card-green {
-    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    text-align: center;
-}
-.grid-card-gray {
-    background: #f8fafc;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-/* === КОЛОНКИ === */
-.col-2 {
-    columns: 2;
-    column-gap: 30px;
-}
-.col-3 {
-    columns: 3;
-    column-gap: 30px;
-}
-
-/* === ФЛЕКСЫ === */
-.flex-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-.flex-between {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-.flex-start {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-.flex-end {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-.flex-column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
 }
 
 /* === ОТСТУПЫ === */
@@ -252,55 +145,6 @@ li:not([class]) {
 .shortcode-renderer .prose a[href$=".webp"],
 .shortcode-renderer .prose a[href$=".svg"] {
     cursor: pointer;
-}
-
-/* === АДАПТИВНЫЕ ГРИДЫ === */
-@media (max-width: 768px) {
-    .grid-2,
-    .grid-3,
-    .grid-2-1,
-    .grid-1-2 {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-    }
-    .grid-4 {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 16px !important;
-    }
-    .col-2,
-    .col-3 {
-        columns: 1 !important;
-    }
-    .flex-center,
-    .flex-between,
-    .flex-start,
-    .flex-end {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 16px !important;
-    }
-    .flex-center > *,
-    .flex-between > *,
-    .flex-start > *,
-    .flex-end > * {
-        width: 100% !important;
-        flex: none !important;
-    }
-    .flex-column {
-        gap: 12px !important;
-    }
-    .w-50,
-    .w-33,
-    .w-25 {
-        width: 100% !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .grid-4 {
-        grid-template-columns: 1fr !important;
-        gap: 16px !important;
-    }
 }
 
 /* === ВЫРАВНИВАНИЕ ИЗОБРАЖЕНИЙ === */

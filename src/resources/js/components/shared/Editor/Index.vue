@@ -178,27 +178,37 @@ function openFileManager(): void {
 }
 
 function handleOpenImageModal(): void {
-    const imgData = editorState.selectedImage.value;
-    const pos = editorState.selectedImagePos.value;
+    const imgEl = document.querySelector('.tiptap img.selected-image') as HTMLImageElement | null;
 
-    if (imgData) {
-        imageEditData.value = {
-            url: imgData.url,
-            alt: imgData.alt,
-            title: imgData.title,
-            width: imgData.width ? String(imgData.width) : '',
-            height: imgData.height ? String(imgData.height) : '',
-            align: imgData.styleProps.align || '',
-            float: imgData.styleProps.float || '',
-            margin: imgData.styleProps.margin ? String(imgData.styleProps.margin) : '',
-            _pos: pos,
-        };
+    if (imgEl) {
+        const imageId = imgEl.getAttribute('data-image-id');
+        if (imageId) {
+            const pos = imageAdapter.findImageById(imageId);
+            if (pos !== -1) {
+                editorState.selectImageAt(pos);
+                const ed = editorAdapter.getEditor();
+                if (ed) {
+                    const node = ed.state.doc.nodeAt(pos);
+                    if (node && node.type.name === 'image') {
+                        imageEditData.value = {
+                            url: node.attrs.src || '',
+                            alt: node.attrs.alt || '',
+                            title: node.attrs.title || '',
+                            width: node.attrs.width ? String(node.attrs.width) : '',
+                            height: node.attrs.height ? String(node.attrs.height) : '',
+                            _pos: pos,
+                        };
+                    }
+                }
+            }
+        }
+        imageModalKey.value++;
+        showImageModal.value = true;
     } else {
         imageEditData.value = null;
+        imageModalKey.value++;
+        showImageModal.value = true;
     }
-
-    imageModalKey.value++;
-    showImageModal.value = true;
 }
 
 function closeImageModal(): void {
@@ -207,22 +217,28 @@ function closeImageModal(): void {
 }
 
 function handleImageInsert(data: any): void {
-    const { url, alt, title, width, height, align, float, margin, oldUrl, _pos } = data;
+    const { url, alt, title, width, height, _pos } = data;
 
-    const imageData = ImageData.create({
-        url,
-        alt: alt || '',
-        title: title || '',
-        width: width || null,
-        height: height || null,
-        align: align || undefined,
-        float: float || undefined,
-        margin: margin || undefined,
-    });
+    if (_pos !== undefined && _pos !== -1) {
+        const ed = editorAdapter.getEditor();
+        if (ed) {
+            const node = ed.state.doc.nodeAt(_pos);
+            if (node && node.type.name === 'image') {
+                const styleParts: string[] = [];
+                if (width) styleParts.push(`width: ${width}px`);
+                if (height) styleParts.push(`height: ${height}px`);
 
-    if (oldUrl) {
-        editorState.updateImage(oldUrl, imageData);
+                const attrs: Record<string, any> = { ...node.attrs, src: url, alt: alt || '', title: title || '' };
+                if (width) attrs.width = String(width);
+                if (height) attrs.height = String(height);
+                if (styleParts.length > 0) attrs.style = styleParts.join('; ');
+
+                const tr = ed.state.tr.setNodeMarkup(_pos, undefined, attrs);
+                ed.view.dispatch(tr);
+            }
+        }
     } else {
+        const imageData = ImageData.create({ url, alt: alt || '', title: title || '', width: width || null, height: height || null });
         editorState.insertImage(imageData, _pos ?? undefined);
     }
 
@@ -343,9 +359,6 @@ defineExpose({
             title: newData.title || '',
             width: newData.width || null,
             height: newData.height || null,
-            align: newData.align || undefined,
-            float: newData.float || undefined,
-            margin: newData.margin || undefined,
         });
         editorState.updateImage(oldUrl, imageData);
         emit('update:modelValue', editorAdapter.getHTML());
@@ -423,6 +436,7 @@ onMounted(async () => {
         const isInsideTiptap = target.closest('.tiptap');
 
         if (!isInsideTiptap) {
+            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
             editorState.clearLinkSelection();
             editorState.clearImageSelection();
             selectedImageAlign.value = '';
@@ -454,8 +468,13 @@ onMounted(async () => {
             img.classList.add('selected-image');
             editorState.clearLinkSelection();
 
-            const imgSrc = img.getAttribute('src') || '';
-            editorState.selectImage(imgSrc);
+            const imageId = img.getAttribute('data-image-id');
+            if (imageId) {
+                const pos = imageAdapter.findImageById(imageId);
+                if (pos !== -1) {
+                    editorState.selectImageAt(pos);
+                }
+            }
 
             const wr = img.closest('.resize-wrapper');
             selectedImageAlign.value = wr?.getAttribute('data-align') || '';
@@ -463,6 +482,7 @@ onMounted(async () => {
             return;
         }
 
+        document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
         editorState.clearLinkSelection();
         editorState.clearImageSelection();
         selectedImageAlign.value = '';

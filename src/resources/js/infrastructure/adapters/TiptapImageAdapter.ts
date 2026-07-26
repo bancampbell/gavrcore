@@ -3,6 +3,12 @@ import type { Node } from '@tiptap/pm/model';
 import type { ImagePort } from '../../domain/ports/ImagePort';
 import { ImageData } from '../../domain/values/ImageData';
 
+let imageIdCounter = 0;
+
+function generateImageId(): string {
+    return `img_${Date.now()}_${++imageIdCounter}`;
+}
+
 export class TiptapImageAdapter implements ImagePort {
     private editor: Editor | null = null;
 
@@ -17,6 +23,7 @@ export class TiptapImageAdapter implements ImagePort {
             src: data.url,
             alt: data.alt,
             title: data.title,
+            imageId: generateImageId(),
         };
 
         if (data.width) attrs.width = String(data.width);
@@ -110,6 +117,22 @@ export class TiptapImageAdapter implements ImagePort {
                     foundPos = pos;
                     return false;
                 }
+            }
+            return true;
+        });
+
+        return foundPos;
+    }
+
+    findImageById(imageId: string): number {
+        if (!this.editor) return -1;
+
+        let foundPos = -1;
+
+        this.editor.state.doc.descendants((node: Node, pos: number) => {
+            if (node.type.name === 'image' && node.attrs.imageId === imageId) {
+                foundPos = pos;
+                return false;
             }
             return true;
         });

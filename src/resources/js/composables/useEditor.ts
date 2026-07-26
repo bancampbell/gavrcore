@@ -19,6 +19,7 @@ export function useEditor() {
             insertImage: () => {},
             updateImage: () => {},
             selectImage: () => {},
+            selectImageAt: () => {},
             clearImageSelection: () => {},
             insertLink: () => {},
             updateLink: () => {},
@@ -83,6 +84,14 @@ export function useEditor() {
         selectedImagePos.value = pos;
     }
 
+    function selectImageAt(pos: number): void {
+        const imageData = imageAdapter.getImageAt(pos);
+        if (imageData) {
+            selectedImage.value = imageData;
+            selectedImagePos.value = pos;
+        }
+    }
+
     function clearImageSelection(): void {
         selectedImage.value = null;
         selectedImagePos.value = -1;
@@ -129,6 +138,7 @@ export function useEditor() {
         insertImage,
         updateImage,
         selectImage,
+        selectImageAt,
         clearImageSelection,
         insertLink,
         updateLink,

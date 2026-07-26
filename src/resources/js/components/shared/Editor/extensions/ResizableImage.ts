@@ -17,6 +17,7 @@ const HANDLES: { direction: Direction; cursor: string; position: Record<string, 
     { direction: 'e', cursor: 'e-resize', position: { right: `${HANDLE_OFFSET}px`, top: '50%', transform: 'translateY(-50%)' } },
 ];
 
+
 export const ResizableImage = Image.extend({
     addAttributes() {
         return {
@@ -83,6 +84,14 @@ export const ResizableImage = Image.extend({
                     return { 'data-float': attrs.float };
                 },
             },
+            imageId: {
+                default: null,
+                parseHTML: (el: HTMLElement) => el.getAttribute('data-image-id') || null,
+                renderHTML: (attrs: Record<string, any>) => {
+                    if (!attrs.imageId) return {};
+                    return { 'data-image-id': attrs.imageId };
+                },
+            },
         };
     },
 
@@ -134,6 +143,7 @@ export const ResizableImage = Image.extend({
 
             if (node.attrs.align) img.setAttribute('data-align', node.attrs.align);
             if (node.attrs.float) img.setAttribute('data-float', node.attrs.float);
+            if (node.attrs.imageId) img.setAttribute('data-image-id', node.attrs.imageId);
 
             const cleanStyle = style
                 .replace(/float:\s*(left|right);?/g, '')
@@ -289,6 +299,12 @@ export const ResizableImage = Image.extend({
                         img.setAttribute('data-float', updatedNode.attrs.float);
                     } else {
                         img.removeAttribute('data-float');
+                    }
+
+                    if (updatedNode.attrs.imageId) {
+                        img.setAttribute('data-image-id', updatedNode.attrs.imageId);
+                    } else {
+                        img.removeAttribute('data-image-id');
                     }
 
                     if (updatedNode.attrs.align) {
