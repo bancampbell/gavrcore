@@ -70,6 +70,7 @@ import Toolbar from './Toolbar.vue';
 import { ResizableImage } from './extensions';
 import { CustomDiv } from './extensions/CustomDiv';
 import { PreserveAttributes } from './extensions/PreserveAttributes';
+import { CleanPaste } from './extensions/CleanPaste';
 import type { EditorProps, EditorEmits } from './types/editor';
 import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
 import FormSelectModal from '@/components/shared/FormSelectModal.vue';
@@ -380,8 +381,22 @@ onMounted(async () => {
             Underline,
             Strike,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            CleanPaste,
         ],
         content: props.modelValue || '<p>Начните писать здесь...</p>',
+        editorProps: {
+            transformPastedHTML(html: string) {
+                return html
+                    .replace(/style="[^"]*"/g, '')
+                    .replace(/class="[^"]*"/g, '')
+                    .replace(/mso-[^=]+="[^"]*"/g, '')
+                    .replace(/mso-[^=]+=[^ >]+/g, '')
+                    .replace(/<span[^>]*>/g, '')
+                    .replace(/<\/span>/g, '')
+                    .replace(/<font[^>]*>/g, '')
+                    .replace(/<\/font>/g, '');
+            },
+        },
         onUpdate: ({ editor: ed }) => {
             emit('update:modelValue', ed.getHTML());
         },

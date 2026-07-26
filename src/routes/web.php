@@ -71,6 +71,10 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Upload endpoint for drag & drop
+    Route::post('/admin/upload', [MediaController::class, 'uploadFile'])->name('admin.upload');
+    Route::post('/admin/upload/multiple', [MediaController::class, 'uploadMultiple'])->name('admin.upload.multiple');
+
     // Gallery Manager
     Route::get('/admin/galleries', [GalleryController::class, 'index'])->name('admin.galleries.index');
     Route::get('/admin/galleries/list', [GalleryController::class, 'list'])->name('admin.galleries.list');

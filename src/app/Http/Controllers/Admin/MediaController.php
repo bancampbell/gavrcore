@@ -236,6 +236,26 @@ class MediaController extends Controller
         return response()->json(['message' => 'Загружено файлов: '.count($uploaded), 'files' => $uploaded]);
     }
 
+    public function uploadMultiple(Request $request): JsonResponse
+    {
+        $request->validate([
+            'files' => 'required|array',
+            'files.*' => 'required|file|max:102400',
+        ]);
+
+        $uploaded = [];
+        foreach ($request->file('files') as $file) {
+            $fileName = $file->getClientOriginalName();
+            $file->move($this->basePath, $fileName);
+            $uploaded[] = [
+                'url' => '/storage/uploads/' . $fileName,
+                'name' => $fileName,
+            ];
+        }
+
+        return response()->json(['files' => $uploaded]);
+    }
+
     private function scanFoldersRecursive(string $path, string $relativePath = ''): array
     {
         $folders = [];
