@@ -1,6 +1,6 @@
 <template>
     <div
-        :data-file-path="!isFolder ? item.path : undefined"
+        :data-file-path="!isFolder ? item.path.toString() : undefined"
         class="flex items-center py-1 px-2 rounded-md transition-colors hover:bg-[#e6f0fa] group cursor-pointer"
         :class="{ 'bg-[#e6f0fa]': isSelected }"
         @click="onClick"
@@ -36,16 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { getFileIcon } from '../constants';
-
-interface MediaItem {
-    name: string;
-    path: string;
-    type: 'folder' | 'file';
-    size?: number;
-    mime_type?: string;
-    modified?: number;
-}
+import { getFileIcon } from '@/modules/media-manager/ui/constants';
+import type { MediaItem } from '../../domain/entities/MediaItem';
 
 const props = defineProps<{
     item: MediaItem;
@@ -60,7 +52,7 @@ const emit = defineEmits<{
 }>();
 
 const onSelect = () => {
-    emit('select', props.item.path, props.item);
+    emit('select', props.item.path.toString(), props.item);
 };
 
 const onClick = () => {

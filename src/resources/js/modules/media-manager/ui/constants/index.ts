@@ -1,4 +1,4 @@
-// resources/js/Pages/Admin/MediaManager/constants/index.ts
+// resources/js/modules/media-manager/ui/constants/index.ts
 
 export const FILE_ICONS: Record<string, string> = {
     'pdf': '📄',
@@ -27,7 +27,7 @@ export const SORT_BUTTONS = [
 ] as const;
 
 export const formatFileSize = (bytes: number): string => {
-    if (!bytes || bytes === 0) return '';
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -36,7 +36,7 @@ export const formatFileSize = (bytes: number): string => {
 
 export const formatDate = (timestamp: number): string => {
     if (!timestamp) return '';
-    const date = new Date(timestamp * 1000);
+    const date = new Date(timestamp);
     return date.toLocaleDateString('ru-RU') + ', ' + date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 };
 

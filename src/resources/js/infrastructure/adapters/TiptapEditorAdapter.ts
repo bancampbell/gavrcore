@@ -48,6 +48,14 @@ export class TiptapEditorAdapter implements EditorPort {
         this.editor.view.dispatch(tr);
     }
 
+    deleteNode(pos: number): void {
+        if (!this.editor) return;
+        const node = this.editor.state.doc.nodeAt(pos);
+        if (!node) return;
+        const tr = this.editor.state.tr.delete(pos, pos + node.nodeSize);
+        this.editor.view.dispatch(tr);
+    }
+
     isActive(): boolean {
         return this.editor !== null && !this.editor.isDestroyed;
     }

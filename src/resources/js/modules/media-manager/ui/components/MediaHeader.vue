@@ -1,11 +1,6 @@
-<!-- resources/js/Pages/Admin/MediaManager/components/MediaHeader.vue -->
-
 <template>
     <div class="bg-white border-b border-gray-200">
-        <div class="px-6 py-4">
-        </div>
-
-        <div class="px-6 pb-4 flex items-center justify-between">
+        <div class="px-6 pb-4 flex items-center justify-between pt-4">
             <div class="flex items-center gap-2 text-sm">
                 <Link href="/admin/dashboard">
                     <svg class="w-4 h-4 text-gray-500 hover:text-blue-600 cursor-pointer transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">

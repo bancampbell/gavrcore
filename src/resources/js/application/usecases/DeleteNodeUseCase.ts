@@ -9,7 +9,6 @@ export class DeleteNodeUseCase {
         const node = this.editorPort.getNodeAt(pos);
         if (!node) return;
 
-        this.editorPort.setTextSelection(pos, pos + 1);
-        this.editorPort.insertContent('');
+        this.editorPort.deleteNode(pos);
     }
 }

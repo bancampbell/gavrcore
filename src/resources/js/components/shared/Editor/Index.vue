@@ -11,19 +11,19 @@
         <div v-show="!editorState.isHtmlMode.value" class="flex-1 overflow-auto">
             <Toolbar
                 :editor="editorAdapter.getEditor()"
-                :selected-link-data="selectedLinkDataForToolbar"
-                :selected-image-data="selectedImageDataForToolbar"
-                :selected-image-align="selectedImageAlign"
-                :selected-image-float="selectedImageFloat"
-                :align-image-left="() => alignImage('left')"
-                :center-image="() => alignImage('center')"
-                :align-image-right="() => alignImage('right')"
-                :float-image-left="() => floatImage('left')"
-                :float-image-right="() => floatImage('right')"
-                :align-text-left="() => alignText('left')"
-                :align-text-center="() => alignText('center')"
-                :align-text-right="() => alignText('right')"
-                :open-link-modal="handleOpenLinkModal"
+                :selected-link-data="selection.selectedLinkDataForToolbar.value"
+                :selected-image-data="selection.selectedImageDataForToolbar.value"
+                :selected-image-align="selection.selectedImageAlign.value"
+                :selected-image-float="selection.selectedImageFloat.value"
+                :align-image-left="() => commands.alignImage('left')"
+                :center-image="() => commands.alignImage('center')"
+                :align-image-right="() => commands.alignImage('right')"
+                :float-image-left="() => commands.floatImage('left')"
+                :float-image-right="() => commands.floatImage('right')"
+                :align-text-left="() => commands.alignText('left')"
+                :align-text-center="() => commands.alignText('center')"
+                :align-text-right="() => commands.alignText('right')"
+                :open-link-modal="() => commands.handleOpenLinkModal(editorState.selectedLink)"
                 :open-image-modal="handleOpenImageModal"
                 :open-gallery-modal="handleOpenGalleryModal"
                 :toggle-html="toggleHtmlMode"
@@ -53,13 +53,13 @@
             :show="showImageModal"
             :edit-data="imageEditData"
             @close="closeImageModal"
-            @insert="handleImageInsert"
+            @insert="commands.handleImageInsert"
         />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -78,6 +78,8 @@ import ImageModal from '@/Pages/Admin/Materials/components/ImageModal.vue';
 import RawHtmlEditor from './RawHtmlEditor.vue';
 import DOMPurify from 'dompurify';
 import { useEditor } from '@/composables/useEditor';
+import { useEditorSelection } from '@/composables/useEditorSelection';
+import { useEditorCommands } from '@/composables/useEditorCommands';
 import { ImageData } from '@/domain/values/ImageData';
 import { LinkData } from '@/domain/values/LinkData';
 
@@ -97,35 +99,24 @@ const imageEditData = ref<any>(null);
 const imageModalKey = ref(0);
 let contentUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const selectedImageAlign = ref('');
-const selectedImageFloat = ref('');
+const selection = useEditorSelection(
+    imageAdapter,
+    editorState.selectedImage,
+    editorState.selectedLink,
+    editorState.clearImageSelection,
+    editorState.clearLinkSelection,
+    editorState.selectLink,
+    editorState.selectImageAt,
+);
 
-const selectedImageDataForToolbar = computed(() => {
-    const data = editorState.selectedImage.value;
-    if (!data) return null;
-    return {
-        url: data.url,
-        alt: data.alt,
-        title: data.title,
-        width: data.width ? String(data.width) : '',
-        height: data.height ? String(data.height) : '',
-        align: data.styleProps.align || '',
-        float: data.styleProps.float || '',
-        margin: data.styleProps.margin ? String(data.styleProps.margin) : '',
-    };
-});
-
-const selectedLinkDataForToolbar = computed(() => {
-    const data = editorState.selectedLink.value;
-    if (!data) return null;
-    return {
-        oldText: data.oldText || data.text,
-        url: data.url,
-        text: data.text,
-        target: data.target,
-        title: data.title,
-    };
-});
+const commands = useEditorCommands(
+    editorAdapter,
+    selection.selectedImageAlign,
+    selection.selectedImageFloat,
+    selection.resetSelection,
+    editorState.insertImage,
+    emit,
+);
 
 function toggleHtmlMode(): void {
     if (!editorState.isHtmlMode.value) {
@@ -164,9 +155,9 @@ function insertForm(form: any): void {
 }
 
 function insertFormShortcode(formId: number): void {
-    const selection = editorAdapter.getSelection();
-    if (!selection.isEmpty) {
-        editorAdapter.insertContent(`<div style="text-align: center;">${selection.text}</div>`);
+    const selectionObj = editorAdapter.getSelection();
+    if (!selectionObj.isEmpty) {
+        editorAdapter.insertContent(`<div style="text-align: center;">${selectionObj.text}</div>`);
     } else {
         editorAdapter.insertContent(`[form id="${formId}"]`);
     }
@@ -214,92 +205,6 @@ function handleOpenImageModal(): void {
 function closeImageModal(): void {
     showImageModal.value = false;
     imageEditData.value = null;
-}
-
-function handleImageInsert(data: any): void {
-    const { url, alt, title, width, height, _pos } = data;
-
-    if (_pos !== undefined && _pos !== -1) {
-        const ed = editorAdapter.getEditor();
-        if (ed) {
-            const node = ed.state.doc.nodeAt(_pos);
-            if (node && node.type.name === 'image') {
-                const styleParts: string[] = [];
-                if (width) styleParts.push(`width: ${width}px`);
-                if (height) styleParts.push(`height: ${height}px`);
-
-                const attrs: Record<string, any> = { ...node.attrs, src: url, alt: alt || '', title: title || '' };
-                if (width) attrs.width = String(width);
-                if (height) attrs.height = String(height);
-                if (styleParts.length > 0) attrs.style = styleParts.join('; ');
-
-                const tr = ed.state.tr.setNodeMarkup(_pos, undefined, attrs);
-                ed.view.dispatch(tr);
-            }
-        }
-    } else {
-        const imageData = ImageData.create({ url, alt: alt || '', title: title || '', width: width || null, height: height || null });
-        editorState.insertImage(imageData, _pos ?? undefined);
-    }
-
-    emit('update:modelValue', editorAdapter.getHTML());
-    closeImageModal();
-}
-
-function alignImage(align: 'left' | 'center' | 'right'): void {
-    const ed = editorAdapter.getEditor();
-    if (!ed) return;
-
-    const hasSelectedImage = document.querySelector('.tiptap img.selected-image');
-    if (hasSelectedImage) {
-        ed.commands.updateAttributes('image', { align, float: null });
-        selectedImageAlign.value = align;
-        selectedImageFloat.value = '';
-    }
-
-    emit('update:modelValue', editorAdapter.getHTML());
-}
-
-function floatImage(float: 'left' | 'right'): void {
-    const ed = editorAdapter.getEditor();
-    if (!ed) return;
-
-    const hasSelectedImage = document.querySelector('.tiptap img.selected-image');
-    if (hasSelectedImage) {
-        ed.commands.updateAttributes('image', { float, align: null });
-        selectedImageFloat.value = float;
-        selectedImageAlign.value = '';
-    }
-
-    emit('update:modelValue', editorAdapter.getHTML());
-}
-
-function alignText(align: 'left' | 'center' | 'right'): void {
-    const ed = editorAdapter.getEditor();
-    if (!ed) return;
-
-    editorState.clearImageSelection();
-    selectedImageAlign.value = '';
-    selectedImageFloat.value = '';
-
-    ed.chain().focus().setTextAlign(align).run();
-    emit('update:modelValue', editorAdapter.getHTML());
-}
-
-function handleOpenLinkModal(): void {
-    const linkData = editorState.selectedLink.value;
-    if (linkData) {
-        emit('editLink', {
-            oldText: linkData.oldText || linkData.text,
-            url: linkData.url,
-            text: linkData.text,
-            target: linkData.target,
-            title: linkData.title,
-        });
-    } else {
-        const selection = editorAdapter.getSelection();
-        emit('openLinkModal', selection.isEmpty ? '' : selection.text);
-    }
 }
 
 function setLinkOnSelection(url: string, linkText: string, target: string, title: string): void {
@@ -419,76 +324,7 @@ onMounted(async () => {
     imageAdapter.init(editor);
     linkAdapter.init(editor);
 
-    clickHandler = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
-
-        if (
-            target.closest('.modal-overlay') ||
-            target.closest('.modal-content') ||
-            target.closest('.toolbar') ||
-            target.closest('.btn-toolbar')
-        ) {
-            return;
-        }
-
-        const link = target.closest('a');
-        const img = target.closest('img');
-        const isInsideTiptap = target.closest('.tiptap');
-
-        if (!isInsideTiptap) {
-            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
-            editorState.clearLinkSelection();
-            editorState.clearImageSelection();
-            selectedImageAlign.value = '';
-            selectedImageFloat.value = '';
-            return;
-        }
-
-        if (link) {
-            e.preventDefault();
-            const linkData = LinkData.create({
-                url: link.getAttribute('href') || '',
-                text: link.innerText,
-                target: link.getAttribute('target') || '_self',
-                title: link.getAttribute('title') || '',
-                oldText: link.innerText,
-            });
-            document.querySelectorAll('.tiptap a').forEach(a => a.classList.remove('selected-link'));
-            link.classList.add('selected-link');
-            editorState.selectLink(linkData);
-            editorState.clearImageSelection();
-            selectedImageAlign.value = '';
-            selectedImageFloat.value = '';
-            return;
-        }
-
-        if (img) {
-            e.preventDefault();
-            document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
-            img.classList.add('selected-image');
-            editorState.clearLinkSelection();
-
-            const imageId = img.getAttribute('data-image-id');
-            if (imageId) {
-                const pos = imageAdapter.findImageById(imageId);
-                if (pos !== -1) {
-                    editorState.selectImageAt(pos);
-                }
-            }
-
-            const wr = img.closest('.resize-wrapper');
-            selectedImageAlign.value = wr?.getAttribute('data-align') || '';
-            selectedImageFloat.value = wr?.getAttribute('data-float') || '';
-            return;
-        }
-
-        document.querySelectorAll('.tiptap img').forEach(i => i.classList.remove('selected-image'));
-        editorState.clearLinkSelection();
-        editorState.clearImageSelection();
-        selectedImageAlign.value = '';
-        selectedImageFloat.value = '';
-    };
-
+    clickHandler = (e: MouseEvent) => selection.handleClick(e);
     document.addEventListener('click', clickHandler);
 
     resizeEndHandler = (e: Event) => {

@@ -1,0 +1,419 @@
+.
+├── Admin,
+├── admin@example.com,
+├── app
+│   ├── Actions
+│   │   ├── Auth
+│   │   │   ├── LoginUserAction.php
+│   │   │   └── RegisterUserAction.php
+│   │   └── FileManager
+│   │       └── CreateFolderAction.php
+│   ├── Contracts
+│   │   ├── CategoryRepositoryInterface.php
+│   │   ├── FormSubmissionRepositoryInterface.php
+│   │   ├── GroupRepositoryInterface.php
+│   │   ├── MaterialRepositoryInterface.php
+│   │   ├── MenuItemRepositoryInterface.php
+│   │   ├── MenuTypeRepositoryInterface.php
+│   │   ├── PermissionRepositoryInterface.php
+│   │   └── UserRepositoryInterface.php
+│   ├── DTO
+│   │   ├── CategoryData.php
+│   │   ├── GroupData.php
+│   │   ├── MaterialData.php
+│   │   ├── MenuItemData.php
+│   │   ├── MenuTypeData.php
+│   │   ├── PermissionData.php
+│   │   └── UserData.php
+│   ├── Http
+│   │   ├── Controllers
+│   │   │   ├── Admin
+│   │   │   ├── Api
+│   │   │   ├── Auth
+│   │   │   ├── Controller.php
+│   │   │   └── Web
+│   │   ├── Middleware
+│   │   │   ├── AdminMiddleware.php
+│   │   │   ├── CheckCookieConsent.php
+│   │   │   ├── HandleInertiaRequests.php
+│   │   │   └── ShareMenuMiddleware.php
+│   │   ├── Requests
+│   │   │   ├── Admin
+│   │   │   └── Auth
+│   │   └── Resources
+│   │       ├── Admin
+│   │       └── UserResource.php
+│   ├── Mail
+│   │   └── FormSubmissionNotification.php
+│   ├── Models
+│   │   ├── AccessLevel.php
+│   │   ├── Category.php
+│   │   ├── Form.php
+│   │   ├── FormSubmission.php
+│   │   ├── GalleryImage.php
+│   │   ├── Gallery.php
+│   │   ├── Group.php
+│   │   ├── Material.php
+│   │   ├── Media.php
+│   │   ├── MenuItem.php
+│   │   ├── MenuType.php
+│   │   ├── Permission.php
+│   │   ├── Setting.php
+│   │   ├── Traits
+│   │   │   └── ClearsSitemapCache.php
+│   │   └── User.php
+│   ├── Policies
+│   │   ├── AccessLevelPolicy.php
+│   │   ├── CategoryPolicy.php
+│   │   ├── GroupPolicy.php
+│   │   ├── MaterialPolicy.php
+│   │   └── UserPolicy.php
+│   ├── Providers
+│   │   └── AppServiceProvider.php
+│   ├── Repositories
+│   │   ├── CategoryRepository.php
+│   │   ├── FormSubmissionRepository.php
+│   │   ├── GroupRepository.php
+│   │   ├── MaterialRepository.php
+│   │   ├── MenuItemRepository.php
+│   │   ├── MenuTypeRepository.php
+│   │   ├── PermissionRepository.php
+│   │   └── UserRepository.php
+│   ├── Seo
+│   │   ├── Contracts
+│   │   │   └── SeoProviderInterface.php
+│   │   ├── DTO
+│   │   │   └── MetaData.php
+│   │   ├── Generators
+│   │   ├── Providers
+│   │   │   ├── CategorySeoProvider.php
+│   │   │   └── MaterialSeoProvider.php
+│   │   ├── Schemas
+│   │   └── Services
+│   │       └── MetaService.php
+│   ├── Services
+│   │   ├── BreadcrumbService.php
+│   │   ├── CategoryService.php
+│   │   ├── CategoryTreeService.php
+│   │   ├── FormService.php
+│   │   ├── FormSubmissionService.php
+│   │   ├── GroupService.php
+│   │   ├── MaterialService.php
+│   │   ├── MenuItemService.php
+│   │   ├── MenuService.php
+│   │   ├── MenuTypeService.php
+│   │   ├── PermissionService.php
+│   │   ├── SettingService.php
+│   │   ├── ThemeService.php
+│   │   └── UserService.php
+│   └── Support
+│       ├── Enums
+│       └── Traits
+├── artisan
+├── bootstrap
+│   ├── app.php
+│   ├── cache
+│   │   ├── packages.php
+│   │   └── services.php
+│   └── providers.php
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── insights.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   └── session.php
+├── database
+│   ├── database.sqlite
+│   ├── factories
+│   │   ├── CategoryFactory.php
+│   │   ├── GroupFactory.php
+│   │   ├── MaterialFactory.php
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2026_05_23_142538_create_personal_access_tokens_table.php
+│   │   ├── 2026_05_23_181841_create_categories_table.php
+│   │   ├── 2026_05_23_181905_create_materials_table.php
+│   │   ├── 2026_05_23_194341_add_trash_to_materials_state_enum.php
+│   │   ├── 2026_05_24_165234_add_cascade_delete_to_categories.php
+│   │   ├── 2026_05_30_185531_add_slug_to_materials_table.php
+│   │   ├── 2026_06_03_161849_create_menu_types_table.php
+│   │   ├── 2026_06_03_162444_create_menu_items_table.php
+│   │   ├── 2026_06_05_165057_add_user_fields_to_users_table.php
+│   │   ├── 2026_06_05_165113_create_groups_table.php
+│   │   ├── 2026_06_05_165129_create_permissions_table.php
+│   │   ├── 2026_06_07_140548_create_access_levels_table.php
+│   │   ├── 2026_06_07_140615_create_access_level_group_table.php
+│   │   ├── 2026_06_09_183038_add_soft_deletes_to_materials_table.php
+│   │   ├── 2026_06_10_200036_add_featured_to_materials_table.php
+│   │   ├── 2026_06_11_171250_add_show_on_homepage_to_materials_table.php
+│   │   ├── 2026_06_14_155901_create_settings_table.php
+│   │   ├── 2026_06_17_171756_add_display_fields_to_materials_table.php
+│   │   ├── 2026_06_17_194530_add_use_global_settings_to_materials_table.php
+│   │   ├── 2026_06_26_195713_create_galleries_table.php
+│   │   ├── 2026_06_26_195722_create_gallery_images_table.php
+│   │   ├── 2026_07_08_092241_add_display_settings_to_materials_table.php
+│   │   ├── 2026_07_09_185703_create_forms_table.php
+│   │   ├── 2026_07_09_185731_create_form_submissions_table.php
+│   │   ├── 2026_07_10_183120_add_read_at_to_form_submissions_table.php
+│   │   ├── 2026_07_11_075329_add_notification_emails_to_forms_table.php
+│   │   ├── 2026_07_11_083655_create_activity_log_table.php
+│   │   ├── 2026_07_17_151258_add_template_to_materials_table.php
+│   │   ├── 2026_07_17_195822_add_homepage_type_to_settings_table.php
+│   │   ├── 2026_07_18_153032_add_seo_fields_to_materials_table.php
+│   │   ├── 2026_07_18_153743_add_slug_to_categories_table.php
+│   │   ├── 2026_07_18_181039_make_category_id_nullable_in_materials_table.php
+│   │   └── 2026_07_19_180820_add_user_id_and_status_to_form_submissions_table.php
+│   └── seeders
+│       ├── CategorySeeder.php
+│       ├── DatabaseSeeder.php
+│       ├── MaterialSeeder.php
+│       ├── MenuSeeder.php
+│       └── UserGroupPermissionSeeder.php
+├── package.json
+├── package-lock.json
+├── phpstan.neon
+├── phpunit.xml
+├── postcss.config.js
+├── project_structure.txt
+├── project_tree.txt
+├── public
+│   ├── build
+│   │   ├── assets
+│   │   │   ├── AdminLayout-DU9qSaOF.js
+│   │   │   ├── AdminLayout-ob-1Mktg.css
+│   │   │   ├── app-CXn8lRe-.js
+│   │   │   ├── app-H6gAfz1G.css
+│   │   │   ├── AuthCard-D9pH0OP5.js
+│   │   │   ├── axios-BYF4rdEi.js
+│   │   │   ├── Breadcrumbs-D2M0bTYE.js
+│   │   │   ├── Builder-UcgNWZ57.js
+│   │   │   ├── CategoryModal-D8BnxZcf.js
+│   │   │   ├── ConfirmModal-DCVjW6IJ.js
+│   │   │   ├── ContentTree-4RCljip8.css
+│   │   │   ├── ContentTree-CG3G6QrX.js
+│   │   │   ├── CookieConsent-BC_mMl_K.js
+│   │   │   ├── Create-7EDz1CSW.js
+│   │   │   ├── Create-C2KwcxxI.js
+│   │   │   ├── Create-CpncA7Ud.js
+│   │   │   ├── Create-CsnBgZpg.js
+│   │   │   ├── Create-eL6q6FHN.js
+│   │   │   ├── Create-T356eWmX.js
+│   │   │   ├── Dashboard-CX8UHvpD.js
+│   │   │   ├── DashboardLayout-BW1HDp_n.js
+│   │   │   ├── DefaultLayout-DZLRXXX3.js
+│   │   │   ├── Edit-7T7O7S-D.js
+│   │   │   ├── Edit-BUxdQRqC.js
+│   │   │   ├── Edit-BXjrqsgf.js
+│   │   │   ├── Edit-Dt3IXjCr.js
+│   │   │   ├── Edit-dtk8Tlut.js
+│   │   │   ├── Edit-EClwYGa8.js
+│   │   │   ├── Edit-V5eAerNB.js
+│   │   │   ├── EmptyLayout-Ld5u1QQY.js
+│   │   │   ├── FieldSettings-0GUd3YVe.js
+│   │   │   ├── Footer-D886JTIX.js
+│   │   │   ├── GalleryModal-Ox7I3a3A.js
+│   │   │   ├── groups-BRTqanCJ.js
+│   │   │   ├── Header-C7PI22an.js
+│   │   │   ├── Header-M7q_sKvx.css
+│   │   │   ├── ImageModal-CQ5RoNfA.js
+│   │   │   ├── ImageModal-CUldpxFC.css
+│   │   │   ├── Index-5ogimc3J.js
+│   │   │   ├── Index-b2BymPv_.js
+│   │   │   ├── Index-BFWoorsw.js
+│   │   │   ├── Index-BH4XlLGV.js
+│   │   │   ├── Index-Bvb_PaKt.js
+│   │   │   ├── Index-BzPkYRkS.js
+│   │   │   ├── Index-C61oUgFw.js
+│   │   │   ├── Index-CivHGGlv.css
+│   │   │   ├── Index-CM34JuE12.js
+│   │   │   ├── Index-CquYCzkg.css
+│   │   │   ├── Index-C-rW2Kfa.js
+│   │   │   ├── Index-CTwE2mPH.js
+│   │   │   ├── Index-CU3ywqNW.js
+│   │   │   ├── Index-CURtsu9A2.js
+│   │   │   ├── Index-DdXQk08U.js
+│   │   │   ├── Index-DNBZMz0M2.js
+│   │   │   ├── Index-Dq4aeu29.js
+│   │   │   ├── Index-fV5mKIC72.js
+│   │   │   ├── Index-owjuBB2z.css
+│   │   │   ├── Index-x6-Iv6y7.js
+│   │   │   ├── LandingLayout-B-W-_g51.js
+│   │   │   ├── LayoutSwitcher-XT_FlOpt.js
+│   │   │   ├── LinkModal-BhYgzNQn.js
+│   │   │   ├── Login-BLTzztCp.js
+│   │   │   ├── Login-MS1ovHxE.js
+│   │   │   ├── MaterialSelectorModal-CaLV6Y5B.js
+│   │   │   ├── MaterialSelectorModal-CxqpTAbz.css
+│   │   │   ├── MediaManagerModal-drFfwZx2.css
+│   │   │   ├── MediaManagerModal-DyeqMSQ0.js
+│   │   │   ├── MenuItem-BNu8lIHs.js
+│   │   │   ├── MenuItemRow-DOaYZik6.js
+│   │   │   ├── MenuItems-BO8MMsDi.js
+│   │   │   ├── MenuTypeModal-Dm-VSRad.js
+│   │   │   ├── menu-ywT9-Jyc.js
+│   │   │   ├── NotFound-sCY8k3Re.css
+│   │   │   ├── NotFound-ZTdEcmzB.js
+│   │   │   ├── _plugin-vue_export-helper-BDNMzG2s.js
+│   │   │   ├── Profile-zumgsQe1.js
+│   │   │   ├── purify.es-D-kBbLew.js
+│   │   │   ├── Register-CYVtn2Z6.js
+│   │   │   ├── ServerError-DD4Yae9S.css
+│   │   │   ├── ServerError-DwrI-coB.js
+│   │   │   ├── Settings-D4sT5f2P.js
+│   │   │   ├── ShortcodeRenderer-Bfs1hqba.js
+│   │   │   ├── ShortcodeRenderer-DhW8OVJF.css
+│   │   │   ├── Show-C9XxLYp_.js
+│   │   │   ├── TicketsCreate-TnOxaYZ1.js
+│   │   │   ├── Tickets-D1XZcX4k.js
+│   │   │   ├── TicketsIndex-C19yJDLP.js
+│   │   │   ├── Toast-CgR9b1Qp.js
+│   │   │   ├── TopNav-M32Uxcrf.js
+│   │   │   ├── Trash-DRYrR6KQ.js
+│   │   │   ├── useMaterials-Bfd8EYEs.js
+│   │   │   ├── users-8Crd5FCx.js
+│   │   │   └── WarmLayout-CChD8Ba9.js
+│   │   └── manifest.json
+│   ├── css
+│   │   ├── shared
+│   │   │   └── content.css
+│   │   └── themes
+│   │       ├── default
+│   │       ├── landing
+│   │       └── warm
+│   ├── favicon.ico
+│   ├── index.php
+│   └── robots.txt
+├── README.md
+├── resources
+│   ├── css
+│   │   ├── admin.css
+│   │   ├── admin-variables.css
+│   │   ├── app.css
+│   │   ├── content.css
+│   │   ├── editor.css
+│   │   ├── forms.css
+│   │   ├── gallery.css
+│   │   ├── shared
+│   │   │   └── content.css
+│   │   └── themes
+│   │       ├── default
+│   │       ├── landing
+│   │       └── warm
+│   ├── js
+│   │   ├── api
+│   │   │   ├── categories.ts
+│   │   │   ├── groups.ts
+│   │   │   ├── materials.ts
+│   │   │   ├── menu.ts
+│   │   │   └── users.ts
+│   │   ├── application
+│   │   │   └── usecases
+│   │   ├── app.ts
+│   │   ├── components
+│   │   │   ├── Admin
+│   │   │   ├── Forms
+│   │   │   ├── Gallery
+│   │   │   └── shared
+│   │   ├── composables
+│   │   │   ├── useCategories.ts
+│   │   │   ├── useEditorCommands.ts
+│   │   │   ├── useEditorSelection.ts
+│   │   │   ├── useEditor.ts
+│   │   │   ├── useGalleryParser.ts
+│   │   │   ├── useGroups.ts
+│   │   │   ├── useMaterials.ts
+│   │   │   ├── useMenuTypes.ts
+│   │   │   ├── useSidebarSections.ts
+│   │   │   ├── useSubmissions.ts
+│   │   │   ├── useToast.ts
+│   │   │   └── useUsers.ts
+│   │   ├── domain
+│   │   │   ├── ports
+│   │   │   ├── services
+│   │   │   └── values
+│   │   ├── infrastructure
+│   │   │   ├── adapters
+│   │   │   └── di
+│   │   ├── layouts
+│   │   │   ├── AdminLayout.vue
+│   │   │   ├── DashboardLayout.vue
+│   │   │   ├── DefaultLayout.vue
+│   │   │   ├── EmptyLayout.vue
+│   │   │   ├── LandingLayout.vue
+│   │   │   ├── LayoutSwitcher.vue
+│   │   │   └── WarmLayout.vue
+│   │   ├── modules
+│   │   │   └── media-manager
+│   │   ├── Pages
+│   │   │   ├── Admin
+│   │   │   ├── Auth
+│   │   │   ├── Dashboard
+│   │   │   ├── Errors
+│   │   │   ├── Index.vue
+│   │   │   ├── landing
+│   │   │   ├── Material
+│   │   │   └── Themes
+│   │   ├── services
+│   │   │   ├── container.ts
+│   │   │   ├── HttpClient.ts
+│   │   │   ├── LightboxService.ts
+│   │   │   └── types.ts
+│   │   ├── shims-vue.d.ts
+│   │   ├── __tests__
+│   │   │   ├── application
+│   │   │   ├── domain
+│   │   │   └── infrastructure
+│   │   ├── themes
+│   │   │   ├── default
+│   │   │   └── warm
+│   │   ├── types
+│   │   │   ├── index.ts
+│   │   │   └── menu.ts
+│   │   └── vite-env.d.ts
+│   └── views
+│       ├── app.blade.php
+│       ├── emails
+│       │   └── form-submission.blade.php
+│       └── welcome.blade.php
+├── routes
+│   ├── api.php
+│   ├── console.php
+│   └── web.php
+├── sions:n";
+├── src
+│   └── resources
+│       └── js
+│           └── modules
+├── structure.txt
+├── tailwind.config.js
+├── tests
+│   ├── Feature
+│   │   ├── CategoryControllerTest.php
+│   │   ├── ExampleTest.php
+│   │   ├── GroupControllerTest.php
+│   │   ├── MaterialControllerTest.php
+│   │   └── UserControllerTest.php
+│   ├── TestCase.php
+│   └── Unit
+│       ├── CategoryPolicyTest.php
+│       ├── ExampleTest.php
+│       ├── GroupPolicyTest.php
+│       ├── MaterialPolicyTest.php
+│       └── UserPolicyTest.php
+├── tree.txt
+├── tsconfig.json
+├── vite.config.js
+└── vitest.config.ts
+
+106 directories, 311 files

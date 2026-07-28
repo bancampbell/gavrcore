@@ -7,9 +7,7 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { createApp, h } from 'vue';
 import FormWrapper from '@/themes/default/components/FormWrapper.vue';
 import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
-import { container } from '@/services/container';
-import { TYPES } from '@/services/types';
-import type { LightboxService } from '@/services/LightboxService';
+import { lightboxService } from '@/services/LightboxService';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
 
@@ -18,8 +16,6 @@ const props = defineProps<{
     forms: Record<number, any>;
 }>();
 
-const lightboxService = container.get<LightboxService>(TYPES.LightboxService);
-
 const containerRef = ref<HTMLElement | null>(null);
 const appInstances: any[] = [];
 const galleryCache = new Map<string, any>();
@@ -27,6 +23,7 @@ const galleryCache = new Map<string, any>();
 const setupLightbox = () => {
     if (!containerRef.value) return;
 
+    // Обработка изображений <img>
     const images = containerRef.value.querySelectorAll('.prose img');
 
     images.forEach((img: HTMLImageElement) => {
@@ -52,6 +49,25 @@ const setupLightbox = () => {
 
         img.addEventListener('click', handler);
         (img as any).__lightboxHandler = handler;
+    });
+
+    // Обработка ссылок на изображения
+    const imageLinks = containerRef.value.querySelectorAll(
+        '.prose a[href$=".jpg"], .prose a[href$=".jpeg"], .prose a[href$=".png"], .prose a[href$=".gif"], .prose a[href$=".webp"], .prose a[href$=".svg"]'
+    );
+
+    imageLinks.forEach((link: HTMLAnchorElement) => {
+        if ((link as any).__lightboxHandler) {
+            link.removeEventListener('click', (link as any).__lightboxHandler);
+        }
+
+        const handler = (e: Event) => {
+            e.preventDefault();
+            lightboxService.open([{ src: link.href, alt: link.textContent || '' }], 0);
+        };
+
+        link.addEventListener('click', handler);
+        (link as any).__lightboxHandler = handler;
     });
 };
 

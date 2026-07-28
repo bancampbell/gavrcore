@@ -1,4 +1,3 @@
-<!-- resources/js/Pages/Admin/MediaManager/components/ContentPanel.vue -->
 <template>
     <div class="flex-1 bg-white flex flex-col overflow-hidden">
         <div class="px-4 py-1.5 border-b border-gray-200 bg-gray-50">
@@ -47,9 +46,9 @@
             <div v-else class="space-y-0.5">
                 <FileItem
                     v-for="item in folders"
-                    :key="item.path"
+                    :key="item.path.toString()"
                     :item="item"
-                    :is-selected="isSelected(item.path)"
+                    :is-selected="isSelected(item.path.toString())"
                     :is-folder="true"
                     :is-picker-mode="mode === 'picker'"
                     @select="onToggleSelect"
@@ -58,12 +57,12 @@
                 />
                 <FileItem
                     v-for="item in files"
-                    :key="item.path"
+                    :key="item.path.toString()"
                     :item="item"
-                    :is-selected="isSelected(item.path)"
+                    :is-selected="isSelected(item.path.toString())"
                     :is-folder="false"
                     :is-picker-mode="mode === 'picker'"
-                    :data-file-path="item.path"
+                    :data-file-path="item.path.toString()"
                     @select="onToggleSelect"
                     @click="onSelectFile"
                 />
@@ -81,7 +80,7 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue';
 import FileItem from './FileItem.vue';
-import type { MediaItem } from '../types';
+import type { MediaItem } from '../../domain/entities/MediaItem';
 
 const props = defineProps<{
     folders: MediaItem[];

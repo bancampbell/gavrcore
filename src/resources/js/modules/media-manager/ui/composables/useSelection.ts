@@ -1,15 +1,5 @@
-// resources/js/Pages/Admin/MediaManager/composables/useSelection.ts
-
 import { ref } from 'vue';
-
-export interface MediaItem {
-    name: string;
-    path: string;
-    type: 'folder' | 'file';
-    size?: number;
-    mime_type?: string;
-    modified?: number;
-}
+import { MediaItem } from '../../domain/entities/MediaItem';
 
 export function useSelection() {
     const selectedItems = ref<string[]>([]);
@@ -22,7 +12,7 @@ export function useSelection() {
             selectedItem.value = item;
         } else {
             selectedItems.value.splice(index, 1);
-            if (selectedItem.value?.path === path) {
+            if (selectedItem.value?.getPathString() === path) {
                 selectedItem.value = null;
             }
         }
@@ -30,8 +20,9 @@ export function useSelection() {
 
     const selectItem = (item: MediaItem) => {
         selectedItem.value = item;
-        if (!selectedItems.value.includes(item.path)) {
-            selectedItems.value.push(item.path);
+        const path = item.getPathString();
+        if (!selectedItems.value.includes(path)) {
+            selectedItems.value.push(path);
         }
     };
 
@@ -50,6 +41,6 @@ export function useSelection() {
         toggleSelect,
         selectItem,
         clearSelection,
-        isSelected
+        isSelected,
     };
 }

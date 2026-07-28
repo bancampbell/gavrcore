@@ -13,7 +13,6 @@
                     class="max-w-full max-h-[80vh] object-contain border-[3px] border-white/40 rounded-lg shadow-2xl"
                 />
 
-                <!-- Крестик закрытия -->
                 <button
                     @click="close"
                     class="!absolute !-top-1 !-right-1 !text-white !text-4xl hover:!text-gray-300 !transition-all !duration-200 !opacity-100 hover:!opacity-80 !border-none !bg-transparent hover:!bg-transparent !m-0 !p-0 !leading-none [text-shadow:_0_0_10px_rgba(0,0,0,0.8),_0_0_20px_rgba(0,0,0,0.6)]"
@@ -23,7 +22,6 @@
                 </button>
             </div>
 
-            <!-- Стрелка назад -->
             <button
                 v-if="lightboxService.images.value.length > 1"
                 @click.stop="prev"
@@ -34,7 +32,6 @@
                 </svg>
             </button>
 
-            <!-- Стрелка вперед -->
             <button
                 v-if="lightboxService.images.value.length > 1"
                 @click.stop="next"
@@ -45,7 +42,6 @@
                 </svg>
             </button>
 
-            <!-- Счетчик -->
             <div v-if="lightboxService.images.value.length > 1" class="absolute bottom-16 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
                 {{ lightboxService.currentIndex.value + 1 }} / {{ lightboxService.images.value.length }}
             </div>
@@ -54,12 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onBeforeUnmount, watch } from 'vue';
-import { container } from '@/services/container';
-import { TYPES } from '@/services/types';
-import type { LightboxService } from '@/services/LightboxService';
+import { computed, onMounted, onBeforeUnmount } from 'vue';
+import { lightboxService } from '@/services/LightboxService';
 
-const lightboxService = container.get<LightboxService>(TYPES.LightboxService);
+console.log('[GlobalLightbox] setup, lightboxService:', lightboxService);
 
 const currentImage = computed(() => lightboxService.currentImage);
 
@@ -75,6 +69,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
+    console.log('[GlobalLightbox] mounted');
     window.addEventListener('keydown', handleKeydown);
 });
 

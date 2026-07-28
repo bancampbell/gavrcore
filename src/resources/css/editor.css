@@ -169,6 +169,22 @@
     gap: 16px;
 }
 
+/* === СПИСКИ === */
+.tiptap ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+}
+
+.tiptap ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+}
+
+.tiptap li {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
 /* === ССЫЛКИ === */
 .tiptap a {
     color: #2563eb;
@@ -211,4 +227,24 @@
 .tiptap th {
     background: #f3f4f6;
     font-weight: 600;
+}
+
+/* === ЗАГОЛОВКИ === */
+.tiptap h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.tiptap h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+.tiptap h3 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
 }

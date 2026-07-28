@@ -8,6 +8,7 @@ export interface EditorPort {
     setTextSelection(from: number, to?: number): void;
     getNodeAt(pos: number): { type: string; attrs: Record<string, any> } | null;
     updateNode(pos: number, attrs: Record<string, any>): void;
+    deleteNode(pos: number): void;
     isActive(): boolean;
     onUpdate(callback: (html: string) => void): () => void;
     destroy(): void;

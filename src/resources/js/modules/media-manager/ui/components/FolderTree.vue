@@ -1,7 +1,7 @@
 <template>
     <div>
         <div
-            @click="handleClick"
+            @click="navigate"
             class="group text-sm py-1 px-2 rounded-md cursor-pointer flex items-center transition-colors"
             :class="isActive ? 'bg-[#e6f0fa] text-[#333] font-medium' : 'text-gray-700 hover:bg-[#e6f0fa] hover:text-[#333]'"
         >
@@ -21,7 +21,6 @@
             </span>
             <span v-else class="w-3.5 h-3.5 mr-1.5"></span>
 
-            <!-- Иконка папки SVG с фоном -->
             <span class="mr-2 inline-flex items-center justify-center">
                 <svg v-if="!isExpanded" class="w-5 h-5" fill="#D2B073" stroke="#D2B073" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -31,12 +30,12 @@
                 </svg>
             </span>
 
-            <span class="flex-1" @click="navigate">{{ folder.name }}</span>
+            <span class="flex-1">{{ folder.name }}</span>
         </div>
         <div v-if="hasChildren && isExpanded" class="ml-6">
             <FolderTree
                 v-for="child in children"
-                :key="child.path"
+                :key="child.path.toString()"
                 :folder="child"
                 :current-path="currentPath"
                 :all-folders="allFolders"
@@ -50,16 +49,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-
-interface Folder {
-    name: string;
-    path: string;
-}
+import type { MediaItem } from '../../domain/entities/MediaItem';
 
 const props = defineProps<{
-    folder: Folder;
+    folder: MediaItem;
     currentPath: string;
-    allFolders: Folder[];
+    allFolders: MediaItem[];
     expandedFolders?: string[];
 }>();
 
@@ -68,47 +63,35 @@ const emit = defineEmits<{
     (e: 'toggle-expand', path: string): void;
 }>();
 
-// Проверяем, раскрыта ли папка (из пропса expandedFolders или по умолчанию)
 const isExpanded = computed(() => {
     if (props.expandedFolders) {
-        return props.expandedFolders.includes(props.folder.path);
+        return props.expandedFolders.includes(props.folder.getPathString());
     }
     return false;
 });
 
-// Проверяем, активна ли текущая папка
-const isActive = computed(() => props.currentPath === props.folder.path);
+const isActive = computed(() => props.currentPath === props.folder.getPathString());
 
-// Получаем дочерние папки
 const children = computed(() => {
     return props.allFolders.filter(folder => {
-        const folderParts = folder.path.split('/');
-        const currentParts = props.folder.path.split('/');
+        const folderParts = folder.getPathString().split('/');
+        const currentParts = props.folder.getPathString().split('/');
 
         if (folderParts.length !== currentParts.length + 1) return false;
 
-        return folder.path.startsWith(props.folder.path + '/');
+        return folder.getPathString().startsWith(props.folder.getPathString() + '/');
     });
 });
 
 const hasChildren = computed(() => children.value.length > 0);
 
-// Переключение раскрытия папки
 const toggleExpand = () => {
     if (hasChildren.value) {
-        emit('toggle-expand', props.folder.path);
+        emit('toggle-expand', props.folder.getPathString());
     }
 };
 
-// Навигация в папку
 const navigate = () => {
-    emit('navigate', props.folder.path);
-};
-
-// Обработчик клика по элементу
-const handleClick = (event: MouseEvent) => {
-    // Если кликнули не по стрелке (у стрелки есть stopPropagation)
-    // то просто навигируем
-    navigate();
+    emit('navigate', props.folder.getPathString());
 };
 </script>

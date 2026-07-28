@@ -1,6 +1,3 @@
-// resources/js/services/LightboxService.ts
-
-import { injectable } from 'inversify';
 import { ref, type Ref } from 'vue';
 
 export interface LightboxImage {
@@ -8,7 +5,6 @@ export interface LightboxImage {
     alt: string;
 }
 
-@injectable()
 export class LightboxService {
     public isOpen: Ref<boolean> = ref(false);
     public images: Ref<LightboxImage[]> = ref([]);
@@ -40,3 +36,5 @@ export class LightboxService {
         return this.images.value[this.currentIndex.value] || null;
     }
 }
+
+export const lightboxService = new LightboxService();

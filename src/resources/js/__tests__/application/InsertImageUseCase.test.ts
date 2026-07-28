@@ -19,6 +19,7 @@ describe('InsertImageUseCase', () => {
             setTextSelection: vi.fn(),
             getNodeAt: vi.fn(),
             updateNode: vi.fn(),
+            deleteNode: vi.fn(),
             isActive: vi.fn().mockReturnValue(true),
             onUpdate: vi.fn(),
             destroy: vi.fn(),
@@ -29,6 +30,7 @@ describe('InsertImageUseCase', () => {
             updateImage: vi.fn(),
             getImageAt: vi.fn(),
             findImagePosition: vi.fn(),
+            findImageById: vi.fn(),
         };
 
         useCase = new InsertImageUseCase(editorPort, imagePort);

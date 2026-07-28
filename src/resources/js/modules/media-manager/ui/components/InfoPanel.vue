@@ -1,12 +1,9 @@
-<!-- resources/js/Pages/Admin/MediaManager/components/InfoPanel.vue -->
-
 <template>
     <div class="w-72 border-l border-gray-200 bg-white flex flex-col overflow-hidden">
         <div class="px-4 py-2 border-b border-gray-200 bg-gray-50 text-sm font-medium text-gray-600">
             Подробная информация
         </div>
         <div class="flex-1 overflow-y-auto p-3">
-            <!-- Массовый выбор -->
             <div v-if="selectedItemsCount > 1" class="space-y-4">
                 <div>
                     <h3 class="font-medium text-gray-800 text-sm">Выбрано элементов: {{ selectedItemsCount }}</h3>
@@ -21,7 +18,6 @@
                 </div>
             </div>
 
-            <!-- Один элемент -->
             <div v-else-if="selectedItem" class="space-y-4">
                 <div>
                     <h3 class="font-medium text-gray-800 text-sm break-all">{{ selectedItem.name }}</h3>
@@ -48,7 +44,6 @@
                 </div>
             </div>
 
-            <!-- Пусто -->
             <div v-else class="text-center text-gray-400 py-12">
                 <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -60,8 +55,8 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate, formatFileSize } from '../constants';
-import type { MediaItem } from '../types';
+import { formatDate, formatFileSize } from '@/modules/media-manager/ui/constants';
+import type { MediaItem } from '../../domain/entities/MediaItem';
 
 defineProps<{
     selectedItem: MediaItem | null;

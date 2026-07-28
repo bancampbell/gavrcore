@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
-import MediaManager from '../../MediaManager/Index.vue';
+import MediaManager from '@/modules/media-manager/ui/Index.vue';
 
 const props = defineProps<{
     show: boolean;

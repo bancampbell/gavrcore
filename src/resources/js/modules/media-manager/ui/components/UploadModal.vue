@@ -1,5 +1,3 @@
-<!-- resources/js/Pages/Admin/MediaManager/components/UploadModal.vue -->
-
 <template>
     <div v-if="show" class="modal-overlay">
         <div class="upload-modal">
@@ -20,12 +18,11 @@
                     <p class="upload-dropzone-text">Перетащите файлы сюда</p>
                 </div>
 
-                <input
-                    ref="fileInput"
-                    type="file"
-                    multiple
-                    class="hidden"
-                    @change="onFileSelect"
+                <input                    ref="fileInput"
+                                          type="file"
+                                          multiple
+                                          class="hidden"
+                                          @change="onFileSelect"
                 />
 
                 <div v-if="selectedFiles && selectedFiles.length > 0" class="upload-files-list">
@@ -59,7 +56,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { formatFileSize } from '../constants';
+import { formatFileSize } from '@/modules/media-manager/ui/constants';
 
 const props = defineProps<{
     show: boolean;
@@ -76,10 +73,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 
 watch(() => props.show, (val) => {
     if (!val) {
-        selectedFiles.value = null;
-        if (fileInput.value) {
-            fileInput.value.value = '';
-        }
+        clearFiles();
     }
 });
 
@@ -93,11 +87,23 @@ const onFileSelect = (event: Event) => {
 };
 
 const onClose = () => emit('close');
+
 const onUpload = () => {
     if (selectedFiles.value) {
         emit('upload', selectedFiles.value);
     }
 };
+
+const clearFiles = () => {
+    selectedFiles.value = null;
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
+};
+
+defineExpose({
+    clearFiles,
+});
 </script>
 
 <style scoped>

@@ -7,31 +7,7 @@ export function useEditor() {
     const context = useEditorContext();
 
     if (!context) {
-        return {
-            selectedImage: readonly(ref(null)) as Readonly<Ref<ImageData | null>>,
-            selectedImagePos: readonly(ref(-1)) as Readonly<Ref<number>>,
-            selectedLink: readonly(ref(null)) as Readonly<Ref<LinkData | null>>,
-            isHtmlMode: ref(false),
-            htmlContent: ref(''),
-            getHTML: () => '',
-            insertContent: () => {},
-            getCursorPosition: () => 0,
-            insertImage: () => {},
-            updateImage: () => {},
-            selectImage: () => {},
-            selectImageAt: () => {},
-            clearImageSelection: () => {},
-            insertLink: () => {},
-            updateLink: () => {},
-            selectLink: () => {},
-            clearLinkSelection: () => {},
-            getCurrentHtml: () => '',
-            applyHtml: () => {},
-            deleteNode: () => {},
-            editorAdapter: null as any,
-            imageAdapter: null as any,
-            linkAdapter: null as any,
-        };
+        throw new Error('Editor context not provided. Make sure you have called provideEditorContext() in the parent component.');
     }
 
     const {

@@ -13,6 +13,8 @@
                 </div>
             </main>
         </div>
+
+        <ToastContainer />
     </div>
 </template>
 
@@ -22,6 +24,7 @@ import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 import TopNav from '../components/Admin/TopNav.vue';
 import Sidebar from '../components/Admin/Sidebar.vue';
+import ToastContainer from '@/components/shared/ToastContainer.vue';
 
 defineProps({
     user: Object

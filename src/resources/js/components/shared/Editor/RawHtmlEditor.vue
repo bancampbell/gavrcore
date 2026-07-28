@@ -20,8 +20,6 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { EditorView, basicSetup } from 'codemirror';
 import { html } from '@codemirror/lang-html';
 import { EditorView as EditorViewExt } from '@codemirror/view';
-import { format } from 'prettier/standalone';
-import parserHtml from 'prettier/plugins/html';
 
 const props = defineProps<{
     modelValue: string;
@@ -56,23 +54,12 @@ onMounted(async () => {
     await nextTick();
     if (!codeEditorRef.value) return;
 
-    let formattedHtml = props.modelValue || '';
+    const initialHtml = props.modelValue || '';
 
-    try {
-        formattedHtml = await format(formattedHtml, {
-            parser: 'html',
-            plugins: [parserHtml],
-            printWidth: 80,
-            tabWidth: 2,
-            useTabs: false,
-        });
-    } catch (e) {
-        console.warn('HTML formatting failed:', e);
-    }
-    currentValue.value = formattedHtml;
+    currentValue.value = initialHtml;
 
     codeEditorView = new EditorView({
-        doc: formattedHtml,
+        doc: initialHtml,
         extensions: [
             basicSetup,
             html(),
