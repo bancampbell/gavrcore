@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Model;
+
+class Product extends Model
+{
+    use HasUuids;
+
+    protected $fillable = ['name', 'description', 'price', 'sku', 'status', 'stock', 'category_id'];
+    protected $casts = ['price' => 'integer'];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+}

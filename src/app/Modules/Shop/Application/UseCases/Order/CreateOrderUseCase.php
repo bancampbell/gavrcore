@@ -6,39 +6,40 @@ use Modules\Shop\Domain\Entities\Order;
 use Modules\Shop\Domain\Repositories\CartRepositoryInterface;
 use Modules\Shop\Domain\Repositories\OrderRepositoryInterface;
 use Modules\Shop\Domain\Services\PriceService;
+use Modules\Shop\Domain\ValueObjects\Money;
 use Modules\Shop\Application\DTO\OrderData;
 use Illuminate\Support\Str;
 
-/**
- * Создать заказ из корзины
- */
 class CreateOrderUseCase
 {
     public function __construct(
-        private CartRepositoryInterface $cartRepo,
         private OrderRepositoryInterface $orderRepo,
+        private CartRepositoryInterface $cartRepo,
         private PriceService $priceService
     ) {}
 
-    public function execute(string $sessionId, OrderData $data, ?string $userId = null): Order
+    public function execute(string $sessionId, OrderData $data): Order
     {
         $cart = $this->cartRepo->get($sessionId);
-        if (!$cart || empty($cart->getItems())) {
-            throw new \InvalidArgumentException('Cart is empty');
+        if (!$cart || count($cart->getItems()) === 0) {
+            throw new \InvalidArgumentException('Корзина пуста');
         }
 
         $total = $this->priceService->calculateTotal($cart->getItems());
-        $items = array_map(fn($item) => [
-            'product_id' => $item->getProductId(),
-            'quantity' => $item->getQuantity(),
-            'price' => $item->getPrice(),
-        ], $cart->getItems());
+        $items = array_map(
+            fn($item) => [
+                'product_id' => $item->getProductId(),
+                'price' => $item->getPrice(),
+                'quantity' => $item->getQuantity(),
+            ],
+            $cart->getItems()
+        );
 
         $order = new Order(
             id: Str::uuid()->toString(),
-            userId: $userId,
+            userId: null, // можно добавить авторизованного пользователя позже
             items: $items,
-            total: new \Modules\Shop\Domain\ValueObjects\Money($total),
+            total: new Money($total),
             status: 'pending',
             email: $data->email,
             phone: $data->phone,
