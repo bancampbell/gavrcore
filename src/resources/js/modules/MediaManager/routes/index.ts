@@ -1,4 +1,4 @@
-// resources/js/modules/media-manager/routes/index.ts
+// resources/js/modules/MediaManager/routes/index.ts
 
 export const mediaRoutes = {
     index: 'admin.media.index',

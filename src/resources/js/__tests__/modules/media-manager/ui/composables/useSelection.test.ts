@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { useSelection } from '@/modules/media-manager/ui/composables/useSelection';
-import type { MediaItem } from '@/modules/media-manager/ui/types';
+import { useSelection } from '@/modules/MediaManager/ui/composables/useSelection';
+import type { MediaItem } from '@/modules/MediaManager/ui/types';
 
 const mockItem = (path: string, type: 'folder' | 'file' = 'file'): MediaItem => ({
     name: path,

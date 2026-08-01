@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mediaApi } from '@/modules/media-manager/infrastructure/api/media-api';
+import { mediaApi } from '@/modules/MediaManager/infrastructure/api/media-api';
 
 describe('mediaApi', () => {
     let fetchSpy: any;

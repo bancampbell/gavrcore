@@ -26,7 +26,7 @@ class MediaManagerServiceProvider extends ServiceProvider
 
         $this->mergeConfigFrom(
             __DIR__ . '/../../Config/media-manager.php',
-            'media-manager'
+            'MediaManager'
         );
     }
 

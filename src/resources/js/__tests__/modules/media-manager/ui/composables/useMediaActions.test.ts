@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useMediaActions } from '@/modules/media-manager/ui/composables/useMediaActions';
+import { useMediaActions } from '@/modules/MediaManager/ui/composables/useMediaActions';
 
 describe('useMediaActions', () => {
     beforeEach(() => {

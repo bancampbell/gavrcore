@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { usePicker } from '@/modules/media-manager/ui/composables/usePicker';
-import type { MediaItem } from '@/modules/media-manager/ui/types';
+import { usePicker } from '@/modules/MediaManager/ui/composables/usePicker';
+import type { MediaItem } from '@/modules/MediaManager/ui/types';
 
 const mockFile = (path: string): MediaItem => ({
     name: path,

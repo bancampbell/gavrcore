@@ -15,7 +15,7 @@ class UploadFileRequest extends FormRequest
 
     public function rules(): array
     {
-        $allowedMimetypes = config('media-manager.allowed_mimetypes', [
+        $allowedMimetypes = config('MediaManager.allowed_mimetypes', [
             'image/jpeg',
             'image/png',
             'image/gif',
@@ -24,8 +24,8 @@ class UploadFileRequest extends FormRequest
             'application/pdf',
         ]);
 
-        $maxFileSize = config('media-manager.max_file_size', 100 * 1024); // KB
-        $maxUploadFiles = config('media-manager.max_upload_files', 20);
+        $maxFileSize = config('MediaManager.max_file_size', 100 * 1024); // KB
+        $maxUploadFiles = config('MediaManager.max_upload_files', 20);
 
         return [
             'files' => ['required', 'array', 'max:' . $maxUploadFiles],
