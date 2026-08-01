@@ -11,25 +11,34 @@
             </div>
 
             <div class="upload-modal-body">
-                <div class="upload-dropzone" @click="triggerFileInput">
+                <div
+                    class="upload-dropzone"
+                    :class="{ 'border-blue-500 bg-blue-50': isDragging }"
+                    @click="triggerFileInput"
+                    @dragover.prevent
+                    @drop.prevent="onDrop"
+                    @dragenter.prevent="isDragging = true"
+                    @dragleave.prevent="isDragging = false"
+                >
                     <svg class="upload-dropzone-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <p class="upload-dropzone-text">Перетащите файлы сюда</p>
+                    <p class="upload-dropzone-text">Перетащите файлы сюда или нажмите для выбора</p>
                 </div>
 
-                <input                    ref="fileInput"
-                                          type="file"
-                                          multiple
-                                          class="hidden"
-                                          @change="onFileSelect"
+                <input
+                    ref="fileInput"
+                    type="file"
+                    multiple
+                    class="hidden"
+                    @change="onFileSelect"
                 />
 
                 <div v-if="selectedFiles && selectedFiles.length > 0" class="upload-files-list">
                     <div class="upload-files-header">Выбрано файлов: {{ selectedFiles.length }}</div>
                     <div class="upload-files-items">
-                        <div v-for="i in Array.from(selectedFiles)" :key="i.name" class="upload-file-item">
-                            {{ i.name }} ({{ formatFileSize(i.size) }})
+                        <div v-for="file in selectedFiles" :key="file.name" class="upload-file-item">
+                            {{ file.name }} ({{ formatFileSize(file.size) }})
                         </div>
                     </div>
                 </div>
@@ -56,7 +65,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { formatFileSize } from '@/modules/media-manager/ui/constants';
+import { formatFileSize } from '../types';
 
 const props = defineProps<{
     show: boolean;
@@ -70,6 +79,7 @@ const emit = defineEmits<{
 
 const selectedFiles = ref<FileList | null>(null);
 const fileInput = ref<HTMLInputElement | null>(null);
+const isDragging = ref(false);
 
 watch(() => props.show, (val) => {
     if (!val) {
@@ -84,6 +94,13 @@ const triggerFileInput = () => {
 const onFileSelect = (event: Event) => {
     const target = event.target as HTMLInputElement;
     selectedFiles.value = target.files;
+};
+
+const onDrop = (event: DragEvent) => {
+    isDragging.value = false;
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+        selectedFiles.value = event.dataTransfer.files;
+    }
 };
 
 const onClose = () => emit('close');
@@ -169,11 +186,16 @@ defineExpose({
     min-height: 300px;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
 }
 
-.upload-dropzone:hover {
+.upload-dropzone:hover,
+.upload-dropzone.border-blue-500 {
     border-color: #3b82f6;
+}
+
+.upload-dropzone.bg-blue-50 {
+    background-color: #eff6ff;
 }
 
 .upload-dropzone-icon {

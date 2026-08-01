@@ -1,200 +1,216 @@
-import { ref, computed } from 'vue';
-import { useFileOperations, type NotificationFn } from './useFileOperations';
-import { useSearch } from './useSearch';
-import { useSorting } from './useSorting';
+import { computed } from 'vue';
+import { useMediaActions } from './useMediaActions';
+import { useContents } from './useContents';
 import { useSelection } from './useSelection';
-import { useMediaManagerUI } from './useMediaManagerUI';
-import { MediaItem } from '../../domain/entities/MediaItem';
-import { FilePath } from '../../domain/values/FilePath';
+import { useNavigation } from './useNavigation';
+import { useModals } from './useModals';
+import { usePicker } from './usePicker';
+import type { MediaItem } from '../types';
 
 export function useMediaManager(
-    showNotification: NotificationFn,
+    showNotification: (message: string, type: 'success' | 'error') => void,
     mode: 'full' | 'picker' = 'full',
     acceptedFiles?: string[],
 ) {
-    const allFolders = ref<MediaItem[]>([]);
-    const contents = ref<MediaItem[]>([]);
-    const currentPath = ref('');
-    const selectedFileForPicker = ref<{ url: string; name: string; path: string } | null>(null);
-
-    const ui = useMediaManagerUI();
-    const fileOps = useFileOperations(showNotification);
-    const search = useSearch();
-    const sorting = useSorting();
+    const navigation = useNavigation();
+    const actions = useMediaActions();
+    const contents = useContents(actions, acceptedFiles, mode);
     const selection = useSelection();
+    const modals = useModals();
+    const picker = usePicker();
 
-    const rootFolders = computed(() => allFolders.value.filter(f => f && f.path && !f.path.toString().includes('/')));
-    const folders = computed(() => contents.value.filter(i => i && i.isFolder()));
-    const files = computed(() => {
-        let allFiles = contents.value.filter(i => i && i.isFile());
-        if (acceptedFiles && acceptedFiles.length > 0 && mode === 'picker') {
-            allFiles = allFiles.filter(file => acceptedFiles.includes(file.getExtension()));
+    const folderTree = computed((): Map<string, MediaItem[]> => {
+        const map = new Map<string, MediaItem[]>();
+        const sorted = [...contents.allFolders.value].sort((a, b) => a.name.localeCompare(b.name));
+
+        for (const folder of sorted) {
+            const pathStr = folder.path;
+            const lastSlash = pathStr.lastIndexOf('/');
+            const parentPath = lastSlash > 0 ? pathStr.substring(0, lastSlash) : '';
+
+            if (!map.has(parentPath)) {
+                map.set(parentPath, []);
+            }
+            const children = map.get(parentPath);
+            if (children) {
+                children.push(folder);
+            }
         }
-        return allFiles;
+
+        return map;
     });
 
-    const filteredFolders = computed(() => {
-        const filtered = search.filterItems(folders.value, search.searchQuery.value);
-        return filtered.filter(f => f && f.name);
+    const rootFolders = computed((): MediaItem[] => {
+        return folderTree.value.get('') || [];
     });
 
-    const filteredFiles = computed(() => {
-        const filtered = search.filterItems(files.value, search.searchQuery.value);
-        return filtered.filter(f => f && f.name);
-    });
+    const currentPathDisplay = computed(() => navigation.currentPath.value || '/');
+    const canGoBack = computed(() => navigation.currentPath.value !== '');
+    const isAscActive = computed(() => contents.sortOrder.value === 'asc');
+    const isDescActive = computed(() => contents.sortOrder.value === 'desc');
 
-    const sortedFilteredFolders = computed(() => {
-        const sorted = sorting.sortItems(filteredFolders.value);
-        return sorted.filter(f => f && f.name);
-    });
+    const isSelected = (path: string) => {
+        if (mode === 'picker') {
+            return picker.isPicked(path) || selection.selectedItems.value.includes(path);
+        }
+        return selection.isSelected(path);
+    };
 
-    const sortedFilteredFiles = computed(() => {
-        const sorted = sorting.sortItems(filteredFiles.value);
-        return sorted.filter(f => f && f.name);
-    });
-
-    const currentPathDisplay = computed(() => currentPath.value || '/');
-    const foldersCount = computed(() => folders.value.length);
-    const filesCount = computed(() => files.value.length);
-    const canGoBack = computed(() => currentPath.value !== '');
-
-    const loadData = async () => {
-        allFolders.value = await fileOps.loadFolders();
-        contents.value = await fileOps.loadContents(currentPath.value);
+    const loadData = async (page: number = 1) => {
+        if (contents.allFolders.value.length === 0) {
+            await contents.loadFolders();
+        }
+        await contents.load(navigation.currentPath.value, page);
         selection.clearSelection();
         if (mode === 'picker') {
-            selectedFileForPicker.value = null;
+            picker.unpickFile();
         }
     };
 
     const navigateToFolder = async (path: string) => {
-        currentPath.value = path;
-        contents.value = await fileOps.loadContents(path);
-        selection.clearSelection();
-        if (mode === 'picker') {
-            selectedFileForPicker.value = null;
-        }
+        navigation.navigateToFolder(path);
+        await loadData(1);
     };
 
     const goBack = async () => {
-        if (!currentPath.value) return;
-        const path = FilePath.create(currentPath.value);
-        const parent = path.getParent();
-        currentPath.value = parent.toString();
-        contents.value = await fileOps.loadContents(currentPath.value);
-        selection.clearSelection();
-        if (mode === 'picker') {
-            selectedFileForPicker.value = null;
-        }
+        navigation.goBack();
+        await loadData(1);
     };
 
     const goHome = async () => {
-        currentPath.value = '';
-        contents.value = await fileOps.loadContents('');
-        selection.clearSelection();
-        if (mode === 'picker') {
-            selectedFileForPicker.value = null;
-        }
+        navigation.goHome();
+        await loadData(1);
     };
 
     const handleCreateFolder = async (folderName: string) => {
         if (!folderName.trim()) return;
-        const success = await fileOps.createFolder(folderName, currentPath.value);
-        if (success) {
-            ui.closeCreateFolderModal();
+        const result = await actions.createFolder(folderName, navigation.currentPath.value);
+        if (result.ok) {
+            modals.closeCreateFolderModal();
+            showNotification('Папка создана', 'success');
             await loadData();
+        } else {
+            showNotification(result.error || 'Ошибка создания папки', 'error');
         }
     };
 
     const handleRename = async (newName: string) => {
-        if (!ui.renameItemData.value || !newName.trim()) return;
-        if (newName === ui.renameItemData.value.name) {
+        if (!modals.renameItemData.value || !newName.trim()) return;
+        if (newName === modals.renameItemData.value.name) {
             showNotification('Имя не изменено', 'error');
-            ui.closeRenameModal();
+            modals.closeRenameModal();
             return;
         }
 
-        const success = await fileOps.renameItem(ui.renameItemData.value.getPathString(), newName);
-        if (success) {
-            ui.closeRenameModal();
+        const path = modals.renameItemData.value.path;
+        const result = await actions.renameItem(path, newName);
+        if (result.ok) {
+            modals.closeRenameModal();
+            showNotification('Переименовано успешно', 'success');
             await loadData();
+        } else {
+            showNotification(result.error || 'Ошибка переименования', 'error');
         }
     };
 
     const handleDelete = async () => {
         if (selection.selectedItems.value.length > 1) {
-            const success = await fileOps.deleteItems(selection.selectedItems.value);
-            if (success) {
-                ui.closeDeleteModal();
+            const result = await actions.deleteItems(selection.selectedItems.value);
+            if (result.ok) {
+                modals.closeDeleteModal();
+                showNotification(`Удалено ${selection.selectedItems.value.length} элементов`, 'success');
                 await loadData();
+            } else {
+                showNotification(result.error || 'Ошибка удаления', 'error');
             }
             return;
         }
 
-        if (!ui.deleteItemData.value) {
+        if (!modals.deleteItemData.value) {
             showNotification('Не выбран элемент для удаления', 'error');
             return;
         }
 
-        const success = await fileOps.deleteItem(ui.deleteItemData.value.getPathString());
-        if (success) {
-            ui.closeDeleteModal();
+        const path = modals.deleteItemData.value.path;
+        const result = await actions.deleteItem(path);
+        if (result.ok) {
+            modals.closeDeleteModal();
+            showNotification('Удалено успешно', 'success');
             await loadData();
+        } else {
+            showNotification(result.error || 'Ошибка удаления', 'error');
         }
     };
 
     const handleCopy = async () => {
-        if (!selection.selectedItem.value) return;
-        const success = await fileOps.copyItem(selection.selectedItem.value.getPathString());
-        if (success) {
+        if (!selection.selectedItem.value) {
+            showNotification('Не выбран элемент для копирования', 'error');
+            return;
+        }
+
+        const path = selection.selectedItem.value.path;
+        const result = await actions.copyItem(path);
+        if (result.ok) {
+            showNotification('Скопировано успешно', 'success');
             await loadData();
+        } else {
+            showNotification(result.error || 'Ошибка копирования', 'error');
         }
     };
 
     const handleUpload = async (files: FileList) => {
-        if (!files || files.length === 0) return;
-        const success = await fileOps.uploadFile(files, currentPath.value);
-        if (success) {
-            ui.closeUploadModal();
-            fileOps.setUploadFiles(null);
+        if (!files || files.length === 0) return false;
+        const result = await actions.uploadFile(files, navigation.currentPath.value);
+        if (result.ok) {
+            modals.closeUploadModal();
+            showNotification('Файлы загружены успешно', 'success');
             await loadData();
+            return true;
+        } else {
+            showNotification(result.error || 'Ошибка загрузки', 'error');
+            return false;
         }
-    };
-
-    const handleFileSelect = (event: Event) => {
-        const target = event.target as HTMLInputElement;
-        fileOps.setUploadFiles(target.files);
     };
 
     const selectFolder = (item: MediaItem) => {
         if (!item) return;
         selection.selectItem(item);
-        showNotification(`Выбрана папка: ${item.name}`, 'success');
     };
 
     const openFolder = (item: MediaItem) => {
         if (!item) return;
-        navigateToFolder(item.getPathString());
+        navigateToFolder(item.path);
     };
 
     const selectFileItem = (item: MediaItem) => {
         if (!item) return;
         if (mode === 'picker') {
-            selectedFileForPicker.value = {
-                url: item.getUrl(),
-                name: item.name,
-                path: item.getPathString(),
-            };
-            selection.selectItem(item);
+            const isCurrentlySelected = picker.isPicked(item.path);
+            const fileData = picker.togglePick(item, isCurrentlySelected);
+            if (fileData) {
+                selection.selectedItems.value = [item.path];
+                selection.selectedItem.value = item;
+            } else {
+                selection.clearSelection();
+            }
         } else {
             selection.selectItem(item);
         }
     };
 
-    const getSelectedFile = () => selectedFileForPicker.value;
-    const clearSelectedFile = () => {
-        selectedFileForPicker.value = null;
-        selection.clearSelection();
+    const toggleSelect = (path: string, item: MediaItem) => {
+        if (mode === 'picker' && item.type === 'file') {
+            const isCurrentlySelected = picker.isPicked(path) || selection.selectedItems.value.includes(path);
+            const fileData = picker.togglePick(item, isCurrentlySelected);
+            if (fileData) {
+                selection.selectedItems.value = [path];
+                selection.selectedItem.value = item;
+            } else {
+                selection.clearSelection();
+            }
+        } else {
+            selection.toggleSelect(path, item);
+        }
     };
 
     const openDeleteModal = () => {
@@ -204,9 +220,9 @@ export function useMediaManager(
         }
 
         if (selection.selectedItems.value.length > 1) {
-            ui.openDeleteModal(null);
+            modals.openDeleteModal(null);
         } else if (selection.selectedItem.value) {
-            ui.openDeleteModal(selection.selectedItem.value as MediaItem);
+            modals.openDeleteModal(selection.selectedItem.value);
         }
     };
 
@@ -215,60 +231,61 @@ export function useMediaManager(
             showNotification('Ничего не выбрано для переименования', 'error');
             return;
         }
-        ui.openRenameModal(selection.selectedItem.value as MediaItem);
+        modals.openRenameModal(selection.selectedItem.value);
     };
 
     return {
-        allFolders,
-        contents,
-        currentPath,
-        selectedFileForPicker,
-        showCreateModal: ui.showCreateModal,
-        showRenameModal: ui.showRenameModal,
-        showDeleteModal: ui.showDeleteModal,
-        showUploadModal: ui.showUploadModal,
-        renameItemData: ui.renameItemData,
-        deleteItemData: ui.deleteItemData,
-        showSearch: search.showSearch,
-        searchQuery: search.searchQuery,
-        sortOrder: sorting.sortOrder,
+        allFolders: contents.allFolders,
+        contents: contents.contents,
+        currentPath: navigation.currentPath,
+        selectedFileForPicker: picker.selectedFileForPicker,
+        showCreateModal: modals.showCreateModal,
+        showRenameModal: modals.showRenameModal,
+        showDeleteModal: modals.showDeleteModal,
+        showUploadModal: modals.showUploadModal,
+        renameItemData: modals.renameItemData,
+        deleteItemData: modals.deleteItemData,
+        showSearch: contents.showSearch,
+        searchQuery: contents.searchQuery,
+        sortOrder: contents.sortOrder,
         selectedItems: selection.selectedItems,
         selectedItem: selection.selectedItem,
-        uploadFiles: fileOps.uploadFiles,
-        uploadLoading: fileOps.uploadLoading,
-        loadingFolders: fileOps.loadingFolders,
-        loadingContents: fileOps.loadingContents,
+        uploadLoading: actions.loading,
+        foldersLoading: contents.foldersLoading,
+        loadingContents: contents.loading,
         rootFolders,
-        sortedFilteredFolders,
-        sortedFilteredFiles,
+        folderTree,
+        sortedFilteredFolders: contents.sortedFilteredFolders,
+        sortedFilteredFiles: contents.sortedFilteredFiles,
         currentPathDisplay,
-        foldersCount,
-        filesCount,
+        foldersCount: contents.foldersCount,
+        filesCount: contents.filesCount,
+        totalItemsCount: contents.totalCount,
         canGoBack,
-        isAscActive: sorting.isAscActive,
-        isDescActive: sorting.isDescActive,
+        isAscActive,
+        isDescActive,
+        paginatedData: contents.paginatedData,
         loadData,
+        loadFolders: contents.loadFolders,
         navigateToFolder,
         goBack,
         goHome,
-        openCreateFolderModal: ui.openCreateFolderModal,
+        openCreateFolderModal: modals.openCreateFolderModal,
         handleCreateFolder,
         openRenameModal,
         handleRename,
         openDeleteModal,
         handleDelete,
         handleCopy,
-        openUploadModal: ui.openUploadModal,
+        openUploadModal: modals.openUploadModal,
         handleUpload,
-        handleFileSelect,
-        clearSearch: search.clearSearch,
-        openSearch: search.openSearch,
-        setSortOrder: sorting.setSortOrder,
-        toggleSelect: selection.toggleSelect,
+        clearSearch: contents.clearSearch,
+        openSearch: contents.openSearch,
+        setSortOrder: contents.setSortOrder,
+        toggleSelect,
         selectFolder,
         openFolder,
         selectFileItem,
-        getSelectedFile,
-        clearSelectedFile,
+        isSelected,
     };
 }

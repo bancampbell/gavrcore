@@ -1,0 +1,38 @@
+<?php
+
+namespace Modules\MediaManager\Infrastructure\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $path
+ * @property string|null $type
+ * @property int|null $size
+ * @property string|null $mime_type
+ * @property int|null $parent_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+class MediaModel extends Model
+{
+    protected $table = 'media';
+
+    protected $fillable = [
+        'name',
+        'path',
+        'type',
+        'size',
+        'mime_type',
+        'parent_id',
+    ];
+
+    protected $casts = [
+        'size' => 'integer',
+        'parent_id' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+}

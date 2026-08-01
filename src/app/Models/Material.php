@@ -33,6 +33,7 @@ class Material extends Model
         'show_views',
         'use_global_settings',
         'template',
+        'alias',
         // SEO поля
         'meta_title',
         'meta_description',

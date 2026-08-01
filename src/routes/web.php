@@ -8,7 +8,6 @@ use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\MaterialController;
-use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\SettingController;
@@ -71,10 +70,6 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Upload endpoint for drag & drop
-    Route::post('/admin/upload', [MediaController::class, 'uploadFile'])->name('admin.upload');
-    Route::post('/admin/upload/multiple', [MediaController::class, 'uploadMultiple'])->name('admin.upload.multiple');
-
     // Gallery Manager
     Route::get('/admin/galleries', [GalleryController::class, 'index'])->name('admin.galleries.index');
     Route::get('/admin/galleries/list', [GalleryController::class, 'list'])->name('admin.galleries.list');
@@ -107,19 +102,6 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/materials/{material}/edit', [MaterialController::class, 'edit'])->name('admin.materials.edit');
     Route::put('/admin/materials/{material}', [MaterialController::class, 'update'])->name('admin.materials.update');
     Route::get('/admin/materials/list', [MaterialController::class, 'list']);
-
-    Route::prefix('admin/media')->name('admin.media.')->group(function () {
-        Route::get('/', [MediaController::class, 'index'])->name('index');
-        Route::get('/contents', [MediaController::class, 'getContents']);
-        Route::post('/folder', [MediaController::class, 'createFolder']);
-        Route::get('/folders', [MediaController::class, 'getFolders']);
-
-        Route::post('/rename', [MediaController::class, 'renameItem']);
-        Route::delete('/item', [MediaController::class, 'deleteItem']);
-        Route::delete('/items', [MediaController::class, 'deleteMultiple']);
-        Route::post('/copy', [MediaController::class, 'copyItem']);
-        Route::post('/upload', [MediaController::class, 'uploadFile']);
-    });
 
     // Menu Manager Pages (Inertia)
     Route::get('/admin/menu', [MenuTypeController::class, 'index'])->name('admin.menu.index');

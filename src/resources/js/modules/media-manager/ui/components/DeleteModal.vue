@@ -1,5 +1,3 @@
-<!-- resources/js/Pages/Admin/MediaManager/components/DeleteModal.vue -->
-
 <template>
     <div v-if="show" class="modal-overlay" @click.self="onClose">
         <div class="modal-content">
@@ -20,7 +18,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+
+const props = defineProps<{
     show: boolean;
     itemName: string;
 }>();
@@ -29,6 +29,13 @@ const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'confirm'): void;
 }>();
+
+const message = computed(() => {
+    if (props.itemName) {
+        return `Вы уверены, что хотите удалить "${props.itemName}"?`;
+    }
+    return 'Вы уверены, что хотите удалить выбранные элементы?';
+});
 
 const onClose = () => emit('close');
 const onConfirm = () => emit('confirm');

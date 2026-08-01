@@ -218,6 +218,10 @@ class MaterialController extends Controller
             $data['slug'] = Str::slug($data['title']);
         }
 
+        // ===== ДОБАВЛЕНО: alias =====
+        $data['alias'] = $data['alias'] ?? $data['slug'] ?? '';
+        // =============================
+
         $data['show_date'] = $data['show_date'] ?? true;
         $data['show_author'] = $data['show_author'] ?? true;
         $data['show_category'] = $data['show_category'] ?? true;
@@ -265,6 +269,12 @@ class MaterialController extends Controller
         if (isset($data['title']) && !empty($data['title'])) {
             $data['slug'] = $data['slug'] ?? Str::slug($data['title']);
         }
+
+        // ===== ДОБАВЛЕНО: alias при обновлении =====
+        if (isset($data['slug']) || isset($data['title'])) {
+            $data['alias'] = $data['alias'] ?? $data['slug'] ?? $material->slug ?? '';
+        }
+        // ===========================================
 
         if (isset($data['show_on_homepage']) && $data['show_on_homepage']) {
             Material::where('id', '!=', $material->id)

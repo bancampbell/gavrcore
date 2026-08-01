@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { MediaItem } from '../../domain/entities/MediaItem';
+import type { MediaItem } from '../types';
 
 export function useSelection() {
     const selectedItems = ref<string[]>([]);
@@ -12,7 +12,7 @@ export function useSelection() {
             selectedItem.value = item;
         } else {
             selectedItems.value.splice(index, 1);
-            if (selectedItem.value?.getPathString() === path) {
+            if (selectedItem.value?.path === path) {
                 selectedItem.value = null;
             }
         }
@@ -20,7 +20,7 @@ export function useSelection() {
 
     const selectItem = (item: MediaItem) => {
         selectedItem.value = item;
-        const path = item.getPathString();
+        const path = item.path;
         if (!selectedItems.value.includes(path)) {
             selectedItems.value.push(path);
         }

@@ -117,25 +117,25 @@
                                             <span class="admin-toggle-slider" :class="form.use_global_settings ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
-                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                    <div class="flex items-center justify-between" :class="{ 'opacity-50': form.use_global_settings }">
                                         <span class="text-sm text-slate-700">Дата создания</span>
                                         <button @click="form.show_date = !form.show_date" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_date ? 'admin-toggle-on' : 'admin-toggle-off'">
                                             <span class="admin-toggle-slider" :class="form.show_date ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
-                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                    <div class="flex items-center justify-between" :class="{ 'opacity-50': form.use_global_settings }">
                                         <span class="text-sm text-slate-700">Автор</span>
                                         <button @click="form.show_author = !form.show_author" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_author ? 'admin-toggle-on' : 'admin-toggle-off'">
                                             <span class="admin-toggle-slider" :class="form.show_author ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
-                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                    <div class="flex items-center justify-between" :class="{ 'opacity-50': form.use_global_settings }">
                                         <span class="text-sm text-slate-700">Категория</span>
                                         <button @click="form.show_category = !form.show_category" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_category ? 'admin-toggle-on' : 'admin-toggle-off'">
                                             <span class="admin-toggle-slider" :class="form.show_category ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
                                         </button>
                                     </div>
-                                    <div class="flex items-center justify-between opacity-50" :class="!form.use_global_settings && 'opacity-100'">
+                                    <div class="flex items-center justify-between" :class="{ 'opacity-50': form.use_global_settings }">
                                         <span class="text-sm text-slate-700">Просмотры</span>
                                         <button @click="form.show_views = !form.show_views" :disabled="form.use_global_settings" type="button" class="admin-toggle" :class="form.show_views ? 'admin-toggle-on' : 'admin-toggle-off'">
                                             <span class="admin-toggle-slider" :class="form.show_views ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
@@ -168,34 +168,17 @@
                                 <div v-show="accordion.isOpen('seo')" class="px-3 pb-3 space-y-3">
                                     <div>
                                         <label class="text-sm font-medium text-slate-700 block mb-1">Meta Title</label>
-                                        <input
-                                            v-model="form.meta_title"
-                                            type="text"
-                                            class="admin-form-input w-full"
-                                            placeholder="Заголовок для поисковиков"
-                                            maxlength="70"
-                                        />
+                                        <input v-model="form.meta_title" type="text" class="admin-form-input w-full" placeholder="Заголовок для поисковиков" maxlength="70" />
                                         <p class="text-xs text-slate-400 mt-1">{{ form.meta_title?.length || 0 }}/70</p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-medium text-slate-700 block mb-1">Meta Description</label>
-                                        <input
-                                            v-model="form.meta_description"
-                                            type="text"
-                                            class="admin-form-input w-full"
-                                            placeholder="Описание для поисковиков (до 160 символов)"
-                                            maxlength="160"
-                                        />
+                                        <input v-model="form.meta_description" type="text" class="admin-form-input w-full" placeholder="Описание для поисковиков (до 160 символов)" maxlength="160" />
                                         <p class="text-xs text-slate-400 mt-1">{{ form.meta_description?.length || 0 }}/160</p>
                                     </div>
                                     <div>
                                         <label class="text-sm font-medium text-slate-700 block mb-1">Meta Keywords</label>
-                                        <input
-                                            v-model="form.meta_keywords"
-                                            type="text"
-                                            class="admin-form-input w-full"
-                                            placeholder="Ключевые слова через запятую"
-                                        />
+                                        <input v-model="form.meta_keywords" type="text" class="admin-form-input w-full" placeholder="Ключевые слова через запятую" />
                                     </div>
                                     <p class="text-xs text-slate-400">Если поля пустые - используются глобальные настройки</p>
                                 </div>
@@ -235,7 +218,7 @@
 
         <ImageModal :show="showImageModal" :edit-data="editImageData" @close="closeImageModal" @insert="onImageInsert" />
 
-        <MediaManagerModal :show="showImageManager" :user="user" :selected-url="selectedMediaUrl" mode="image" @close="closeImageManager" @select="onMediaManagerSelect" />
+        <MediaManagerModal :show="showImageManager" :user="user" :selected-url="selectedMediaUrl" mode="file" @close="closeImageManager" @select="onMediaManagerSelect" />
 
         <GallerySelectModal :show="showGalleryModal" @close="closeGalleryModal" @select="insertGallery" />
     </AdminLayout>
@@ -243,8 +226,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AdminLayout from '../../../layouts/AdminLayout.vue';
 import Toast from '../../../components/shared/Toast.vue';
@@ -256,6 +238,7 @@ import ImageModal from './components/ImageModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
 import GallerySelectModal from '../../../components/shared/GallerySelectModal.vue';
 import { useSidebarSections } from '../../../composables/useSidebarSections';
+import { createEditorContext, provideEditorContext } from '../../../infrastructure/di/editorContext';
 
 const props = defineProps<{
     user: User;
@@ -263,8 +246,10 @@ const props = defineProps<{
     categories: Category[];
 }>();
 
-// ===== АККОРДЕОН =====
 const accordion = useSidebarSections(10);
+
+const editorContext = createEditorContext();
+provideEditorContext(editorContext);
 
 const loading = ref(false);
 const showLinkModal = ref(false);
@@ -295,7 +280,6 @@ const form = ref({
     show_author: true,
     show_category: true,
     show_views: true,
-    // SEO поля
     meta_title: '',
     meta_description: '',
     meta_keywords: '',
@@ -303,103 +287,75 @@ const form = ref({
 
 const isSlugManuallyEdited = ref(false);
 
-// ===== HTML РЕЖИМ =====
 const showRawHtml = ref(false);
 const rawHtmlContent = ref('');
 
-const toggleRawHtml = () => {
+function toggleRawHtml(): void {
     if (!showRawHtml.value) {
-        const content = form.value.content || '';
-        rawHtmlContent.value = content;
+        rawHtmlContent.value = form.value.content || '';
         showRawHtml.value = true;
     } else {
         showRawHtml.value = false;
     }
-};
+}
 
-const closeRawHtml = () => {
+function closeRawHtml(): void {
     showRawHtml.value = false;
-};
+}
 
-const applyRawHtml = (html: string) => {
+function applyRawHtml(html: string): void {
     form.value.content = html;
     showRawHtml.value = false;
     editorKey.value++;
-
     nextTick(() => {
-        if (editorRef.value) {
-            editorRef.value.insertContent(html);
-        }
+        editorRef.value?.insertContent(html);
     });
-};
+}
 
-// ===== ОСТАЛЬНОЕ =====
-const loadMaterials = async () => {
-    try {
-        const response = await axios.get('/admin/materials/list');
-        materials.value = response.data;
-    } catch (error) {
-        console.error('Error loading materials:', error);
-    }
-};
-
-const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+function showNotification(message: string, type: 'success' | 'error' = 'success'): void {
     if (notificationTimeout) clearTimeout(notificationTimeout);
     notification.value = { show: true, message, type };
     notificationTimeout = window.setTimeout(() => {
         notification.value.show = false;
     }, 5000);
-};
+}
 
-// ===== ССЫЛКИ =====
-const openLinkModal = (selectedText?: string) => {
+function openLinkModal(selectedText?: string): void {
     editLinkData.value = null;
     selectedLinkText.value = selectedText || '';
     showLinkModal.value = true;
-};
+}
 
-const closeLinkModal = () => {
+function closeLinkModal(): void {
     showLinkModal.value = false;
     editLinkData.value = null;
     selectedLinkText.value = '';
-};
+}
 
-const insertLink = (data: { url: string; text: string; target: string; title: string }) => {
+function insertLink(data: { url: string; text: string; target: string; title: string }): void {
     editorRef.value?.setLinkOnSelection(data.url, data.text, data.target, data.title);
-};
+}
 
-const updateLink = (data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }) => {
-    if (editorRef.value) {
-        editorRef.value.updateExistingLink(data);
-    }
-};
+function updateLink(data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }): void {
+    editorRef.value?.updateExistingLink(data);
+}
 
-const handleEditLink = (data: { oldText: string; url: string; text: string; target: string; title: string }) => {
+function handleEditLink(data: { oldText: string; url: string; text: string; target: string; title: string }): void {
     editLinkData.value = data;
     showLinkModal.value = true;
-};
+}
 
-// ===== ИЗОБРАЖЕНИЯ =====
 const savedCursorPosition = ref(0);
 
-const openImageModal = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string; float?: string; margin?: string }) => {
+function openImageModal(imageData?: any): void {
     if (editorRef.value) {
         savedCursorPosition.value = editorRef.value.getCursorPosition?.() || 0;
     }
-    editImageData.value = imageData ? {
-        url: imageData.url,
-        alt: imageData.alt || '',
-        title: imageData.title || '',
-        width: imageData.width || '',
-        height: imageData.height || '',
-        align: imageData.align || '',
-        float: imageData.float || '',
-        margin: imageData.margin || '',
-    } : null;
+    editImageData.value = imageData || null;
     showImageModal.value = true;
-};
+}
 
-const openImageManager = (imageData?: { url: string; alt: string; title: string; width?: string; height?: string; align?: string; float?: string; margin?: string }) => {
+function openImageManager(imageData?: any): void {
     editImageData.value = imageData || null;
     if (imageData?.url) {
         const urlParts = imageData.url.split('/');
@@ -409,125 +365,68 @@ const openImageManager = (imageData?: { url: string; alt: string; title: string;
         selectedMediaUrl.value = '';
     }
     showImageManager.value = true;
-};
+}
 
-const closeImageModal = () => {
+function closeImageModal(): void {
     showImageModal.value = false;
     editImageData.value = null;
-};
+}
 
-const buildImageStyle = (data: {
-    width?: string;
-    height?: string;
-    align?: string;
-    float?: string;
-    margin?: string;
-}) => {
-    let style = '';
-
-    if (data.width && data.width !== '') {
-        style += `width: ${data.width}px; `;
-    }
-    if (data.height && data.height !== '') {
-        style += `height: ${data.height}px; `;
-    }
-
-    style += 'display: block; ';
-
-    if (data.align === 'left') {
-        style += 'margin-left: 0; margin-right: auto; ';
-    } else if (data.align === 'center') {
-        style += 'margin-left: auto; margin-right: auto; ';
-    } else if (data.align === 'right') {
-        style += 'margin-left: auto; margin-right: 0; ';
-    }
-
-    if (data.float && data.float !== '') {
-        if (data.float === 'left') {
-            style += 'float: left; ';
-            if (data.margin && data.margin !== '') {
-                style += `margin-right: ${data.margin}px; `;
-            }
-        } else if (data.float === 'right') {
-            style += 'float: right; ';
-            if (data.margin && data.margin !== '') {
-                style += `margin-left: ${data.margin}px; `;
-            }
-        }
-    }
-
-    return style.trim();
-};
-
-const onImageInsert = (data: {
-    url: string;
-    alt: string;
-    title: string;
-    width?: string;
-    height?: string;
-    align?: string;
-    float?: string;
-    margin?: string;
-    oldUrl?: string;
-    _pos?: number;
-}) => {
-    if (data._pos !== undefined && data._pos !== -1) {
-        (window as any).__selectedImagePos = data._pos;
-    }
-
-    const floatValue = data.float && data.float !== '' ? data.float : '';
-    const marginValue = data.margin && data.margin !== '' ? data.margin : '';
-    const alignValue = data.align && data.align !== '' ? data.align : '';
-
-    if (data.oldUrl) {
-        const updateData = {
-            url: data.url,
-            alt: data.alt || '',
-            title: data.title || '',
-            width: data.width || '',
-            height: data.height || '',
-            align: alignValue,
-            float: floatValue,
-            margin: marginValue,
-        };
-        editorRef.value?.updateImage(data.oldUrl, updateData);
-        closeImageModal();
-        return;
-    }
-
-    const style = buildImageStyle({
-        width: data.width,
-        height: data.height,
-        align: alignValue,
-        float: floatValue,
-        margin: marginValue,
-    });
-
+function buildImageHtml(data: any): string {
     let imgHtml = `<img src="${data.url}"`;
-    if (data.alt && data.alt !== '') imgHtml += ` alt="${data.alt}"`;
-    if (data.title && data.title !== '') imgHtml += ` title="${data.title}"`;
-    if (data.width && data.width !== '') imgHtml += ` width="${data.width}"`;
-    if (data.height && data.height !== '') imgHtml += ` height="${data.height}"`;
-    if (style) imgHtml += ` style="${style}"`;
-    imgHtml += ` />`;
+    if (data.alt) imgHtml += ` alt="${data.alt}"`;
+    if (data.title) imgHtml += ` title="${data.title}"`;
+    if (data.width) imgHtml += ` width="${data.width}"`;
+    if (data.height) imgHtml += ` height="${data.height}"`;
 
-    if (editorRef.value) {
-        editorRef.value.insertContent(imgHtml, savedCursorPosition.value);
+    const styleParts: string[] = [];
+    if (data.width) styleParts.push(`width: ${data.width}px`);
+    if (data.height) styleParts.push(`height: ${data.height}px`);
+    styleParts.push('display: block');
+
+    if (data.align === 'center') {
+        styleParts.push('margin-left: auto', 'margin-right: auto');
+    } else if (data.align === 'left') {
+        styleParts.push('margin-left: 0', 'margin-right: auto');
+    } else if (data.align === 'right') {
+        styleParts.push('margin-left: auto', 'margin-right: 0');
+    }
+
+    if (data.float === 'left') {
+        styleParts.push('float: left');
+        if (data.margin) styleParts.push(`margin-right: ${data.margin}px`);
+    } else if (data.float === 'right') {
+        styleParts.push('float: right');
+        if (data.margin) styleParts.push(`margin-left: ${data.margin}px`);
+    }
+
+    if (styleParts.length > 0) {
+        imgHtml += ` style="${styleParts.join('; ')}"`;
+    }
+
+    imgHtml += ` />`;
+    return imgHtml;
+}
+
+function onImageInsert(data: any): void {
+    if (data.oldUrl) {
+        editorRef.value?.updateImage(data.oldUrl, data);
+    } else {
+        const html = buildImageHtml(data);
+        editorRef.value?.insertContent(html, savedCursorPosition.value);
     }
     closeImageModal();
-};
+}
 
-const closeImageManager = () => {
+function closeImageManager(): void {
     showImageManager.value = false;
     editImageData.value = null;
     selectedMediaUrl.value = '';
-};
+}
 
-const onMediaManagerSelect = (file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }) => {
+function onMediaManagerSelect(file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }): void {
     if (editImageData.value) {
-        const oldUrl = editImageData.value.url;
-
-        editorRef.value?.updateImage(oldUrl, {
+        editorRef.value?.updateImage(editImageData.value.url, {
             url: file.url,
             alt: file.options?.alt || file.name,
             title: editImageData.value.title || '',
@@ -539,41 +438,32 @@ const onMediaManagerSelect = (file: { url: string; name: string; path: string; o
         });
         editImageData.value = null;
     } else {
-        const style = buildImageStyle({
+        const html = buildImageHtml({
+            url: file.url,
+            alt: file.options?.alt || file.name,
             width: file.options?.width || '',
             height: file.options?.height || '',
         });
-
-        let imgHtml = `<img src="${file.url}" alt="${file.options?.alt || file.name}"`;
-        if (style) imgHtml += ` style="${style}"`;
-        if (file.options?.width && file.options.width !== '') imgHtml += ` width="${file.options.width}"`;
-        if (file.options?.height && file.options.height !== '') imgHtml += ` height="${file.options.height}"`;
-        imgHtml += ` />`;
-
-        editorRef.value?.insertContent(imgHtml, savedCursorPosition.value);
+        editorRef.value?.insertContent(html, savedCursorPosition.value);
     }
     closeImageManager();
-};
+}
 
-// ===== ГАЛЕРЕЯ =====
-const openGalleryModal = () => {
+function openGalleryModal(): void {
     showGalleryModal.value = true;
-};
+}
 
-const closeGalleryModal = () => {
+function closeGalleryModal(): void {
     showGalleryModal.value = false;
-};
+}
 
-const insertGallery = (galleryId: number, galleryName: string) => {
-    if (editorRef.value) {
-        const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
-        editorRef.value.insertContent(shortcode, savedCursorPosition.value);
-    }
+function insertGallery(galleryId: number, galleryName: string): void {
+    const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
+    editorRef.value?.insertContent(shortcode, savedCursorPosition.value);
     closeGalleryModal();
-};
+}
 
-// ===== ОСТАЛЬНОЕ =====
-const generateSlug = (text: string): string => {
+function generateSlug(text: string): string {
     let slug = text
         .toLowerCase()
         .replace(/[^a-zа-яё0-9]+/g, '-')
@@ -584,180 +474,106 @@ const generateSlug = (text: string): string => {
         'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
         'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
         'ф': 'f', 'х': 'h', 'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'sh', 'ъ': '',
-        'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+        'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
     };
 
     slug = slug.split('').map(char => ruMap[char] || char).join('');
     return slug;
-};
+}
 
-const updateSlug = () => {
+function updateSlug(): void {
     if (isSlugManuallyEdited.value) return;
-    if (!form.value.title) {
-        form.value.slug = '';
-        return;
-    }
-    form.value.slug = generateSlug(form.value.title);
-};
+    form.value.slug = form.value.title ? generateSlug(form.value.title) : '';
+}
 
-const onSlugInput = () => {
+function onSlugInput(): void {
     isSlugManuallyEdited.value = true;
-};
+}
 
-const cancel = () => {
+function cancel(): void {
     router.visit('/admin/materials');
-};
+}
 
-const save = async () => {
+async function save(): Promise<void> {
     if (!form.value.title) {
         showNotification('Введите заголовок', 'error');
         return;
     }
 
     loading.value = true;
-
     try {
-        const dataToSend = {
-            title: form.value.title,
-            slug: form.value.slug || null,
-            content: form.value.content,
-            tags: form.value.tags,
-            category_id: form.value.category_id,
-            state: form.value.state,
-            access: form.value.access,
-            show_on_homepage: form.value.show_on_homepage === '1' ? true : false,
-            use_global_settings: form.value.use_global_settings,
-            show_date: form.value.show_date,
-            show_author: form.value.show_author,
-            show_category: form.value.show_category,
-            show_views: form.value.show_views,
-            // SEO поля
-            meta_title: form.value.meta_title,
-            meta_description: form.value.meta_description,
-            meta_keywords: form.value.meta_keywords,
-        };
-
-        const response = await axios.post('/admin/materials', dataToSend);
-        const materialId = response.data.id || response.data.data?.id;
-
-        if (materialId) {
-            router.visit(`/admin/materials/${materialId}/edit?message=Материал+сохранён`);
-        } else {
-            showNotification('Материал сохранён', 'success');
-            resetForm();
-        }
+        await axios.post('/admin/materials', form.value);
+        showNotification('Материал создан', 'success');
     } catch (error: any) {
-        console.error('Save error:', error);
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
         loading.value = false;
     }
-};
+}
 
-const saveAndClose = async () => {
+async function saveAndClose(): Promise<void> {
     if (!form.value.title) {
         showNotification('Введите заголовок', 'error');
         return;
     }
 
     loading.value = true;
-
     try {
-        const dataToSend = {
-            title: form.value.title,
-            slug: form.value.slug || null,
-            content: form.value.content,
-            tags: form.value.tags,
-            category_id: form.value.category_id,
-            state: form.value.state,
-            access: form.value.access,
-            show_on_homepage: form.value.show_on_homepage === '1' ? true : false,
-            use_global_settings: form.value.use_global_settings,
-            show_date: form.value.show_date,
-            show_author: form.value.show_author,
-            show_category: form.value.show_category,
-            show_views: form.value.show_views,
-            // SEO поля
-            meta_title: form.value.meta_title,
-            meta_description: form.value.meta_description,
-            meta_keywords: form.value.meta_keywords,
-        };
-
-        await axios.post('/admin/materials', dataToSend);
+        await axios.post('/admin/materials', form.value);
         router.visit('/admin/materials?message=Материал+создан');
     } catch (error: any) {
-        console.error('Save and close error:', error);
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
         loading.value = false;
     }
-};
+}
 
-const saveAndCreate = async () => {
+async function saveAndCreate(): Promise<void> {
     if (!form.value.title) {
         showNotification('Введите заголовок', 'error');
         return;
     }
 
     loading.value = true;
-
     try {
-        const dataToSend = {
-            title: form.value.title,
-            slug: form.value.slug || null,
-            content: form.value.content,
-            tags: form.value.tags,
-            category_id: form.value.category_id,
-            state: form.value.state,
-            access: form.value.access,
-            show_on_homepage: form.value.show_on_homepage === '1' ? true : false,
-            use_global_settings: form.value.use_global_settings,
-            show_date: form.value.show_date,
-            show_author: form.value.show_author,
-            show_category: form.value.show_category,
-            show_views: form.value.show_views,
-            // SEO поля
-            meta_title: form.value.meta_title,
-            meta_description: form.value.meta_description,
-            meta_keywords: form.value.meta_keywords,
-        };
+        await axios.post('/admin/materials', form.value);
 
-        await axios.post('/admin/materials', dataToSend);
-        resetForm();
+        form.value = {
+            title: '',
+            slug: '',
+            content: '',
+            tags: '',
+            category_id: props.categories.length > 0 ? props.categories[0].id : null,
+            state: 'draft',
+            access: 'public',
+            show_on_homepage: '0',
+            use_global_settings: true,
+            show_date: true,
+            show_author: true,
+            show_category: true,
+            show_views: true,
+            meta_title: '',
+            meta_description: '',
+            meta_keywords: '',
+        };
+        isSlugManuallyEdited.value = false;
+        editorKey.value++;
+        rawHtmlContent.value = '';
+        showRawHtml.value = false;
+
         showNotification('Материал создан. Можете создать следующий', 'success');
     } catch (error: any) {
-        console.error('Save and create error:', error);
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
         loading.value = false;
     }
-};
+}
 
-const resetForm = () => {
-    form.value = {
-        title: '',
-        slug: '',
-        content: '',
-        tags: '',
-        category_id: props.categories.length > 0 ? props.categories[0].id : null,
-        state: 'draft',
-        access: 'public',
-        show_on_homepage: '0',
-        use_global_settings: true,
-        show_date: true,
-        show_author: true,
-        show_category: true,
-        show_views: true,
-        meta_title: '',
-        meta_description: '',
-        meta_keywords: '',
-    };
-    isSlugManuallyEdited.value = false;
-    editorKey.value++;
-    rawHtmlContent.value = '';
-    showRawHtml.value = false;
-};
-
-onMounted(() => {
-    loadMaterials();
+onMounted(async () => {
+    try {
+        const response = await axios.get('/admin/materials/list');
+        materials.value = response.data;
+    } catch (error) {
+        console.error('Error loading materials:', error);
+    }
 });
 </script>
