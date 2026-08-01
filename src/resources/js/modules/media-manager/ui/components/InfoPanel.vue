@@ -55,8 +55,8 @@
 </template>
 
 <script setup lang="ts">
-import { formatDate, formatFileSize } from '@/modules/media-manager/ui/constants';
-import type { MediaItem } from '../../domain/entities/MediaItem';
+import { formatDate, formatFileSize } from '../types';
+import type { MediaItem } from '../types';
 
 defineProps<{
     selectedItem: MediaItem | null;

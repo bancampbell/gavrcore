@@ -22,23 +22,22 @@
             <span v-else class="w-3.5 h-3.5 mr-1.5"></span>
 
             <span class="mr-2 inline-flex items-center justify-center">
-                <svg v-if="!isExpanded" class="w-5 h-5" fill="#D2B073" stroke="#D2B073" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                <svg v-else class="w-5 h-5" fill="#D2B073" stroke="#D2B073" stroke-width="1.5" viewBox="0 0 24 24">
+                <svg class="w-5 h-5" fill="#D2B073" stroke="#D2B073" stroke-width="1.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
             </span>
 
             <span class="flex-1">{{ folder.name }}</span>
         </div>
+
         <div v-if="hasChildren && isExpanded" class="ml-6">
             <FolderTree
                 v-for="child in children"
-                :key="child.path.toString()"
+                :key="child.path"
                 :folder="child"
                 :current-path="currentPath"
-                :all-folders="allFolders"
+                :children="folderTree.get(child.path) || []"
+                :folder-tree="folderTree"
                 :expanded-folders="expandedFolders"
                 @navigate="$emit('navigate', $event)"
                 @toggle-expand="$emit('toggle-expand', $event)"
@@ -49,12 +48,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { MediaItem } from '../../domain/entities/MediaItem';
+import type { MediaItem } from '../types';
 
 const props = defineProps<{
     folder: MediaItem;
     currentPath: string;
-    allFolders: MediaItem[];
+    children: MediaItem[];
+    folderTree: Map<string, MediaItem[]>;
     expandedFolders?: string[];
 }>();
 
@@ -63,35 +63,23 @@ const emit = defineEmits<{
     (e: 'toggle-expand', path: string): void;
 }>();
 
+const folderPathString = computed(() => props.folder.path);
+
 const isExpanded = computed(() => {
-    if (props.expandedFolders) {
-        return props.expandedFolders.includes(props.folder.getPathString());
-    }
-    return false;
+    return props.expandedFolders?.includes(folderPathString.value) ?? false;
 });
 
-const isActive = computed(() => props.currentPath === props.folder.getPathString());
+const isActive = computed(() => props.currentPath === folderPathString.value);
 
-const children = computed(() => {
-    return props.allFolders.filter(folder => {
-        const folderParts = folder.getPathString().split('/');
-        const currentParts = props.folder.getPathString().split('/');
-
-        if (folderParts.length !== currentParts.length + 1) return false;
-
-        return folder.getPathString().startsWith(props.folder.getPathString() + '/');
-    });
-});
-
-const hasChildren = computed(() => children.value.length > 0);
+const hasChildren = computed(() => props.children.length > 0);
 
 const toggleExpand = () => {
     if (hasChildren.value) {
-        emit('toggle-expand', props.folder.getPathString());
+        emit('toggle-expand', folderPathString.value);
     }
 };
 
 const navigate = () => {
-    emit('navigate', props.folder.getPathString());
+    emit('navigate', folderPathString.value);
 };
 </script>

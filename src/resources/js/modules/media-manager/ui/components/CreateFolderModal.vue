@@ -8,6 +8,7 @@
                 placeholder="Название папки"
                 class="w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 @keyup.enter="submit"
+                autofocus
             />
             <div class="flex justify-end gap-2">
                 <button @click="close" class="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300">

@@ -41,7 +41,7 @@ import { ref, onMounted, nextTick, watch } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import MediaManagerContent from './components/MediaManagerContent.vue';
-import type { User } from '../../../types';
+import type { User } from './types';
 
 const props = defineProps<{
     user: User;

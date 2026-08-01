@@ -39,34 +39,40 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-2" ref="scrollContainer">
-            <div v-if="loading" class="text-center py-8">
+        <div class="flex-1 overflow-y-auto p-2 relative" ref="scrollContainer">
+            <!-- Спиннер ТОЛЬКО при самой первой загрузке, когда ещё нет paginatedData -->
+            <div v-if="loading && !paginatedData" class="text-center py-8">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
-            <div v-else class="space-y-0.5">
+
+            <!-- Список НИКОГДА не прячем — только приглушаем при перезагрузке -->
+            <div
+                class="space-y-0.5"
+                :class="{ 'opacity-50 pointer-events-none transition-opacity duration-150': loading && paginatedData }"
+            >
                 <FileItem
                     v-for="item in folders"
-                    :key="item.path.toString()"
+                    :key="item.path"
                     :item="item"
-                    :is-selected="isSelected(item.path.toString())"
+                    :is-selected="isSelected(item.path)"
                     :is-folder="true"
-                    :is-picker-mode="mode === 'picker'"
                     @select="onToggleSelect"
                     @click="onSelectFolder"
-                    @dblclick="onFolderDoubleClick"
+                    @open="onOpenFolder"
                 />
                 <FileItem
                     v-for="item in files"
-                    :key="item.path.toString()"
+                    :key="item.path"
                     :item="item"
-                    :is-selected="isSelected(item.path.toString())"
+                    :is-selected="isSelected(item.path)"
                     :is-folder="false"
-                    :is-picker-mode="mode === 'picker'"
-                    :data-file-path="item.path.toString()"
+                    :data-file-path="item.path"
                     @select="onToggleSelect"
                     @click="onSelectFile"
                 />
             </div>
+
+            <!-- Пустая папка -->
             <div v-if="!loading && folders.length === 0 && files.length === 0 && !showSearch" class="text-center py-12 text-gray-400">
                 Папка пуста
             </div>
@@ -74,13 +80,52 @@
                 Ничего не найдено
             </div>
         </div>
+
+        <!-- Пагинация -->
+        <div v-if="paginatedData && paginatedData.last_page > 1" class="border-t border-gray-200 px-4 py-2 bg-gray-50 flex items-center justify-between">
+            <span class="text-sm text-gray-600">
+                {{ (paginatedData.page - 1) * paginatedData.per_page + 1 }} -
+                {{ Math.min(paginatedData.page * paginatedData.per_page, paginatedData.total) }}
+                из {{ paginatedData.total }}
+            </span>
+            <div class="flex gap-1">
+                <button
+                    @click="$emit('page-change', paginatedData.page - 1)"
+                    :disabled="paginatedData.page <= 1"
+                    class="px-3 py-1 text-sm rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    ←
+                </button>
+                <template v-for="p in visiblePages" :key="String(p)">
+                    <span
+                        v-if="p === '...'"
+                        class="px-3 py-1 text-sm text-gray-400 select-none"
+                    >...</span>
+                    <button
+                        v-else
+                        @click="$emit('page-change', p)"
+                        class="px-3 py-1 text-sm rounded hover:bg-gray-200"
+                        :class="{ 'bg-blue-600 text-white hover:bg-blue-700': p === paginatedData.page }"
+                    >
+                        {{ p }}
+                    </button>
+                </template>
+                <button
+                    @click="$emit('page-change', paginatedData.page + 1)"
+                    :disabled="paginatedData.page >= paginatedData.last_page"
+                    class="px-3 py-1 text-sm rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    →
+                </button>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, computed, watch } from 'vue';
 import FileItem from './FileItem.vue';
-import type { MediaItem } from '../../domain/entities/MediaItem';
+import type { MediaItem } from '../types';
 
 const props = defineProps<{
     folders: MediaItem[];
@@ -93,6 +138,13 @@ const props = defineProps<{
     isAscActive: boolean;
     isDescActive: boolean;
     mode?: 'full' | 'picker';
+    paginatedData?: {
+        data: MediaItem[];
+        total: number;
+        page: number;
+        per_page: number;
+        last_page: number;
+    } | null;
 }>();
 
 const emit = defineEmits<{
@@ -107,9 +159,36 @@ const emit = defineEmits<{
     (e: 'select-folder', item: MediaItem): void;
     (e: 'open-folder', item: MediaItem): void;
     (e: 'select-file', item: MediaItem): void;
+    (e: 'page-change', page: number): void;
 }>();
 
 const scrollContainer = ref<HTMLDivElement | null>(null);
+
+watch(() => props.folders, () => {
+    scrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' });
+}, { flush: 'post' });
+
+const visiblePages = computed(() => {
+    if (!props.paginatedData) return [];
+    const current = props.paginatedData.page;
+    const last = props.paginatedData.last_page;
+    const delta = 2;
+    const range: (number | string)[] = [];
+    for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
+        range.push(i);
+    }
+    if (current - delta > 2) {
+        range.unshift('...');
+    }
+    if (current + delta < last - 1) {
+        range.push('...');
+    }
+    range.unshift(1);
+    if (last > 1) {
+        range.push(last);
+    }
+    return range;
+});
 
 const onGoHome = () => emit('go-home');
 const onGoBack = () => emit('go-back');
@@ -120,35 +199,5 @@ const onClearSearch = () => emit('clear-search');
 const onToggleSelect = (path: string, item: MediaItem) => emit('toggle-select', path, item);
 const onSelectFolder = (item: MediaItem) => emit('select-folder', item);
 const onSelectFile = (item: MediaItem) => emit('select-file', item);
-const onFolderDoubleClick = (item: MediaItem) => emit('open-folder', item);
-
-const scrollToFile = (filePath: string) => {
-    if (!scrollContainer.value) return;
-
-    nextTick(() => {
-        const elements = scrollContainer.value?.querySelectorAll('[data-file-path]');
-        if (!elements) return;
-
-        let targetElement: HTMLElement | null = null;
-
-        for (let i = 0; i < elements.length; i++) {
-            const el = elements[i] as HTMLElement;
-            if (el.getAttribute('data-file-path') === filePath) {
-                targetElement = el;
-                break;
-            }
-        }
-
-        if (targetElement) {
-            targetElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    });
-};
-
-defineExpose({
-    scrollToFile
-});
+const onOpenFolder = (item: MediaItem) => emit('open-folder', item);
 </script>

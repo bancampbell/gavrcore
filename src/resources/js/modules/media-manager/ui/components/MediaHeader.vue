@@ -8,7 +8,9 @@
                     </svg>
                 </Link>
                 <span class="text-gray-600">{{ currentPathDisplay }}</span>
-                <span class="text-gray-400">({{ foldersCount }} папок, {{ filesCount }} файлов)</span>
+                <span class="text-gray-400" v-if="totalItemsCount !== null && totalItemsCount !== undefined">
+                    ({{ totalItemsCount }} элементов)
+                </span>
             </div>
 
             <div class="flex gap-2">
@@ -45,6 +47,7 @@ defineProps<{
     currentPathDisplay: string;
     foldersCount: number;
     filesCount: number;
+    totalItemsCount?: number | null;
 }>();
 
 const emit = defineEmits<{

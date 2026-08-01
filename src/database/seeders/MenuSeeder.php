@@ -13,7 +13,7 @@ class MenuSeeder extends Seeder
         // Создаём типы меню
         $mainMenu = MenuType::create([
             'title' => 'Main Menu',
-            'alias' => 'mainmenu',
+            'alias' => 'main-menu',
             'description' => 'Главное меню сайта',
             'ordering' => 1,
             'status' => true,
@@ -21,7 +21,7 @@ class MenuSeeder extends Seeder
 
         $loginMenu = MenuType::create([
             'title' => 'Menu login',
-            'alias' => 'menulogin',
+            'alias' => 'menu-login',
             'description' => 'Меню для авторизованных пользователей',
             'ordering' => 2,
             'status' => true,

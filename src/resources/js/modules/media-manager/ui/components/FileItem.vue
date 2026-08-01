@@ -1,10 +1,9 @@
 <template>
     <div
-        :data-file-path="!isFolder ? item.path.toString() : undefined"
+        :data-file-path="!isFolder ? item.path : undefined"
         class="flex items-center py-1 px-2 rounded-md transition-colors hover:bg-[#e6f0fa] group cursor-pointer"
         :class="{ 'bg-[#e6f0fa]': isSelected }"
         @click="onClick"
-        @dblclick="onDblClick"
     >
         <input
             type="checkbox"
@@ -32,12 +31,22 @@
                 {{ item.name }}
             </span>
         </div>
+        <button
+            v-if="isFolder"
+            @click.stop="onOpen"
+            class="ml-2 p-1 rounded hover:bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Открыть папку"
+        >
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
     </div>
 </template>
 
 <script setup lang="ts">
-import { getFileIcon } from '@/modules/media-manager/ui/constants';
-import type { MediaItem } from '../../domain/entities/MediaItem';
+import { getFileIcon } from '../types';
+import type { MediaItem } from '../types';
 
 const props = defineProps<{
     item: MediaItem;
@@ -48,18 +57,18 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'select', path: string, item: MediaItem): void;
     (e: 'click', item: MediaItem): void;
-    (e: 'dblclick', item: MediaItem): void;
+    (e: 'open', item: MediaItem): void;
 }>();
 
 const onSelect = () => {
-    emit('select', props.item.path.toString(), props.item);
+    emit('select', props.item.path, props.item);
 };
 
 const onClick = () => {
     emit('click', props.item);
 };
 
-const onDblClick = () => {
-    emit('dblclick', props.item);
+const onOpen = () => {
+    emit('open', props.item);
 };
 </script>
