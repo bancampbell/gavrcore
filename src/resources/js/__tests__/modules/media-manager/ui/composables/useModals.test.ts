@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { useModals } from '@/modules/media-manager/ui/composables/useModals';
-import type { MediaItem } from '@/modules/media-manager/ui/types';
+import { useModals } from '@/modules/MediaManager/ui/composables/useModals';
+import type { MediaItem } from '@/modules/MediaManager/ui/types';
 
 const mockItem: MediaItem = {
     name: 'test',

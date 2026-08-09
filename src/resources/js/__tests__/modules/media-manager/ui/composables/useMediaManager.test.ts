@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useMediaManager } from '@/modules/media-manager/ui/composables/useMediaManager';
-import type { MediaItem } from '@/modules/media-manager/ui/types';
+import { useMediaManager } from '@/modules/MediaManager/ui/composables/useMediaManager';
+import type { MediaItem } from '@/modules/MediaManager/ui/types';
 
-vi.mock('@/modules/media-manager/infrastructure/api/media-api', () => ({
+vi.mock('@/modules/MediaManager/infrastructure/api/media-api', () => ({
     mediaApi: {
         loadContents: vi.fn(),
         loadPaginatedContents: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock('@/modules/media-manager/infrastructure/api/media-api', () => ({
     },
 }));
 
-import { mediaApi } from '@/modules/media-manager/infrastructure/api/media-api';
+import { mediaApi } from '@/modules/MediaManager/infrastructure/api/media-api';
 
 describe('useMediaManager', () => {
     const notify = vi.fn();

@@ -10,7 +10,7 @@ class BreadcrumbService
     /**
      * Генерация хлебных крошек для материала
      */
-    public function forMaterial(Material $material): array
+    public function forMaterial($material): array
     {
         $breadcrumbs = [
             [
@@ -23,7 +23,7 @@ class BreadcrumbService
         if ($material->category) {
             $breadcrumbs[] = [
                 'title' => $material->category->name,
-                'url' => route('category.show', $material->category->slug),
+                'url' => route('category.show', ['slug' => $material->category->slug]),
             ];
         }
 

@@ -1,21 +1,34 @@
-import 'reflect-metadata';
-import { createApp, h } from 'vue';
+import { createApp, h, type DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import '../css/app.css';
 
 createInertiaApp({
-    resolve: (name): any => {
-        return resolvePageComponent(
-            `./Pages/${name}.vue`,
-            import.meta.glob('./Pages/**/*.vue')
-        );
+    resolve: async (name) => {
+        const pages = import.meta.glob<DefineComponent>([
+            './Pages/**/*.vue',
+            './modules/**/*.vue',
+        ]);
+
+        let page = pages[`./Pages/${name}.vue`];
+
+        if (!page) {
+            // MaterialManager/Index → ./modules/MaterialManager/ui/Index.vue
+            const parts = name.split('/');
+            if (parts.length >= 2) {
+                const moduleName = parts[0];
+                const pagePath = parts.slice(1).join('/');
+                page = pages[`./modules/${moduleName}/ui/${pagePath}.vue`];
+            }
+        }
+
+        if (!page) {
+            throw new Error(`Page not found: ${name}`);
+        }
+
+        return (await page()).default;
     },
     setup({ el, App, props, plugin }) {
-        const app = createApp({ render: () => h(App, props) });
-        app.use(plugin);
-        if (el) {
-            app.mount(el);
-        }
+        createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .mount(el);
     },
 });

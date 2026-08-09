@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ref } from 'vue';
-import { useContents } from '@/modules/media-manager/ui/composables/useContents';
+import { useContents } from '@/modules/MediaManager/ui/composables/useContents';
 
 const createActions = (overrides: object = {}) => ({
     loading: ref(false),

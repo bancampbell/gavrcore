@@ -267,7 +267,7 @@ class MaterialPolicyTest extends TestCase
     {
         $materialsPermission = Permission::firstOrCreate(
             ['key' => 'materials.manage'],
-            ['name' => 'Materials Manage', 'group' => 'materials']
+            ['name' => 'Materials_off Manage', 'group' => 'materials']
         );
 
         $manager = User::factory()->create([

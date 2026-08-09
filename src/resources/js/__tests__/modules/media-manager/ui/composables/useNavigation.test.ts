@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { useNavigation } from '@/modules/media-manager/ui/composables/useNavigation';
+import { useNavigation } from '@/modules/MediaManager/ui/composables/useNavigation';
 
 describe('useNavigation', () => {
     it('initializes with empty path', () => {

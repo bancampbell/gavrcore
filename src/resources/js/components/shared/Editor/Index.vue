@@ -74,7 +74,7 @@ import { CleanPaste } from './extensions/CleanPaste';
 import type { EditorProps, EditorEmits } from './types/editor';
 import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
 import FormSelectModal from '@/components/shared/FormSelectModal.vue';
-import ImageModal from '@/Pages/Admin/Materials/components/ImageModal.vue';
+import ImageModal from '@/modules/MaterialManager/ui/components/ImageModal.vue';
 import RawHtmlEditor from './RawHtmlEditor.vue';
 import DOMPurify from 'dompurify';
 import { useEditor } from '@/composables/useEditor';
