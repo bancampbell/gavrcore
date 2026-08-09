@@ -37,7 +37,7 @@ class MaterialControllerTest extends TestCase
         // Создаём менеджера контента
         $managerPermission = Permission::firstOrCreate(
             ['key' => 'materials.manage'],
-            ['name' => 'Materials Manage', 'group' => 'materials']
+            ['name' => 'Materials_off Manage', 'group' => 'materials']
         );
         $this->manager = User::factory()->create(['email' => 'manager_' . uniqid() . '@test.com']);
         $this->manager->permissions()->sync([$managerPermission->id]);

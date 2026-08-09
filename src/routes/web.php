@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\GroupController;
-use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\SettingController;
@@ -17,7 +16,6 @@ use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\Auth\User\LoginController as UserLoginController;
 use App\Http\Controllers\Auth\User\RegisterController;
 use App\Http\Controllers\Web\CookieConsentController;
-use App\Http\Controllers\Web\MaterialController as WebMaterialController;
 use App\Http\Controllers\Web\SitemapController;
 use App\Http\Controllers\Web\DashboardController as WebDashboardController;
 use App\Models\MenuItem;
@@ -53,22 +51,18 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/dashboard/settings', [WebDashboardController::class, 'updateSettings'])->name('dashboard.settings.update');
 });
 
-// Публичные роуты
-Route::get('/', [WebMaterialController::class, 'index'])->name('home');
-Route::get('/category/{slug}', [WebMaterialController::class, 'category'])->name('category.show');
-Route::get('/search', [WebMaterialController::class, 'search'])->name('search');
-
-// Материалы с красивыми URL (без /material/)
-Route::get('/{slug}', [WebMaterialController::class, 'show'])->name('page.show')->where('slug', '^(?!admin|category|search|login|register|sitemap|cookie-consent|dashboard).+');
-
 // ===== АДМИНСКАЯ АУТЕНТИФИКАЦИЯ =====
 Route::get('/admin/login', [AdminLoginController::class, 'create'])->name('admin.login');
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->middleware('throttle:login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
+// ============================================
+// ОСТАЛЬНЫЕ АДМИНСКИЕ РОУТЫ
+// ============================================
+
 // ===== ЗАЩИЩЁННЫЕ АДМИНСКИЕ РОУТЫ =====
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Gallery Manager
     Route::get('/admin/galleries', [GalleryController::class, 'index'])->name('admin.galleries.index');
@@ -84,24 +78,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::put('/admin/galleries/{gallery}/images/{image}', [GalleryController::class, 'updateImage'])->name('admin.galleries.images.update');
     Route::delete('/admin/galleries/{gallery}/images/{image}', [GalleryController::class, 'deleteImage'])->name('admin.galleries.images.delete');
 
-    Route::get('/admin/materials', [MaterialController::class, 'index'])->name('admin.materials.index');
-
-    // Корзина и операции с ней
-    Route::get('/admin/materials/trash', [MaterialController::class, 'trash'])->name('admin.materials.trash');
-    Route::post('/admin/materials/bulk-trash', [MaterialController::class, 'bulkTrash'])->name('admin.materials.bulk-trash');
-    Route::post('/admin/materials/restore', [MaterialController::class, 'restore'])->name('admin.materials.restore');
-    Route::post('/admin/materials/force-delete', [MaterialController::class, 'forceDelete'])->name('admin.materials.force-delete');
-    Route::post('/admin/materials/empty-trash', [MaterialController::class, 'emptyTrash'])->name('admin.materials.empty-trash');
-    Route::post('/admin/materials/bulk-publish', [MaterialController::class, 'bulkPublish'])->name('admin.materials.bulk-publish');
-    Route::post('/admin/materials/bulk-unpublish', [MaterialController::class, 'bulkUnpublish'])->name('admin.materials.bulk-unpublish');
-
     Route::resource('/admin/categories', CategoryController::class)->names('admin.categories');
-
-    Route::get('/admin/materials/create', [MaterialController::class, 'create'])->name('admin.materials.create');
-    Route::post('/admin/materials', [MaterialController::class, 'store'])->name('admin.materials.store');
-    Route::get('/admin/materials/{material}/edit', [MaterialController::class, 'edit'])->name('admin.materials.edit');
-    Route::put('/admin/materials/{material}', [MaterialController::class, 'update'])->name('admin.materials.update');
-    Route::get('/admin/materials/list', [MaterialController::class, 'list']);
 
     // Menu Manager Pages (Inertia)
     Route::get('/admin/menu', [MenuTypeController::class, 'index'])->name('admin.menu.index');
@@ -233,3 +210,5 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
         Route::post('/destroy-bulk', [FormSubmissionController::class, 'destroyBulk'])->name('destroy-bulk');
     });
 });
+
+

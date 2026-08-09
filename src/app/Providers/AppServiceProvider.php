@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Contracts\CategoryRepositoryInterface;
 use App\Contracts\FormSubmissionRepositoryInterface;
 use App\Contracts\GroupRepositoryInterface;
-use App\Contracts\MaterialRepositoryInterface;
 use App\Contracts\MenuItemRepositoryInterface;
 use App\Contracts\MenuTypeRepositoryInterface;
 use App\Contracts\PermissionRepositoryInterface;
@@ -13,17 +12,14 @@ use App\Contracts\UserRepositoryInterface;
 use App\Models\AccessLevel;
 use App\Models\Category;
 use App\Models\Group;
-use App\Models\Material;
 use App\Models\User;
 use App\Policies\AccessLevelPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\GroupPolicy;
-use App\Policies\MaterialPolicy;
 use App\Policies\UserPolicy;
 use App\Repositories\CategoryRepository;
 use App\Repositories\FormSubmissionRepository;
 use App\Repositories\GroupRepository;
-use App\Repositories\MaterialRepository;
 use App\Repositories\MenuItemRepository;
 use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
@@ -31,7 +27,6 @@ use App\Repositories\UserRepository;
 use App\Services\SettingService;
 use App\Services\FormSubmissionService;
 use App\Seo\Services\MetaService;
-use App\Seo\Providers\MaterialSeoProvider;
 use App\Seo\Providers\CategorySeoProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -48,7 +43,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
-        $this->app->bind(MaterialRepositoryInterface::class, MaterialRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(MenuTypeRepositoryInterface::class, MenuTypeRepository::class);
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
@@ -56,9 +50,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(FormSubmissionRepositoryInterface::class, FormSubmissionRepository::class);
 
         // Регистрируем SEO сервис с провайдерами
+        // MaterialSeoProvider удалён — будет использоваться новый модуль MaterialManager
         $this->app->singleton(MetaService::class, function ($app) {
             $service = new MetaService();
-            $service->registerProvider(new MaterialSeoProvider($app->make(SettingService::class)));
             $service->registerProvider(new CategorySeoProvider($app->make(SettingService::class)));
             return $service;
         });
@@ -68,9 +62,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Group::class, GroupPolicy::class);
-        Gate::policy(Material::class, MaterialPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
+
+        // Политика для Material удалена — будет использоваться из модуля MaterialManager
+        // Gate::policy(Material::class, MaterialPolicy::class);
 
         Inertia::share([
             'auth' => function () {

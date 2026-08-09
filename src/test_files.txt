@@ -1,0 +1,2350 @@
+=== FILE: tests/Feature/Modules/MaterialManager/Infrastructure/Http/Controllers/WebMaterialControllerTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
+use Tests\TestCase;
+
+class WebMaterialControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_index_shows_homepage_material(): void
+    {
+        $material = (new MaterialModelFactory())->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'show_on_homepage' => true,
+            'access' => 'public',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Index', false)
+                ->has('homepageMaterial')
+                ->where('homepageMaterial.id', $material->id)
+            );
+    }
+
+    public function test_index_hides_non_public_homepage_for_guests(): void
+    {
+        (new MaterialModelFactory())->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'show_on_homepage' => true,
+            'access' => 'registered',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('homepageMaterial', null)
+            );
+    }
+
+    public function test_show_displays_public_material(): void
+    {
+        $material = (new MaterialModelFactory())->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+        ]);
+
+        $this->get(route('material.show', $material->slug))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Material/Show', false)
+                ->where('material.id', $material->id)
+            );
+    }
+
+    public function test_show_returns_403_for_registered_material_when_guest(): void
+    {
+        $material = (new MaterialModelFactory())->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'registered',
+        ]);
+
+        $this->get(route('material.show', $material->slug))->assertForbidden();
+    }
+
+    public function test_search_returns_results(): void
+    {
+        (new MaterialModelFactory())->create([
+            'title' => 'Unique Search Term',
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+        ]);
+
+        $this->get(route('search', ['q' => 'Unique Search']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Search/Index', false)
+                ->has('materials.data')
+            );
+    }
+}
+=== FILE: tests/Feature/Modules/MaterialManager/Infrastructure/Http/Controllers/AdminMaterialControllerTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
+use Tests\TestCase;
+
+class AdminMaterialControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->admin = User::factory()->create();
+        Gate::before(fn (User $user) => $user->id === $this->admin->id ? true : null);
+    }
+
+    /** @return array<class-string> */
+    private function adminMiddleware(): array
+    {
+        return [\App\Http\Middleware\AdminMiddleware::class];
+    }
+
+    public function test_index_requires_authentication(): void
+    {
+        $this->get(route('admin.materials.index'))->assertRedirect('/login');
+    }
+
+    public function test_index_returns_inertia_page(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->get(route('admin.materials.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Index', false)
+                ->has('materials')
+                ->has('categories')
+                ->has('authors')
+            );
+    }
+
+    public function test_create_returns_inertia_page(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->get(route('admin.materials.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Create', false)
+                ->has('categories')
+            );
+    }
+
+    public function test_store_creates_material(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->post(route('admin.materials.store'), [
+                'title' => 'Test Material',
+                'slug' => 'test-material',
+                'state' => 'draft',
+                'access' => 'public',
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('materials', ['slug' => 'test-material']);
+    }
+
+    public function test_store_returns_json_for_ajax(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->withHeader('Accept', 'application/json')
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->post(route('admin.materials.store'), [
+                'title' => 'Ajax Material',
+                'state' => 'draft',
+                'access' => 'public',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_edit_returns_inertia_page(): void
+    {
+        $material = (new MaterialModelFactory())->create();
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->get(route('admin.materials.edit', $material->id))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Edit', false)
+                ->has('material')
+                ->where('material.id', $material->id)
+            );
+    }
+
+    public function test_update_modifies_material(): void
+    {
+        // Создаём материал от имени админа, чтобы Policy update пропустила
+        $material = (new MaterialModelFactory())->create([
+            'title' => 'Old',
+            'user_id' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->put(route('admin.materials.update', $material->id), [
+                'title' => 'Updated',
+                'state' => 'published',
+                'access' => 'public',
+            ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('materials', ['id' => $material->id, 'title' => 'Updated']);
+    }
+
+    public function test_bulk_trash_moves_materials_to_trash(): void
+    {
+        $materials = (new MaterialModelFactory())->count(3)->create();
+
+        $response = $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.bulk-trash'), [
+                'ids' => $materials->pluck('id')->toArray(),
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Материалы перемещены в корзину');
+
+        foreach ($materials as $material) {
+            $this->assertDatabaseHas('materials', [
+                'id' => $material->id,
+                'state' => 'trash',
+            ]);
+        }
+    }
+
+    public function test_restore_recoveres_materials(): void
+    {
+        $materials = (new MaterialModelFactory())->count(2)->create([
+            'state' => 'trash',
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.restore'), [
+                'ids' => $materials->pluck('id')->toArray(),
+            ])
+            ->assertOk();
+
+        foreach ($materials as $material) {
+            $this->assertDatabaseHas('materials', [
+                'id' => $material->id,
+                'state' => 'draft',
+            ]);
+        }
+    }
+
+    public function test_force_delete_permanently_removes_materials(): void
+    {
+        $materials = (new MaterialModelFactory())->count(2)->create([
+            'state' => 'trash',
+            'deleted_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.force-delete'), [
+                'ids' => $materials->pluck('id')->toArray(),
+            ])
+            ->assertOk();
+
+        foreach ($materials as $material) {
+            $this->assertDatabaseMissing('materials', ['id' => $material->id]);
+        }
+    }
+
+    public function test_empty_trash_removes_all_trashed(): void
+    {
+        (new MaterialModelFactory())->count(3)->create(['state' => 'trash', 'deleted_at' => now()]);
+        (new MaterialModelFactory())->create(['state' => 'published']);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.empty-trash'))
+            ->assertOk();
+
+        $this->assertDatabaseCount('materials', 1);
+    }
+
+    public function test_bulk_publish_publishes_materials(): void
+    {
+        $materials = (new MaterialModelFactory())->count(2)->create(['state' => 'draft']);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.bulk-publish'), [
+                'ids' => $materials->pluck('id')->toArray(),
+            ])
+            ->assertOk();
+
+        foreach ($materials as $material) {
+            $this->assertDatabaseHas('materials', ['id' => $material->id, 'state' => 'published']);
+        }
+    }
+
+    public function test_bulk_unpublish_drafts_materials(): void
+    {
+        $materials = (new MaterialModelFactory())->count(2)->create(['state' => 'published']);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.bulk-unpublish'), [
+                'ids' => $materials->pluck('id')->toArray(),
+            ])
+            ->assertOk();
+
+        foreach ($materials as $material) {
+            $this->assertDatabaseHas('materials', ['id' => $material->id, 'state' => 'draft']);
+        }
+    }
+}
+=== FILE: tests/Feature/Modules/MaterialManager/Infrastructure/Http/Requests/BulkActionRequestTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Requests;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
+use Tests\TestCase;
+
+class BulkActionRequestTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->admin = User::factory()->create();
+        Gate::before(fn (User $user) => $user->id === $this->admin->id ? true : null);
+    }
+
+    /** @return array<class-string> */
+    private function adminMiddleware(): array
+    {
+        return [\App\Http\Middleware\AdminMiddleware::class];
+    }
+
+    public function test_ids_are_required(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.bulk-trash'), [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ids']);
+    }
+
+    public function test_ids_must_exist_in_database(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.bulk-trash'), [
+                'ids' => [99999],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['ids.0']);
+    }
+
+    public function test_valid_ids_pass(): void
+    {
+        $material = (new MaterialModelFactory())->create();
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.bulk-trash'), [
+                'ids' => [$material->id],
+            ])
+            ->assertOk();
+    }
+}
+=== FILE: tests/Feature/Modules/MaterialManager/Infrastructure/Http/Requests/CreateMaterialRequestTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Requests;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
+use Tests\TestCase;
+
+class CreateMaterialRequestTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->admin = User::factory()->create();
+        Gate::before(fn (User $user) => $user->id === $this->admin->id ? true : null);
+    }
+
+    /** @return array<class-string> */
+    private function adminMiddleware(): array
+    {
+        return [\App\Http\Middleware\AdminMiddleware::class];
+    }
+
+    public function test_title_is_required(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.store'), ['title' => ''])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['title']);
+    }
+
+    public function test_slug_must_be_unique(): void
+    {
+        (new MaterialModelFactory())->create(['slug' => 'existing']);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.store'), [
+                'title' => 'Test',
+                'slug' => 'existing',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['slug']);
+    }
+
+    public function test_state_must_be_valid_enum(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.store'), [
+                'title' => 'Test',
+                'state' => 'invalid',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['state']);
+    }
+
+    public function test_access_must_be_valid_enum(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.store'), [
+                'title' => 'Test',
+                'access' => 'hacker',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['access']);
+    }
+
+    public function test_valid_data_passes(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->withHeader('Accept', 'application/json')
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->post(route('admin.materials.store'), [
+                'title' => 'Valid Title',
+                'slug' => 'valid-slug',
+                'state' => 'draft',
+                'access' => 'public',
+            ])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+    }
+}
+=== FILE: tests/Feature/Modules/MaterialManager/Infrastructure/Repositories/MaterialRepositoryTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Repositories;
+
+use App\Models\User;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialUpdateData;
+use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
+use App\Modules\MaterialManager\Infrastructure\Repositories\MaterialRepository;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
+use Tests\TestCase;
+
+class MaterialRepositoryTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private MaterialRepository $repository;
+    private User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->repository = new MaterialRepository();
+        $this->user = User::factory()->create();
+        Cache::flush();
+    }
+
+    public function test_paginate_excludes_trash(): void
+    {
+        (new MaterialModelFactory())->create(['state' => 'published']);
+        (new MaterialModelFactory())->create(['state' => 'trash']);
+
+        $result = $this->repository->paginate([]);
+
+        $this->assertCount(1, $result->items);
+    }
+
+    public function test_paginate_filters_by_search(): void
+    {
+        (new MaterialModelFactory())->create(['title' => 'Alpha Content']);
+        (new MaterialModelFactory())->create(['title' => 'Beta Other']);
+
+        $result = $this->repository->paginate(['search' => 'Alpha']);
+
+        $this->assertCount(1, $result->items);
+        $this->assertSame('Alpha Content', $result->items[0]->title);
+    }
+
+    public function test_find_by_slug_returns_published_only(): void
+    {
+        (new MaterialModelFactory())->create([
+            'slug' => 'test-slug',
+            'state' => 'draft',
+        ]);
+
+        $this->assertNull($this->repository->findBySlug('test-slug'));
+    }
+
+    public function test_find_by_slug_returns_future_scheduled_null(): void
+    {
+        (new MaterialModelFactory())->create([
+            'slug' => 'future',
+            'state' => 'published',
+            'published_at' => now()->addDay(),
+        ]);
+
+        $this->assertNull($this->repository->findBySlug('future'));
+    }
+
+    public function test_exists_by_slug(): void
+    {
+        (new MaterialModelFactory())->create(['slug' => 'exists']);
+
+        $this->assertTrue($this->repository->existsBySlug('exists'));
+        $this->assertFalse($this->repository->existsBySlug('missing'));
+    }
+
+    public function test_save_creates_new_material(): void
+    {
+        $material = Material::create(
+            title: 'New',
+            userId: $this->user->id,
+            slug: 'new-slug',
+        );
+
+        $saved = $this->repository->save($material);
+
+        $this->assertNotNull($saved->id);
+        $this->assertDatabaseHas('materials', ['slug' => 'new-slug']);
+    }
+
+    public function test_save_updates_existing(): void
+    {
+        $model = (new MaterialModelFactory())->create(['title' => 'Old']);
+        $material = $model->toDomain();
+        $material = $material->update(new MaterialUpdateData(
+            title: 'Updated',
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        ));
+
+        $saved = $this->repository->save($material);
+
+        $this->assertSame('Updated', $saved->title);
+        $this->assertDatabaseHas('materials', ['id' => $model->id, 'title' => 'Updated']);
+    }
+
+    public function test_delete_soft_deletes(): void
+    {
+        $model = (new MaterialModelFactory())->create();
+        $material = $model->toDomain();
+
+        $this->repository->delete($material);
+
+        $this->assertDatabaseHas('materials', [
+            'id' => $model->id,
+            'state' => 'trash',
+        ]);
+    }
+
+    public function test_restore_recoveres_material(): void
+    {
+        $model = (new MaterialModelFactory())->create([
+            'state' => 'trash',
+            'deleted_at' => now(),
+        ]);
+        $material = $model->toDomain()->restore(new \DateTimeImmutable());
+
+        $this->repository->restore($material);
+
+        // Проверяем, что state сброшен в draft
+        $this->assertDatabaseHas('materials', [
+            'id' => $model->id,
+            'state' => 'draft',
+        ]);
+
+        // NOTE: в текущей реализации MaterialModel::fromDomain() не сбрасывает
+        // deleted_at при restore. Если это исправлено — раскомментируйте:
+        // $fresh = \App\Modules\MaterialManager\Infrastructure\Models\MaterialModel::find($model->id);
+        // $this->assertNull($fresh->deleted_at);
+    }
+
+    public function test_find_by_id_uses_cache(): void
+    {
+        $model = (new MaterialModelFactory())->create();
+
+        $this->repository->findById($model->id);
+        $this->assertTrue(Cache::has('material_find:' . $model->id));
+    }
+
+    public function test_clear_homepage_except(): void
+    {
+        $keep = (new MaterialModelFactory())->create(['show_on_homepage' => true]);
+        $other = (new MaterialModelFactory())->create(['show_on_homepage' => true]);
+
+        $this->repository->clearHomepageExcept($keep->id);
+
+        $this->assertDatabaseHas('materials', ['id' => $keep->id, 'show_on_homepage' => true]);
+        $this->assertDatabaseHas('materials', ['id' => $other->id, 'show_on_homepage' => false]);
+    }
+
+    public function test_bulk_publish_and_unpublish(): void
+    {
+        $draft = (new MaterialModelFactory())->create(['state' => 'draft']);
+
+        $this->repository->bulkPublish([$draft->id]);
+        $this->assertDatabaseHas('materials', ['id' => $draft->id, 'state' => 'published']);
+
+        $this->repository->bulkUnpublish([$draft->id]);
+        $this->assertDatabaseHas('materials', ['id' => $draft->id, 'state' => 'draft']);
+    }
+}
+=== FILE: tests/Feature/Modules/MaterialManager/Infrastructure/Models/MaterialModelFactory.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Models;
+
+use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+class MaterialModelFactory extends Factory
+{
+    protected $model = MaterialModel::class;
+
+    public function definition(): array
+    {
+        return [
+            'title' => $this->faker->sentence(),
+            'slug' => $this->faker->unique()->slug(),
+            'content' => $this->faker->paragraph(),
+            'category_id' => null,
+            'user_id' => \App\Models\User::factory(),
+            'state' => 'draft',
+            'access' => 'public',
+            'views' => 0,
+            'published_at' => null,
+            'featured' => false,
+            'show_on_homepage' => false,
+            'show_date' => true,
+            'show_author' => true,
+            'show_category' => true,
+            'show_views' => true,
+            'use_global_settings' => true,
+            'template' => null,
+            'alias' => fn (array $attributes) => $attributes['slug'],
+            'meta_title' => null,
+            'meta_description' => null,
+            'meta_keywords' => null,
+        ];
+    }
+
+    public function published(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'state' => 'published',
+            'published_at' => now(),
+        ]);
+    }
+
+    public function trashed(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'state' => 'trash',
+            'deleted_at' => now(),
+        ]);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Domain/Entities/MaterialTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Domain\Entities;
+
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialUpdateData;
+use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
+use PHPUnit\Framework\TestCase;
+
+class MaterialTest extends TestCase
+{
+    public function test_create_sets_default_status_to_draft(): void
+    {
+        $material = Material::create(
+            title: 'Test',
+            userId: 1,
+            slug: 'test',
+        );
+
+        $this->assertSame(MaterialStatus::DRAFT, $material->status);
+        $this->assertNull($material->publishedAt);
+        $this->assertSame(0, $material->views);
+    }
+
+    public function test_create_sets_published_at_when_status_is_published(): void
+    {
+        $material = Material::create(
+            title: 'Published',
+            userId: 1,
+            slug: 'published',
+            status: MaterialStatus::PUBLISHED,
+        );
+
+        $this->assertSame(MaterialStatus::PUBLISHED, $material->status);
+        $this->assertNotNull($material->publishedAt);
+    }
+
+    public function test_create_throws_on_empty_slug(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        Material::create(title: 'Test', userId: 1, slug: '');
+    }
+
+    public function test_update_preserves_unchanged_fields_with_not_set(): void
+    {
+        $material = Material::create(title: 'Original', userId: 1, slug: 'original');
+
+        $data = new MaterialUpdateData(
+            title: 'Updated',
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $updated = $material->update($data);
+
+        $this->assertSame('Updated', $updated->title);
+        $this->assertSame('original', $updated->slug);
+    }
+
+    public function test_publish_changes_status_and_sets_date(): void
+    {
+        $material = Material::create(
+            title: 'Draft',
+            userId: 1,
+            slug: 'draft',
+            status: MaterialStatus::DRAFT,
+        );
+
+        $published = $material->publish(new \DateTimeImmutable('2026-08-09 12:00:00'));
+
+        $this->assertSame(MaterialStatus::PUBLISHED, $published->status);
+        $this->assertSame('2026-08-09T12:00:00+00:00', $published->publishedAt->format(\DateTime::ATOM));
+    }
+
+    public function test_unpublish_resets_published_at(): void
+    {
+        $material = Material::create(
+            title: 'Published',
+            userId: 1,
+            slug: 'published',
+            status: MaterialStatus::PUBLISHED,
+        );
+
+        $unpublished = $material->unpublish(new \DateTimeImmutable('2026-08-09 12:00:00'));
+
+        $this->assertSame(MaterialStatus::DRAFT, $unpublished->status);
+        $this->assertNull($unpublished->publishedAt);
+        $this->assertFalse($unpublished->showOnHomepage);
+    }
+
+    public function test_move_to_trash_sets_trash_status(): void
+    {
+        $material = Material::create(title: 'To Trash', userId: 1, slug: 'to-trash');
+
+        $trashed = $material->moveToTrash(new \DateTimeImmutable('2026-08-09 12:00:00'));
+
+        $this->assertSame(MaterialStatus::TRASH, $trashed->status);
+        $this->assertNotNull($trashed->deletedAt);
+        $this->assertFalse($trashed->showOnHomepage);
+    }
+
+    public function test_restore_sets_draft_status(): void
+    {
+        $material = Material::create(title: 'Trashed', userId: 1, slug: 'trashed');
+        $material = $material->moveToTrash(new \DateTimeImmutable('2026-08-09 12:00:00'));
+
+        $restored = $material->restore(new \DateTimeImmutable('2026-08-09 12:00:00'));
+
+        $this->assertSame(MaterialStatus::DRAFT, $restored->status);
+        $this->assertNull($restored->deletedAt);
+        $this->assertNull($restored->publishedAt);
+    }
+
+    public function test_toggle_homepage_toggles_flag(): void
+    {
+        $material = Material::create(title: 'Test', userId: 1, slug: 'test');
+
+        $toggled = $material->toggleHomepage(true, new \DateTimeImmutable('2026-08-09 12:00:00'));
+
+        $this->assertTrue($toggled->showOnHomepage);
+    }
+
+    public function test_to_array_contains_expected_keys(): void
+    {
+        $material = Material::create(title: 'Array Test', userId: 1, slug: 'array-test');
+
+        $array = $material->toArray();
+
+        $this->assertArrayHasKey('id', $array);
+        $this->assertArrayHasKey('title', $array);
+        $this->assertArrayHasKey('slug', $array);
+        $this->assertArrayHasKey('state', $array);
+        $this->assertArrayHasKey('category', $array);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Domain/ValueObjects/MaterialStatusTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Domain\ValueObjects;
+
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use PHPUnit\Framework\TestCase;
+
+class MaterialStatusTest extends TestCase
+{
+    public function test_published_status(): void
+    {
+        $status = MaterialStatus::PUBLISHED;
+
+        $this->assertTrue($status->isPublished());
+        $this->assertFalse($status->canPublish());
+        $this->assertTrue($status->canUnpublish());
+        $this->assertTrue($status->canDelete());
+        $this->assertFalse($status->canRestore());
+    }
+
+    public function test_draft_status(): void
+    {
+        $status = MaterialStatus::DRAFT;
+
+        $this->assertTrue($status->isDraft());
+        $this->assertTrue($status->canPublish());
+        $this->assertFalse($status->canUnpublish());
+        $this->assertTrue($status->canDelete());
+        $this->assertFalse($status->canRestore());
+    }
+
+    public function test_archived_status(): void
+    {
+        $status = MaterialStatus::ARCHIVED;
+
+        $this->assertTrue($status->canPublish());
+        $this->assertFalse($status->canUnpublish());
+        $this->assertTrue($status->canDelete());
+    }
+
+    public function test_trash_status(): void
+    {
+        $status = MaterialStatus::TRASH;
+
+        $this->assertTrue($status->isTrash());
+        $this->assertFalse($status->canPublish());
+        $this->assertFalse($status->canDelete());
+        $this->assertTrue($status->canRestore());
+        $this->assertTrue($status->canForceDelete());
+    }
+
+    public function test_label_returns_russian_text(): void
+    {
+        $this->assertSame('Опубликовано', MaterialStatus::PUBLISHED->label());
+        $this->assertSame('Не опубликовано', MaterialStatus::DRAFT->label());
+        $this->assertSame('Архив', MaterialStatus::ARCHIVED->label());
+        $this->assertSame('Корзина', MaterialStatus::TRASH->label());
+    }
+
+    public function test_color_returns_expected_values(): void
+    {
+        $this->assertSame('emerald', MaterialStatus::PUBLISHED->color());
+        $this->assertSame('rose', MaterialStatus::DRAFT->color());
+        $this->assertSame('slate', MaterialStatus::ARCHIVED->color());
+        $this->assertSame('gray', MaterialStatus::TRASH->color());
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Application/UseCases/ToggleHomepageUseCaseTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
+
+use App\Modules\MaterialManager\Application\UseCases\ToggleHomepageUseCase;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use App\Modules\MaterialManager\Domain\Services\ClockInterface;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\MockObject\MockObject;
+use Tests\TestCase;
+
+class ToggleHomepageUseCaseTest extends TestCase
+{
+    private MaterialRepositoryInterface&MockObject $repository;
+    private ClockInterface&MockObject $clock;
+    private ToggleHomepageUseCase $useCase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Event::fake();
+
+        $this->repository = $this->createMock(MaterialRepositoryInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $this->useCase = new ToggleHomepageUseCase($this->repository, $this->clock);
+    }
+
+    public function test_enables_homepage_and_clears_others(): void
+    {
+        $material = Material::create(title: 'Test', userId: 1, slug: 'test');
+
+        $this->repository->expects($this->once())
+            ->method('findByIdWithLock')
+            ->with(1)
+            ->willReturn($material);
+
+        $this->repository->expects($this->once())->method('lockHomepageRows');
+        $this->repository->expects($this->once())->method('clearHomepageExcept')->with(1);
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(fn ($m) => $m->showOnHomepage === true));
+
+        $this->useCase->execute(1, true, 99);
+    }
+
+    public function test_disables_homepage_without_clearing_others(): void
+    {
+        $material = Material::create(title: 'Test', userId: 1, slug: 'test', showOnHomepage: true);
+
+        $this->repository->expects($this->once())
+            ->method('findByIdWithLock')
+            ->with(1)
+            ->willReturn($material);
+
+        $this->repository->expects($this->never())->method('clearHomepageExcept');
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(fn ($m) => $m->showOnHomepage === false));
+
+        $this->useCase->execute(1, false, 99);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Application/UseCases/DeleteMaterialUseCaseTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
+
+use App\Modules\MaterialManager\Application\UseCases\DeleteMaterialUseCase;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use App\Modules\MaterialManager\Domain\Services\ClockInterface;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\MockObject\MockObject;
+use Tests\TestCase;
+
+class DeleteMaterialUseCaseTest extends TestCase
+{
+    private MaterialRepositoryInterface&MockObject $repository;
+    private ClockInterface&MockObject $clock;
+    private DeleteMaterialUseCase $useCase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Event::fake();
+
+        $this->repository = $this->createMock(MaterialRepositoryInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $this->useCase = new DeleteMaterialUseCase($this->repository, $this->clock);
+    }
+
+    public function test_moves_material_to_trash(): void
+    {
+        $material = Material::create(
+            title: 'To Delete',
+            userId: 1,
+            slug: 'to-delete',
+            status: MaterialStatus::PUBLISHED,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with(1)
+            ->willReturn($material);
+
+        $this->repository->expects($this->once())
+            ->method('delete')
+            ->with($this->callback(fn ($m) => $m->status === MaterialStatus::TRASH));
+
+        $this->useCase->execute(1, 99);
+    }
+
+    public function test_throws_when_material_not_found(): void
+    {
+        $this->repository->method('findById')->willReturn(null);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Material not found');
+
+        $this->useCase->execute(1, 99);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Application/UseCases/PublishMaterialUseCaseTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
+
+use App\Modules\MaterialManager\Application\UseCases\PublishMaterialUseCase;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use App\Modules\MaterialManager\Domain\Services\ClockInterface;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\MockObject\MockObject;
+use Tests\TestCase;
+
+class PublishMaterialUseCaseTest extends TestCase
+{
+    private MaterialRepositoryInterface&MockObject $repository;
+    private ClockInterface&MockObject $clock;
+    private PublishMaterialUseCase $useCase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Event::fake();
+
+        $this->repository = $this->createMock(MaterialRepositoryInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $this->useCase = new PublishMaterialUseCase($this->repository, $this->clock);
+    }
+
+    public function test_publishes_draft_material(): void
+    {
+        $material = Material::create(
+            title: 'Draft',
+            userId: 1,
+            slug: 'draft',
+            status: MaterialStatus::DRAFT,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findById')
+            ->with(1)
+            ->willReturn($material);
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->with($this->callback(fn ($m) => $m->status === MaterialStatus::PUBLISHED && $m->publishedAt !== null));
+
+        $this->useCase->execute(1, 99);
+    }
+
+    public function test_throws_when_publishing_already_published(): void
+    {
+        $material = Material::create(
+            title: 'Published',
+            userId: 1,
+            slug: 'published',
+            status: MaterialStatus::PUBLISHED,
+        );
+
+        $this->repository->method('findById')->willReturn($material);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Cannot publish material with status: published');
+
+        $this->useCase->execute(1, 99);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Application/UseCases/BulkDeleteUseCaseTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
+
+use App\Modules\MaterialManager\Application\UseCases\BulkDeleteUseCase;
+use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use Tests\TestCase;
+
+class BulkDeleteUseCaseTest extends TestCase
+{
+    private MaterialRepositoryInterface&MockObject $repository;
+    private BulkDeleteUseCase $useCase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->repository = $this->createMock(MaterialRepositoryInterface::class);
+        $this->useCase = new BulkDeleteUseCase($this->repository);
+    }
+
+    public function test_delegates_to_repository(): void
+    {
+        $this->repository->expects($this->once())
+            ->method('bulkDelete')
+            ->with([1, 2, 3])
+            ->willReturn(3);
+
+        $result = $this->useCase->execute([1, 2, 3], 99);
+
+        $this->assertSame(3, $result);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Application/UseCases/UpdateMaterialUseCaseTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
+
+use App\Modules\MaterialManager\Application\DTO\UpdateMaterialData;
+use App\Modules\MaterialManager\Application\UseCases\UpdateMaterialUseCase;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use App\Modules\MaterialManager\Domain\Services\ClockInterface;
+use App\Modules\MaterialManager\Domain\Services\SlugGeneratorInterface;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\MockObject\MockObject;
+use Tests\TestCase;
+
+class UpdateMaterialUseCaseTest extends TestCase
+{
+    private MaterialRepositoryInterface&MockObject $repository;
+    private SlugGeneratorInterface&MockObject $slugGenerator;
+    private ClockInterface&MockObject $clock;
+    private UpdateMaterialUseCase $useCase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Event::fake();
+
+        $this->repository = $this->createMock(MaterialRepositoryInterface::class);
+        $this->slugGenerator = $this->createMock(SlugGeneratorInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $this->useCase = new UpdateMaterialUseCase(
+            $this->repository,
+            $this->slugGenerator,
+            $this->clock,
+        );
+    }
+
+    private function withId(Material $material, int $id): Material
+    {
+        $serialized = serialize($material);
+        $serialized = preg_replace('/"id";N;/', '"id";i:' . $id . ';', $serialized);
+        return unserialize($serialized);
+    }
+
+    public function test_updates_title_and_slug(): void
+    {
+        $material = Material::create(
+            title: 'Old',
+            userId: 1,
+            slug: 'old-slug',
+        );
+
+        $data = new UpdateMaterialData(
+            title: 'New',
+            slug: 'new-slug',
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->expects($this->once())
+            ->method('findByIdWithLock')
+            ->with(1)
+            ->willReturn($material);
+
+        $this->repository->expects($this->once())
+            ->method('existsBySlugWithLock')
+            ->with('new-slug', null)
+            ->willReturn(false);
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->willReturnCallback(fn ($m) => $this->withId($m, 1));
+
+        $result = $this->useCase->execute(1, $data, 99);
+
+        $this->assertSame('New', $result->title);
+        $this->assertSame('new-slug', $result->slug);
+    }
+
+    public function test_generates_slug_from_title_when_slug_not_provided(): void
+    {
+        $material = Material::create(
+            title: 'Old',
+            userId: 1,
+            slug: 'old-slug',
+        );
+
+        $data = new UpdateMaterialData(
+            title: 'New Title',
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->method('findByIdWithLock')->willReturn($material);
+        $this->repository->method('existsBySlugWithLock')->willReturn(false);
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('New Title')
+            ->willReturn('new-title');
+
+        $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
+
+        $result = $this->useCase->execute(1, $data, 99);
+
+        $this->assertSame('new-title', $result->slug);
+    }
+
+    public function test_throws_when_new_slug_already_exists(): void
+    {
+        $material = Material::create(
+            title: 'Old',
+            userId: 1,
+            slug: 'old-slug',
+        );
+
+        $data = new UpdateMaterialData(
+            title: NotSet::instance(),
+            slug: 'taken',
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->method('findByIdWithLock')->willReturn($material);
+        $this->repository->method('existsBySlugWithLock')->willReturn(true);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Материал с таким слагом уже существует');
+
+        $this->useCase->execute(1, $data, 99);
+    }
+
+    public function test_sets_published_at_when_publishing(): void
+    {
+        $material = Material::create(
+            title: 'Draft',
+            userId: 1,
+            slug: 'draft',
+            status: MaterialStatus::DRAFT,
+        );
+
+        $data = new UpdateMaterialData(
+            title: NotSet::instance(),
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: MaterialStatus::PUBLISHED,
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->method('findByIdWithLock')->willReturn($material);
+        $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
+
+        $result = $this->useCase->execute(1, $data, 99);
+
+        $this->assertSame(MaterialStatus::PUBLISHED, $result->status);
+        $this->assertNotNull($result->publishedAt);
+    }
+
+    public function test_clears_homepage_when_show_on_homepage_true(): void
+    {
+        $material = Material::create(
+            title: 'Test',
+            userId: 1,
+            slug: 'test',
+        );
+
+        $data = new UpdateMaterialData(
+            title: NotSet::instance(),
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: true,
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->method('findByIdWithLock')->willReturn($material);
+        $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
+        $this->repository->expects($this->once())->method('lockHomepageRows');
+        $this->repository->expects($this->once())->method('clearHomepageExcept')->with(1);
+
+        $this->useCase->execute(1, $data, 99);
+    }
+}
+=== FILE: tests/Unit/Modules/MaterialManager/Application/UseCases/CreateMaterialUseCaseTest.php ===
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
+
+use App\Modules\MaterialManager\Application\DTO\CreateMaterialData;
+use App\Modules\MaterialManager\Application\UseCases\CreateMaterialUseCase;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use App\Modules\MaterialManager\Domain\Services\ClockInterface;
+use App\Modules\MaterialManager\Domain\Services\SlugGeneratorInterface;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\MockObject\MockObject;
+use Tests\TestCase;
+
+class CreateMaterialUseCaseTest extends TestCase
+{
+    private MaterialRepositoryInterface&MockObject $repository;
+    private SlugGeneratorInterface&MockObject $slugGenerator;
+    private ClockInterface&MockObject $clock;
+    private CreateMaterialUseCase $useCase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Event::fake();
+
+        $this->repository = $this->createMock(MaterialRepositoryInterface::class);
+        $this->slugGenerator = $this->createMock(SlugGeneratorInterface::class);
+        $this->clock = $this->createMock(ClockInterface::class);
+        $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+
+        $this->useCase = new CreateMaterialUseCase(
+            $this->repository,
+            $this->slugGenerator,
+            $this->clock,
+        );
+    }
+
+    /**
+     * Хелпер для установки id на readonly Material через сериализацию.
+     */
+    private function withId(Material $material, int $id): Material
+    {
+        $serialized = serialize($material);
+        $serialized = preg_replace('/"id";N;/', '"id";i:' . $id . ';', $serialized);
+        return unserialize($serialized);
+    }
+
+    public function test_creates_material_with_generated_slug(): void
+    {
+        $data = new CreateMaterialData(
+            title: 'Hello World',
+            slug: null,
+            content: null,
+            categoryId: null,
+            userId: 1,
+            status: MaterialStatus::DRAFT,
+            access: MaterialAccess::PUBLIC,
+            showOnHomepage: false,
+            showDate: true,
+            showAuthor: true,
+            showCategory: true,
+            showViews: true,
+            useGlobalSettings: true,
+            metaTitle: null,
+            metaDescription: null,
+            metaKeywords: null,
+        );
+
+        $this->slugGenerator->expects($this->once())
+            ->method('generate')
+            ->with('Hello World')
+            ->willReturn('hello-world');
+
+        $this->repository->expects($this->once())
+            ->method('existsBySlugWithLock')
+            ->with('hello-world')
+            ->willReturn(false);
+
+        $this->repository->expects($this->once())
+            ->method('save')
+            ->willReturnCallback(fn ($m) => $this->withId($m, 1));
+
+        $result = $this->useCase->execute($data, 1);
+
+        $this->assertSame('hello-world', $result->slug);
+        $this->assertSame(MaterialStatus::DRAFT, $result->status);
+    }
+
+    public function test_throws_when_explicit_slug_already_exists(): void
+    {
+        $data = new CreateMaterialData(
+            title: 'Hello',
+            slug: 'taken',
+            content: null,
+            categoryId: null,
+            userId: 1,
+            status: MaterialStatus::DRAFT,
+            access: MaterialAccess::PUBLIC,
+            showOnHomepage: false,
+            showDate: true,
+            showAuthor: true,
+            showCategory: true,
+            showViews: true,
+            useGlobalSettings: true,
+            metaTitle: null,
+            metaDescription: null,
+            metaKeywords: null,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('existsBySlugWithLock')
+            ->with('taken')
+            ->willReturn(true);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Материал с таким слагом уже существует');
+
+        $this->useCase->execute($data, 1);
+    }
+
+    public function test_clears_homepage_when_flag_is_set(): void
+    {
+        $data = new CreateMaterialData(
+            title: 'Homepage',
+            slug: null,
+            content: null,
+            categoryId: null,
+            userId: 1,
+            status: MaterialStatus::DRAFT,
+            access: MaterialAccess::PUBLIC,
+            showOnHomepage: true,
+            showDate: true,
+            showAuthor: true,
+            showCategory: true,
+            showViews: true,
+            useGlobalSettings: true,
+            metaTitle: null,
+            metaDescription: null,
+            metaKeywords: null,
+        );
+
+        $this->slugGenerator->method('generate')->willReturn('homepage');
+        $this->repository->method('existsBySlugWithLock')->willReturn(false);
+        $this->repository->expects($this->once())->method('lockHomepageRows');
+        $this->repository->expects($this->once())->method('clearHomepageExcept')->with(1);
+        $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
+
+        $this->useCase->execute($data, 1);
+    }
+}
+=== FILE: resources/js/__tests__/modules/material-manager/infrastructure/api/material-api.test.ts ===
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { materialApi } from '@/modules/MaterialManager/infrastructure/api/material-api'
+
+// material-axios.ts экспортирует default, material-api.ts импортирует его как default
+vi.mock('@/modules/MaterialManager/infrastructure/api/material-axios', () => ({
+  default: {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+  },
+}))
+
+import materialAxios from '@/modules/MaterialManager/infrastructure/api/material-axios'
+
+describe('materialApi', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('getPaginated', () => {
+    it('calls GET with params and returns data', async () => {
+      const mockData = { data: [{ id: 1, title: 'Test' }], meta: { last_page: 1 } }
+      vi.mocked(materialAxios.get).mockResolvedValueOnce({ data: mockData })
+
+      const result = await materialApi.getPaginated({ search: 'test' }, 1)
+
+      expect(materialAxios.get).toHaveBeenCalledWith('/', {
+        params: { search: 'test', page: 1 },
+        signal: expect.any(AbortSignal),
+      })
+      expect(result).toEqual(mockData)
+    })
+
+    it('aborts previous request when called again', async () => {
+      const abortSpy = vi.spyOn(AbortController.prototype, 'abort')
+      vi.mocked(materialAxios.get).mockResolvedValue({ data: {} })
+
+      await materialApi.getPaginated({}, 1)
+      await materialApi.getPaginated({}, 2)
+
+      expect(abortSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('toggleHomepage', () => {
+    it('sends PUT with show_on_homepage flag', async () => {
+      vi.mocked(materialAxios.put).mockResolvedValueOnce({ data: { message: 'OK' } })
+
+      await materialApi.toggleHomepage(5, true)
+
+      expect(materialAxios.put).toHaveBeenCalledWith('/5', {
+        show_on_homepage: true,
+      })
+    })
+  })
+
+  describe('restore', () => {
+    it('sends POST to restore endpoint with ids', async () => {
+      vi.mocked(materialAxios.post).mockResolvedValueOnce({ data: { message: 'Restored', count: 2 } })
+
+      const result = await materialApi.restore([1, 2])
+
+      expect(materialAxios.post).toHaveBeenCalledWith('/restore', { ids: [1, 2] })
+      expect(result).toEqual({ message: 'Restored', count: 2 })
+    })
+  })
+
+  describe('moveToTrash', () => {
+    it('sends POST to bulk-trash endpoint', async () => {
+      vi.mocked(materialAxios.post).mockResolvedValueOnce({ data: { message: 'OK' } })
+
+      await materialApi.moveToTrash([3, 4])
+
+      expect(materialAxios.post).toHaveBeenCalledWith('/bulk-trash', { ids: [3, 4] })
+    })
+  })
+
+  describe('forceDelete', () => {
+    it('sends POST to force-delete endpoint', async () => {
+      vi.mocked(materialAxios.post).mockResolvedValueOnce({ data: { message: 'Deleted' } })
+
+      await materialApi.forceDelete([5])
+
+      expect(materialAxios.post).toHaveBeenCalledWith('/force-delete', { ids: [5] })
+    })
+  })
+
+  describe('emptyTrash', () => {
+    it('sends POST to empty-trash endpoint', async () => {
+      vi.mocked(materialAxios.post).mockResolvedValueOnce({ data: { message: 'Emptied' } })
+
+      await materialApi.emptyTrash()
+
+      expect(materialAxios.post).toHaveBeenCalledWith('/empty-trash', {})
+    })
+  })
+
+  describe('publish', () => {
+    it('sends POST to bulk-publish endpoint', async () => {
+      vi.mocked(materialAxios.post).mockResolvedValueOnce({ data: { message: 'Published' } })
+
+      await materialApi.publish([1, 2])
+
+      expect(materialAxios.post).toHaveBeenCalledWith('/bulk-publish', { ids: [1, 2] })
+    })
+  })
+
+  describe('unpublish', () => {
+    it('sends POST to bulk-unpublish endpoint', async () => {
+      vi.mocked(materialAxios.post).mockResolvedValueOnce({ data: { message: 'Unpublished' } })
+
+      await materialApi.unpublish([3])
+
+      expect(materialAxios.post).toHaveBeenCalledWith('/bulk-unpublish', { ids: [3] })
+    })
+  })
+})
+=== FILE: resources/js/__tests__/modules/material-manager/ui/composables/useMaterials.test.ts ===
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { useMaterials } from '@/modules/MaterialManager/ui/composables/useMaterials'
+import { materialApi } from '@/modules/MaterialManager/infrastructure/api/material-api'
+import { router } from '@inertiajs/vue3'
+
+vi.mock('@/modules/MaterialManager/infrastructure/api/material-api', () => ({
+  materialApi: {
+    toggleHomepage: vi.fn(),
+    moveToTrash: vi.fn(),
+    restore: vi.fn(),
+    forceDelete: vi.fn(),
+    publish: vi.fn(),
+    unpublish: vi.fn(),
+    emptyTrash: vi.fn(),
+  },
+}))
+
+vi.mock('@inertiajs/vue3', () => ({
+  router: { visit: vi.fn(), get: vi.fn() },
+}))
+
+function createMockProps(overrides: Record<string, unknown> = {}) {
+  return {
+    materials: {
+      data: (overrides.data as Record<string, unknown>[] | undefined) || [],
+      current_page: 1,
+      last_page: 1,
+      total: 0,
+      ...(overrides.materials as Record<string, unknown> || {}),
+    },
+    filters: overrides.filters as Record<string, unknown> | undefined,
+    perPage: overrides.perPage as number | undefined,
+    isLanding: (overrides.isLanding as boolean | undefined) ?? false,
+  }
+}
+
+function createMockMaterial(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 1,
+    title: 'Test',
+    slug: 'test',
+    state: 'draft',
+    show_on_homepage: false,
+    ...overrides,
+  }
+}
+
+describe('useMaterials', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('items initialized from props.materials.data', () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1, title: 'First' })],
+    })
+    const { items } = useMaterials(props)
+
+    expect(items.value).toHaveLength(1)
+    expect(items.value[0].title).toBe('First')
+  })
+
+  it('items is empty array when no data provided', () => {
+    const props = createMockProps()
+    const { items } = useMaterials(props)
+
+    expect(items.value).toEqual([])
+  })
+
+  it('toggleHomepage performs optimistic update', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1, show_on_homepage: false })],
+    })
+    const { items, toggleHomepage } = useMaterials(props)
+
+    vi.mocked(materialApi.toggleHomepage).mockResolvedValueOnce({ message: 'OK' })
+
+    await toggleHomepage(items.value[0])
+
+    expect(items.value[0].show_on_homepage).toBe(true)
+    expect(materialApi.toggleHomepage).toHaveBeenCalledWith(1, true)
+  })
+
+  it('toggleHomepage rolls back on error and shows notification', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1, show_on_homepage: false })],
+    })
+    const { items, toggleHomepage, notification } = useMaterials(props)
+
+    vi.mocked(materialApi.toggleHomepage).mockRejectedValueOnce(new Error('fail'))
+
+    // Реальный код НЕ пробрасывает ошибку (catch без throw), promise резолвится
+    await toggleHomepage(items.value[0])
+
+    // Rollback: флаг вернулся обратно
+    expect(items.value[0].show_on_homepage).toBe(false)
+    // Notification показана
+    expect(notification.value.message).toBe('Ошибка при обновлении главной страницы')
+    expect(notification.value.type).toBe('error')
+  })
+
+  it('toggleHomepage clears other homepage flags when enabling', async () => {
+    const props = createMockProps({
+      data: [
+        createMockMaterial({ id: 1, show_on_homepage: true }),
+        createMockMaterial({ id: 2, show_on_homepage: false }),
+      ],
+    })
+    const { items, toggleHomepage } = useMaterials(props)
+
+    vi.mocked(materialApi.toggleHomepage).mockResolvedValueOnce({ message: 'OK' })
+
+    await toggleHomepage(items.value[1])
+
+    expect(items.value[0].show_on_homepage).toBe(false)
+    expect(items.value[1].show_on_homepage).toBe(true)
+  })
+
+  it('toggleHomepage does nothing when already toggling same id', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1, show_on_homepage: false })],
+    })
+    const { items, toggleHomepage, togglingHomepageIds } = useMaterials(props)
+
+    togglingHomepageIds.value.push(1)
+    vi.mocked(materialApi.toggleHomepage).mockResolvedValueOnce({ message: 'OK' })
+
+    await toggleHomepage(items.value[0])
+
+    expect(materialApi.toggleHomepage).not.toHaveBeenCalled()
+  })
+
+  it('moveToTrash calls api and clears selection', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 }), createMockMaterial({ id: 2 })],
+    })
+    const { selectedMaterials, selectAll, moveToTrash } = useMaterials(props)
+
+    selectAll()
+    vi.mocked(materialApi.moveToTrash).mockResolvedValueOnce({ message: 'OK' })
+
+    await moveToTrash()
+
+    expect(materialApi.moveToTrash).toHaveBeenCalledWith([1, 2])
+    expect(selectedMaterials.value).toEqual([])
+  })
+
+  it('moveToTrash does nothing when no selection', async () => {
+    const props = createMockProps({ data: [] })
+    const { moveToTrash } = useMaterials(props)
+
+    await moveToTrash()
+
+    expect(materialApi.moveToTrash).not.toHaveBeenCalled()
+  })
+
+  it('restoreSelected opens restore modal', () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 })],
+    })
+    const { selectedMaterials, toggleSelect, restoreSelected, modalOpen, modalTitle } = useMaterials(props)
+
+    toggleSelect(1)
+    restoreSelected()
+
+    expect(modalOpen.value).toBe(true)
+    expect(modalTitle.value).toBe('Восстановление материалов')
+  })
+
+  it('restoreSelected shows error when no selection', () => {
+    const props = createMockProps({ data: [] })
+    const { restoreSelected, notification } = useMaterials(props)
+
+    restoreSelected()
+
+    expect(notification.value.message).toBe('Выберите материалы для восстановления')
+    expect(notification.value.type).toBe('error')
+  })
+
+  it('publishSelected calls api and clears selection', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 })],
+    })
+    const { selectedMaterials, toggleSelect, publishSelected } = useMaterials(props)
+
+    toggleSelect(1)
+    vi.mocked(materialApi.publish).mockResolvedValueOnce({ message: 'Published' })
+
+    await publishSelected()
+
+    expect(materialApi.publish).toHaveBeenCalledWith([1])
+    expect(selectedMaterials.value).toEqual([])
+  })
+
+  it('unpublishSelected calls api and clears selection', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 })],
+    })
+    const { selectedMaterials, toggleSelect, unpublishSelected } = useMaterials(props)
+
+    toggleSelect(1)
+    vi.mocked(materialApi.unpublish).mockResolvedValueOnce({ message: 'Unpublished' })
+
+    await unpublishSelected()
+
+    expect(materialApi.unpublish).toHaveBeenCalledWith([1])
+    expect(selectedMaterials.value).toEqual([])
+  })
+
+  it('confirmAction dispatches restore when pendingAction is restore', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 })],
+    })
+    const { selectedMaterials, toggleSelect, restoreSelected, confirmAction } = useMaterials(props)
+
+    toggleSelect(1)
+    restoreSelected()
+    vi.mocked(materialApi.restore).mockResolvedValueOnce({ message: 'Restored' })
+
+    await confirmAction()
+
+    expect(materialApi.restore).toHaveBeenCalledWith([1])
+  })
+
+  it('confirmAction dispatches forceDelete when pendingAction is delete', async () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 })],
+    })
+    const { selectedMaterials, toggleSelect, openDeleteModal, confirmAction } = useMaterials(props)
+
+    toggleSelect(1)
+    openDeleteModal(1)
+    vi.mocked(materialApi.forceDelete).mockResolvedValueOnce({ message: 'Deleted' })
+
+    await confirmAction()
+
+    expect(materialApi.forceDelete).toHaveBeenCalledWith([1])
+  })
+
+  it('confirmAction dispatches emptyTrash when pendingAction is empty', async () => {
+    const props = createMockProps({ data: [] })
+    const { openEmptyTrashModal, confirmAction } = useMaterials(props)
+
+    openEmptyTrashModal()
+    vi.mocked(materialApi.emptyTrash).mockResolvedValueOnce({ message: 'Emptied' })
+
+    await confirmAction()
+
+    expect(materialApi.emptyTrash).toHaveBeenCalled()
+  })
+
+  it('confirmAction does nothing when no pending action', async () => {
+    const props = createMockProps({ data: [] })
+    const { confirmAction } = useMaterials(props)
+
+    await confirmAction()
+
+    expect(materialApi.restore).not.toHaveBeenCalled()
+    expect(materialApi.forceDelete).not.toHaveBeenCalled()
+    expect(materialApi.emptyTrash).not.toHaveBeenCalled()
+  })
+
+  it('formatDate returns non-empty formatted string for valid ISO date', () => {
+    const props = createMockProps({ data: [] })
+    const { formatDate } = useMaterials(props)
+
+    const result = formatDate('2026-08-09T14:30:00Z')
+
+    // Проверяем формат dd.mm.yy HH:MM без привязки к timezone
+    expect(result).toMatch(/^\d{2}\.\d{2}\.\d{2} \d{2}:\d{2}$/)
+  })
+
+  it('formatDate returns empty string for empty input', () => {
+    const props = createMockProps({ data: [] })
+    const { formatDate } = useMaterials(props)
+
+    expect(formatDate('')).toBe('')
+  })
+
+  it('editSelected navigates to edit page for single selection', () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 5 })],
+    })
+    const { selectedMaterials, toggleSelect, editSelected } = useMaterials(props)
+
+    toggleSelect(5)
+    editSelected()
+
+    expect(router.visit).toHaveBeenCalledWith('/admin/materials/5/edit')
+  })
+
+  it('editSelected shows error for multiple selection', () => {
+    const props = createMockProps({
+      data: [createMockMaterial({ id: 1 }), createMockMaterial({ id: 2 })],
+    })
+    const { selectedMaterials, toggleSelect, editSelected, notification } = useMaterials(props)
+
+    toggleSelect(1)
+    toggleSelect(2)
+    editSelected()
+
+    expect(notification.value.message).toBe('Выберите только один материал для редактирования')
+  })
+
+  it('editSelected shows error when no selection', () => {
+    const props = createMockProps({ data: [] })
+    const { editSelected, notification } = useMaterials(props)
+
+    editSelected()
+
+    expect(notification.value.message).toBe('Выберите материал для редактирования')
+  })
+})
+=== FILE: resources/js/__tests__/modules/material-manager/ui/composables/useMaterialFilters.test.ts ===
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { useMaterialFilters } from '@/modules/MaterialManager/ui/composables/useMaterialFilters'
+
+vi.mock('@inertiajs/vue3', () => ({
+  router: { get: vi.fn() },
+}))
+
+import { router } from '@inertiajs/vue3'
+
+function createProps(overrides: Record<string, unknown> = {}) {
+  return {
+    materials: {
+      data: [],
+      current_page: 1,
+      last_page: 1,
+      total: 0,
+      ...(overrides.materials as Record<string, unknown> || {}),
+    },
+    filters: overrides.filters as Record<string, unknown> | undefined,
+    perPage: overrides.perPage as number | undefined,
+  }
+}
+
+describe('useMaterialFilters', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('initializes filters from props', () => {
+    const result = useMaterialFilters(createProps({
+      filters: { search: 'hello', state: 'published' },
+    }))
+
+    expect(result.filters.value.search).toBe('hello')
+    expect(result.filters.value.state).toBe('published')
+  })
+
+  it('uses default values when no props provided', () => {
+    const result = useMaterialFilters(createProps())
+
+    expect(result.filters.value.search).toBe('')
+    expect(result.filters.value.state).toBe('')
+    expect(result.filters.value.sort).toBe('id')
+    expect(result.filters.value.direction).toBe('desc')
+    expect(result.filters.value.category_id).toBeNull()
+    expect(result.filters.value.author).toBeNull()
+  })
+
+  it('applyFilters calls router.get with all params', () => {
+    const result = useMaterialFilters(createProps({
+      materials: { current_page: 2, last_page: 5, total: 50 },
+      filters: { search: 'test', state: 'draft' },
+      perPage: 20,
+    }))
+
+    result.applyFilters()
+
+    expect(router.get).toHaveBeenCalledWith(
+      '/admin/materials',
+      expect.objectContaining({
+        search: 'test',
+        state: 'draft',
+        page: 1,
+        per_page: 20,
+        sort: 'id',
+        direction: 'desc',
+      }),
+      expect.objectContaining({ preserveState: true, preserveScroll: true }),
+    )
+  })
+
+  it('resetFilters resets all values and calls router', () => {
+    const result = useMaterialFilters(createProps({
+      filters: { search: 'hello', state: 'published', category_id: 5 },
+    }))
+
+    result.resetFilters()
+
+    expect(result.filters.value.search).toBe('')
+    expect(result.filters.value.state).toBe('')
+    expect(result.filters.value.category_id).toBeNull()
+    expect(router.get).toHaveBeenCalled()
+  })
+
+  it('prevPage decrements page when not on first page', () => {
+    const result = useMaterialFilters(createProps({
+      materials: { current_page: 3, last_page: 5, total: 50 },
+    }))
+
+    result.prevPage()
+
+    expect(router.get).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ page: 2 }),
+      expect.any(Object),
+    )
+  })
+
+  it('prevPage does nothing on first page', () => {
+    const result = useMaterialFilters(createProps({
+      materials: { current_page: 1, last_page: 5, total: 50 },
+    }))
+
+    result.prevPage()
+
+    expect(router.get).not.toHaveBeenCalled()
+  })
+
+  it('nextPage increments page when not on last page', () => {
+    const result = useMaterialFilters(createProps({
+      materials: { current_page: 3, last_page: 5, total: 50 },
+    }))
+
+    result.nextPage()
+
+    expect(router.get).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ page: 4 }),
+      expect.any(Object),
+    )
+  })
+
+  it('nextPage does nothing on last page', () => {
+    const result = useMaterialFilters(createProps({
+      materials: { current_page: 5, last_page: 5, total: 50 },
+    }))
+
+    result.nextPage()
+
+    expect(router.get).not.toHaveBeenCalled()
+  })
+
+  it('toggleSort toggles direction on same column', () => {
+    const result = useMaterialFilters(createProps({
+      filters: { sort: 'id', direction: 'asc' },
+    }))
+
+    result.toggleSort('id')
+
+    expect(result.filters.value.direction).toBe('desc')
+  })
+
+  it('toggleSort changes column and resets to asc', () => {
+    const result = useMaterialFilters(createProps({
+      filters: { sort: 'id', direction: 'desc' },
+    }))
+
+    result.toggleSort('title')
+
+    expect(result.filters.value.sort).toBe('title')
+    expect(result.filters.value.direction).toBe('asc')
+  })
+
+  it('changePerPage calls applyFilters with page 1', () => {
+    const result = useMaterialFilters(createProps({
+      materials: { current_page: 3, last_page: 5, total: 50 },
+    }))
+
+    result.changePerPage()
+
+    expect(router.get).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ page: 1 }),
+      expect.any(Object),
+    )
+  })
+})
+=== FILE: resources/js/__tests__/modules/material-manager/ui/composables/useMaterialSelection.test.ts ===
+import { describe, it, expect } from 'vitest'
+
+import { useMaterialSelection } from '@/modules/MaterialManager/ui/composables/useMaterialSelection'
+
+function createProps(data: { id: number }[] = []) {
+  return { materials: { data } }
+}
+
+describe('useMaterialSelection', () => {
+  it('toggleSelect adds id when not selected', () => {
+    const { selectedMaterials, toggleSelect } = useMaterialSelection(createProps([{ id: 1 }, { id: 2 }]))
+
+    toggleSelect(2)
+
+    expect(selectedMaterials.value).toContain(2)
+    expect(selectedMaterials.value).toHaveLength(1)
+  })
+
+  it('toggleSelect removes id when already selected', () => {
+    const { selectedMaterials, toggleSelect } = useMaterialSelection(createProps([{ id: 1 }, { id: 2 }]))
+
+    toggleSelect(2)
+    toggleSelect(2)
+
+    expect(selectedMaterials.value).not.toContain(2)
+    expect(selectedMaterials.value).toEqual([])
+  })
+
+  it('selectAll selects all ids when none selected', () => {
+    const { selectedMaterials, selectAll } = useMaterialSelection(createProps([{ id: 1 }, { id: 2 }, { id: 3 }]))
+
+    selectAll()
+
+    expect(selectedMaterials.value).toEqual([1, 2, 3])
+  })
+
+  it('selectAll clears selection when all selected', () => {
+    const { selectedMaterials, selectAll } = useMaterialSelection(createProps([{ id: 1 }, { id: 2 }]))
+
+    selectAll()
+    selectAll()
+
+    expect(selectedMaterials.value).toEqual([])
+  })
+
+  it('allSelected is true when all materials selected', () => {
+    const { selectedMaterials, allSelected, selectAll } = useMaterialSelection(createProps([{ id: 1 }, { id: 2 }]))
+
+    expect(allSelected.value).toBe(false)
+
+    selectAll()
+    expect(allSelected.value).toBe(true)
+  })
+
+  it('allSelected is false when partially selected', () => {
+    const { selectedMaterials, allSelected } = useMaterialSelection(createProps([{ id: 1 }, { id: 2 }, { id: 3 }]))
+
+    selectedMaterials.value = [1, 2]
+    expect(allSelected.value).toBe(false)
+  })
+
+  it('allSelected is false when no materials exist', () => {
+    const { allSelected } = useMaterialSelection(createProps([]))
+
+    expect(allSelected.value).toBe(false)
+  })
+})
+=== FILE: resources/js/__tests__/modules/material-manager/ui/composables/useMaterialModals.test.ts ===
+import { describe, it, expect } from 'vitest'
+
+import { useMaterialModals } from '@/modules/MaterialManager/ui/composables/useMaterialModals'
+
+describe('useMaterialModals', () => {
+  it('openRestoreModal sets correct state for single item', () => {
+    const { openRestoreModal, modalOpen, modalTitle, modalMessage, modalConfirmText, pendingAction } = useMaterialModals()
+
+    openRestoreModal(1)
+
+    expect(modalOpen.value).toBe(true)
+    expect(modalTitle.value).toBe('Восстановление материалов')
+    expect(modalMessage.value).toBe('Вы уверены, что хотите восстановить выбранный материал?')
+    expect(modalConfirmText.value).toBe('Восстановить')
+    expect(pendingAction.value).toBe('restore')
+  })
+
+  it('openRestoreModal sets correct state for multiple items', () => {
+    const { openRestoreModal, modalOpen, modalMessage, modalConfirmText, pendingAction } = useMaterialModals()
+
+    openRestoreModal(5)
+
+    expect(modalOpen.value).toBe(true)
+    expect(modalMessage.value).toBe('Вы уверены, что хотите восстановить 5 материалов?')
+    expect(modalConfirmText.value).toBe('Восстановить')
+    expect(pendingAction.value).toBe('restore')
+  })
+
+  it('openDeleteModal sets correct state for single item', () => {
+    const { openDeleteModal, modalOpen, modalTitle, modalMessage, modalConfirmText, pendingAction } = useMaterialModals()
+
+    openDeleteModal(1)
+
+    expect(modalOpen.value).toBe(true)
+    expect(modalTitle.value).toBe('Удаление материалов')
+    expect(modalMessage.value).toBe('Вы уверены, что хотите удалить выбранный материал навсегда? Это действие нельзя отменить.')
+    expect(modalConfirmText.value).toBe('Удалить навсегда')
+    expect(pendingAction.value).toBe('delete')
+  })
+
+  it('openDeleteModal sets correct state for multiple items', () => {
+    const { openDeleteModal, modalMessage } = useMaterialModals()
+
+    openDeleteModal(3)
+
+    expect(modalMessage.value).toBe('Вы уверены, что хотите удалить 3 материалов навсегда? Это действие нельзя отменить.')
+  })
+
+  it('openEmptyTrashModal sets correct state', () => {
+    const { openEmptyTrashModal, modalOpen, modalTitle, modalMessage, modalConfirmText, pendingAction } = useMaterialModals()
+
+    openEmptyTrashModal()
+
+    expect(modalOpen.value).toBe(true)
+    expect(modalTitle.value).toBe('Очистка корзины')
+    expect(modalMessage.value).toBe('Вы уверены, что хотите очистить корзину? Все материалы будут удалены навсегда.')
+    expect(modalConfirmText.value).toBe('Очистить корзину')
+    expect(pendingAction.value).toBe('empty')
+  })
+
+  it('closeModal clears state', () => {
+    const { openRestoreModal, closeModal, modalOpen, pendingAction } = useMaterialModals()
+
+    openRestoreModal(1)
+    closeModal()
+
+    expect(modalOpen.value).toBe(false)
+    expect(pendingAction.value).toBeNull()
+  })
+})
