@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import MediaManagerContent from './components/MediaManagerContent.vue';
@@ -72,30 +72,9 @@ const handleLoaded = () => {
     emit('loaded');
 };
 
-const selectFileByUrl = async (url: string) => {
-    if (contentRef.value?.selectFileByUrl) {
-        await contentRef.value.selectFileByUrl(url);
-    }
-};
-
 defineExpose({
     confirmSelection: () => contentRef.value?.confirmSelection?.(),
     getSelectedFile: () => contentRef.value?.getSelectedFile?.(),
     selectedFileForPicker: () => contentRef.value?.selectedFileForPicker,
-    selectFileByUrl,
-});
-
-watch(() => props.selectedUrl, async (newUrl) => {
-    if (newUrl && props.mode === 'picker') {
-        await nextTick();
-        await selectFileByUrl(newUrl);
-    }
-}, { immediate: true });
-
-onMounted(async () => {
-    if (props.selectedUrl && props.mode === 'picker') {
-        await nextTick();
-        await selectFileByUrl(props.selectedUrl);
-    }
 });
 </script>

@@ -14,7 +14,7 @@
                 <button @click="close" class="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300">
                     Отмена
                 </button>
-                <button @click="submit" :disabled="!folderName.trim()" class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+                <button @click="submit" :disabled="!folderName.trim() || loading" class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
                     Создать
                 </button>
             </div>
@@ -27,6 +27,7 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     show: boolean;
+    loading?: boolean;
 }>();
 
 const emit = defineEmits<{

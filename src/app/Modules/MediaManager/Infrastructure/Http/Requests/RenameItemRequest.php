@@ -19,7 +19,7 @@ class RenameItemRequest extends FormRequest
             'old_path' => [
                 'required',
                 'string',
-                'regex:/^[a-zA-Zа-яА-Я0-9_\-\.\/]+$/u',
+                'regex:/^[a-zA-Zа-яА-Я0-9_\-\.\s\/]+$/u',
                 function ($attribute, $value, $fail) {
                     if (str_contains($value, '..')) {
                         $fail('Путь не может содержать двойные точки.');
@@ -30,7 +30,7 @@ class RenameItemRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[a-zA-Zа-яА-Я0-9_\-\.]+$/u',
+                'regex:/^[a-zA-Zа-яА-Я0-9_\-\.\s]+$/u',
                 'regex:/^(?!CON\b|AUX\b|NUL\b|PRN\b|COM[1-9]\b|LPT[1-9]\b)/i',
                 function ($attribute, $value, $fail) {
                     $basename = pathinfo($value, PATHINFO_FILENAME);

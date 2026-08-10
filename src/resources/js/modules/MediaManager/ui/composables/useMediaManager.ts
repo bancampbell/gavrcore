@@ -1,4 +1,4 @@
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useMediaActions } from './useMediaActions';
 import { useContents } from './useContents';
 import { useSelection } from './useSelection';
@@ -234,6 +234,15 @@ export function useMediaManager(
         modals.openRenameModal(selection.selectedItem.value);
     };
 
+    let searchDebounce: ReturnType<typeof setTimeout> | null = null;
+
+    watch(() => contents.searchQuery.value, () => {
+        if (searchDebounce) clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+            loadData(1);
+        }, 300);
+    });
+
     return {
         allFolders: contents.allFolders,
         contents: contents.contents,
@@ -251,6 +260,7 @@ export function useMediaManager(
         selectedItems: selection.selectedItems,
         selectedItem: selection.selectedItem,
         uploadLoading: actions.loading,
+        isLoading: actions.loading,
         foldersLoading: contents.foldersLoading,
         loadingContents: contents.loading,
         rootFolders,

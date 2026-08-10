@@ -16,7 +16,7 @@
                 </button>
                 <button
                     @click="onConfirm"
-                    :disabled="!itemName.trim()"
+                    :disabled="!itemName.trim() || loading"
                     class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                     Переименовать
@@ -32,6 +32,7 @@ import { ref, watch } from 'vue';
 const props = defineProps<{
     show: boolean;
     currentName: string;
+    loading?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -16,7 +16,15 @@ class DeleteItemsRequest extends FormRequest
     {
         return [
             'paths' => 'required|array',
-            'paths.*' => 'required|string',
+            'paths.*' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if (str_contains($value, '..')) {
+                        $fail('Путь не может содержать переходы к родительской директории.');
+                    }
+                },
+            ],
         ];
     }
 

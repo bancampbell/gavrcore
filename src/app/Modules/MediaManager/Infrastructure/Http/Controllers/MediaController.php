@@ -47,7 +47,7 @@ class MediaController extends Controller
         $data = new PaginatedContentsData(
             path: (string) $request->get('path', ''),
             page: (int) $request->get('page', 1),
-            perPage: (int) $request->get('per_page', 20),
+            perPage: max(1, (int) $request->get('per_page', 20)),
             sort: (string) $request->get('sort', 'name_asc'),
             search: $request->get('search') ? (string) $request->get('search') : null,
         );
@@ -96,16 +96,22 @@ class MediaController extends Controller
 
     public function deleteItems(DeleteItemsRequest $request, DeleteItemsUseCase $useCase)
     {
-        try {
-            $result = $useCase->execute($request->toDTO());
+        $result = $useCase->execute($request->toDTO());
+
+        if (!$result->success) {
             return response()->json([
-                'success' => true,
+                'success' => false,
                 'message' => $result->message,
                 'data' => $result->data,
-            ]);
-        } catch (\RuntimeException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+                'errors' => $result->errors,
+            ], 422);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result->message,
+            'data' => $result->data,
+        ]);
     }
 
     public function copyItem(CopyItemRequest $request, CopyItemUseCase $useCase)
@@ -120,15 +126,20 @@ class MediaController extends Controller
 
     public function uploadFile(UploadFileRequest $request, UploadFileUseCase $useCase)
     {
-        try {
-            $result = $useCase->execute($request->toDTO());
+        $result = $useCase->execute($request->toDTO());
+
+        if (!$result->success) {
             return response()->json([
-                'success' => true,
+                'success' => false,
                 'message' => $result->message,
-                'data' => $result->data,
-            ]);
-        } catch (\RuntimeException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+                'errors' => $result->errors,
+            ], 422);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result->message,
+            'data' => $result->data,
+        ]);
     }
 }
