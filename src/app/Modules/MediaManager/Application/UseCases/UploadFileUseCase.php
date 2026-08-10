@@ -20,7 +20,7 @@ class UploadFileUseCase
 
         try {
             $uploaded = $this->repository->uploadFromPaths(
-                $data->filePaths,
+                $data->files,
                 $data->path
             );
 

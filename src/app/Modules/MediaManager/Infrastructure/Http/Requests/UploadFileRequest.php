@@ -24,7 +24,7 @@ class UploadFileRequest extends FormRequest
             'application/pdf',
         ]);
 
-        $maxFileSize = config('MediaManager.max_file_size', 100 * 1024); // KB
+        $maxFileSize = config('MediaManager.max_file_size', 100 * 1024);
         $maxUploadFiles = config('MediaManager.max_upload_files', 20);
 
         return [
@@ -41,15 +41,25 @@ class UploadFileRequest extends FormRequest
 
     public function toDTO(): UploadFileData
     {
-        $filePaths = [];
+        $files = [];
         foreach ($this->file('files', []) as $file) {
             if ($file->isValid()) {
-                $filePaths[] = $file->getRealPath();
+                $originalName = $file->getClientOriginalName();
+                $safeName = basename(str_replace('\\', '/', $originalName));
+
+                if ($safeName === '' || $safeName === '..' || str_contains($safeName, '/')) {
+                    continue;
+                }
+
+                $files[] = [
+                    'path' => $file->getRealPath(),
+                    'name' => $safeName,
+                ];
             }
         }
 
         return new UploadFileData(
-            filePaths: $filePaths,
+            files: $files,
             path: (string) $this->input('path', ''),
         );
     }

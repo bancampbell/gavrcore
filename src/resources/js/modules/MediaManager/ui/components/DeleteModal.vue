@@ -9,7 +9,7 @@
                 <button @click="onClose" class="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300">
                     Отмена
                 </button>
-                <button @click="onConfirm" class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700">
+                <button @click="onConfirm" :disabled="loading" class="px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
                     Удалить
                 </button>
             </div>
@@ -23,6 +23,7 @@ import { computed } from 'vue';
 const props = defineProps<{
     show: boolean;
     itemName: string;
+    loading?: boolean;
 }>();
 
 const emit = defineEmits<{

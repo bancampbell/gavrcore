@@ -19,11 +19,17 @@ class UploadFileUseCaseTest extends TestCase
             ->willReturn(true);
         $repo->expects($this->once())
             ->method('uploadFromPaths')
-            ->with(['/tmp/file1.jpg', '/tmp/file2.png'], 'uploads')
+            ->with([
+                ['path' => '/tmp/file1.jpg', 'name' => 'file1.jpg'],
+                ['path' => '/tmp/file2.png', 'name' => 'file2.png'],
+            ], 'uploads')
             ->willReturn(['file1.jpg', 'file2.png']);
 
         $useCase = new UploadFileUseCase($repo);
-        $data = new UploadFileData(filePaths: ['/tmp/file1.jpg', '/tmp/file2.png'], path: 'uploads');
+        $data = new UploadFileData(files: [
+            ['path' => '/tmp/file1.jpg', 'name' => 'file1.jpg'],
+            ['path' => '/tmp/file2.png', 'name' => 'file2.png'],
+        ], path: 'uploads');
 
         $result = $useCase->execute($data);
 
@@ -40,7 +46,9 @@ class UploadFileUseCaseTest extends TestCase
         $repo->method('folderExists')->willReturn(false);
 
         $useCase = new UploadFileUseCase($repo);
-        $data = new UploadFileData(filePaths: ['/tmp/file.jpg'], path: 'missing');
+        $data = new UploadFileData(files: [
+            ['path' => '/tmp/file.jpg', 'name' => 'file.jpg'],
+        ], path: 'missing');
 
         $useCase->execute($data);
     }
@@ -53,7 +61,11 @@ class UploadFileUseCaseTest extends TestCase
             ->willReturn(['1.jpg', '2.jpg', '3.jpg']);
 
         $useCase = new UploadFileUseCase($repo);
-        $data = new UploadFileData(filePaths: ['a', 'b', 'c'], path: 'gallery');
+        $data = new UploadFileData(files: [
+            ['path' => 'a', 'name' => 'a'],
+            ['path' => 'b', 'name' => 'b'],
+            ['path' => 'c', 'name' => 'c'],
+        ], path: 'gallery');
 
         $result = $useCase->execute($data);
 
@@ -67,11 +79,13 @@ class UploadFileUseCaseTest extends TestCase
         $repo = $this->createMock(MediaRepositoryInterface::class);
         $repo->method('folderExists')->willReturn(true);
         $repo->method('uploadFromPaths')
-            ->with(['/tmp/file1.jpg'], '')
+            ->with([['path' => '/tmp/file1.jpg', 'name' => 'file1.jpg']], '')
             ->willReturn(['file1.jpg']);
 
         $useCase = new UploadFileUseCase($repo);
-        $data = new UploadFileData(filePaths: ['/tmp/file1.jpg'], path: '');
+        $data = new UploadFileData(files: [
+            ['path' => '/tmp/file1.jpg', 'name' => 'file1.jpg'],
+        ], path: '');
 
         $result = $useCase->execute($data);
 

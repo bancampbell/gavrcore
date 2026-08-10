@@ -56,7 +56,9 @@ class MediaRepositoryTest extends TestCase
         $tempFile = tempnam(sys_get_temp_dir(), 'test');
         file_put_contents($tempFile, 'test content');
 
-        $result = $this->repository->uploadFromPaths([$tempFile], '');
+        $result = $this->repository->uploadFromPaths([
+            ['path' => $tempFile, 'name' => 'test.txt'],
+        ], '');
 
         $this->assertNotEmpty($result);
         $this->assertTrue($this->repository->exists(basename($result[0])));

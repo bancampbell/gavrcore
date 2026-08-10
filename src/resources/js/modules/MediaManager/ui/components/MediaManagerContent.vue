@@ -72,6 +72,7 @@
 
     <CreateFolderModal
         :show="showCreateModal"
+        :loading="isLoading"
         @close="showCreateModal = false"
         @submit="handleCreateFolder"
     />
@@ -79,6 +80,7 @@
     <RenameModal
         :show="showRenameModal"
         :current-name="renameItemData?.name || ''"
+        :loading="isLoading"
         @close="showRenameModal = false"
         @confirm="handleRename"
     />
@@ -86,6 +88,7 @@
     <DeleteModal
         :show="showDeleteModal"
         :item-name="deleteItemData?.name || ''"
+        :loading="isLoading"
         @close="showDeleteModal = false"
         @confirm="handleDelete"
     />
@@ -100,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from '@/composables/useToast';
 import FolderTree from './FolderTree.vue';
 import MediaHeader from './MediaHeader.vue';
@@ -149,6 +152,7 @@ const {
     renameItemData,
     deleteItemData,
     uploadLoading,
+    isLoading,
     foldersLoading,
     loadingContents,
     rootFolders,
@@ -233,9 +237,5 @@ onMounted(async () => {
         dataLoaded = true;
         emit('loaded');
     }
-});
-
-watch(currentPath, async () => {
-    await loadData(1);
 });
 </script>
