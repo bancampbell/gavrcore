@@ -16,6 +16,7 @@ export default defineConfig({
             pages: [
                 'resources/js/Pages/**/*.vue',
                 'resources/js/themes/**/*.vue',
+                'resources/js/modules/**/*.vue',
             ],
         }),
         {

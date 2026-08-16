@@ -6,7 +6,7 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { createApp, h } from 'vue';
 import FormWrapper from '@/themes/default/components/FormWrapper.vue';
-import GalleryRenderer from '@/components/Gallery/GalleryRenderer.vue';
+import GalleryRenderer from '@/modules/GalleryManager/ui/components/GalleryRenderer.vue';
 import { lightboxService } from '@/services/LightboxService';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
