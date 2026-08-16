@@ -15,6 +15,12 @@ RUN groupadd -g 1000 www && useradd -u 1000 -ms /bin/bash -g www www
 
 WORKDIR /var/www
 
+# Копируем package.json и package-lock.json для установки зависимостей
+COPY --chown=www:www src/package*.json ./
+
+# Устанавливаем npm зависимости
+RUN npm install
+
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 USER www
