@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Traits\ClearsSitemapCache;
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -60,7 +62,7 @@ class Category extends Model
      */
     public function materials(): HasMany
     {
-        return $this->hasMany(Material::class);
+        return $this->hasMany(MaterialModel::class);
     }
 
     /**
