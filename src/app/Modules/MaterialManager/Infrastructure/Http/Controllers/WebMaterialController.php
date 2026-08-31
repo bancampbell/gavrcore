@@ -10,8 +10,8 @@ use App\Modules\MaterialManager\Domain\Services\ContentParserInterface;
 use App\Modules\MaterialManager\Domain\Services\FormServiceInterface;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
+use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
 use App\Services\BreadcrumbService;
-use App\Services\MenuService;
 use App\Services\SettingService;
 use App\Services\ThemeService;
 use App\Seo\Services\MetaService;
@@ -25,7 +25,7 @@ class WebMaterialController
         private readonly GetMaterialsUseCase $getMaterials,
         private readonly MaterialRepositoryInterface $repository,
         private readonly SettingService $settingService,
-        private readonly MenuService $menuService,
+        private readonly GetMenuTreeUseCase $getMenuTree,
         private readonly ThemeService $themeService,
         private readonly BreadcrumbService $breadcrumbService,
         private readonly MetaService $metaService,
@@ -48,7 +48,7 @@ class WebMaterialController
             return Inertia::render('landing/Index', [
                 'appSettings' => $settings,
                 'currentTheme' => $currentTheme,
-                'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+                'mainMenu' => $this->getMenuTree->execute('main-menu'),
                 'title' => $siteName,
                 'description' => $siteDescription,
                 'keywords' => $siteKeywords,
@@ -115,7 +115,7 @@ class WebMaterialController
         return Inertia::render('Index', [
             'homepageMaterial' => $homepageMaterial ? (new MaterialResource($homepageMaterial))->toArray(request()) : null,
             'forms' => $forms,
-            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'mainMenu' => $this->getMenuTree->execute('main-menu'),
             'title' => $siteName,
             'description' => $siteDescription,
             'keywords' => $siteKeywords,
@@ -159,11 +159,11 @@ class WebMaterialController
         $meta = $this->metaService->for($material);
         $breadcrumbs = $this->breadcrumbService->forMaterial($material);
 
-        return Inertia::render('Material/Show', [
+        return Inertia::render('MaterialManager/Show', [
             'material' => (new MaterialResource($material))->toArray(request()),
             'template' => $material->template ?? 'default',
             'forms' => $forms,
-            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'mainMenu' => $this->getMenuTree->execute('main-menu'),
             'meta' => $meta->toArray(),
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
@@ -200,7 +200,7 @@ class WebMaterialController
             'materials' => $materials->toArray(),
             'categories' => $this->categoryService->getAll(),
             'filters' => $filters->toArray(),
-            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'mainMenu' => $this->getMenuTree->execute('main-menu'),
             'meta' => $meta->toArray(),
             'appSettings' => $settings,
             'currentTheme' => $currentTheme,
@@ -233,7 +233,7 @@ class WebMaterialController
             'materials' => $materials->toArray(),
             'categories' => $this->categoryService->getAll(),
             'search' => $search,
-            'mainMenu' => $this->menuService->getMenuTree('main-menu'),
+            'mainMenu' => $this->getMenuTree->execute('main-menu'),
             'title' => $title,
             'description' => $siteDescription,
             'keywords' => $siteKeywords,

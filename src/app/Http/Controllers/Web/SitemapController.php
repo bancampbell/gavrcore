@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Material;
 use App\Models\Category;
+use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use App\Services\SettingService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -18,7 +18,7 @@ class SitemapController extends Controller
     public function index(): Response
     {
         $xml = Cache::remember('sitemap', 3600, function () {
-            $materials = Material::where('state', 'published')
+            $materials = MaterialModel::where('state', 'published')
                 ->select('slug', 'updated_at')
                 ->get();
 

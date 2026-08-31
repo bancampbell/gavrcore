@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\FormController;
 use App\Http\Controllers\Api\MaterialController;
 use App\Http\Controllers\Auth\Api\RegisterController;
 use App\Http\Controllers\Auth\Admin\LoginController;
@@ -17,11 +16,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/materials/by-slug/{slug}', [MaterialController::class, 'getBySlug']);
 });
 
-// ========================================
-// API FORMS (публичные)
-// ========================================
-Route::prefix('forms')->group(function () {
-    Route::get('/{id}', [FormController::class, 'show']);
-    Route::post('/{id}/submit', [FormController::class, 'submit'])
-        ->middleware('throttle:form-submit');
-});

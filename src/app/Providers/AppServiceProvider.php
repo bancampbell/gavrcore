@@ -3,10 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\CategoryRepositoryInterface;
-use App\Contracts\FormSubmissionRepositoryInterface;
 use App\Contracts\GroupRepositoryInterface;
-use App\Contracts\MenuItemRepositoryInterface;
-use App\Contracts\MenuTypeRepositoryInterface;
 use App\Contracts\PermissionRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
 use App\Models\AccessLevel;
@@ -18,21 +15,18 @@ use App\Policies\CategoryPolicy;
 use App\Policies\GroupPolicy;
 use App\Policies\UserPolicy;
 use App\Repositories\CategoryRepository;
-use App\Repositories\FormSubmissionRepository;
 use App\Repositories\GroupRepository;
-use App\Repositories\MenuItemRepository;
-use App\Repositories\MenuTypeRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
 use App\Services\SettingService;
-use App\Services\FormSubmissionService;
 use App\Seo\Services\MetaService;
 use App\Seo\Providers\CategorySeoProvider;
+use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
+use App\Modules\FormBuilder\Application\UseCases\GetUnreadSubmissionsCountUseCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
-use App\Services\MenuService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -44,13 +38,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
-        $this->app->bind(MenuTypeRepositoryInterface::class, MenuTypeRepository::class);
-        $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
-        $this->app->bind(FormSubmissionRepositoryInterface::class, FormSubmissionRepository::class);
 
         // Регистрируем SEO сервис с провайдерами
-        // MaterialSeoProvider удалён — будет использоваться новый модуль MaterialManager
         $this->app->singleton(MetaService::class, function ($app) {
             $service = new MetaService();
             $service->registerProvider(new CategorySeoProvider($app->make(SettingService::class)));
@@ -65,9 +55,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
 
-        // Политика для Material удалена — будет использоваться из модуля MaterialManager
-        // Gate::policy(Material::class, MaterialPolicy::class);
-
         Inertia::share([
             'auth' => function () {
                 return [
@@ -76,9 +63,8 @@ class AppServiceProvider extends ServiceProvider
             },
             'mainMenu' => function () {
                 try {
-                    $menuService = app(MenuService::class);
-                    $menu = $menuService->getMenuTree('main-menu');
-                    return $menu;
+                    $useCase = app(GetMenuTreeUseCase::class);
+                    return $useCase->execute('main-menu');
                 } catch (\Exception $e) {
                     return [];
                 }
@@ -93,8 +79,8 @@ class AppServiceProvider extends ServiceProvider
             },
             'unreadCount' => function () {
                 try {
-                    $service = app(FormSubmissionService::class);
-                    return $service->countUnread();
+                    $useCase = app(GetUnreadSubmissionsCountUseCase::class);
+                    return $useCase->execute();
                 } catch (\Exception $e) {
                     return 0;
                 }
@@ -102,17 +88,14 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         // ===== RATE LIMITING =====
-        // Лимит для авторизации
         RateLimiter::for('login', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
 
-        // Лимит для отправки форм
         RateLimiter::for('form-submit', function (Request $request) {
             return Limit::perMinute(3)->by($request->ip());
         });
 
-        // Лимит для регистрации
         RateLimiter::for('register', function (Request $request) {
             return Limit::perMinute(3)->by($request->ip());
         });

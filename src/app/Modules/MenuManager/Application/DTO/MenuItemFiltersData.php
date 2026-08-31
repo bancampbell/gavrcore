@@ -8,9 +8,14 @@ class MenuItemFiltersData
 
     public static function fromArray(array $data): self
     {
+        $status = null;
+        if (isset($data['status'])) {
+            $status = filter_var($data['status'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        }
+
         return new self(
             search: $data['search'] ?? null,
-            status: isset($data['status']) ? (bool) $data['status'] : null,
+            status: $status,
         );
     }
 }

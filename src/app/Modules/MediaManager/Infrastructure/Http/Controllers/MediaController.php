@@ -28,7 +28,7 @@ class MediaController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Admin/MediaManager/Index', [
+        return Inertia::render('MediaManager/Index', [
             'user' => auth()->user(),
             'title' => 'Медиа-менеджер',
         ]);

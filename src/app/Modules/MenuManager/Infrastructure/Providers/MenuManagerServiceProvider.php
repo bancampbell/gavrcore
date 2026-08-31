@@ -7,11 +7,16 @@ use App\Modules\MenuManager\Domain\Repositories\MenuTypeRepositoryInterface;
 use App\Modules\MenuManager\Domain\Services\MenuTreeBuilderInterface;
 use App\Modules\MenuManager\Domain\Services\SlugGeneratorInterface;
 use App\Modules\MenuManager\Infrastructure\Http\Middleware\ShareMenuMiddleware;
+use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
+use App\Modules\MenuManager\Infrastructure\Models\MenuTypeModel;
+use App\Modules\MenuManager\Infrastructure\Policies\MenuItemPolicy;
+use App\Modules\MenuManager\Infrastructure\Policies\MenuTypePolicy;
 use App\Modules\MenuManager\Infrastructure\Repositories\MenuItemRepository;
 use App\Modules\MenuManager\Infrastructure\Repositories\MenuTypeRepository;
 use App\Modules\MenuManager\Infrastructure\Services\MenuTreeBuilder;
 use App\Modules\MenuManager\Infrastructure\Services\SlugGenerator;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -31,8 +36,25 @@ class MenuManagerServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
         $this->loadViewsFrom(__DIR__ . '/../../Infrastructure/views', 'menu-manager');
         $kernel->appendMiddlewareToGroup('web', ShareMenuMiddleware::class);
+
+        $this->registerPolicies();
+        $this->registerGates();
+
         $this->mapAdminRoutes();
         $this->mapWebRoutes();
+    }
+
+    protected function registerPolicies(): void
+    {
+        Gate::policy(MenuTypeModel::class, MenuTypePolicy::class);
+        Gate::policy(MenuItemModel::class, MenuItemPolicy::class);
+    }
+
+    protected function registerGates(): void
+    {
+        Gate::define('manage menus', function ($user) {
+            return $user !== null && method_exists($user, 'isAdmin') && $user->isAdmin();
+        });
     }
 
     protected function mapAdminRoutes(): void

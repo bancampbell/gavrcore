@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import FormRenderer from '@/components/Forms/FormRenderer.vue';
+import FormRenderer from '@/modules/FormBuilder/ui/components/FormRenderer.vue';
 
 defineProps<{
     formId: number;

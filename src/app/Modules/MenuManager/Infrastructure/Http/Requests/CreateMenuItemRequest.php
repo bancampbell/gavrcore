@@ -2,6 +2,7 @@
 
 namespace App\Modules\MenuManager\Infrastructure\Http\Requests;
 
+use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,7 +14,19 @@ class CreateMenuItemRequest extends FormRequest
     {
         $menuTypeId = $this->route('menuTypeId');
         return [
-            'parent_id' => 'nullable|exists:menu_items,id',
+            'parent_id' => [
+                'nullable',
+                'exists:menu_items,id',
+                function ($attribute, $value, $fail) use ($menuTypeId) {
+                    if ($value === null) {
+                        return;
+                    }
+                    $parent = MenuItemModel::find($value);
+                    if ($parent && $parent->menu_type_id != $menuTypeId) {
+                        $fail('Родительский элемент должен принадлежать выбранному меню.');
+                    }
+                },
+            ],
             'title' => 'required|string|max:255',
             'alias' => ['nullable', 'string', 'max:255', Rule::unique('menu_items', 'alias')->where('menu_type_id', $menuTypeId)],
             'link_type' => 'required|in:url,material,separator,heading,external',

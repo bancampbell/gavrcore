@@ -2,6 +2,7 @@
 
 namespace App\Modules\MenuManager\Infrastructure\Http\Requests;
 
+use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,9 +13,28 @@ class UpdateMenuItemRequest extends FormRequest
     public function rules(): array
     {
         $id = $this->route('id');
-        $menuTypeId = $this->input('menu_type_id') ?? $this->route('menuTypeId');
+        $menuTypeId = $this->input('menu_type_id');
+
+        if (! $menuTypeId && $id) {
+            $menuTypeId = MenuItemModel::where('id', $id)->value('menu_type_id');
+        }
+
         return [
-            'parent_id' => 'nullable|exists:menu_items,id',
+            'menu_type_id' => 'nullable|integer|exists:menu_types,id',
+            'parent_id' => [
+                'nullable',
+                'integer',
+                'exists:menu_items,id',
+                function ($attribute, $value, $fail) use ($menuTypeId) {
+                    if ($value === null) {
+                        return;
+                    }
+                    $parent = MenuItemModel::find($value);
+                    if ($parent && $parent->menu_type_id != $menuTypeId) {
+                        $fail('Родительский элемент должен принадлежать выбранному меню.');
+                    }
+                },
+            ],
             'title' => 'required|string|max:255',
             'alias' => ['nullable', 'string', 'max:255', Rule::unique('menu_items', 'alias')->where('menu_type_id', $menuTypeId)->ignore($id)],
             'link_type' => 'required|in:url,material,separator,heading,external',

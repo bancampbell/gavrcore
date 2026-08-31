@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import axios from 'axios';
+import { formApi } from '@/modules/FormBuilder/infrastructure/api/form-api';
 
 interface Form {
     id: number;
@@ -69,7 +69,7 @@ const loading = ref(false);
 const loadForms = async () => {
     loading.value = true;
     try {
-        const response = await axios.get('/admin/forms/list');
+        const response = await formApi.getFormList();
         forms.value = response.data;
     } catch (error) {
         console.error('Error loading forms:', error);

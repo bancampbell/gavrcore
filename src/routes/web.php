@@ -3,11 +3,7 @@
 use App\Http\Controllers\Admin\AccessLevelController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\FormController;
-use App\Http\Controllers\Admin\FormSubmissionController;
 use App\Http\Controllers\Admin\GroupController;
-use App\Http\Controllers\Admin\MenuItemController;
-use App\Http\Controllers\Admin\MenuTypeController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\UserController;
@@ -17,10 +13,7 @@ use App\Http\Controllers\Auth\User\RegisterController;
 use App\Http\Controllers\Web\CookieConsentController;
 use App\Http\Controllers\Web\SitemapController;
 use App\Http\Controllers\Web\DashboardController as WebDashboardController;
-use App\Models\MenuItem;
-use App\Models\MenuType;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 // ===== COOKIE CONSENT =====
 Route::post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])->name('cookie.consent.accept');
@@ -55,74 +48,11 @@ Route::get('/admin/login', [AdminLoginController::class, 'create'])->name('admin
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->middleware('throttle:login');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
-// ============================================
-// ОСТАЛЬНЫЕ АДМИНСКИЕ РОУТЫ
-// ============================================
-
 // ===== ЗАЩИЩЁННЫЕ АДМИНСКИЕ РОУТЫ =====
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::resource('/admin/categories', CategoryController::class)->names('admin.categories');
-
-    // Menu Manager Pages (Inertia)
-    Route::get('/admin/menu', [MenuTypeController::class, 'index'])->name('admin.menu.index');
-
-    // Create page for menu items
-    Route::get('/admin/menu/types/{menuTypeId}/items/create', function ($menuTypeId) {
-        $menuType = MenuType::findOrFail($menuTypeId);
-        return Inertia::render('Admin/Menu/Create', [
-            'user' => auth()->user(),
-            'menuTypeId' => $menuTypeId,
-            'title' => "Создать пункт меню: {$menuType->title}",
-        ]);
-    })->name('admin.menu.items.create');
-
-    // Edit page for menu items
-    Route::get('/admin/menu/items/{id}/edit', function ($id) {
-        $menuItem = MenuItem::with('menuType')->findOrFail($id);
-        return Inertia::render('Admin/Menu/Edit', [
-            'user' => auth()->user(),
-            'menuItem' => $menuItem,
-            'menuTypeId' => $menuItem->menu_type_id,
-            'title' => "Редактировать пункт меню: {$menuItem->title}",
-        ]);
-    })->name('admin.menu.items.edit');
-
-    // Menu items list page
-    Route::get('/admin/menu/types/{menuTypeId}/items', function ($menuTypeId) {
-        $menuType = MenuType::findOrFail($menuTypeId);
-
-        return Inertia::render('Admin/Menu/MenuItems', [
-            'user' => auth()->user(),
-            'menuTypeId' => $menuTypeId,
-            'menuTypeTitle' => $menuType->title,
-        ]);
-    })->name('admin.menu.items');
-
-    // Menu Manager API Routes
-    Route::prefix('admin/menu')->name('admin.menu.')->group(function () {
-        // Menu Types
-        Route::get('types', [MenuTypeController::class, 'index'])->name('types.index');
-        Route::post('types', [MenuTypeController::class, 'store'])->name('types.store');
-        Route::get('types/{id}', [MenuTypeController::class, 'show'])->name('types.show');
-        Route::put('types/{id}', [MenuTypeController::class, 'update'])->name('types.update');
-        Route::delete('types/{id}', [MenuTypeController::class, 'destroy'])->name('types.destroy');
-        Route::post('types/{id}/status', [MenuTypeController::class, 'updateStatus'])->name('types.status');
-        Route::post('types/ordering/update', [MenuTypeController::class, 'updateOrdering'])->name('types.ordering');
-
-        // Menu Items
-        Route::get('items/all', [MenuItemController::class, 'getAllItemsPage'])->name('items.all');
-        Route::get('items/all-data', [MenuItemController::class, 'getAllItems'])->name('items.all-data');
-        Route::get('types/{menuTypeId}/items/tree', [MenuItemController::class, 'tree'])->name('items.tree');
-        Route::post('types/{menuTypeId}/items', [MenuItemController::class, 'store'])->name('items.store');
-        Route::get('items/{id}', [MenuItemController::class, 'show'])->name('items.show');
-        Route::put('items/{id}', [MenuItemController::class, 'update'])->name('items.update');
-        Route::delete('items/{id}', [MenuItemController::class, 'destroy'])->name('items.destroy');
-        Route::get('types/{menuTypeId}/items', [MenuItemController::class, 'index'])->name('items.index');
-        Route::post('items/{id}/status', [MenuItemController::class, 'updateStatus'])->name('items.status');
-        Route::post('items/ordering/update', [MenuItemController::class, 'updateOrdering'])->name('items.ordering');
-    });
 
     // User, Group, Permission, AccessLevel Manager
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -168,32 +98,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/admin/themes', [ThemeController::class, 'update'])->name('admin.themes.update');
 
     // ========================================
-    // FORMS
+    // МЕНЮ, ФОРМЫ И САБМИШЕНЫ — роуты теперь
+    // подключаются из модулей MenuManager и FormBuilder
     // ========================================
-    Route::prefix('admin/forms')->name('admin.forms.')->group(function () {
-        Route::get('/', [FormController::class, 'index'])->name('index');
-        Route::get('/create', [FormController::class, 'create'])->name('create');
-        Route::post('/', [FormController::class, 'store'])->name('store');
-        Route::get('/{form}/edit', [FormController::class, 'edit'])->name('edit');
-        Route::put('/{form}', [FormController::class, 'update'])->name('update');
-        Route::put('/{form}/status', [FormController::class, 'updateStatus'])->name('status');
-        Route::delete('/{form}', [FormController::class, 'destroy'])->name('destroy');
-        Route::get('/list', [FormController::class, 'list'])->name('list');
-
-        Route::get('/{form}/builder', [FormController::class, 'builder'])->name('builder');
-        Route::put('/{form}/fields', [FormController::class, 'updateFields'])->name('fields.update');
-    });
-
-    // ========================================
-    // FORM SUBMISSIONS (Обратная связь)
-    // ========================================
-    Route::prefix('admin/submissions')->name('admin.submissions.')->group(function () {
-        Route::get('/', [FormSubmissionController::class, 'index'])->name('index');
-        Route::get('/{id}', [FormSubmissionController::class, 'show'])->name('show');
-        Route::delete('/{id}', [FormSubmissionController::class, 'destroy'])->name('destroy');
-        Route::post('/mark-read', [FormSubmissionController::class, 'markAsReadBulk'])->name('mark-read');
-        Route::post('/destroy-bulk', [FormSubmissionController::class, 'destroyBulk'])->name('destroy-bulk');
-    });
 });
-
-

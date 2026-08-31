@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\MenuService;
+use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -18,7 +18,7 @@ class HandleInertiaRequests extends Middleware
 
     public function share(Request $request): array
     {
-        $menuService = app(MenuService::class);
+        $menuUseCase = app(GetMenuTreeUseCase::class);
         $settingService = app(SettingService::class);
 
         $appSettings = $settingService->getAllSettings();
@@ -30,7 +30,7 @@ class HandleInertiaRequests extends Middleware
             'auth.user' => fn () => $request->user()
                 ? $request->user()->only('id', 'name', 'email')
                 : null,
-            'mainMenu' => $menuService->getMenuTree('main-menu'),
+            'mainMenu' => $menuUseCase->execute('main-menu'),
             'appSettings' => $appSettings,
             'title' => $title,
             'currentTheme' => $settingService->getTheme(),

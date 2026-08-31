@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\ShareMenuMiddleware;
+use App\Modules\MenuManager\Infrastructure\Http\Middleware\ShareMenuMiddleware;
 use App\Http\Middleware\CheckCookieConsent;
 use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Application;

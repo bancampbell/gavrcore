@@ -5,6 +5,7 @@ namespace App\Modules\MenuManager\Infrastructure\Repositories;
 use App\Modules\MenuManager\Domain\Repositories\MenuItemRepositoryInterface;
 use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class MenuItemRepository implements MenuItemRepositoryInterface
 {
@@ -27,9 +28,19 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return MenuItemModel::find($id);
     }
 
+    public function findByIdWithLock(int $id): ?MenuItemModel
+    {
+        return MenuItemModel::where('id', $id)->lockForUpdate()->first();
+    }
+
     public function findByAlias(string $alias, int $menuTypeId): ?MenuItemModel
     {
         return MenuItemModel::where('alias', $alias)->where('menu_type_id', $menuTypeId)->first();
+    }
+
+    public function findByAliasWithLock(string $alias, int $menuTypeId): ?MenuItemModel
+    {
+        return MenuItemModel::where('alias', $alias)->where('menu_type_id', $menuTypeId)->lockForUpdate()->first();
     }
 
     public function create(array $data): MenuItemModel
@@ -51,10 +62,17 @@ class MenuItemRepository implements MenuItemRepositoryInterface
 
     public function updateOrdering(array $order): bool
     {
-        foreach ($order as $item) {
-            MenuItemModel::where('id', $item['id'])->update(['ordering' => $item['ordering']]);
-        }
-        return true;
+        return DB::transaction(function () use ($order) {
+            $ids = array_column($order, 'id');
+            if (! empty($ids)) {
+                MenuItemModel::whereIn('id', $ids)->lockForUpdate()->get();
+            }
+
+            foreach ($order as $item) {
+                MenuItemModel::where('id', $item['id'])->update(['ordering' => $item['ordering']]);
+            }
+            return true;
+        });
     }
 
     public function updateStatus(int $id, bool $status): bool
@@ -69,18 +87,88 @@ class MenuItemRepository implements MenuItemRepositoryInterface
 
     public function getMaxOrdering(int $menuTypeId, ?int $parentId): int
     {
-        $max = MenuItemModel::where('menu_type_id', $menuTypeId)->where('parent_id', $parentId)->max('ordering');
+        $query = MenuItemModel::where('menu_type_id', $menuTypeId);
+        if ($parentId === null) {
+            $query->whereNull('parent_id');
+        } else {
+            $query->where('parent_id', $parentId);
+        }
+        $max = $query->max('ordering');
+
         return $max ?? 0;
     }
 
     public function incrementOrdering(int $menuTypeId, ?int $parentId, int $fromOrdering): void
     {
-        MenuItemModel::where('menu_type_id', $menuTypeId)->where('parent_id', $parentId)->where('ordering', '>=', $fromOrdering)->increment('ordering');
+        $query = MenuItemModel::where('menu_type_id', $menuTypeId)
+            ->where('ordering', '>=', $fromOrdering);
+        if ($parentId === null) {
+            $query->whereNull('parent_id');
+        } else {
+            $query->where('parent_id', $parentId);
+        }
+        $query->increment('ordering');
     }
 
     public function decrementOrdering(int $menuTypeId, ?int $parentId, int $fromOrdering): void
     {
-        MenuItemModel::where('menu_type_id', $menuTypeId)->where('parent_id', $parentId)->where('ordering', '>', $fromOrdering)->decrement('ordering');
+        $query = MenuItemModel::where('menu_type_id', $menuTypeId)
+            ->where('ordering', '>', $fromOrdering);
+        if ($parentId === null) {
+            $query->whereNull('parent_id');
+        } else {
+            $query->where('parent_id', $parentId);
+        }
+        $query->decrement('ordering');
+    }
+
+    public function lockByParent(int $menuTypeId, ?int $parentId): void
+    {
+        $query = MenuItemModel::where('menu_type_id', $menuTypeId);
+        if ($parentId === null) {
+            $query->whereNull('parent_id');
+        } else {
+            $query->where('parent_id', $parentId);
+        }
+        $query->lockForUpdate()->get();
+    }
+
+    public function lockByMenuType(int $menuTypeId): void
+    {
+        MenuItemModel::where('menu_type_id', $menuTypeId)
+            ->lockForUpdate()
+            ->get();
+    }
+
+    public function isDescendant(int $ancestorId, int $descendantId): bool
+    {
+        if ($ancestorId === $descendantId) {
+            return true;
+        }
+
+        $current = $descendantId;
+        $visited = [];
+
+        while ($current !== null) {
+            if (in_array($current, $visited, true)) {
+                break;
+            }
+            $visited[] = $current;
+
+            $parent = MenuItemModel::where('id', $current)->value('parent_id');
+
+            if ($parent === null) {
+                break;
+            }
+
+            if ($parent === $ancestorId) {
+                return true;
+            }
+
+            $current = $parent;
+        }
+
+        return false;
     }
 
     private function buildTree(array $items, ?int $parentId = null): array
