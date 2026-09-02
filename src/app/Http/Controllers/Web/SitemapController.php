@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use App\Services\SettingService;
 use Illuminate\Http\Response;
@@ -22,7 +22,7 @@ class SitemapController extends Controller
                 ->select('slug', 'updated_at')
                 ->get();
 
-            $categories = Category::select('slug', 'updated_at')
+            $categories = CategoryModel::select('alias', 'updated_at')
                 ->get();
 
             $settings = $this->settingService->getAllSettings();
@@ -47,7 +47,7 @@ class SitemapController extends Controller
 
         foreach ($categories as $category) {
             $xml .= "    <url>\n";
-            $xml .= "        <loc>{$siteUrl}/category/{$category->slug}</loc>\n";
+            $xml .= "        <loc>{$siteUrl}/category/{$category->alias}</loc>\n";
             $xml .= "        <lastmod>{$category->updated_at->toW3cString()}</lastmod>\n";
             $xml .= "        <priority>0.8</priority>\n";
             $xml .= "    </url>\n";

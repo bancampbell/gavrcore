@@ -2,8 +2,8 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Models;
 
-use App\Models\Category;
 use App\Models\User;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\ValueObjects\AuthorSummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\CategorySummaryVO;
@@ -58,7 +58,7 @@ class MaterialModel extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(CategoryModel::class, 'category_id');
     }
 
     public function user(): BelongsTo

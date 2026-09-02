@@ -233,7 +233,8 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import { useMaterials } from './composables/useMaterials';
 import type { MaterialsData } from './types';
-import type { User, Category } from '@/types';
+import type { User } from '@/types';
+import type { Category } from '@/modules/CategoryManager/ui/types';
 
 const props = defineProps<{
     user: User;

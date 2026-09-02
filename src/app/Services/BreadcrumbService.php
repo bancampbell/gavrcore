@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Models\Material;
 
 class BreadcrumbService
@@ -23,7 +23,7 @@ class BreadcrumbService
         if ($material->category) {
             $breadcrumbs[] = [
                 'title' => $material->category->name,
-                'url' => route('category.show', ['slug' => $material->category->slug]),
+                'url' => route('category.show', ['slug' => $material->category->alias]),
             ];
         }
 
@@ -39,7 +39,7 @@ class BreadcrumbService
     /**
      * Генерация хлебных крошек для категории
      */
-    public function forCategory(Category $category): array
+    public function forCategory(CategoryModel $category): array
     {
         $breadcrumbs = [
             [

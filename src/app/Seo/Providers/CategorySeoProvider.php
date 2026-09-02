@@ -4,7 +4,7 @@ namespace App\Seo\Providers;
 
 use App\Seo\Contracts\SeoProviderInterface;
 use App\Seo\DTO\MetaData;
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Services\SettingService;
 
 class CategorySeoProvider implements SeoProviderInterface
@@ -15,7 +15,7 @@ class CategorySeoProvider implements SeoProviderInterface
 
     public function supports($entity): bool
     {
-        return $entity instanceof Category;
+        return $entity instanceof CategoryModel;
     }
 
     public function generate($entity): MetaData
@@ -33,7 +33,7 @@ class CategorySeoProvider implements SeoProviderInterface
             ogTitle: $entity->meta_title ?? $entity->name,
             ogDescription: $entity->meta_description ?? $description,
             ogType: 'website',
-            canonical: route('category.show', $entity->slug),
+            canonical: route('category.show', $entity->alias),
         );
     }
 

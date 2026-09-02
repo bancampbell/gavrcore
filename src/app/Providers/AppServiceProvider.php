@@ -2,19 +2,15 @@
 
 namespace App\Providers;
 
-use App\Contracts\CategoryRepositoryInterface;
 use App\Contracts\GroupRepositoryInterface;
 use App\Contracts\PermissionRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
 use App\Models\AccessLevel;
-use App\Models\Category;
 use App\Models\Group;
 use App\Models\User;
 use App\Policies\AccessLevelPolicy;
-use App\Policies\CategoryPolicy;
 use App\Policies\GroupPolicy;
 use App\Policies\UserPolicy;
-use App\Repositories\CategoryRepository;
 use App\Repositories\GroupRepository;
 use App\Repositories\PermissionRepository;
 use App\Repositories\UserRepository;
@@ -37,7 +33,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
-        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
 
         // Регистрируем SEO сервис с провайдерами
@@ -52,7 +47,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Group::class, GroupPolicy::class);
-        Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
 
         Inertia::share([

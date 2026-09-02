@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Models\User;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel as Material;
 use Inertia\Inertia;
@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $totalMaterials = Material::count();
-        $totalCategories = Category::count();
+        $totalCategories = CategoryModel::count();
         $totalUsers = User::count();
         $totalViews = Material::sum('views');
 

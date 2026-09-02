@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AccessLevelController;
-use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GroupController;
 use App\Http\Controllers\Admin\SettingController;
@@ -52,7 +51,7 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::resource('/admin/categories', CategoryController::class)->names('admin.categories');
+    // Роуты категорий подключаются автоматически из модуля CategoryManager
 
     // User, Group, Permission, AccessLevel Manager
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -98,7 +97,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/admin/themes', [ThemeController::class, 'update'])->name('admin.themes.update');
 
     // ========================================
-    // МЕНЮ, ФОРМЫ И САБМИШЕНЫ — роуты теперь
-    // подключаются из модулей MenuManager и FormBuilder
+    // МЕНЮ, ФОРМЫ, КАТЕГОРИИ И САБМИШЕНЫ — роуты теперь
+    // подключаются из модулей MenuManager, FormBuilder и CategoryManager
     // ========================================
 });
