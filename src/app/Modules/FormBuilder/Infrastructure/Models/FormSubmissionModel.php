@@ -47,6 +47,6 @@ class FormSubmissionModel extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'user_id');
+        return $this->belongsTo(\App\Modules\UserManager\Infrastructure\Models\UserModel::class, 'user_id');
     }
 }

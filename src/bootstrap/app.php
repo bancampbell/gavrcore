@@ -2,7 +2,7 @@
 
 use App\Modules\MenuManager\Infrastructure\Http\Middleware\ShareMenuMiddleware;
 use App\Http\Middleware\CheckCookieConsent;
-use App\Http\Middleware\AdminMiddleware;
+use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

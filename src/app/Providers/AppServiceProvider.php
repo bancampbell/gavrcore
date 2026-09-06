@@ -2,25 +2,11 @@
 
 namespace App\Providers;
 
-use App\Contracts\GroupRepositoryInterface;
-use App\Contracts\PermissionRepositoryInterface;
-use App\Contracts\UserRepositoryInterface;
-use App\Models\AccessLevel;
-use App\Models\Group;
-use App\Models\User;
-use App\Policies\AccessLevelPolicy;
-use App\Policies\GroupPolicy;
-use App\Policies\UserPolicy;
-use App\Repositories\GroupRepository;
-use App\Repositories\PermissionRepository;
-use App\Repositories\UserRepository;
 use App\Services\SettingService;
 use App\Seo\Services\MetaService;
 use App\Seo\Providers\CategorySeoProvider;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
 use App\Modules\FormBuilder\Application\UseCases\GetUnreadSubmissionsCountUseCase;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -31,9 +17,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
-        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
-        $this->app->bind(PermissionRepositoryInterface::class, PermissionRepository::class);
+        // Репозитории User/Group/Permission/AccessLevel и политики
+        // зарегистрированы в модуле UserManager (UserManagerServiceProvider)
 
         // Регистрируем SEO сервис с провайдерами
         $this->app->singleton(MetaService::class, function ($app) {
@@ -45,10 +30,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Gate::policy(User::class, UserPolicy::class);
-        Gate::policy(Group::class, GroupPolicy::class);
-        Gate::policy(AccessLevel::class, AccessLevelPolicy::class);
-
         Inertia::share([
             'auth' => function () {
                 return [

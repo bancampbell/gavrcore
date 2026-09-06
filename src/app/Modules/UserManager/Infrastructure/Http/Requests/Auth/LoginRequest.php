@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Modules\UserManager\Infrastructure\Http\Requests\Auth;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class LoginRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // Паритет с нормализацией Email VO: иначе вход с User@Mail.com
+        // не находит user@mail.com на регистрозависимом PostgreSQL.
+        if ($this->filled('email')) {
+            $this->merge([
+                'email' => mb_strtolower(trim((string) $this->input('email'))),
+            ]);
+        }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function rules(): array
+    {
+        return [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Email обязателен',
+            'email.email' => 'Некорректный email',
+            'password.required' => 'Пароль обязателен',
+        ];
+    }
+}

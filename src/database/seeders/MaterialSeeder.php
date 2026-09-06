@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Material;
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 

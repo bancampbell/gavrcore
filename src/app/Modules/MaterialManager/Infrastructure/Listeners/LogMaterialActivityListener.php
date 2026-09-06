@@ -2,7 +2,7 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Listeners;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Domain\Events\MaterialCreated;
 use App\Modules\MaterialManager\Domain\Events\MaterialDeleted;
 use App\Modules\MaterialManager\Domain\Events\MaterialForceDeleted;

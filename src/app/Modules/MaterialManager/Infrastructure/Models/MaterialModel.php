@@ -2,7 +2,7 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Models;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\ValueObjects\AuthorSummaryVO;

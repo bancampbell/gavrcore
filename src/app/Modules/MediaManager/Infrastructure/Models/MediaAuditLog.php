@@ -26,6 +26,6 @@ class MediaAuditLog extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(\App\Modules\UserManager\Infrastructure\Models\UserModel::class);
     }
 }

@@ -41,7 +41,7 @@ class AdminMaterialQueryController
         return Inertia::render('MaterialManager/Index', [
             'materials' => $paginated,
             'categories' => $this->categoryService->getAll(),
-            'authors' => \App\Models\User::select('id', 'name')->orderBy('name')->get(),
+            'authors' => \App\Modules\UserManager\Infrastructure\Models\UserModel::select('id', 'name')->orderBy('name')->get(),
             'filters' => $filters->toArray(),
             'perPage' => $filters->perPage,
             'user' => auth()->user(),

@@ -2,7 +2,7 @@
 
 namespace App\Modules\MenuManager\Infrastructure\Policies;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 
 class MenuTypePolicy
 {

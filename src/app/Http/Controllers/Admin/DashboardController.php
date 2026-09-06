@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel as Material;
 use Inertia\Inertia;
 use Inertia\Response;
