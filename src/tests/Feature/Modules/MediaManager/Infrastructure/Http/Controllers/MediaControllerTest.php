@@ -22,7 +22,7 @@ class MediaControllerTest extends TestCase
     {
         parent::setUp();
 
-        $user = $this->createMock(\App\Models\User::class);
+        $user = $this->createMock(\App\Modules\UserManager\Infrastructure\Models\UserModel::class);
         $this->actingAs($user);
 
         Gate::define('manage-media', function () {

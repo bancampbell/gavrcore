@@ -4,6 +4,7 @@ namespace App\Modules\CategoryManager\Infrastructure\Models;
 
 use App\Models\Traits\ClearsSitemapCache;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
+use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -99,5 +100,10 @@ class CategoryModel extends Model
     public function trashMaterials(): HasMany
     {
         return $this->hasMany(MaterialModel::class, 'category_id')->where('state', 'trash');
+    }
+
+    protected static function newFactory(): CategoryFactory
+    {
+        return CategoryFactory::new();
     }
 }

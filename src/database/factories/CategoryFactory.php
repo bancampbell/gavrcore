@@ -2,15 +2,15 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Category>
+ * @extends Factory<CategoryModel>
  */
 class CategoryFactory extends Factory
 {
-    protected $model = Category::class;
+    protected $model = CategoryModel::class;
 
     public function definition(): array
     {
@@ -33,7 +33,7 @@ class CategoryFactory extends Factory
         ]);
     }
 
-    public function withParent(Category $parent): static
+    public function withParent(CategoryModel $parent): static
     {
         return $this->state(fn (array $attributes) => [
             'parent_id' => $parent->id,

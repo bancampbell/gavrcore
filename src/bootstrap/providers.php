@@ -6,6 +6,7 @@ use App\Modules\FormBuilder\Infrastructure\Providers\FormManagerServiceProvider;
 use App\Modules\MenuManager\Infrastructure\Providers\MenuManagerServiceProvider;
 use App\Modules\MaterialManager\Infrastructure\Providers\MaterialManagerServiceProvider;
 use App\Modules\UserManager\Infrastructure\Providers\UserManagerServiceProvider;
+use App\Modules\SettingManager\Infrastructure\Providers\SettingManagerServiceProvider;
 use Modules\MediaManager\Infrastructure\Providers\MediaManagerServiceProvider;
 use App\Modules\GalleryManager\Infrastructure\Providers\GalleryManagerServiceProvider;
 
@@ -18,4 +19,5 @@ return [
     GalleryManagerServiceProvider::class,
     CategoryManagerServiceProvider::class,
     UserManagerServiceProvider::class,
+    SettingManagerServiceProvider::class,
 ];

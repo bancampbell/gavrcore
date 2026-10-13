@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\GalleryManager\Domain\Services\ImageStorageServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -32,7 +32,7 @@ class AdminGalleryCommandControllerTest extends TestCase
     /** @return array<class-string> */
     private function adminMiddleware(): array
     {
-        return [\App\Http\Middleware\AdminMiddleware::class];
+        return [\App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware::class];
     }
 
     private function createFakeImage(string $name = 'test.jpg'): UploadedFile

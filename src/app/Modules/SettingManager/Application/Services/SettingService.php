@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\SettingManager\Application\Services;
 
-use App\Models\Setting;
+use App\Modules\SettingManager\Infrastructure\Models\Setting;
 
 class SettingService
 {

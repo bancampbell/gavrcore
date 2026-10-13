@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Repositories;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;

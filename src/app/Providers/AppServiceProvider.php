@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\SettingService;
+use App\Modules\SettingManager\Application\Services\SettingService;
 use App\Seo\Services\MetaService;
 use App\Seo\Providers\CategorySeoProvider;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;

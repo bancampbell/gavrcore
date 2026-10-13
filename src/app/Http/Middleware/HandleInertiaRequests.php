@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
-use App\Services\SettingService;
+use App\Modules\SettingManager\Application\Services\SettingService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 

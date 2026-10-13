@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Material;
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
+use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Material>
+ * @extends Factory<MaterialModel>
  */
 class MaterialFactory extends Factory
 {
-    protected $model = Material::class;
+    protected $model = MaterialModel::class;
 
     public function definition(): array
     {
@@ -20,7 +20,7 @@ class MaterialFactory extends Factory
             'title' => $this->faker->sentence(),
             'alias' => $this->faker->slug(),
             'content' => $this->faker->paragraphs(3, true),
-            'category_id' => Category::factory(),
+            'category_id' => CategoryModel::factory(),
             'user_id' => User::factory(),
             'state' => $this->faker->randomElement(['draft', 'published', 'trash']),
             'access' => 'public',

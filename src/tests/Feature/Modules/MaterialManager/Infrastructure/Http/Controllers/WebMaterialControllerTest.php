@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
@@ -59,7 +59,7 @@ class WebMaterialControllerTest extends TestCase
         $this->get(route('material.show', $material->slug))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Material/Show', false)
+                ->component('MaterialManager/Show', false)
                 ->where('material.id', $material->id)
             );
     }

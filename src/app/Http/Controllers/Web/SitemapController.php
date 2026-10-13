@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
-use App\Services\SettingService;
+use App\Modules\SettingManager\Application\Services\SettingService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 

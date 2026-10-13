@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -20,7 +20,7 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $cat) {
-            Category::updateOrCreate(
+            CategoryModel::updateOrCreate(
                 ['alias' => Str::slug($cat['name'])],
                 [
                     'name' => $cat['name'],

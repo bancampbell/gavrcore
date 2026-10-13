@@ -18,7 +18,7 @@ class MaterialModelFactory extends Factory
             'slug' => $this->faker->unique()->slug(),
             'content' => $this->faker->paragraph(),
             'category_id' => null,
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => \App\Modules\UserManager\Infrastructure\Models\UserModel::factory(),
             'state' => 'draft',
             'access' => 'public',
             'views' => 0,

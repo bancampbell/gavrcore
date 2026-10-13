@@ -5,7 +5,7 @@ namespace App\Seo\Providers;
 use App\Seo\Contracts\SeoProviderInterface;
 use App\Seo\DTO\MetaData;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
-use App\Services\SettingService;
+use App\Modules\SettingManager\Application\Services\SettingService;
 
 class CategorySeoProvider implements SeoProviderInterface
 {

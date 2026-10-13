@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Modules\SettingManager\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\SettingService;
+use App\Modules\SettingManager\Application\Services\SettingService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class SettingController extends Controller
+class AdminSettingController extends Controller
 {
     protected SettingService $settingService;
 
@@ -21,7 +21,7 @@ class SettingController extends Controller
     {
         $settings = $this->settingService->getAllSettings();
 
-        return Inertia::render('Admin/Settings/Index', [
+        return Inertia::render('SettingManager/Settings/Index', [
             'user' => auth()->user(),
             'settings' => $settings,
             'title' => 'Общие настройки',

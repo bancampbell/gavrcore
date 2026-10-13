@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Setting;
+use App\Modules\SettingManager\Infrastructure\Models\Setting;
 
 class ThemeService
 {

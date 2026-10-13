@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Web\CookieConsentController;
 use App\Http\Controllers\Web\SitemapController;
@@ -34,9 +33,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
     // Роуты категорий подключаются автоматически из модуля CategoryManager
 
-    // Settings
-    Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
-    Route::post('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
+    // Роуты настроек подключаются автоматически из модуля SettingManager
 
     // Themes
     Route::get('/admin/themes', [ThemeController::class, 'index'])->name('admin.themes.index');

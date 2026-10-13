@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
-use App\Models\User;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -28,7 +28,7 @@ class AdminGalleryQueryControllerTest extends TestCase
     /** @return array<class-string> */
     private function adminMiddleware(): array
     {
-        return [\App\Http\Middleware\AdminMiddleware::class];
+        return [\App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware::class];
     }
 
     public function test_index_requires_authentication(): void

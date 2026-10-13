@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
-use App\Models\Material;
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
+use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -30,7 +30,7 @@ class MaterialSeeder extends Seeder
             'Инвестиционные проекты',
         ];
 
-        $categories = Category::pluck('id')->toArray();
+        $categories = CategoryModel::pluck('id')->toArray();
         $users = User::pluck('id')->toArray();
 
         // Если нет категорий или пользователей — пропускаем
@@ -43,7 +43,7 @@ class MaterialSeeder extends Seeder
             $states = ['published', 'draft', 'archived'];
             $access = ['public', 'registered', 'special'];
 
-            Material::create([
+            MaterialModel::create([
                 'title' => $title,
                 'alias' => Str::slug($title) . '-' . ($i + 1),
                 'content' => '<h2>' . $title . '</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>',

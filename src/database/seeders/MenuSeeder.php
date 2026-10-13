@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\MenuItem;
-use App\Models\MenuType;
+use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
+use App\Modules\MenuManager\Infrastructure\Models\MenuTypeModel;
 use Illuminate\Database\Seeder;
 
 class MenuSeeder extends Seeder
@@ -11,7 +11,7 @@ class MenuSeeder extends Seeder
     public function run(): void
     {
         // Создаём типы меню
-        $mainMenu = MenuType::create([
+        $mainMenu = MenuTypeModel::create([
             'title' => 'Main Menu',
             'alias' => 'main-menu',
             'description' => 'Главное меню сайта',
@@ -19,7 +19,7 @@ class MenuSeeder extends Seeder
             'status' => true,
         ]);
 
-        $loginMenu = MenuType::create([
+        $loginMenu = MenuTypeModel::create([
             'title' => 'Menu login',
             'alias' => 'menu-login',
             'description' => 'Меню для авторизованных пользователей',
@@ -27,7 +27,7 @@ class MenuSeeder extends Seeder
             'status' => true,
         ]);
 
-        $nevidimia = MenuType::create([
+        $nevidimia = MenuTypeModel::create([
             'title' => 'Nevidimia',
             'alias' => 'nevidimia',
             'description' => 'Скрытое меню',
@@ -36,7 +36,7 @@ class MenuSeeder extends Seeder
         ]);
 
         // Создаём пункты для Main Menu
-        MenuItem::create([
+        MenuItemModel::create([
             'menu_type_id' => $mainMenu->id,
             'parent_id' => null,
             'title' => 'О компании',
@@ -50,7 +50,7 @@ class MenuSeeder extends Seeder
             'language' => 'all',
         ]);
 
-        MenuItem::create([
+        MenuItemModel::create([
             'menu_type_id' => $mainMenu->id,
             'parent_id' => null,
             'title' => 'Руководство',
@@ -64,7 +64,7 @@ class MenuSeeder extends Seeder
             'language' => 'all',
         ]);
 
-        MenuItem::create([
+        MenuItemModel::create([
             'menu_type_id' => $mainMenu->id,
             'parent_id' => null,
             'title' => 'Контакты',
