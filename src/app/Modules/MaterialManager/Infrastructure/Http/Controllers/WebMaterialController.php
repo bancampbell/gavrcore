@@ -13,7 +13,7 @@ use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
 use App\Services\BreadcrumbService;
 use App\Modules\SettingManager\Application\Services\SettingService;
-use App\Services\ThemeService;
+use App\Modules\ThemeManager\Application\Services\ThemeService;
 use App\Seo\Services\MetaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

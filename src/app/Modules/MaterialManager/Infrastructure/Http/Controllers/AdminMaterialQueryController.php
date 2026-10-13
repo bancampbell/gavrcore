@@ -10,7 +10,7 @@ use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Services\CategoryServiceInterface;
 use App\Modules\MaterialManager\Infrastructure\Http\Requests\MaterialIndexRequest;
 use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
-use App\Services\ThemeService;
+use App\Modules\ThemeManager\Application\Services\ThemeService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
 use Inertia\Response;

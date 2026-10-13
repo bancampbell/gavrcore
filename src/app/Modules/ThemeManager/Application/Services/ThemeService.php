@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\ThemeManager\Application\Services;
 
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
 

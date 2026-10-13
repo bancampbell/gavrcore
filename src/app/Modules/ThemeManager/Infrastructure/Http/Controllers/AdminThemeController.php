@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Modules\ThemeManager\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\ThemeService;
+use App\Modules\ThemeManager\Application\Services\ThemeService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ThemeController extends Controller
+class AdminThemeController extends Controller
 {
     protected ThemeService $themeService;
 
@@ -22,7 +22,7 @@ class ThemeController extends Controller
         $themes = $this->themeService->getAvailableThemes();
         $currentTheme = $this->themeService->getCurrentTheme();
 
-        return Inertia::render('Admin/Themes/Index', [
+        return Inertia::render('ThemeManager/Themes/Index', [
             'user' => auth()->user(),
             'themes' => $themes,
             'currentTheme' => $currentTheme,
