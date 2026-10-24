@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Modules\AdminDashboard\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
@@ -23,7 +23,7 @@ class DashboardController extends Controller
             ->latest()
             ->paginate(20);
 
-        return Inertia::render('Admin/Dashboard', [
+        return Inertia::render('AdminDashboard/Dashboard', [
             'user' => auth()->user(),
             'stats' => [
                 'materials' => $totalMaterials,

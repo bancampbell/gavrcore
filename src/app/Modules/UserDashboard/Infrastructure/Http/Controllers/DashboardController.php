@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Web;
+namespace App\Modules\UserDashboard\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Form;
-use App\Models\FormSubmission;
 use App\Modules\SettingManager\Application\Services\SettingService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -24,28 +22,21 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
-        $userId = auth()->id();
-
-        $totalTickets = FormSubmission::where('user_id', $userId)->count();
-        $inProgressTickets = FormSubmission::where('user_id', $userId)
-            ->where('status', 'in_progress')
-            ->count();
-        $completedTickets = FormSubmission::where('user_id', $userId)
-            ->where('status', 'completed')
-            ->count();
-
-        return Inertia::render('Dashboard/Index', [
+        // TODO: статистика обращений временно отключена. Ранее считалась по
+        // App\Models\FormSubmission, которых в монолите нет — данные по заявкам
+        // должен отдавать модуль FormBuilder после его миграции.
+        return Inertia::render('UserDashboard/Index', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
-            'totalTickets' => $totalTickets,
-            'inProgressTickets' => $inProgressTickets,
-            'completedTickets' => $completedTickets,
+            'totalTickets' => 0,
+            'inProgressTickets' => 0,
+            'completedTickets' => 0,
         ]);
     }
 
     public function profile(): Response
     {
-        return Inertia::render('Dashboard/Profile', [
+        return Inertia::render('UserDashboard/Profile', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
         ]);
@@ -53,7 +44,7 @@ class DashboardController extends Controller
 
     public function settings(): Response
     {
-        return Inertia::render('Dashboard/Settings', [
+        return Inertia::render('UserDashboard/Settings', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
         ]);
@@ -64,12 +55,12 @@ class DashboardController extends Controller
      */
     public function tickets(): Response
     {
-        $submissions = FormSubmission::where('user_id', auth()->id())
-            ->with('form')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        // TODO: список обращений временно пуст — выборка зависела от
+        // App\Models\FormSubmission (FormBuilder ещё не мигрирован).
+        // Заменить пустой paginator на реальную выборку после миграции FormBuilder.
+        $submissions = new LengthAwarePaginator([], 0, 15);
 
-        return Inertia::render('Dashboard/TicketsIndex', [
+        return Inertia::render('UserDashboard/TicketsIndex', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
             'submissions' => $submissions,
@@ -81,12 +72,12 @@ class DashboardController extends Controller
      */
     public function ticketsCreate(): Response
     {
-        $forms = Form::where('status', true)->get()->keyBy('id')->toArray();
-
-        return Inertia::render('Dashboard/TicketsCreate', [
+        // TODO: формы отсутствуют (FormBuilder ещё не мигрирован),
+        // передаём пустой массив вместо выборки по App\Models\Form.
+        return Inertia::render('UserDashboard/TicketsCreate', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
-            'forms' => $forms,
+            'forms' => [],
         ]);
     }
 

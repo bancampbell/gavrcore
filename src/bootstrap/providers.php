@@ -9,6 +9,9 @@ use App\Modules\UserManager\Infrastructure\Providers\UserManagerServiceProvider;
 use App\Modules\SettingManager\Infrastructure\Providers\SettingManagerServiceProvider;
 use App\Modules\ThemeManager\Infrastructure\Providers\ThemeManagerServiceProvider;
 use App\Modules\SeoManager\Infrastructure\Providers\SeoManagerServiceProvider;
+use App\Modules\UserDashboard\Infrastructure\Providers\UserDashboardServiceProvider;
+use App\Modules\AdminDashboard\Infrastructure\Providers\AdminDashboardServiceProvider;
+use App\Modules\CookieConsent\Infrastructure\Providers\CookieConsentServiceProvider;
 use Modules\MediaManager\Infrastructure\Providers\MediaManagerServiceProvider;
 use App\Modules\GalleryManager\Infrastructure\Providers\GalleryManagerServiceProvider;
 
@@ -24,4 +27,7 @@ return [
     SettingManagerServiceProvider::class,
     ThemeManagerServiceProvider::class,
     SeoManagerServiceProvider::class,
+    UserDashboardServiceProvider::class,
+    AdminDashboardServiceProvider::class,
+    CookieConsentServiceProvider::class,
 ];

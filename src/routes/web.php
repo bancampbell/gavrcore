@@ -1,33 +1,18 @@
 <?php
 
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Web\CookieConsentController;
-use App\Http\Controllers\Web\DashboardController as WebDashboardController;
 use Illuminate\Support\Facades\Route;
 
-// ===== COOKIE CONSENT =====
-Route::post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])->name('cookie.consent.accept');
-Route::post('/cookie-consent/decline', [CookieConsentController::class, 'decline'])->name('cookie.consent.decline');
+// Роуты cookie consent подключаются автоматически из модуля CookieConsent
 
 // Sitemap роут подключается автоматически из модуля SeoManager
 
-// ===== ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ =====
-// (пока остаётся в монолите, будет перенесён отдельным модулем позже)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [WebDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/profile', [WebDashboardController::class, 'profile'])->name('dashboard.profile');
-    Route::get('/dashboard/settings', [WebDashboardController::class, 'settings'])->name('dashboard.settings');
-    Route::get('/dashboard/tickets', [WebDashboardController::class, 'tickets'])->name('dashboard.tickets');
-    Route::get('/dashboard/tickets/new', [WebDashboardController::class, 'ticketsCreate'])->name('dashboard.tickets.create');
+// Роуты личного кабинета пользователя (middleware auth)
+// подключаются автоматически из модуля UserDashboard
 
-    Route::put('/dashboard/profile', [WebDashboardController::class, 'updateProfile'])->name('dashboard.profile.update');
-    Route::put('/dashboard/settings', [WebDashboardController::class, 'updateSettings'])->name('dashboard.settings.update');
-});
+// Роуты админского дашборда подключаются автоматически из модуля AdminDashboard
 
 // ===== ЗАЩИЩЁННЫЕ АДМИНСКИЕ РОУТЫ =====
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
     // Роуты категорий подключаются автоматически из модуля CategoryManager
 
     // Роуты настроек подключаются автоматически из модуля SettingManager

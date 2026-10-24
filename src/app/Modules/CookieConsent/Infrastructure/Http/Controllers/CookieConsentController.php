@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Web;
+namespace App\Modules\CookieConsent\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
