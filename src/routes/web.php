@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Web\CookieConsentController;
-use App\Http\Controllers\Web\SitemapController;
 use App\Http\Controllers\Web\DashboardController as WebDashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,8 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/cookie-consent/accept', [CookieConsentController::class, 'accept'])->name('cookie.consent.accept');
 Route::post('/cookie-consent/decline', [CookieConsentController::class, 'decline'])->name('cookie.consent.decline');
 
-// Sitemap
-Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+// Sitemap роут подключается автоматически из модуля SeoManager
 
 // ===== ЛИЧНЫЙ КАБИНЕТ ПОЛЬЗОВАТЕЛЯ =====
 // (пока остаётся в монолите, будет перенесён отдельным модулем позже)

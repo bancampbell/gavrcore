@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Seo\Providers;
+namespace App\Modules\CategoryManager\Application\Services;
 
-use App\Seo\Contracts\SeoProviderInterface;
-use App\Seo\DTO\MetaData;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
+use App\Modules\SeoManager\Application\Contracts\SeoProviderInterface;
+use App\Modules\SeoManager\Application\DTO\MetaData;
 use App\Modules\SettingManager\Application\Services\SettingService;
 
 class CategorySeoProvider implements SeoProviderInterface

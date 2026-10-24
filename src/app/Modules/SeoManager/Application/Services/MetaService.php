@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Seo\Services;
+namespace App\Modules\SeoManager\Application\Services;
 
-use App\Seo\Contracts\SeoProviderInterface;
-use App\Seo\DTO\MetaData;
+use App\Modules\SeoManager\Application\Contracts\SeoProviderInterface;
+use App\Modules\SeoManager\Application\DTO\MetaData;
 use Illuminate\Support\Collection;
 
 class MetaService

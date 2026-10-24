@@ -2,7 +2,7 @@
 
 namespace App\Modules\CategoryManager\Infrastructure\Models;
 
-use App\Models\Traits\ClearsSitemapCache;
+use App\Modules\CategoryManager\Domain\Events\CategorySaved;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,7 +34,7 @@ use Illuminate\Support\Carbon;
  */
 class CategoryModel extends Model
 {
-    use HasFactory, ClearsSitemapCache;
+    use HasFactory;
 
     protected $table = 'categories';
 
@@ -105,5 +105,13 @@ class CategoryModel extends Model
     protected static function newFactory(): CategoryFactory
     {
         return CategoryFactory::new();
+    }
+
+    protected static function booted(): void
+    {
+        // Доменные события вместо трейта ClearsSitemapCache:
+        // listener модуля SeoManager сбрасывает кэш sitemap
+        static::saved(static fn (CategoryModel $model) => event(new CategorySaved($model->id)));
+        static::deleted(static fn (CategoryModel $model) => event(new CategorySaved($model->id)));
     }
 }

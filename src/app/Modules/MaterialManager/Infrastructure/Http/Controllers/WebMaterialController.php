@@ -11,10 +11,11 @@ use App\Modules\MaterialManager\Domain\Services\FormServiceInterface;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
-use App\Services\BreadcrumbService;
+use App\Modules\MaterialManager\Application\Services\MaterialBreadcrumbService;
+use App\Modules\SeoManager\Application\Services\BreadcrumbService;
 use App\Modules\SettingManager\Application\Services\SettingService;
 use App\Modules\ThemeManager\Application\Services\ThemeService;
-use App\Seo\Services\MetaService;
+use App\Modules\SeoManager\Application\Services\MetaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,6 +29,7 @@ class WebMaterialController
         private readonly GetMenuTreeUseCase $getMenuTree,
         private readonly ThemeService $themeService,
         private readonly BreadcrumbService $breadcrumbService,
+        private readonly MaterialBreadcrumbService $materialBreadcrumbService,
         private readonly MetaService $metaService,
         private readonly ContentParserInterface $contentParser,
         private readonly CategoryServiceInterface $categoryService,
@@ -157,7 +159,7 @@ class WebMaterialController
         $currentTheme = $this->settingService->getTheme();
 
         $meta = $this->metaService->for($material);
-        $breadcrumbs = $this->breadcrumbService->forMaterial($material);
+        $breadcrumbs = $this->materialBreadcrumbService->forMaterial($material);
 
         return Inertia::render('MaterialManager/Show', [
             'material' => (new MaterialResource($material))->toArray(request()),
@@ -227,7 +229,7 @@ class WebMaterialController
         $siteKeywords = $settings['seo_keywords'] ?? '';
         $currentTheme = $this->settingService->getTheme();
 
-        $breadcrumbs = $this->breadcrumbService->forSearch($search);
+        $breadcrumbs = $this->materialBreadcrumbService->forSearch($search);
 
         return Inertia::render('Search/Index', [
             'materials' => $materials->toArray(),

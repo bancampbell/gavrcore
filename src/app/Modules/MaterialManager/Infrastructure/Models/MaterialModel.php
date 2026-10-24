@@ -5,6 +5,7 @@ namespace App\Modules\MaterialManager\Infrastructure\Models;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Events\MaterialSaved;
 use App\Modules\MaterialManager\Domain\ValueObjects\AuthorSummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\CategorySummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
@@ -145,5 +146,13 @@ class MaterialModel extends Model
     protected static function newFactory()
     {
         return \Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory::new();
+    }
+
+    protected static function booted(): void
+    {
+        // Доменные события инвалидируют кэш sitemap
+        // (listener модуля SeoManager)
+        static::saved(static fn (MaterialModel $model) => event(new MaterialSaved($model->id)));
+        static::deleted(static fn (MaterialModel $model) => event(new MaterialSaved($model->id)));
     }
 }

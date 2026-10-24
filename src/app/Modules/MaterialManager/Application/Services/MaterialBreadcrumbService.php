@@ -1,11 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\MaterialManager\Application\Services;
 
-use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
-use App\Models\Material;
-
-class BreadcrumbService
+class MaterialBreadcrumbService
 {
     /**
      * Генерация хлебных крошек для материала
@@ -23,7 +20,7 @@ class BreadcrumbService
         if ($material->category) {
             $breadcrumbs[] = [
                 'title' => $material->category->name,
-                'url' => route('category.show', ['slug' => $material->category->alias]),
+                'url' => route('category.show', ['slug' => $material->category->slug]),
             ];
         }
 
@@ -34,40 +31,6 @@ class BreadcrumbService
         ];
 
         return $breadcrumbs;
-    }
-
-    /**
-     * Генерация хлебных крошек для категории
-     */
-    public function forCategory(CategoryModel $category): array
-    {
-        $breadcrumbs = [
-            [
-                'title' => 'Главная',
-                'url' => route('home'),
-            ],
-        ];
-
-        // Текущая категория (без ссылки)
-        $breadcrumbs[] = [
-            'title' => $category->name,
-            'url' => null,
-        ];
-
-        return $breadcrumbs;
-    }
-
-    /**
-     * Генерация хлебных крошек для главной страницы
-     */
-    public function forHome(): array
-    {
-        return [
-            [
-                'title' => 'Главная',
-                'url' => null,
-            ],
-        ];
     }
 
     /**

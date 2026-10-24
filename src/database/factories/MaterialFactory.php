@@ -18,7 +18,8 @@ class MaterialFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence(),
-            'alias' => $this->faker->slug(),
+            'slug' => $this->faker->unique()->slug(),
+            'alias' => fn (array $attributes) => $attributes['slug'],
             'content' => $this->faker->paragraphs(3, true),
             'category_id' => CategoryModel::factory(),
             'user_id' => User::factory(),

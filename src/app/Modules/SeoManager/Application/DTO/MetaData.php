@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Seo\DTO;
+namespace App\Modules\SeoManager\Application\DTO;
 
 class MetaData
 {

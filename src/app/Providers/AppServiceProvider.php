@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use App\Modules\SettingManager\Application\Services\SettingService;
-use App\Seo\Services\MetaService;
-use App\Seo\Providers\CategorySeoProvider;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
 use App\Modules\FormBuilder\Application\UseCases\GetUnreadSubmissionsCountUseCase;
 use Illuminate\Support\ServiceProvider;
@@ -20,12 +18,8 @@ class AppServiceProvider extends ServiceProvider
         // Репозитории User/Group/Permission/AccessLevel и политики
         // зарегистрированы в модуле UserManager (UserManagerServiceProvider)
 
-        // Регистрируем SEO сервис с провайдерами
-        $this->app->singleton(MetaService::class, function ($app) {
-            $service = new MetaService();
-            $service->registerProvider(new CategorySeoProvider($app->make(SettingService::class)));
-            return $service;
-        });
+        // MetaService регистрируется в модуле SeoManager,
+        // SEO-провайдеры подключаются модулями через механизм провайдеров
     }
 
     public function boot(): void

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Seo\Contracts;
+namespace App\Modules\SeoManager\Application\Contracts;
 
-use App\Seo\DTO\MetaData;
+use App\Modules\SeoManager\Application\DTO\MetaData;
 
 interface SeoProviderInterface
 {

@@ -8,6 +8,7 @@ use App\Modules\MaterialManager\Infrastructure\Providers\MaterialManagerServiceP
 use App\Modules\UserManager\Infrastructure\Providers\UserManagerServiceProvider;
 use App\Modules\SettingManager\Infrastructure\Providers\SettingManagerServiceProvider;
 use App\Modules\ThemeManager\Infrastructure\Providers\ThemeManagerServiceProvider;
+use App\Modules\SeoManager\Infrastructure\Providers\SeoManagerServiceProvider;
 use Modules\MediaManager\Infrastructure\Providers\MediaManagerServiceProvider;
 use App\Modules\GalleryManager\Infrastructure\Providers\GalleryManagerServiceProvider;
 
@@ -22,4 +23,5 @@ return [
     UserManagerServiceProvider::class,
     SettingManagerServiceProvider::class,
     ThemeManagerServiceProvider::class,
+    SeoManagerServiceProvider::class,
 ];
