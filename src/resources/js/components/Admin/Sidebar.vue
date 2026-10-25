@@ -1,5 +1,7 @@
 <template>
-    <aside :class="[
+    <aside
+        ref="asideRef"
+        :class="[
         'admin-sidebar fixed lg:relative z-30 w-64 bg-white border-r border-gray-200 h-full transition-transform duration-300 ease-in-out',
         isOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0',
@@ -12,7 +14,7 @@
                     section-key="materials"
                     title="Материалы"
                     :is-open="isOpen('materials')"
-                    :toggle="() => toggleSection('materials')"
+                    :toggle="() => onToggle('materials')"
                 >
                     <SidebarLink href="/admin/materials" icon="list">Менеджер материалов</SidebarLink>
                     <SidebarLink href="/admin/categories" icon="category">Категории</SidebarLink>
@@ -24,7 +26,7 @@
                     section-key="navigation"
                     title="Навигация"
                     :is-open="isOpen('navigation')"
-                    :toggle="() => toggleSection('navigation')"
+                    :toggle="() => onToggle('navigation')"
                 >
                     <SidebarLink href="/admin/menu" icon="menu">Менеджер меню</SidebarLink>
                     <SidebarLink href="/admin/menu/items/all" icon="list">Все меню</SidebarLink>
@@ -35,7 +37,7 @@
                     section-key="structure"
                     title="Структура"
                     :is-open="isOpen('structure')"
-                    :toggle="() => toggleSection('structure')"
+                    :toggle="() => onToggle('structure')"
                 >
                     <SidebarLink href="/admin/media" icon="image">Медиа-менеджер</SidebarLink>
                     <SidebarLink href="/admin/galleries" icon="image">Галереи</SidebarLink>
@@ -59,7 +61,7 @@
                         section-key="users"
                         title="Пользователи"
                         :is-open="isOpen('users')"
-                        :toggle="() => toggleSection('users')"
+                        :toggle="() => onToggle('users')"
                     >
                         <SidebarLink
                             href="/admin/users"
@@ -93,7 +95,7 @@
                         section-key="settings"
                         title="Настройки"
                         :is-open="isOpen('settings')"
-                        :toggle="() => toggleSection('settings')"
+                        :toggle="() => onToggle('settings')"
                     >
                         <SidebarLink href="/admin/settings" icon="settings">Общие настройки</SidebarLink>
                         <SidebarLink href="/admin/themes" icon="palette">Темы оформления</SidebarLink>
@@ -105,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref, onMounted, onUnmounted } from 'vue';
+import { computed, watch, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import SidebarLink from './SidebarLink.vue';
 import SidebarSection from './SidebarSection.vue';
@@ -126,33 +128,70 @@ const unreadCount = computed(() => {
     return (page.props as any).unreadCount || 0;
 });
 
-// ===== АДАПТИВНОЕ КОЛИЧЕСТВО ОТКРЫТЫХ РАЗДЕЛОВ (ПО ВЫСОТЕ) =====
-const getMaxOpen = () => {
-    const height = window.innerHeight;
-    if (height >= 900) return 10;
-    if (height >= 700) return 4;
-    if (height >= 550) return 3;
-    return 2;
-};
-
-const maxOpen = ref(getMaxOpen());
+// ===== АККОРДЕОН =====
+// maxOpen постоянно 10: composable ничего не закрывает и НЕ ВОССТАНАВЛИВАЕТ
+// разделы сам — вся логика ниже, на измерении реального переполнения.
+const maxOpen = ref(10);
 const isResizing = ref(false);
 let resizeTimer: any = null;
 
-// ===== АККОРДЕОН =====
 const { isOpen, toggleSection, setOpenSections } = useSidebarSections(maxOpen);
+
+const asideRef = ref<HTMLElement | null>(null);
+const lastToggled = ref<string | null>(null);
+
+// Состояние по умолчанию и порог «полного» размера окна
+const DEFAULT_SECTIONS = ['materials', 'navigation', 'structure'];
+const FULL_HEIGHT = 900;
+
+// Порядок закрытия при нехватке места («Материалы» никогда не закрываются).
+const CLOSE_ORDER = ['settings', 'users', 'structure', 'navigation'];
+
+// Если меню не влезает в высоту — закрываем разделы по CLOSE_ORDER,
+// пока не влезет. Ничего не открывает обратно.
+const fitMenu = async () => {
+    await nextTick();
+    const aside = asideRef.value;
+    if (!aside) return;
+
+    let guard = 0;
+    while (aside.scrollHeight > aside.clientHeight + 1 && guard < 10) {
+        const candidate = CLOSE_ORDER.find(
+            (key) => key !== lastToggled.value && isOpen(key)
+        );
+        if (!candidate) break;
+        toggleSection(candidate);
+        guard++;
+        await nextTick();
+    }
+};
+
+// Клик по заголовку раздела
+const onToggle = (key: string) => {
+    lastToggled.value = key;
+    toggleSection(key);
+    void fitMenu(); // если стало не хватать места — закроется другой раздел
+};
+
+// Высота окна на момент последнего завершённого ресайза
+let lastHeight = window.innerHeight;
 
 const handleResize = () => {
     isResizing.value = true;
-    const newMax = getMaxOpen();
-    if (newMax !== maxOpen.value) {
-        maxOpen.value = newMax;
-    }
 
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
         isResizing.value = false;
-    }, 300);
+        const height = window.innerHeight;
+
+        // Окно восстановлено до полного размера — возвращаем всё по умолчанию
+        if (height >= FULL_HEIGHT && lastHeight < FULL_HEIGHT) {
+            setOpenSections(DEFAULT_SECTIONS);
+        }
+        lastHeight = height;
+
+        void fitMenu();
+    }, 200);
 };
 
 onMounted(() => {
@@ -164,24 +203,10 @@ onUnmounted(() => {
     clearTimeout(resizeTimer);
 });
 
-// Автоматически открываем нужный раздел при переходе
+// При загрузке всегда состояние по умолчанию:
+// открыты Материалы, Навигация, Структура; Пользователи и Настройки закрыты.
 watch(currentUrl, () => {
-    let targetSection = 'materials';
-
-    if (currentUrl.value.startsWith('/admin/materials') || currentUrl.value.startsWith('/admin/categories') || currentUrl.value.startsWith('/admin/materials/trash')) {
-        targetSection = 'materials';
-    } else if (currentUrl.value.startsWith('/admin/menu')) {
-        targetSection = 'navigation';
-    } else if (currentUrl.value.startsWith('/admin/media') || currentUrl.value.startsWith('/admin/galleries') || currentUrl.value.startsWith('/admin/forms') || currentUrl.value.startsWith('/admin/submissions')) {
-        targetSection = 'structure';
-    } else if (currentUrl.value.startsWith('/admin/users') || currentUrl.value.startsWith('/admin/groups') || currentUrl.value.startsWith('/admin/access-levels')) {
-        targetSection = 'users';
-    } else if (currentUrl.value.startsWith('/admin/settings') || currentUrl.value.startsWith('/admin/themes')) {
-        targetSection = 'settings';
-    }
-
-    const allSections = ['materials', 'navigation', 'structure', 'users', 'settings'];
-    setOpenSections(allSections);
+    setOpenSections(DEFAULT_SECTIONS);
 }, { immediate: true });
 
 // ===== ОСТАЛЬНОЕ =====

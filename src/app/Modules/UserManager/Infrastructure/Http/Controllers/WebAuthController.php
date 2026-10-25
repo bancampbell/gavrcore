@@ -57,6 +57,12 @@ final class WebAuthController extends Controller
                 ])->withInput();
             }
 
+            // Параллельно с LoginUserUseCase: фиксируем время и IP входа
+            $user->update([
+                'last_login_at' => now(),
+                'last_login_ip' => $request->ip(),
+            ]);
+
             $request->session()->regenerate();
 
             // Проверяем, откуда пришёл пользователь

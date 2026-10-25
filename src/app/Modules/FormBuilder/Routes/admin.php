@@ -22,8 +22,8 @@ Route::middleware(['web', 'auth', 'admin'])->group(function () {
 
     Route::prefix('admin/submissions')->name('admin.submissions.')->group(function () {
         Route::get('/', [AdminSubmissionQueryController::class, 'index'])->name('index');
-        Route::get('/{id}', [AdminSubmissionQueryController::class, 'show'])->name('show');
-        Route::delete('/{id}', [AdminSubmissionCommandController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}', [AdminSubmissionQueryController::class, 'show'])->name('show')->whereNumber('id');
+        Route::delete('/{id}', [AdminSubmissionCommandController::class, 'destroy'])->name('destroy')->whereNumber('id');
         Route::post('/mark-read', [AdminSubmissionCommandController::class, 'markAsReadBulk'])->name('mark-read');
         Route::post('/destroy-bulk', [AdminSubmissionCommandController::class, 'destroyBulk'])->name('destroy-bulk');
     });

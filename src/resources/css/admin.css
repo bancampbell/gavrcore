@@ -311,6 +311,8 @@
     color: #ffffff !important;
     text-decoration: none !important;
     opacity: 1 !important;
+    font-size: 17px !important;
+    font-weight: 600;
 }
 
 .admin-topnav-logo:hover {
@@ -319,6 +321,12 @@
 
 .admin-topnav-menu {
     @apply hidden md:flex md:ml-4 space-x-1;
+    font-size: 17px !important;
+}
+
+.admin-topnav-menu a,
+.admin-topnav-menu button {
+    font-size: 17px !important;
 }
 
 /* ========================================
@@ -430,7 +438,8 @@
 }
 
 .admin-page-actions .admin-btn {
-    @apply px-4 py-2 rounded-md text-sm font-medium transition-all duration-200;
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+    font-size: 15px !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     height: 38px !important;
     display: inline-flex !important;
@@ -501,15 +510,18 @@
 }
 
 .admin-page-actions .admin-filter-input {
-    @apply w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3071a9]/20 focus:border-[#3071a9] transition-all;
+    @apply w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3071a9]/20 focus:border-[#3071a9] transition-all;
+    font-size: 15px !important;
 }
 
 .admin-page-actions .admin-filter-select {
-    @apply w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3071a9]/20 focus:border-[#3071a9] transition-all bg-white;
+    @apply w-full border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#3071a9]/20 focus:border-[#3071a9] transition-all bg-white;
+    font-size: 15px !important;
 }
 
 .admin-page-actions .admin-filter-reset {
-    @apply text-sm text-slate-500 hover:text-slate-700 px-3 py-1.5;
+    @apply text-slate-500 hover:text-slate-700 px-3 py-2;
+    font-size: 15px !important;
 }
 
 /* ========================================
@@ -532,7 +544,8 @@
     width: 100% !important;
     table-layout: fixed !important;
     border-collapse: collapse !important;
-    font-size: 14px;
+    font-size: 17px;
+    line-height: 1.35;
     background: white;
 }
 
@@ -558,7 +571,7 @@
 
 /* Ячейки */
 .admin-table-fixed tbody td {
-    padding: 12px 12px !important;
+    padding: 14px 12px !important;
     border-bottom: 1px solid #f1f5f9 !important;
     vertical-align: middle !important;
 }
@@ -667,21 +680,42 @@
    ЕДИНЫЕ СТАТУСЫ И БЕЙДЖИ (ДЛЯ ВСЕХ СТРАНИЦ)
    ======================================== */
 
-/* ----- Статус-бейдж (общий для всех) ----- */
+/* ----- Статус-бейдж (общий для всех): белый фон + цветная рамка + точка ----- */
 .admin-table-fixed .status-badge {
     display: inline-flex !important;
     align-items: center !important;
+    gap: 6px !important;
     padding: 2px 12px !important;
     border-radius: 12px !important;
     font-size: 12px !important;
     font-weight: 500 !important;
     white-space: nowrap !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+/* Галочка / крестик внутри бейджа */
+.admin-table-fixed .status-badge svg {
+    width: 12px !important;
+    height: 12px !important;
+    flex-shrink: 0 !important;
+}
+
+.admin-table-fixed .status-active svg,
+.admin-table-fixed .status-published svg {
+    color: #10b981 !important;
+}
+
+.admin-table-fixed .status-inactive svg,
+.admin-table-fixed .status-draft svg,
+.admin-table-fixed .status-unpublished svg {
+    color: #ef4444 !important;
 }
 
 /* ----- Активный / Опубликовано ----- */
 .admin-table-fixed .status-active,
 .admin-table-fixed .status-published {
-    background: #d1fae5 !important;
+    border-color: #6ee7b7 !important;
     color: #065f46 !important;
 }
 
@@ -689,13 +723,13 @@
 .admin-table-fixed .status-inactive,
 .admin-table-fixed .status-draft,
 .admin-table-fixed .status-unpublished {
-    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
     color: #991b1b !important;
 }
 
 /* ----- Архив ----- */
 .admin-table-fixed .status-archived {
-    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
     color: #475569 !important;
 }
 
@@ -995,7 +1029,7 @@
     border-color: #cbd5e1 !important;
     background-color: #ffffff !important;
     color: #1e293b !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     font-weight: 500 !important;
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     appearance: none !important;
@@ -1042,9 +1076,9 @@
 .admin-topnav-view-site:active,
 .admin-topnav-view-site:focus {
     @apply flex items-center gap-1.5 transition-all duration-200;
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 500;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1069,7 +1103,8 @@
 }
 
 .admin-pagination-info {
-    @apply text-sm text-slate-500;
+    @apply text-slate-500;
+    font-size: 15px !important;
 }
 
 .admin-pagination-controls {
@@ -1077,11 +1112,13 @@
 }
 
 .admin-pagination-btn {
-    @apply px-3 py-1 border border-slate-300 rounded-lg text-sm disabled:opacity-50 hover:bg-slate-50 transition;
+    @apply px-3 py-1.5 border border-slate-300 rounded-lg disabled:opacity-50 hover:bg-slate-50 transition;
+    font-size: 15px !important;
 }
 
 .admin-pagination-current {
-    @apply text-sm text-slate-600;
+    @apply text-slate-600;
+    font-size: 15px !important;
 }
 
 /* ========================================
@@ -1149,8 +1186,8 @@
     width: 100% !important;
     border: 1px solid #d1d5db !important;
     border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
+    padding: 10px 12px !important;
+    font-size: 15px !important;
     transition: all 0.2s ease !important;
     background: white !important;
     color: #1e293b !important;
@@ -1170,8 +1207,8 @@
     width: 100% !important;
     border: 1px solid #d1d5db !important;
     border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
+    padding: 10px 12px !important;
+    font-size: 15px !important;
     transition: all 0.2s ease !important;
     background: white !important;
     color: #1e293b !important;
@@ -1189,8 +1226,8 @@
     width: 100% !important;
     border: 1px solid #d1d5db !important;
     border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
+    padding: 10px 12px !important;
+    font-size: 15px !important;
     transition: all 0.2s ease !important;
     background: white !important;
     color: #1e293b !important;
@@ -1347,7 +1384,7 @@
 }
 
 .admin-toggle-label {
-    font-size: 14px !important;
+    font-size: 15px !important;
     color: #374151 !important;
 }
 
@@ -1382,7 +1419,7 @@
 
 .admin-sidebar-link {
     display: block !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     color: #64748b !important;
     padding: 4px 0 !important;
     cursor: pointer !important;
@@ -1471,11 +1508,11 @@
 
 /* ----- Кнопки в модалках ----- */
 .btn-cancel {
-    padding: 8px 16px !important;
+    padding: 9px 16px !important;
     background: white !important;
     border: 1px solid #d1d5db !important;
     border-radius: 6px !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     font-weight: 500 !important;
     color: #475569 !important;
     cursor: pointer !important;
@@ -1487,12 +1524,12 @@
 }
 
 .btn-primary {
-    padding: 8px 16px !important;
+    padding: 9px 16px !important;
     background: #3071a9 !important;
     color: white !important;
     border: none !important;
     border-radius: 6px !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     font-weight: 500 !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
@@ -1596,7 +1633,7 @@
 
 .admin-sidebar-link {
     display: block !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     color: #64748b !important;
     padding: 6px 10px !important;
     cursor: pointer !important;
@@ -1775,7 +1812,7 @@
 }
 
 .admin-theme-description {
-    font-size: 14px !important;
+    font-size: 15px !important;
     color: #64748b !important;
     margin: 4px 0 8px 0 !important;
 }
@@ -1863,7 +1900,7 @@
     border: none !important;
     color: #64748b !important;
     font-weight: 500 !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
     border-bottom: 2px solid transparent !important;
@@ -1926,8 +1963,8 @@
     flex: 1 !important;
     border: 1px solid #d1d5db !important;
     border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 14px !important;
+    padding: 10px 12px !important;
+    font-size: 15px !important;
     transition: all 0.2s ease !important;
     background: white !important;
 }
@@ -1939,11 +1976,11 @@
 }
 
 .search-button {
-    padding: 8px 16px !important;
+    padding: 10px 16px !important;
     background: #f1f5f9 !important;
     border: 1px solid #d1d5db !important;
     border-radius: 6px !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
     color: #1e293b !important;
@@ -1960,9 +1997,9 @@
 }
 
 .material-item {
-    padding: 8px 12px !important;
+    padding: 10px 12px !important;
     cursor: pointer !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     transition: background 0.15s ease !important;
     color: #1e293b !important;
 }
@@ -2307,4 +2344,26 @@
 .homepage-card.active .homepage-card-title {
     color: #ffffff;
     font-weight: 600;
+}
+
+/* ========================================
+   САЙДБАР — РАЗМЕРЫ ШРИФТОВ (override, высокая специфичность)
+   ======================================== */
+aside.admin-sidebar .sidebar-link {
+    font-size: 17px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+aside.admin-sidebar .sidebar-section-content .sidebar-link {
+    font-size: 16px !important;
+}
+
+aside.admin-sidebar .section-title-text {
+    font-size: 14px !important;
+}
+
+aside.admin-sidebar .sidebar-icon {
+    width: 22px !important;
+    height: 22px !important;
 }

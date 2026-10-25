@@ -5,11 +5,13 @@ namespace App\Modules\MaterialManager\Infrastructure\Http\Controllers;
 use App\Modules\MaterialManager\Application\DTO\MaterialFiltersData;
 use App\Modules\MaterialManager\Application\Services\MaterialBreadcrumbService;
 use App\Modules\MaterialManager\Application\UseCases\GetMaterialsUseCase;
+use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\CategoryServiceInterface;
 use App\Modules\MaterialManager\Domain\Services\ContentParserInterface;
 use App\Modules\MaterialManager\Domain\Services\FormServiceInterface;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
+use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
 use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
 use App\Modules\SeoManager\Application\Services\BreadcrumbService;
@@ -69,7 +71,9 @@ class WebMaterialController
             ]);
         }
 
-        $homepageMaterial = $this->repository->findHomepage();
+        $homepageMaterial = ($settings['homepage_type'] ?? null) === 'material'
+            ? $this->resolveHomepageMaterial($settings)
+            : null;
 
         if ($homepageMaterial !== null && $homepageMaterial->access !== MaterialAccess::PUBLIC) {
             $user = auth()->user();
@@ -270,17 +274,23 @@ class WebMaterialController
         return $levels;
     }
 
-    private function getHomepageSlug(): ?string
+    private function resolveHomepageMaterial(array $settings): ?Material
     {
-        $settings = $this->settingService->getAllSettings();
-        $homepageId = (int) ($settings['homepage_material_id'] ?? 0);
+        $id = (int) ($settings['homepage_material_id'] ?? 0);
 
-        if ($homepageId === 0) {
+        if ($id <= 0) {
             return null;
         }
 
-        $homepage = $this->repository->findById($homepageId);
+        $material = $this->repository->findById($id);
 
-        return $homepage?->slug;
+        if ($material === null
+            || $material->status !== MaterialStatus::PUBLISHED
+            || ($material->publishedAt !== null && $material->publishedAt->getTimestamp() > now()->getTimestamp())
+        ) {
+            return null;
+        }
+
+        return $material;
     }
 }

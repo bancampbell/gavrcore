@@ -191,17 +191,6 @@ class MaterialRepository implements MaterialRepositoryInterface
         return $model ? $model->toDomain() : null;
     }
 
-    public function findHomepage(): ?Material
-    {
-        $model = MaterialModel::where('show_on_homepage', true)
-            ->where('state', 'published')
-            ->where('published_at', '<=', now())
-            ->with(['category', 'user'])
-            ->first();
-
-        return $model ? $model->toDomain() : null;
-    }
-
     public function existsBySlug(string $slug, ?int $excludeId = null): bool
     {
         $query = MaterialModel::where('slug', $slug);

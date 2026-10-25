@@ -35,6 +35,8 @@ class AdminSettingController extends Controller
             'site_description' => 'nullable|string',
             'admin_email' => 'nullable|email',
             'seo_keywords' => 'nullable|string',
+            'homepage_type' => 'nullable|string|max:255',
+            'homepage_material_id' => 'nullable|integer',
             'materials_per_page' => 'nullable|integer|min:1|max:100',
             'date_format' => 'nullable|string',
             'show_date' => 'nullable|boolean',

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             UserGroupPermissionSeeder::class,
             CategorySeeder::class,
             MaterialSeeder::class,
+            SettingsSeeder::class,
             MenuSeeder::class,
             FormsSeeder::class,
             FormSubmissionsSeeder::class,

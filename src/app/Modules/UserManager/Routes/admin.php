@@ -21,11 +21,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->name('admin.')->g
     // Users
     Route::get('/users', [AdminUserQueryController::class, 'index'])->name('users.index');
     Route::get('/users/create', [AdminUserQueryController::class, 'create'])->name('users.create');
-    Route::get('/users/{id}/edit', [AdminUserQueryController::class, 'edit'])->name('users.edit');
+    Route::get('/users/{id}/edit', [AdminUserQueryController::class, 'edit'])->name('users.edit')->whereNumber('id');
 
     Route::post('/users', [AdminUserCommandController::class, 'store'])->name('users.store');
-    Route::put('/users/{id}', [AdminUserCommandController::class, 'update'])->name('users.update');
-    Route::delete('/users/{id}', [AdminUserCommandController::class, 'destroy'])->name('users.destroy');
+    Route::put('/users/{id}', [AdminUserCommandController::class, 'update'])->name('users.update')->whereNumber('id');
+    Route::delete('/users/{id}', [AdminUserCommandController::class, 'destroy'])->name('users.destroy')->whereNumber('id');
 
     Route::post('/users/bulk-block', [AdminUserCommandController::class, 'bulkBlock'])->name('users.bulk-block');
     Route::post('/users/bulk-unblock', [AdminUserCommandController::class, 'bulkUnblock'])->name('users.bulk-unblock');
@@ -33,21 +33,21 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->name('admin.')->g
     // Groups
     Route::get('/groups', [AdminGroupQueryController::class, 'index'])->name('groups.index');
     Route::get('/groups/create', [AdminGroupQueryController::class, 'create'])->name('groups.create');
-    Route::get('/groups/{id}/edit', [AdminGroupQueryController::class, 'edit'])->name('groups.edit');
+    Route::get('/groups/{id}/edit', [AdminGroupQueryController::class, 'edit'])->name('groups.edit')->whereNumber('id');
 
     Route::post('/groups', [AdminGroupCommandController::class, 'store'])->name('groups.store');
-    Route::put('/groups/{id}', [AdminGroupCommandController::class, 'update'])->name('groups.update');
-    Route::delete('/groups/{id}', [AdminGroupCommandController::class, 'destroy'])->name('groups.destroy');
-    Route::post('/groups/{id}/status', [AdminGroupCommandController::class, 'updateStatus'])->name('groups.status');
+    Route::put('/groups/{id}', [AdminGroupCommandController::class, 'update'])->name('groups.update')->whereNumber('id');
+    Route::delete('/groups/{id}', [AdminGroupCommandController::class, 'destroy'])->name('groups.destroy')->whereNumber('id');
+    Route::post('/groups/{id}/status', [AdminGroupCommandController::class, 'updateStatus'])->name('groups.status')->whereNumber('id');
 
     // Access Levels
     Route::get('/access-levels', [AdminAccessLevelQueryController::class, 'index'])->name('access-levels.index');
     Route::get('/access-levels/create', [AdminAccessLevelQueryController::class, 'create'])->name('access-levels.create');
-    Route::get('/access-levels/{id}/edit', [AdminAccessLevelQueryController::class, 'edit'])->name('access-levels.edit');
+    Route::get('/access-levels/{id}/edit', [AdminAccessLevelQueryController::class, 'edit'])->name('access-levels.edit')->whereNumber('id');
 
     Route::post('/access-levels', [AdminAccessLevelCommandController::class, 'store'])->name('access-levels.store');
-    Route::put('/access-levels/{id}', [AdminAccessLevelCommandController::class, 'update'])->name('access-levels.update');
-    Route::delete('/access-levels/{id}', [AdminAccessLevelCommandController::class, 'destroy'])->name('access-levels.destroy');
+    Route::put('/access-levels/{id}', [AdminAccessLevelCommandController::class, 'update'])->name('access-levels.update')->whereNumber('id');
+    Route::delete('/access-levels/{id}', [AdminAccessLevelCommandController::class, 'destroy'])->name('access-levels.destroy')->whereNumber('id');
     Route::post('/access-levels/ordering', [AdminAccessLevelCommandController::class, 'updateOrdering'])->name('access-levels.ordering');
-    Route::patch('/access-levels/{id}/status', [AdminAccessLevelCommandController::class, 'updateStatus'])->name('access-levels.status');
+    Route::patch('/access-levels/{id}/status', [AdminAccessLevelCommandController::class, 'updateStatus'])->name('access-levels.status')->whereNumber('id');
 });

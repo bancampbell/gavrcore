@@ -37,6 +37,18 @@ final class AdminAuthController extends Controller
                 $request->ip()
             );
 
+            // Не-админов отсекаем сразу: до AdminMiddleware они не должны
+            // получать сессию и попадать внутрь админки
+            if (! $user->isAdmin()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                throw ValidationException::withMessages([
+                    'email' => ['Недостаточно прав для входа в админку'],
+                ]);
+            }
+
             $request->session()->regenerate();
 
             activity()
@@ -49,7 +61,9 @@ final class AdminAuthController extends Controller
 
             return redirect('/admin/dashboard');
         } catch (ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            // Форма входа единственная, кто постит сюда: любой отказ возвращает
+            // на страницу логина админки с ошибкой
+            return redirect('/admin/login')->withErrors($e->errors())->withInput();
         }
     }
 

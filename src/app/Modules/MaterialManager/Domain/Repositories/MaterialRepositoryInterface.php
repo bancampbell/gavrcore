@@ -21,9 +21,6 @@ interface MaterialRepositoryInterface
 
     public function findBySlug(string $slug): ?Material;
 
-    // FIX: fetch the material marked for homepage
-    public function findHomepage(): ?Material;
-
     public function existsBySlug(string $slug, ?int $excludeId = null): bool;
 
     public function existsBySlugWithLock(string $slug, ?int $excludeId = null): bool;

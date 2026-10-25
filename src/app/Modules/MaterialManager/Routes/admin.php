@@ -19,7 +19,7 @@ Route::middleware(['web', 'auth', 'admin'])
                     Route::get('/trash', 'trash')->name('trash');
                     Route::get('/create', 'create')->name('create');
                     Route::get('/list', 'list')->name('list');
-                    Route::get('/{id}/edit', 'edit')->name('edit');
+                    Route::get('/{id}/edit', 'edit')->name('edit')->whereNumber('id');
                 });
 
                 // Command routes
@@ -27,7 +27,7 @@ Route::middleware(['web', 'auth', 'admin'])
                     ->controller(AdminMaterialCommandController::class)
                     ->group(function () {
                         Route::post('/', 'store')->name('store');
-                        Route::put('/{id}', 'update')->name('update');
+                        Route::put('/{id}', 'update')->name('update')->whereNumber('id');
                         Route::post('/bulk-trash', 'bulkTrash')->name('bulk-trash');
                         Route::post('/restore', 'restore')->name('restore');
                         Route::post('/force-delete', 'forceDelete')->name('force-delete');

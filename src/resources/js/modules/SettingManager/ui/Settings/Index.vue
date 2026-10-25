@@ -80,6 +80,29 @@
                             </div>
                         </div>
 
+                        <!-- Главная страница -->
+                        <div id="homepage" ref="homepageSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">Главная страница</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Тип главной</label>
+                                    <select v-model="settings.homepage_type" class="admin-form-select w-64">
+                                        <option value="material">Главный материал</option>
+                                        <option value="default">Стандартная страница</option>
+                                    </select>
+                                </div>
+                                <div v-if="settings.homepage_type === 'material'" class="admin-form-row">
+                                    <label class="admin-form-label w-48">Главный материал</label>
+                                    <select v-model="settings.homepage_material_id" class="admin-form-select flex-1 max-w-md">
+                                        <option :value="null">— не выбран —</option>
+                                        <option v-for="material in homepageMaterials" :key="material.id" :value="material.id">
+                                            {{ material.title }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Настройки материалов -->
                         <div id="materials" ref="materialsSection" class="admin-form-section">
                             <h2 class="admin-form-section-title">Настройки материалов</h2>
@@ -343,6 +366,7 @@ const activeSection = ref('basic');
 
 const navItems = [
     { id: 'basic', label: 'Основные' },
+    { id: 'homepage', label: 'Главная страница' },
     { id: 'materials', label: 'Материалы' },
     { id: 'media', label: 'Медиа' },
     { id: 'system', label: 'Системные' },
@@ -352,6 +376,7 @@ const navItems = [
 
 const contentContainer = ref<HTMLElement | null>(null);
 const basicSection = ref<HTMLElement | null>(null);
+const homepageSection = ref<HTMLElement | null>(null);
 const materialsSection = ref<HTMLElement | null>(null);
 const mediaSection = ref<HTMLElement | null>(null);
 const systemSection = ref<HTMLElement | null>(null);
@@ -360,6 +385,7 @@ const cacheSection = ref<HTMLElement | null>(null);
 
 const sectionRefs: Record<string, any> = {
     basic: basicSection,
+    homepage: homepageSection,
     materials: materialsSection,
     media: mediaSection,
     system: systemSection,
@@ -372,6 +398,8 @@ const settings = ref({
     site_description: props.settings.site_description ?? '',
     admin_email: props.settings.admin_email ?? '',
     seo_keywords: props.settings.seo_keywords ?? '',
+    homepage_type: props.settings.homepage_type ?? 'material',
+    homepage_material_id: props.settings.homepage_material_id ?? null,
     materials_per_page: props.settings.materials_per_page ?? 10,
     date_format: props.settings.date_format ?? 'd.m.Y',
     show_date: props.settings.show_date === undefined || props.settings.show_date === null ? true : !!props.settings.show_date,
@@ -474,7 +502,20 @@ onMounted(() => {
     if (container) {
         container.addEventListener('scroll', handleScroll);
     }
+
+    loadHomepageMaterials();
 });
+
+const homepageMaterials = ref<Array<{ id: number; title: string }>>([]);
+
+const loadHomepageMaterials = async () => {
+    try {
+        const response = await axios.get('/admin/materials/list');
+        homepageMaterials.value = response.data;
+    } catch (error) {
+        console.error('Error loading materials:', error);
+    }
+};
 
 onUnmounted(() => {
     const container = contentContainer.value;
