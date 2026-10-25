@@ -8,8 +8,7 @@ class CategoryFiltersData
         public readonly ?string $search = null,
         public readonly ?int $parent_id = null,
         public readonly ?bool $is_active = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

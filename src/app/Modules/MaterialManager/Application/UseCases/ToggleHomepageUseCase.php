@@ -19,14 +19,14 @@ final readonly class ToggleHomepageUseCase
     public function execute(int $id, bool $showOnHomepage, int $actorId): void
     {
         $lock = Cache::lock('material_manager_homepage', 10);
-        if (!$lock->get()) {
+        if (! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
             DB::transaction(function () use ($id, $showOnHomepage, $actorId) {
                 $material = $this->repository->findByIdWithLock($id);
 
-                if (!$material) {
+                if (! $material) {
                     throw new \DomainException('Material not found');
                 }
 

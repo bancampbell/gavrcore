@@ -2,6 +2,7 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Http\Requests;
 
+use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +11,7 @@ class UpdateMaterialRequest extends FormRequest
     public function authorize(): bool
     {
         $user = $this->user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -19,13 +20,13 @@ class UpdateMaterialRequest extends FormRequest
         }
 
         $materialId = $this->route('id');
-        if (!$materialId) {
+        if (! $materialId) {
             return false;
         }
 
-        $model = \App\Modules\MaterialManager\Infrastructure\Models\MaterialModel::find((int)$materialId);
+        $model = MaterialModel::find((int) $materialId);
 
-        if (!$model) {
+        if (! $model) {
             return false;
         }
 

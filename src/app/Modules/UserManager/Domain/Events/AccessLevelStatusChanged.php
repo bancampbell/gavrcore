@@ -9,6 +9,5 @@ final class AccessLevelStatusChanged
     public function __construct(
         public readonly AccessLevel $accessLevel,
         public readonly bool $status,
-    ) {
-    }
+    ) {}
 }

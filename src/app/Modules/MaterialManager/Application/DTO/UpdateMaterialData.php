@@ -74,16 +74,17 @@ final readonly class UpdateMaterialData
 
     private static function resolveString(array $data, string $key): string|NotSet|null
     {
-        if (!array_key_exists($key, $data)) {
+        if (! array_key_exists($key, $data)) {
             return NotSet::instance();
         }
         $value = $data[$key];
+
         return $value === null ? null : (string) $value;
     }
 
     private static function resolveInt(array $data, string $key): int|NotSet|null
     {
-        if (!array_key_exists($key, $data)) {
+        if (! array_key_exists($key, $data)) {
             return NotSet::instance();
         }
         $value = $data[$key];
@@ -94,12 +95,13 @@ final readonly class UpdateMaterialData
         if ($int === false) {
             throw new \InvalidArgumentException("Invalid integer for {$key}");
         }
+
         return $int;
     }
 
     private static function resolveBool(array $data, string $key): bool|NotSet|null
     {
-        if (!array_key_exists($key, $data)) {
+        if (! array_key_exists($key, $data)) {
             return NotSet::instance();
         }
         $value = $data[$key];
@@ -115,18 +117,20 @@ final readonly class UpdateMaterialData
         if (is_string($value)) {
             return $value === '1' || strtolower($value) === 'true';
         }
+
         return false;
     }
 
     private static function resolveEnum(array $data, string $key, string $enumClass): \BackedEnum|NotSet|null
     {
-        if (!array_key_exists($key, $data)) {
+        if (! array_key_exists($key, $data)) {
             return NotSet::instance();
         }
         $value = $data[$key];
         if ($value === null) {
             return null;
         }
+
         return $enumClass::tryFrom((string) $value) ?? throw new \InvalidArgumentException("Invalid enum value for {$key}");
     }
 }

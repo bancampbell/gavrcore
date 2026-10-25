@@ -2,6 +2,7 @@
 
 namespace Modules\MediaManager\Infrastructure\Models;
 
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,6 +27,6 @@ class MediaAuditLog extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\UserManager\Infrastructure\Models\UserModel::class);
+        return $this->belongsTo(UserModel::class);
     }
 }

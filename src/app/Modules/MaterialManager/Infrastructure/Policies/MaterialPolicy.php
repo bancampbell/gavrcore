@@ -2,8 +2,8 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Policies;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 
 class MaterialPolicy
 {

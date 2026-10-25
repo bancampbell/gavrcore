@@ -13,8 +13,7 @@ final class UpdateGroupUseCase
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groups,
-    ) {
-    }
+    ) {}
 
     public function execute(GroupId $id, UpdateGroupData $data): Group
     {

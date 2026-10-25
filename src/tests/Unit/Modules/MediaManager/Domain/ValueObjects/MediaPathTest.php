@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Modules\MediaManager\Domain\ValueObjects;
 
-use Tests\TestCase;
 use Modules\MediaManager\Domain\ValueObjects\MediaPath;
+use Tests\TestCase;
 
 class MediaPathTest extends TestCase
 {

@@ -13,7 +13,8 @@ class LocalImageStorageService implements ImageStorageServiceInterface
     public function store(UploadedFile $file, string $directory): string
     {
         $path = $file->store($directory, 'public');
-        return '/storage/' . $path;
+
+        return '/storage/'.$path;
     }
 
     public function delete(string $path): void

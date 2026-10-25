@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Modules\MenuManager\Domain\Events;
-use App\Modules\MenuManager\Domain\ValueObjects\MenuTypeId;
+
 use App\Modules\MenuManager\Domain\ValueObjects\MenuStatus;
+use App\Modules\MenuManager\Domain\ValueObjects\MenuTypeId;
 
 class MenuTypeStatusChanged
 {

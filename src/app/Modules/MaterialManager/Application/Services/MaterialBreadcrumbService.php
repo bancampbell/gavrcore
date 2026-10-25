@@ -36,7 +36,7 @@ class MaterialBreadcrumbService
     /**
      * Генерация хлебных крошек для поиска
      */
-    public function forSearch(string $query = null): array
+    public function forSearch(?string $query = null): array
     {
         $breadcrumbs = [
             [

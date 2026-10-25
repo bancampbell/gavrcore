@@ -3,9 +3,16 @@
 namespace App\Modules\UserDashboard\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\FormBuilder\Application\DTO\SubmissionFiltersData;
+use App\Modules\FormBuilder\Application\UseCases\GetActiveFormsUseCase;
+use App\Modules\FormBuilder\Application\UseCases\GetFormByIdUseCase;
+use App\Modules\FormBuilder\Application\UseCases\GetSubmissionsUseCase;
+use App\Modules\FormBuilder\Application\UseCases\GetUserSubmissionStatsUseCase;
+use App\Modules\FormBuilder\Application\UseCases\ShowSubmissionUseCase;
+use App\Modules\FormBuilder\Infrastructure\Http\Resources\SubmissionResource;
 use App\Modules\SettingManager\Application\Services\SettingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -13,24 +20,25 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    protected SettingService $settingService;
-
-    public function __construct(SettingService $settingService)
-    {
-        $this->settingService = $settingService;
-    }
+    public function __construct(
+        protected SettingService $settingService,
+        protected GetUserSubmissionStatsUseCase $getUserSubmissionStatsUseCase,
+        protected GetSubmissionsUseCase $getSubmissionsUseCase,
+        protected GetActiveFormsUseCase $getActiveFormsUseCase,
+        protected ShowSubmissionUseCase $showSubmissionUseCase,
+        protected GetFormByIdUseCase $getFormByIdUseCase,
+    ) {}
 
     public function index(): Response
     {
-        // TODO: статистика обращений временно отключена. Ранее считалась по
-        // App\Models\FormSubmission, которых в монолите нет — данные по заявкам
-        // должен отдавать модуль FormBuilder после его миграции.
+        $stats = $this->getUserSubmissionStatsUseCase->execute((int) auth()->id());
+
         return Inertia::render('UserDashboard/Index', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
-            'totalTickets' => 0,
-            'inProgressTickets' => 0,
-            'completedTickets' => 0,
+            'totalTickets' => $stats['total'],
+            'inProgressTickets' => $stats['in_progress'],
+            'completedTickets' => $stats['completed'],
         ]);
     }
 
@@ -55,10 +63,10 @@ class DashboardController extends Controller
      */
     public function tickets(): Response
     {
-        // TODO: список обращений временно пуст — выборка зависела от
-        // App\Models\FormSubmission (FormBuilder ещё не мигрирован).
-        // Заменить пустой paginator на реальную выборку после миграции FormBuilder.
-        $submissions = new LengthAwarePaginator([], 0, 15);
+        $submissions = $this->getSubmissionsUseCase->execute(
+            new SubmissionFiltersData(userId: (int) auth()->id()),
+            15
+        );
 
         return Inertia::render('UserDashboard/TicketsIndex', [
             'user' => auth()->user(),
@@ -68,26 +76,43 @@ class DashboardController extends Controller
     }
 
     /**
+     * Карточка заявки пользователя
+     */
+    public function show(int $id): Response
+    {
+        $submission = $this->showSubmissionUseCase->execute($id);
+
+        abort_unless($submission !== null && $submission->userId === (int) auth()->id(), 404);
+
+        $form = $this->getFormByIdUseCase->execute($submission->formId);
+
+        return Inertia::render('UserDashboard/TicketsShow', [
+            'user' => auth()->user(),
+            'currentTheme' => $this->settingService->getTheme(),
+            'submission' => (new SubmissionResource($submission))->toArray(request()),
+            'formTitle' => $form?->title,
+        ]);
+    }
+
+    /**
      * Страница создания новой заявки
      */
     public function ticketsCreate(): Response
     {
-        // TODO: формы отсутствуют (FormBuilder ещё не мигрирован),
-        // передаём пустой массив вместо выборки по App\Models\Form.
         return Inertia::render('UserDashboard/TicketsCreate', [
             'user' => auth()->user(),
             'currentTheme' => $this->settingService->getTheme(),
-            'forms' => [],
+            'forms' => $this->getActiveFormsUseCase->execute(),
         ]);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): RedirectResponse
     {
         $user = auth()->user();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
         ]);
 
         $user->update($validated);
@@ -95,7 +120,7 @@ class DashboardController extends Controller
         return back()->with('success', 'Профиль обновлён');
     }
 
-    public function updateSettings(Request $request)
+    public function updateSettings(Request $request): RedirectResponse
     {
         $user = auth()->user();
 
@@ -104,7 +129,7 @@ class DashboardController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => 'Текущий пароль неверен',
             ]);

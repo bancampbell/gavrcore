@@ -24,8 +24,7 @@ final class AdminUserQueryController extends Controller
         private readonly GetUserListUseCase $getUserList,
         private readonly GetUserByIdUseCase $getUserById,
         private readonly GetAllGroupsUseCase $getAllGroups,
-    ) {
-    }
+    ) {}
 
     public function index(UserIndexRequest $request): Response
     {

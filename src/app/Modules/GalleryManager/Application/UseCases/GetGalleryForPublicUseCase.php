@@ -16,7 +16,7 @@ class GetGalleryForPublicUseCase
     {
         $gallery = $this->repository->findByIdWithImages($id);
 
-        if (!$gallery || !$gallery->isPublished()) {
+        if (! $gallery || ! $gallery->isPublished()) {
             return null;
         }
 

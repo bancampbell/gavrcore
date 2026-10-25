@@ -15,8 +15,7 @@ class CategoryRepository implements CategoryRepositoryInterface
 {
     public function __construct(
         protected CategoryTreeBuilder $treeBuilder
-    ) {
-    }
+    ) {}
 
     public function paginate(array $filters): LengthAwarePaginator
     {
@@ -88,6 +87,7 @@ class CategoryRepository implements CategoryRepositoryInterface
                     if ($attempts >= $maxAttempts) {
                         throw $e;
                     }
+
                     continue;
                 }
                 throw $e;
@@ -221,7 +221,6 @@ class CategoryRepository implements CategoryRepositoryInterface
 
     /**
      * @param  iterable<CategoryModel>  $categories
-     *
      * @return array<int, array<string, mixed>>
      */
     private function buildCategoryTree(iterable $categories, ?int $parentId = null): array
@@ -256,7 +255,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         $counter = 1;
 
         while (CategoryModel::where('alias', $alias)->exists()) {
-            $alias = $base . '-' . $counter;
+            $alias = $base.'-'.$counter;
             $counter++;
         }
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Modules\MenuManager\Domain\Events;
+
 use App\Modules\MenuManager\Domain\ValueObjects\MenuItemId;
 use App\Modules\MenuManager\Domain\ValueObjects\MenuStatus;
 

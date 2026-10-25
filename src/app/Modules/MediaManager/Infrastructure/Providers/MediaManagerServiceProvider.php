@@ -25,15 +25,15 @@ class MediaManagerServiceProvider extends ServiceProvider
         );
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../../Config/media-manager.php',
+            __DIR__.'/../../Config/media-manager.php',
             'MediaManager'
         );
     }
 
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../../Routes/web.php');
-        $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
+        $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
+        $this->loadMigrationsFrom(__DIR__.'/../../Database/Migrations');
         $this->registerPolicies();
         $this->registerAuditListeners();
         $this->registerCommands();

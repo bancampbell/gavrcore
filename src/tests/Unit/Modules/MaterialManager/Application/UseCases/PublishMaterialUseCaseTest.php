@@ -16,7 +16,9 @@ use Tests\TestCase;
 class PublishMaterialUseCaseTest extends TestCase
 {
     private MaterialRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private PublishMaterialUseCase $useCase;
 
     protected function setUp(): void

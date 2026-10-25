@@ -2,7 +2,6 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Models;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Events\MaterialSaved;
@@ -10,9 +9,11 @@ use App\Modules\MaterialManager\Domain\ValueObjects\AuthorSummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\CategorySummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
 
 class MaterialModel extends Model
 {
@@ -114,7 +115,7 @@ class MaterialModel extends Model
                 throw new \InvalidArgumentException('Existing model required when mapping material with ID');
             }
 
-            $model = new self();
+            $model = new self;
         }
 
         $model->title = $material->title;
@@ -145,7 +146,7 @@ class MaterialModel extends Model
 
     protected static function newFactory()
     {
-        return \Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory::new();
+        return MaterialModelFactory::new();
     }
 
     protected static function booted(): void

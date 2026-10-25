@@ -24,7 +24,6 @@ use Illuminate\Support\Carbon;
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
  * @property-read CategoryModel|null $parent
  * @property-read Collection<int, CategoryModel> $children
  * @property-read Collection<int, MaterialModel> $materials

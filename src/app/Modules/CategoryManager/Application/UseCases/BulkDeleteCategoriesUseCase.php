@@ -8,8 +8,7 @@ class BulkDeleteCategoriesUseCase
 {
     public function __construct(
         protected CategoryRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int>  $ids

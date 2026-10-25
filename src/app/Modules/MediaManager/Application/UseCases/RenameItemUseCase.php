@@ -13,7 +13,7 @@ class RenameItemUseCase
 
     public function execute(RenameItemData $data): void
     {
-        if (!$this->repository->exists($data->oldPath)) {
+        if (! $this->repository->exists($data->oldPath)) {
             throw new \RuntimeException('Файл или папка не найдены');
         }
 

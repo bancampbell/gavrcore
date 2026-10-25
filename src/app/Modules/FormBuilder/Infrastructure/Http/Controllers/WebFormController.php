@@ -24,11 +24,11 @@ class WebFormController
     {
         $form = $this->getFormByIdUseCase->execute($id);
 
-        if (!$form) {
+        if (! $form) {
             return response()->json(['message' => 'Форма не найдена'], 404);
         }
 
-        if (!$form->status->isPublished()) {
+        if (! $form->status->isPublished()) {
             return response()->json(['message' => 'Форма не активна'], 403);
         }
 
@@ -43,11 +43,11 @@ class WebFormController
     {
         $form = $this->getFormByIdUseCase->execute($id);
 
-        if (!$form) {
+        if (! $form) {
             return response()->json(['message' => 'Форма не найдена'], 404);
         }
 
-        if (!$form->status->isPublished()) {
+        if (! $form->status->isPublished()) {
             return response()->json(['message' => 'Форма не активна'], 403);
         }
 
@@ -96,7 +96,7 @@ class WebFormController
             ],
         ));
 
-        if (!$submission) {
+        if (! $submission) {
             return response()->json(['message' => 'Ошибка сохранения'], 500);
         }
 

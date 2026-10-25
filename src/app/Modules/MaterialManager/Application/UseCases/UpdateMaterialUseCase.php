@@ -27,14 +27,14 @@ final readonly class UpdateMaterialUseCase
     public function execute(int $id, UpdateMaterialData $data, int $actorId): Material
     {
         $lock = Cache::lock('material_manager_homepage', 10);
-        if (!$lock->get()) {
+        if (! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
             return DB::transaction(function () use ($id, $data, $actorId) {
                 $material = $this->repository->findByIdWithLock($id);
 
-                if (!$material) {
+                if (! $material) {
                     throw new \DomainException('Material not found');
                 }
 
@@ -42,9 +42,9 @@ final readonly class UpdateMaterialUseCase
 
                 $newSlug = null;
 
-                if (!empty($domainData->slug) && !($domainData->slug instanceof NotSet)) {
+                if (! empty($domainData->slug) && ! ($domainData->slug instanceof NotSet)) {
                     $newSlug = $domainData->slug;
-                } elseif ($domainData->title !== null && !($domainData->title instanceof NotSet)) {
+                } elseif ($domainData->title !== null && ! ($domainData->title instanceof NotSet)) {
                     $newSlug = $this->slugGenerator->generate($domainData->title);
                 }
 

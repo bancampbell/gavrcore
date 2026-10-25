@@ -140,7 +140,7 @@ class AdminMaterialCommandController
         }
 
         return response()->json([
-            'message' => "Корзина очищена, удалено {$count} материалов"
+            'message' => "Корзина очищена, удалено {$count} материалов",
         ]);
     }
 

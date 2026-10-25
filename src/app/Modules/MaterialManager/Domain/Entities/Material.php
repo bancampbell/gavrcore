@@ -2,11 +2,11 @@
 
 namespace App\Modules\MaterialManager\Domain\Entities;
 
+use App\Modules\MaterialManager\Domain\ValueObjects\AuthorSummaryVO;
+use App\Modules\MaterialManager\Domain\ValueObjects\CategorySummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialUpdateData;
-use App\Modules\MaterialManager\Domain\ValueObjects\CategorySummaryVO;
-use App\Modules\MaterialManager\Domain\ValueObjects\AuthorSummaryVO;
 use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
 
 class Material
@@ -105,7 +105,7 @@ class Material
             status: $status,
             access: $access,
             views: 0,
-            publishedAt: $status === MaterialStatus::PUBLISHED ? ($createdAt ?? new \DateTimeImmutable()) : null,
+            publishedAt: $status === MaterialStatus::PUBLISHED ? ($createdAt ?? new \DateTimeImmutable) : null,
             featured: false,
             showOnHomepage: $showOnHomepage,
             showDate: $showDate,
@@ -127,7 +127,7 @@ class Material
 
     public function update(MaterialUpdateData $data): self
     {
-        $resolve = fn(mixed $value, mixed $current): mixed => $value instanceof NotSet ? $current : $value;
+        $resolve = fn (mixed $value, mixed $current): mixed => $value instanceof NotSet ? $current : $value;
 
         $status = $resolve($data->status, $this->status);
         $publishedAt = $this->publishedAt;
@@ -137,7 +137,7 @@ class Material
         }
 
         if ($status === MaterialStatus::PUBLISHED && $publishedAt === null) {
-            $publishedAt = new \DateTimeImmutable();
+            $publishedAt = new \DateTimeImmutable;
         }
 
         $slug = $resolve($data->slug, $this->slug);
@@ -168,7 +168,7 @@ class Material
             metaDescription: $resolve($data->metaDescription, $this->metaDescription),
             metaKeywords: $resolve($data->metaKeywords, $this->metaKeywords),
             createdAt: $this->createdAt,
-            updatedAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable,
             deletedAt: $this->deletedAt,
             category: $this->category,
             user: $this->user,
@@ -177,8 +177,8 @@ class Material
 
     public function publish(\DateTimeImmutable $now): self
     {
-        if (!$this->status->canPublish()) {
-            throw new \DomainException('Cannot publish material with status: ' . $this->status->value);
+        if (! $this->status->canPublish()) {
+            throw new \DomainException('Cannot publish material with status: '.$this->status->value);
         }
 
         return new self(
@@ -213,8 +213,8 @@ class Material
 
     public function unpublish(\DateTimeImmutable $now): self
     {
-        if (!$this->status->canUnpublish()) {
-            throw new \DomainException('Cannot unpublish material with status: ' . $this->status->value);
+        if (! $this->status->canUnpublish()) {
+            throw new \DomainException('Cannot unpublish material with status: '.$this->status->value);
         }
 
         return new self(
@@ -249,8 +249,8 @@ class Material
 
     public function moveToTrash(\DateTimeImmutable $now): self
     {
-        if (!$this->status->canDelete()) {
-            throw new \DomainException('Cannot delete material with status: ' . $this->status->value);
+        if (! $this->status->canDelete()) {
+            throw new \DomainException('Cannot delete material with status: '.$this->status->value);
         }
 
         return new self(
@@ -285,8 +285,8 @@ class Material
 
     public function restore(\DateTimeImmutable $now): self
     {
-        if (!$this->status->canRestore()) {
-            throw new \DomainException('Cannot restore material with status: ' . $this->status->value);
+        if (! $this->status->canRestore()) {
+            throw new \DomainException('Cannot restore material with status: '.$this->status->value);
         }
 
         return new self(

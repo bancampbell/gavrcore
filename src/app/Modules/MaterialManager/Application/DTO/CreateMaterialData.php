@@ -59,6 +59,7 @@ final readonly class CreateMaterialData
         if (is_string($value)) {
             return $value === '1' || strtolower($value) === 'true';
         }
+
         return false;
     }
 }

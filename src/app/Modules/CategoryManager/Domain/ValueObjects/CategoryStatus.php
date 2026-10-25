@@ -6,6 +6,5 @@ class CategoryStatus
 {
     public function __construct(
         public readonly bool $value
-    ) {
-    }
+    ) {}
 }

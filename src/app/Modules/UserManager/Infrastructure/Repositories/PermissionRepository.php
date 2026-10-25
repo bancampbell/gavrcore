@@ -25,7 +25,7 @@ final class PermissionRepository implements PermissionRepositoryInterface
             fn (Permission $permission) => $permission->group ?? 'Другие'
         );
 
-        $result = new Collection();
+        $result = new Collection;
         foreach ($grouped as $group => $permissions) {
             $result->put((string) $group, $permissions->values());
         }

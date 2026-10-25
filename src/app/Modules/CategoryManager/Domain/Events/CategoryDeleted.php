@@ -6,6 +6,5 @@ class CategoryDeleted
 {
     public function __construct(
         public readonly int $categoryId
-    ) {
-    }
+    ) {}
 }

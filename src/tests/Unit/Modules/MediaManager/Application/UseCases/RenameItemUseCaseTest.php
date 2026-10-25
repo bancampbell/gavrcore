@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
-use PHPUnit\Framework\TestCase;
 use Modules\MediaManager\Application\DTO\RenameItemData;
 use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
 class RenameItemUseCaseTest extends TestCase
 {

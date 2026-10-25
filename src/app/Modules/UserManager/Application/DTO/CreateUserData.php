@@ -17,8 +17,7 @@ final class CreateUserData
         public readonly bool $blocked,
         public readonly bool $activated,
         public readonly array $groupIds = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

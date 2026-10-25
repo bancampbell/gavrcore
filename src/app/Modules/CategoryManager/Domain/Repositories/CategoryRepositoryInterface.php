@@ -10,7 +10,6 @@ interface CategoryRepositoryInterface
 {
     /**
      * @param  array<string, mixed>  $filters
-     *
      * @return LengthAwarePaginator<int, CategoryModel>
      */
     public function paginate(array $filters): LengthAwarePaginator;

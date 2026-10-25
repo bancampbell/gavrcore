@@ -8,8 +8,7 @@ class GetAllCategoriesUseCase
 {
     public function __construct(
         protected CategoryRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, string>

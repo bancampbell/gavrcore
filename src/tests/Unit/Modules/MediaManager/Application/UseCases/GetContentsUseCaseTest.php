@@ -2,15 +2,16 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
-use Tests\TestCase;
 use Modules\MediaManager\Application\UseCases\GetContentsUseCase;
-use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 use Modules\MediaManager\Domain\Entities\Media;
+use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 use Modules\MediaManager\Domain\ValueObjects\MediaPath;
+use Tests\TestCase;
 
 class GetContentsUseCaseTest extends TestCase
 {
     private GetContentsUseCase $useCase;
+
     private $repository;
 
     protected function setUp(): void

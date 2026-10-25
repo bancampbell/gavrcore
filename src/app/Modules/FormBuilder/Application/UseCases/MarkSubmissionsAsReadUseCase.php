@@ -12,8 +12,11 @@ class MarkSubmissionsAsReadUseCase
     {
         $count = 0;
         foreach ($ids as $id) {
-            if ($this->repository->markAsRead($id)) $count++;
+            if ($this->repository->markAsRead($id)) {
+                $count++;
+            }
         }
+
         return $count;
     }
 }

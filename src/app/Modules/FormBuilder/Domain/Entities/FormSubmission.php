@@ -5,8 +5,11 @@ namespace App\Modules\FormBuilder\Domain\Entities;
 class FormSubmission
 {
     const STATUS_NEW = 'new';
+
     const STATUS_IN_PROGRESS = 'in_progress';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_REJECTED = 'rejected';
 
     public function __construct(
@@ -24,7 +27,7 @@ class FormSubmission
     public function markAsRead(): void
     {
         if ($this->readAt === null) {
-            $this->readAt = new \DateTimeImmutable();
+            $this->readAt = new \DateTimeImmutable;
         }
     }
 
@@ -60,10 +63,17 @@ class FormSubmission
         $data = $this->data;
         $nameFields = ['name', 'Name', 'NAME', 'fullname', 'FullName', 'FULLNAME', 'fio', 'FIO', 'Fio'];
         foreach ($nameFields as $field) {
-            if (isset($data[$field]) && !empty($data[$field])) return (string) $data[$field];
+            if (isset($data[$field]) && ! empty($data[$field])) {
+                return (string) $data[$field];
+            }
         }
-        if (isset($data['email']) && !empty($data['email'])) return (string) $data['email'];
-        if (isset($data['phone']) && !empty($data['phone'])) return (string) $data['phone'];
+        if (isset($data['email']) && ! empty($data['email'])) {
+            return (string) $data['email'];
+        }
+        if (isset($data['phone']) && ! empty($data['phone'])) {
+            return (string) $data['phone'];
+        }
+
         return 'Аноним';
     }
 
@@ -72,8 +82,11 @@ class FormSubmission
         $data = $this->data;
         $emailFields = ['email', 'Email', 'EMAIL', 'e-mail', 'mail'];
         foreach ($emailFields as $field) {
-            if (isset($data[$field]) && !empty($data[$field])) return (string) $data[$field];
+            if (isset($data[$field]) && ! empty($data[$field])) {
+                return (string) $data[$field];
+            }
         }
+
         return null;
     }
 
@@ -82,8 +95,11 @@ class FormSubmission
         $data = $this->data;
         $phoneFields = ['phone', 'Phone', 'PHONE', 'telephone', 'mobile', 'tel'];
         foreach ($phoneFields as $field) {
-            if (isset($data[$field]) && !empty($data[$field])) return (string) $data[$field];
+            if (isset($data[$field]) && ! empty($data[$field])) {
+                return (string) $data[$field];
+            }
         }
+
         return null;
     }
 
@@ -91,7 +107,10 @@ class FormSubmission
     {
         $name = $this->getSenderName();
         $email = $this->getSenderEmail();
-        if ($email && $name !== $email) return $name . ' (' . $email . ')';
+        if ($email && $name !== $email) {
+            return $name.' ('.$email.')';
+        }
+
         return $name;
     }
 
@@ -100,12 +119,21 @@ class FormSubmission
         $data = $this->data;
         $textFields = ['message', 'Message', 'MESSAGE', 'text', 'Text', 'TEXT', 'content', 'Content', 'CONTENT', 'comment', 'Comment', 'COMMENT'];
         foreach ($textFields as $field) {
-            if (isset($data[$field]) && !empty($data[$field])) return (string) $data[$field];
+            if (isset($data[$field]) && ! empty($data[$field])) {
+                return (string) $data[$field];
+            }
         }
         $parts = [];
-        if ($name = $this->getSenderName()) $parts[] = 'Имя: ' . $name;
-        if ($email = $this->getSenderEmail()) $parts[] = 'Email: ' . $email;
-        if ($phone = $this->getSenderPhone()) $parts[] = 'Телефон: ' . $phone;
+        if ($name = $this->getSenderName()) {
+            $parts[] = 'Имя: '.$name;
+        }
+        if ($email = $this->getSenderEmail()) {
+            $parts[] = 'Email: '.$email;
+        }
+        if ($phone = $this->getSenderPhone()) {
+            $parts[] = 'Телефон: '.$phone;
+        }
+
         return implode("\n", $parts) ?: 'Нет текста';
     }
 
@@ -114,10 +142,15 @@ class FormSubmission
         $data = $this->data;
         $subjectFields = ['subject', 'Subject', 'SUBJECT', 'title', 'Title', 'TITLE', 'topic', 'Topic', 'TOPIC'];
         foreach ($subjectFields as $field) {
-            if (isset($data[$field]) && !empty($data[$field])) return (string) $data[$field];
+            if (isset($data[$field]) && ! empty($data[$field])) {
+                return (string) $data[$field];
+            }
         }
         $firstLine = strtok($this->getContent(), "\n");
-        if ($firstLine && strlen($firstLine) > 0) return $firstLine;
-        return 'Заявка #' . $this->id;
+        if ($firstLine && strlen($firstLine) > 0) {
+            return $firstLine;
+        }
+
+        return 'Заявка #'.$this->id;
     }
 }

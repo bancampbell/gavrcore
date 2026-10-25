@@ -10,72 +10,81 @@ class MenuSeeder extends Seeder
 {
     public function run(): void
     {
-        // Создаём типы меню
-        $mainMenu = MenuTypeModel::create([
-            'title' => 'Main Menu',
-            'alias' => 'main-menu',
-            'description' => 'Главное меню сайта',
-            'ordering' => 1,
-            'status' => true,
-        ]);
+        // Создаём типы меню (идемпотентно: повторный seed не дублирует)
+        $mainMenu = MenuTypeModel::firstOrCreate(
+            ['alias' => 'main-menu'],
+            [
+                'title' => 'Main Menu',
+                'description' => 'Главное меню сайта',
+                'ordering' => 1,
+                'status' => true,
+            ]
+        );
 
-        $loginMenu = MenuTypeModel::create([
-            'title' => 'Menu login',
-            'alias' => 'menu-login',
-            'description' => 'Меню для авторизованных пользователей',
-            'ordering' => 2,
-            'status' => true,
-        ]);
+        $loginMenu = MenuTypeModel::firstOrCreate(
+            ['alias' => 'menu-login'],
+            [
+                'title' => 'Menu login',
+                'description' => 'Меню для авторизованных пользователей',
+                'ordering' => 2,
+                'status' => true,
+            ]
+        );
 
-        $nevidimia = MenuTypeModel::create([
-            'title' => 'Nevidimia',
-            'alias' => 'nevidimia',
-            'description' => 'Скрытое меню',
-            'ordering' => 3,
-            'status' => false,
-        ]);
+        $nevidimia = MenuTypeModel::firstOrCreate(
+            ['alias' => 'nevidimia'],
+            [
+                'title' => 'Nevidimia',
+                'description' => 'Скрытое меню',
+                'ordering' => 3,
+                'status' => false,
+            ]
+        );
 
         // Создаём пункты для Main Menu
-        MenuItemModel::create([
-            'menu_type_id' => $mainMenu->id,
-            'parent_id' => null,
-            'title' => 'О компании',
-            'alias' => 'o-kompanii',
-            'link_type' => 'url',
-            'link_value' => '/about',
-            'target' => '_self',
-            'ordering' => 1,
-            'status' => true,
-            'access' => 'all',
-            'language' => 'all',
-        ]);
+        MenuItemModel::firstOrCreate(
+            ['menu_type_id' => $mainMenu->id, 'alias' => 'o-kompanii'],
+            [
+                'parent_id' => null,
+                'title' => 'О компании',
+                'link_type' => 'url',
+                'link_value' => '/about',
+                'target' => '_self',
+                'ordering' => 1,
+                'status' => true,
+                'access' => 'all',
+                'language' => 'all',
+            ]
+        );
 
-        MenuItemModel::create([
-            'menu_type_id' => $mainMenu->id,
-            'parent_id' => null,
-            'title' => 'Руководство',
-            'alias' => 'rukovodstvo',
-            'link_type' => 'url',
-            'link_value' => '/management',
-            'target' => '_self',
-            'ordering' => 2,
-            'status' => true,
-            'access' => 'all',
-            'language' => 'all',
-        ]);
+        MenuItemModel::firstOrCreate(
+            ['menu_type_id' => $mainMenu->id, 'alias' => 'rukovodstvo'],
+            [
+                'parent_id' => null,
+                'title' => 'Руководство',
+                'link_type' => 'url',
+                'link_value' => '/management',
+                'target' => '_self',
+                'ordering' => 2,
+                'status' => true,
+                'access' => 'all',
+                'language' => 'all',
+            ]
+        );
 
-        MenuItemModel::create([
-            'menu_type_id' => $mainMenu->id,
-            'parent_id' => null,
-            'title' => 'Контакты',
-            'alias' => 'kontakty',
-            'link_type' => 'url',
-            'link_value' => '/contacts',
-            'target' => '_self',
-            'ordering' => 3,
-            'status' => true,
-            'access' => 'all',
-            'language' => 'all',
-        ]);
+        MenuItemModel::firstOrCreate(
+            ['menu_type_id' => $mainMenu->id, 'alias' => 'kontakty'],
+            [
+                'parent_id' => null,
+                'title' => 'Контакты',
+                'link_type' => 'url',
+                'link_value' => '/contacts',
+                'target' => '_self',
+                'ordering' => 3,
+                'status' => true,
+                'access' => 'all',
+                'language' => 'all',
+            ]
+        );
     }
 }

@@ -4,6 +4,7 @@ namespace App\Modules\CategoryManager\Infrastructure\Http\Requests;
 
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class UpdateCategoryRequest extends FormRequest
 {
@@ -29,7 +30,7 @@ class UpdateCategoryRequest extends FormRequest
     }
 
     /**
-     * @param  \Illuminate\Validation\Validator  $validator
+     * @param  Validator  $validator
      */
     public function withValidator($validator): void
     {

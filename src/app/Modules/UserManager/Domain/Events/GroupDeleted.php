@@ -8,6 +8,5 @@ final class GroupDeleted
 {
     public function __construct(
         public readonly Group $group,
-    ) {
-    }
+    ) {}
 }

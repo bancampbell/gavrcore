@@ -18,12 +18,12 @@ final readonly class ForceDeleteMaterialUseCase
         DB::transaction(function () use ($id, $actorId) {
             $material = $this->repository->findById($id);
 
-            if (!$material) {
+            if (! $material) {
                 throw new \DomainException('Material not found');
             }
 
-            if (!$material->status->canForceDelete()) {
-                throw new \DomainException('Cannot force delete material with status: ' . $material->status->value);
+            if (! $material->status->canForceDelete()) {
+                throw new \DomainException('Cannot force delete material with status: '.$material->status->value);
             }
 
             $this->repository->forceDelete($material);

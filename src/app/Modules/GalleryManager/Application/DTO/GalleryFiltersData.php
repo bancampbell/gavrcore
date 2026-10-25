@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\GalleryManager\Application\DTO;
 
+use Illuminate\Http\Request;
+
 class GalleryFiltersData
 {
     public function __construct(
@@ -12,7 +14,7 @@ class GalleryFiltersData
         public readonly ?bool $status = null,
     ) {}
 
-    public static function fromRequest(\Illuminate\Http\Request $request): self
+    public static function fromRequest(Request $request): self
     {
         return new self(
             search: $request->input('search'),

@@ -9,6 +9,5 @@ final class UserStatusChanged
     public function __construct(
         public readonly User $user,
         public readonly bool $blocked,
-    ) {
-    }
+    ) {}
 }

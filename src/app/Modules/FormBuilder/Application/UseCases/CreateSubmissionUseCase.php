@@ -19,7 +19,9 @@ class CreateSubmissionUseCase
     public function execute(CreateSubmissionData $data): ?FormSubmission
     {
         $form = $this->formRepository->findById($data->formId);
-        if (!$form || !$form->status->isPublished()) return null;
+        if (! $form || ! $form->status->isPublished()) {
+            return null;
+        }
 
         $submission = new FormSubmission(
             id: null,

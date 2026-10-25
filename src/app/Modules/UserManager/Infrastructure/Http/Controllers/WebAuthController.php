@@ -16,8 +16,7 @@ final class WebAuthController extends Controller
 {
     public function __construct(
         private readonly RegisterUserUseCase $registerUser,
-    ) {
-    }
+    ) {}
 
     /**
      * Страница входа пользователя
@@ -65,10 +64,10 @@ final class WebAuthController extends Controller
 
             // Если пришёл со страницы логина или с главной — редирект на главную
             if ($referer && (
-                    str_contains($referer, '/login') ||
-                    str_contains($referer, '/register') ||
-                    $referer === route('home')
-                )) {
+                str_contains($referer, '/login') ||
+                str_contains($referer, '/register') ||
+                $referer === route('home')
+            )) {
                 return redirect()->route('home');
             }
 

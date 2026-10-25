@@ -2,27 +2,34 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Services;
 
-use App\Models\Form;
+use App\Modules\FormBuilder\Infrastructure\Models\FormModel;
 use App\Modules\MaterialManager\Domain\Services\FormServiceInterface;
 
 class FormService implements FormServiceInterface
 {
+    /**
+     * @param  array<int>  $ids
+     * @return array<int, array<string, mixed>>
+     */
     public function findActiveByIds(array $ids): array
     {
         if (empty($ids)) {
             return [];
         }
 
-        return Form::whereIn('id', $ids)
+        return FormModel::whereIn('id', $ids)
             ->where('status', true)
             ->get()
             ->keyBy('id')
             ->toArray();
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     public function findAllActive(): array
     {
-        return Form::where('status', true)
+        return FormModel::where('status', true)
             ->get()
             ->keyBy('id')
             ->toArray();

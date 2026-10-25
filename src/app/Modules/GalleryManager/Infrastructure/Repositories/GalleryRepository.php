@@ -20,18 +20,21 @@ class GalleryRepository implements GalleryRepositoryInterface
     public function findById(int $id): ?Gallery
     {
         $model = GalleryModel::find($id);
+
         return $model ? $this->toEntity($model) : null;
     }
 
     public function findByIdWithImages(int $id): ?Gallery
     {
         $model = GalleryModel::with('images')->find($id);
+
         return $model ? $this->toEntity($model) : null;
     }
 
     public function findImageById(int $imageId): ?GalleryImage
     {
         $model = GalleryImageModel::find($imageId);
+
         return $model ? $this->imageToEntity($model) : null;
     }
 
@@ -167,7 +170,7 @@ class GalleryRepository implements GalleryRepositoryInterface
             imagesCount: $model->images_count ?? null,
         );
 
-        if (!empty($images)) {
+        if (! empty($images)) {
             $gallery->setImages($images);
         }
 

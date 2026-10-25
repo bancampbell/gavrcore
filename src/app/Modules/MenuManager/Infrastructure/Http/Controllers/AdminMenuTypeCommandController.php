@@ -43,13 +43,16 @@ class AdminMenuTypeCommandController extends Controller
             status: $request->boolean('status', true),
         );
         $menuType = $this->createUseCase->execute($data);
+
         return response()->json(['data' => new MenuTypeResource($menuType)]);
     }
 
     public function update(UpdateMenuTypeRequest $request, int $id): JsonResponse
     {
         $menuType = MenuTypeModel::find($id);
-        if (! $menuType) abort(404);
+        if (! $menuType) {
+            abort(404);
+        }
         $this->authorize('update', $menuType);
 
         $data = new UpdateMenuTypeData(
@@ -60,17 +63,23 @@ class AdminMenuTypeCommandController extends Controller
             status: $request->has('status') ? $request->boolean('status') : null,
         );
         $menuType = $this->updateUseCase->execute($id, $data);
+
         return response()->json(['data' => new MenuTypeResource($menuType)]);
     }
 
     public function destroy(int $id): JsonResponse
     {
         $menuType = MenuTypeModel::find($id);
-        if (! $menuType) abort(404);
+        if (! $menuType) {
+            abort(404);
+        }
         $this->authorize('delete', $menuType);
 
         $deleted = $this->deleteUseCase->execute($id);
-        if (! $deleted) return response()->json(['message' => 'Menu type not found'], 404);
+        if (! $deleted) {
+            return response()->json(['message' => 'Menu type not found'], 404);
+        }
+
         return response()->json(['message' => 'Deleted successfully'], 200);
     }
 
@@ -79,17 +88,23 @@ class AdminMenuTypeCommandController extends Controller
         $this->authorize('update', MenuTypeModel::class);
 
         $this->updateOrderingUseCase->execute($request->input('order'));
+
         return response()->json(['message' => 'Ordering updated successfully']);
     }
 
     public function updateStatus(UpdateStatusRequest $request, int $id): JsonResponse
     {
         $menuType = MenuTypeModel::find($id);
-        if (! $menuType) abort(404);
+        if (! $menuType) {
+            abort(404);
+        }
         $this->authorize('update', $menuType);
 
         $updated = $this->updateStatusUseCase->execute($id, $request->boolean('status'));
-        if (! $updated) return response()->json(['message' => 'Menu type not found'], 404);
+        if (! $updated) {
+            return response()->json(['message' => 'Menu type not found'], 404);
+        }
+
         return response()->json(['message' => 'Статус обновлен', 'status' => $request->boolean('status')]);
     }
 }

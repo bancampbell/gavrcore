@@ -10,8 +10,7 @@ final class GetUserByIdUseCase
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-    ) {
-    }
+    ) {}
 
     public function execute(UserId $id): ?User
     {

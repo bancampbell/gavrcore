@@ -8,8 +8,7 @@ class UpdateCategoryOrderingUseCase
 {
     public function __construct(
         protected CategoryTreeBuilder $treeBuilder
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {

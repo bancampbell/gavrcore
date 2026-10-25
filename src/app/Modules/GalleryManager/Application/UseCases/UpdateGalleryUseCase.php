@@ -18,7 +18,7 @@ class UpdateGalleryUseCase
     {
         $gallery = $this->repository->findById($id);
 
-        if (!$gallery) {
+        if (! $gallery) {
             throw new \RuntimeException('Gallery not found');
         }
 

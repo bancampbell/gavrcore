@@ -51,13 +51,16 @@ class AdminMenuItemCommandController extends Controller
             afterId: $request->input('after_id'),
         );
         $menuItem = $this->createUseCase->execute($data);
+
         return response()->json(['data' => new MenuItemResource($menuItem)]);
     }
 
     public function update(UpdateMenuItemRequest $request, int $id): JsonResponse
     {
         $menuItem = MenuItemModel::find($id);
-        if (! $menuItem) abort(404);
+        if (! $menuItem) {
+            abort(404);
+        }
         $this->authorize('update', $menuItem);
 
         $data = new UpdateMenuItemData(
@@ -75,27 +78,36 @@ class AdminMenuItemCommandController extends Controller
             menuTypeId: $request->input('menu_type_id'),
         );
         $menuItem = $this->updateUseCase->execute($id, $data);
+
         return response()->json(['data' => new MenuItemResource($menuItem)]);
     }
 
     public function destroy(int $id): JsonResponse
     {
         $menuItem = MenuItemModel::find($id);
-        if (! $menuItem) abort(404);
+        if (! $menuItem) {
+            abort(404);
+        }
         $this->authorize('delete', $menuItem);
 
         $deleted = $this->deleteUseCase->execute($id);
-        if (! $deleted) return response()->json(['message' => 'Menu item not found'], 404);
+        if (! $deleted) {
+            return response()->json(['message' => 'Menu item not found'], 404);
+        }
+
         return response()->json(['message' => 'Deleted successfully'], 200);
     }
 
     public function updateStatus(int $id, UpdateStatusRequest $request): JsonResponse
     {
         $menuItem = MenuItemModel::find($id);
-        if (! $menuItem) abort(404);
+        if (! $menuItem) {
+            abort(404);
+        }
         $this->authorize('update', $menuItem);
 
         $this->updateStatusUseCase->execute($id, $request->boolean('status'));
+
         return response()->json(['message' => 'Status updated successfully']);
     }
 
@@ -104,6 +116,7 @@ class AdminMenuItemCommandController extends Controller
         $this->authorize('update', MenuItemModel::class);
 
         $this->updateOrderingUseCase->execute($request->input('order'));
+
         return response()->json(['message' => 'Ordering updated successfully']);
     }
 }

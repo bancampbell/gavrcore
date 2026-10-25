@@ -32,8 +32,7 @@ final class AdminUserCommandController extends Controller
         private readonly DeleteUserUseCase $deleteUser,
         private readonly GetUserByIdUseCase $getUserById,
         private readonly UpdateUserStatusUseCase $updateUserStatus,
-    ) {
-    }
+    ) {}
 
     public function store(StoreUserRequest $request): RedirectResponse
     {

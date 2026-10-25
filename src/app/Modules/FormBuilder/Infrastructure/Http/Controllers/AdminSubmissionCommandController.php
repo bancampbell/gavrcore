@@ -17,9 +17,10 @@ class AdminSubmissionCommandController
     public function destroy(int $id): JsonResponse
     {
         $deleted = $this->deleteSubmissionUseCase->execute($id);
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => 'Обращение не найдено'], 404);
         }
+
         return response()->json(['message' => 'Обращение удалено']);
     }
 
@@ -47,7 +48,9 @@ class AdminSubmissionCommandController
 
         $count = 0;
         foreach ($request->input('ids') as $id) {
-            if ($this->deleteSubmissionUseCase->execute($id)) $count++;
+            if ($this->deleteSubmissionUseCase->execute($id)) {
+                $count++;
+            }
         }
 
         return response()->json([

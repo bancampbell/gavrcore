@@ -2,6 +2,7 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Http\Requests;
 
+use App\Modules\MaterialManager\Domain\Entities\Material;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,7 +10,7 @@ class CreateMaterialRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Modules\MaterialManager\Domain\Entities\Material::class);
+        return $this->user()->can('create', Material::class);
     }
 
     public function rules(): array

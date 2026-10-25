@@ -2,20 +2,23 @@
 
 namespace Modules\MediaManager\Infrastructure\Repositories;
 
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Http\File;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use League\Flysystem\DirectoryAttributes;
 use Modules\MediaManager\Domain\Entities\Media;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 use Modules\MediaManager\Domain\ValueObjects\MediaPath;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Http\File;
-use League\Flysystem\DirectoryAttributes;
-use League\Flysystem\FileAttributes;
 
 class MediaRepository implements MediaRepositoryInterface
 {
     protected string $disk = 'public';
+
     protected string $basePath = 'uploads';
+
     protected string $copySuffix = '_copy';
+
     protected int $maxDepth = 10;
 
     public function getRootFolders(): array
@@ -38,7 +41,7 @@ class MediaRepository implements MediaRepositoryInterface
 
         foreach ($directories as $dir) {
             $name = basename($dir);
-            $currentRelativePath = $relativePath ? $relativePath . '/' . $name : $name;
+            $currentRelativePath = $relativePath ? $relativePath.'/'.$name : $name;
 
             $result[] = $this->createMediaFromPath($dir, 'folder');
             $this->scanFoldersRecursive($dir, $currentRelativePath, $result, $depth + 1);
@@ -65,6 +68,7 @@ class MediaRepository implements MediaRepositoryInterface
             if ($a->getType() === $b->getType()) {
                 return strcmp($a->getName(), $b->getName());
             }
+
             return $a->getType() === 'folder' ? -1 : 1;
         });
 
@@ -90,7 +94,7 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         usort($allItems, function ($a, $b) use ($sort) {
-            return match($sort) {
+            return match ($sort) {
                 'name_asc' => strcmp($a->getName(), $b->getName()),
                 'name_desc' => strcmp($b->getName(), $a->getName()),
                 'type_asc' => strcmp($a->getType(), $b->getType()),
@@ -115,21 +119,23 @@ class MediaRepository implements MediaRepositoryInterface
     public function folderExists(string $path): bool
     {
         $fullPath = $this->resolvePath($path);
+
         return Storage::disk($this->disk)->exists($fullPath) || Storage::disk($this->disk)->directoryExists($fullPath);
     }
 
     public function exists(string $path): bool
     {
         $fullPath = $this->resolvePath($path);
-        return Storage::disk($this->disk)->exists($fullPath) || Storage::disk($this->disk)->directoryExists($fullPath . '/');
+
+        return Storage::disk($this->disk)->exists($fullPath) || Storage::disk($this->disk)->directoryExists($fullPath.'/');
     }
 
     public function createFolder(string $name, string $path): void
     {
-        $fullPath = $this->resolvePath($path) . '/' . $name;
+        $fullPath = $this->resolvePath($path).'/'.$name;
 
-        $lock = $this->acquireLock('media:create:' . md5($fullPath), 10);
-        if ($lock && !$lock->get()) {
+        $lock = $this->acquireLock('media:create:'.md5($fullPath), 10);
+        if ($lock && ! $lock->get()) {
             throw new \RuntimeException('Failed to acquire lock for create folder');
         }
 
@@ -138,7 +144,7 @@ class MediaRepository implements MediaRepositoryInterface
                 throw new \RuntimeException('Folder already exists');
             }
 
-            if (!Storage::disk($this->disk)->makeDirectory($fullPath)) {
+            if (! Storage::disk($this->disk)->makeDirectory($fullPath)) {
                 throw new \RuntimeException('Failed to create folder');
             }
 
@@ -157,15 +163,15 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         $dirname = dirname($fullOldPath);
-        $newPath = $dirname . '/' . $newName;
+        $newPath = $dirname.'/'.$newName;
 
-        $lock = $this->acquireLock('media:rename:' . md5($newPath), 10);
-        if ($lock && !$lock->get()) {
+        $lock = $this->acquireLock('media:rename:'.md5($newPath), 10);
+        if ($lock && ! $lock->get()) {
             throw new \RuntimeException('Failed to acquire lock for rename');
         }
 
         try {
-            if (!Storage::disk($this->disk)->exists($fullOldPath)) {
+            if (! Storage::disk($this->disk)->exists($fullOldPath)) {
                 throw new \RuntimeException('File or folder not found');
             }
 
@@ -173,7 +179,7 @@ class MediaRepository implements MediaRepositoryInterface
                 throw new \RuntimeException('Item with this name already exists');
             }
 
-            if (!Storage::disk($this->disk)->move($fullOldPath, $newPath)) {
+            if (! Storage::disk($this->disk)->move($fullOldPath, $newPath)) {
                 throw new \RuntimeException('Failed to rename');
             }
 
@@ -191,19 +197,20 @@ class MediaRepository implements MediaRepositoryInterface
             throw new \RuntimeException('Cannot delete root folder');
         }
 
-        if (!Storage::disk($this->disk)->exists($fullPath) && !Storage::disk($this->disk)->exists($fullPath . '/')) {
+        if (! Storage::disk($this->disk)->exists($fullPath) && ! Storage::disk($this->disk)->exists($fullPath.'/')) {
             throw new \RuntimeException('File or folder not found');
         }
 
-        if (Storage::disk($this->disk)->directoryExists($fullPath . '/')) {
-            if (!Storage::disk($this->disk)->deleteDirectory($fullPath . '/')) {
+        if (Storage::disk($this->disk)->directoryExists($fullPath.'/')) {
+            if (! Storage::disk($this->disk)->deleteDirectory($fullPath.'/')) {
                 throw new \RuntimeException('Failed to delete folder');
             }
             Cache::forget('media:tree');
+
             return;
         }
 
-        if (!Storage::disk($this->disk)->delete($fullPath)) {
+        if (! Storage::disk($this->disk)->delete($fullPath)) {
             throw new \RuntimeException('Failed to delete file');
         }
 
@@ -214,7 +221,7 @@ class MediaRepository implements MediaRepositoryInterface
     {
         $fullPath = $this->resolvePath($path);
 
-        if (!Storage::disk($this->disk)->exists($fullPath) && !Storage::disk($this->disk)->exists($fullPath . '/')) {
+        if (! Storage::disk($this->disk)->exists($fullPath) && ! Storage::disk($this->disk)->exists($fullPath.'/')) {
             throw new \RuntimeException('File or folder not found');
         }
 
@@ -227,27 +234,28 @@ class MediaRepository implements MediaRepositoryInterface
         $extension = pathinfo($basename, PATHINFO_EXTENSION);
         $nameWithoutExt = pathinfo($basename, PATHINFO_FILENAME);
 
-        $lock = $this->acquireLock('media:copy:dir:' . md5($dirname), 10);
-        if ($lock && !$lock->get()) {
+        $lock = $this->acquireLock('media:copy:dir:'.md5($dirname), 10);
+        if ($lock && ! $lock->get()) {
             throw new \RuntimeException('Failed to acquire lock for copy');
         }
 
         try {
             $counter = 1;
             $newBasename = $basename;
-            while (Storage::disk($this->disk)->exists($dirname . '/' . $newBasename)) {
-                $newBasename = $nameWithoutExt . $this->copySuffix . '_' . $counter . ($extension ? '.' . $extension : '');
+            while (Storage::disk($this->disk)->exists($dirname.'/'.$newBasename)) {
+                $newBasename = $nameWithoutExt.$this->copySuffix.'_'.$counter.($extension ? '.'.$extension : '');
                 $counter++;
             }
-            $newPath = $dirname . '/' . $newBasename;
+            $newPath = $dirname.'/'.$newBasename;
 
-            if (Storage::disk($this->disk)->directoryExists($fullPath . '/')) {
-                $this->copyDirectory($fullPath . '/', $newPath);
+            if (Storage::disk($this->disk)->directoryExists($fullPath.'/')) {
+                $this->copyDirectory($fullPath.'/', $newPath);
                 Cache::forget('media:tree');
+
                 return;
             }
 
-            if (!Storage::disk($this->disk)->copy($fullPath, $newPath)) {
+            if (! Storage::disk($this->disk)->copy($fullPath, $newPath)) {
                 throw new \RuntimeException('Failed to copy file');
             }
 
@@ -264,7 +272,7 @@ class MediaRepository implements MediaRepositoryInterface
         $items = Storage::disk($this->disk)->allFiles($source);
         foreach ($items as $item) {
             $relativePath = substr($item, strlen($source));
-            $destPath = $destination . '/' . $relativePath;
+            $destPath = $destination.'/'.$relativePath;
             Storage::disk($this->disk)->makeDirectory(dirname($destPath), null, true);
             Storage::disk($this->disk)->copy($item, $destPath);
         }
@@ -275,7 +283,7 @@ class MediaRepository implements MediaRepositoryInterface
         $fullPath = $this->resolvePath($path);
         $uploadedNames = [];
 
-        if (!Storage::disk($this->disk)->exists($fullPath)) {
+        if (! Storage::disk($this->disk)->exists($fullPath)) {
             Storage::disk($this->disk)->makeDirectory($fullPath);
         }
 
@@ -284,14 +292,14 @@ class MediaRepository implements MediaRepositoryInterface
             $originalName = basename(str_replace('\\', '/', $fileData['name']));
             $file = new File($filePath);
             $fileName = $originalName;
-            $destPath = $fullPath . '/' . $fileName;
+            $destPath = $fullPath.'/'.$fileName;
 
             if ($fileName === '' || $fileName === '..' || str_contains($fileName, '/')) {
                 continue;
             }
 
-            $lock = $this->acquireLock('media:upload:' . md5($fullPath . $fileName), 10);
-            if ($lock && !$lock->get()) {
+            $lock = $this->acquireLock('media:upload:'.md5($fullPath.$fileName), 10);
+            if ($lock && ! $lock->get()) {
                 throw new \RuntimeException('Failed to acquire lock for upload');
             }
 
@@ -300,8 +308,8 @@ class MediaRepository implements MediaRepositoryInterface
                 $nameWithoutExt = pathinfo($fileName, PATHINFO_FILENAME);
                 $extension = pathinfo($fileName, PATHINFO_EXTENSION);
                 while (Storage::disk($this->disk)->exists($destPath)) {
-                    $newName = $nameWithoutExt . '_' . $counter . ($extension ? '.' . $extension : '');
-                    $destPath = $fullPath . '/' . $newName;
+                    $newName = $nameWithoutExt.'_'.$counter.($extension ? '.'.$extension : '');
+                    $destPath = $fullPath.'/'.$newName;
                     $counter++;
                 }
 
@@ -313,13 +321,14 @@ class MediaRepository implements MediaRepositoryInterface
         }
 
         Cache::forget('media:tree');
+
         return $uploadedNames;
     }
 
     protected function resolvePath(string $path): string
     {
         $path = trim($path, '/');
-        $fullPath = $this->basePath . ($path ? '/' . $path : '');
+        $fullPath = $this->basePath.($path ? '/'.$path : '');
 
         $segments = explode('/', $fullPath);
         $resolved = [];
@@ -330,6 +339,7 @@ class MediaRepository implements MediaRepositoryInterface
             }
             if ($segment === '..') {
                 array_pop($resolved);
+
                 continue;
             }
             $resolved[] = $segment;
@@ -337,7 +347,7 @@ class MediaRepository implements MediaRepositoryInterface
 
         $resolvedPath = implode('/', $resolved);
 
-        if ($resolvedPath !== $this->basePath && !str_starts_with($resolvedPath, $this->basePath . '/')) {
+        if ($resolvedPath !== $this->basePath && ! str_starts_with($resolvedPath, $this->basePath.'/')) {
             throw new \RuntimeException('Path traversal detected');
         }
 
@@ -346,7 +356,7 @@ class MediaRepository implements MediaRepositoryInterface
 
     protected function createMediaFromPath(string $path, ?string $forcedType = null): Media
     {
-        $relativePath = str_replace($this->basePath . '/', '', $path);
+        $relativePath = str_replace($this->basePath.'/', '', $path);
         $name = basename($path);
         $isDir = Storage::disk($this->disk)->directoryExists($path);
 
@@ -380,7 +390,7 @@ class MediaRepository implements MediaRepositoryInterface
      * Если драйвер кэша не поддерживает locking (file/array), возвращает null —
      * операция выполнится без блокировки, но не упадёт с 500.
      */
-    private function acquireLock(string $name, int $seconds): ?\Illuminate\Contracts\Cache\Lock
+    private function acquireLock(string $name, int $seconds): ?Lock
     {
         try {
             return Cache::lock($name, $seconds);

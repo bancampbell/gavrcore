@@ -11,8 +11,7 @@ final class CreateAccessLevelUseCase
 {
     public function __construct(
         private readonly AccessLevelRepositoryInterface $accessLevels,
-    ) {
-    }
+    ) {}
 
     public function execute(CreateAccessLevelData $data): AccessLevel
     {

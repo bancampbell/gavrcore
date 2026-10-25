@@ -2,6 +2,7 @@
 
 namespace App\Modules\UserManager\Application\UseCases;
 
+use App\Modules\UserManager\Domain\Entities\Permission;
 use App\Modules\UserManager\Domain\Repositories\PermissionRepositoryInterface;
 use Illuminate\Support\Collection;
 
@@ -9,11 +10,10 @@ final class GetPermissionListUseCase
 {
     public function __construct(
         private readonly PermissionRepositoryInterface $permissions,
-    ) {
-    }
+    ) {}
 
     /**
-     * @return Collection<int, \App\Modules\UserManager\Domain\Entities\Permission>
+     * @return Collection<int, Permission>
      */
     public function execute(): Collection
     {
@@ -21,7 +21,7 @@ final class GetPermissionListUseCase
     }
 
     /**
-     * @return Collection<string, Collection<int, \App\Modules\UserManager\Domain\Entities\Permission>>
+     * @return Collection<string, Collection<int, Permission>>
      */
     public function grouped(): Collection
     {

@@ -18,14 +18,15 @@ class MetaService
     public function registerProvider(SeoProviderInterface $provider): self
     {
         $this->providers->push($provider);
+
         return $this;
     }
 
     public function for($entity): MetaData
     {
-        $provider = $this->providers->first(fn($p) => $p->supports($entity));
+        $provider = $this->providers->first(fn ($p) => $p->supports($entity));
 
-        if (!$provider) {
+        if (! $provider) {
             return $this->getDefaultMeta($entity);
         }
 
@@ -39,7 +40,7 @@ class MetaService
             : config('app.name');
 
         return new MetaData(
-            title: $title . ' | ' . config('app.name'),
+            title: $title.' | '.config('app.name'),
             description: config('app.description') ?? '',
         );
     }

@@ -2,13 +2,14 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Http\Requests;
 
+use App\Modules\MaterialManager\Domain\Entities\Material;
 use Illuminate\Foundation\Http\FormRequest;
 
 class BulkActionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('manage', \App\Modules\MaterialManager\Domain\Entities\Material::class);
+        return $this->user()->can('manage', Material::class);
     }
 
     public function rules(): array

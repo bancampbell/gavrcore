@@ -8,6 +8,5 @@ final class GroupUpdated
 {
     public function __construct(
         public readonly Group $group,
-    ) {
-    }
+    ) {}
 }

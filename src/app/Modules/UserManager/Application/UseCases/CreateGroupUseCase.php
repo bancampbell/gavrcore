@@ -11,8 +11,7 @@ final class CreateGroupUseCase
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groups,
-    ) {
-    }
+    ) {}
 
     public function execute(CreateGroupData $data): Group
     {

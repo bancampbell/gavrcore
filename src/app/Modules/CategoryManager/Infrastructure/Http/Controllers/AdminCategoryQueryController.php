@@ -26,8 +26,7 @@ class AdminCategoryQueryController extends Controller
         protected GetCategoryByIdUseCase $getByIdUseCase,
         protected GetAllCategoriesUseCase $getAllUseCase,
         protected GetCategoryTreeUseCase $getTreeUseCase,
-    ) {
-    }
+    ) {}
 
     public function index(CategoryIndexRequest $request): Response
     {

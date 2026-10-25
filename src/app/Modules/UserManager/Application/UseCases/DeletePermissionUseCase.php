@@ -11,8 +11,7 @@ final class DeletePermissionUseCase
 {
     public function __construct(
         private readonly PermissionRepositoryInterface $permissions,
-    ) {
-    }
+    ) {}
 
     public function execute(PermissionId $id): void
     {

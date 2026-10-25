@@ -13,8 +13,7 @@ final class UpdateUserUseCase
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-    ) {
-    }
+    ) {}
 
     public function execute(UserId $id, UpdateUserData $data): User
     {

@@ -51,7 +51,9 @@ class AdminFormQueryController
     public function edit(int $id): Response
     {
         $form = $this->getFormByIdUseCase->execute($id);
-        if (!$form) abort(404);
+        if (! $form) {
+            abort(404);
+        }
 
         return Inertia::render('FormBuilder/Edit', [
             'user' => auth()->user(),
@@ -69,14 +71,16 @@ class AdminFormQueryController
                 'created_at' => $form->createdAt?->format('Y-m-d H:i:s'),
                 'updated_at' => $form->updatedAt?->format('Y-m-d H:i:s'),
             ],
-            'title' => 'Редактировать форму: ' . $form->title,
+            'title' => 'Редактировать форму: '.$form->title,
         ]);
     }
 
     public function builder(int $id): Response
     {
         $form = $this->getFormByIdUseCase->execute($id);
-        if (!$form) abort(404);
+        if (! $form) {
+            abort(404);
+        }
 
         return Inertia::render('FormBuilder/Builder', [
             'user' => auth()->user(),
@@ -94,7 +98,7 @@ class AdminFormQueryController
                 'created_at' => $form->createdAt?->format('Y-m-d H:i:s'),
                 'updated_at' => $form->updatedAt?->format('Y-m-d H:i:s'),
             ],
-            'title' => 'Конструктор формы: ' . $form->title,
+            'title' => 'Конструктор формы: '.$form->title,
         ]);
     }
 

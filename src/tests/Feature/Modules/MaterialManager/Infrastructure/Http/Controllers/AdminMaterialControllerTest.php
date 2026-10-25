@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
 
+use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -27,7 +28,7 @@ class AdminMaterialControllerTest extends TestCase
     /** @return array<class-string> */
     private function adminMiddleware(): array
     {
-        return [\App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware::class];
+        return [AdminMiddleware::class];
     }
 
     public function test_index_requires_authentication(): void
@@ -93,7 +94,7 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_edit_returns_inertia_page(): void
     {
-        $material = (new MaterialModelFactory())->create();
+        $material = (new MaterialModelFactory)->create();
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -109,7 +110,7 @@ class AdminMaterialControllerTest extends TestCase
     public function test_update_modifies_material(): void
     {
         // Создаём материал от имени админа, чтобы Policy update пропустила
-        $material = (new MaterialModelFactory())->create([
+        $material = (new MaterialModelFactory)->create([
             'title' => 'Old',
             'user_id' => $this->admin->id,
         ]);
@@ -128,7 +129,7 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_bulk_trash_moves_materials_to_trash(): void
     {
-        $materials = (new MaterialModelFactory())->count(3)->create();
+        $materials = (new MaterialModelFactory)->count(3)->create();
 
         $response = $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -149,7 +150,7 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_restore_recoveres_materials(): void
     {
-        $materials = (new MaterialModelFactory())->count(2)->create([
+        $materials = (new MaterialModelFactory)->count(2)->create([
             'state' => 'trash',
             'deleted_at' => now(),
         ]);
@@ -171,7 +172,7 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_force_delete_permanently_removes_materials(): void
     {
-        $materials = (new MaterialModelFactory())->count(2)->create([
+        $materials = (new MaterialModelFactory)->count(2)->create([
             'state' => 'trash',
             'deleted_at' => now(),
         ]);
@@ -190,8 +191,8 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_empty_trash_removes_all_trashed(): void
     {
-        (new MaterialModelFactory())->count(3)->create(['state' => 'trash', 'deleted_at' => now()]);
-        (new MaterialModelFactory())->create(['state' => 'published']);
+        (new MaterialModelFactory)->count(3)->create(['state' => 'trash', 'deleted_at' => now()]);
+        (new MaterialModelFactory)->create(['state' => 'published']);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -203,7 +204,7 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_bulk_publish_publishes_materials(): void
     {
-        $materials = (new MaterialModelFactory())->count(2)->create(['state' => 'draft']);
+        $materials = (new MaterialModelFactory)->count(2)->create(['state' => 'draft']);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -219,7 +220,7 @@ class AdminMaterialControllerTest extends TestCase
 
     public function test_bulk_unpublish_drafts_materials(): void
     {
-        $materials = (new MaterialModelFactory())->count(2)->create(['state' => 'published']);
+        $materials = (new MaterialModelFactory)->count(2)->create(['state' => 'published']);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())

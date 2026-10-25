@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Modules\GalleryManager\Application\DTO\CreateGalleryData;
 use App\Modules\GalleryManager\Application\DTO\UpdateGalleryData;
 use App\Modules\GalleryManager\Application\UseCases\CreateGalleryUseCase;
@@ -17,7 +18,6 @@ use App\Modules\GalleryManager\Infrastructure\Http\Requests\CreateGalleryRequest
 use App\Modules\GalleryManager\Infrastructure\Http\Requests\UpdateGalleryRequest;
 use App\Modules\GalleryManager\Infrastructure\Http\Requests\UpdateImageRequest;
 use App\Modules\GalleryManager\Infrastructure\Http\Requests\UploadImageRequest;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
 class AdminGalleryCommandController extends Controller

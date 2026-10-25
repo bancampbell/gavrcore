@@ -12,6 +12,5 @@ final class Permission
         public readonly string $key,
         public readonly ?string $group,
         public readonly ?string $description,
-    ) {
-    }
+    ) {}
 }

@@ -11,8 +11,7 @@ final class CreateUserUseCase
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-    ) {
-    }
+    ) {}
 
     public function execute(CreateUserData $data): User
     {

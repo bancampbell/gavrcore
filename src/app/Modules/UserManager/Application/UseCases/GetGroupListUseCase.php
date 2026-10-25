@@ -10,8 +10,7 @@ final class GetGroupListUseCase
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groups,
-    ) {
-    }
+    ) {}
 
     public function execute(GroupFiltersData $filters): LengthAwarePaginator
     {

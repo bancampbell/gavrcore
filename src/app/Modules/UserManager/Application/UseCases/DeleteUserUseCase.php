@@ -11,8 +11,7 @@ final class DeleteUserUseCase
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-    ) {
-    }
+    ) {}
 
     public function execute(UserId $id): void
     {

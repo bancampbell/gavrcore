@@ -18,8 +18,9 @@ class DeleteItemsUseCase
         $failed = [];
 
         foreach ($data->paths as $path) {
-            if (!$this->repository->exists($path)) {
+            if (! $this->repository->exists($path)) {
                 $failed[] = ['path' => $path, 'reason' => 'not_found'];
+
                 continue;
             }
 
@@ -34,8 +35,8 @@ class DeleteItemsUseCase
         return new OperationResult(
             success: empty($failed),
             message: empty($failed)
-                ? 'Удалено элементов: ' . count($deleted)
-                : 'Удалено: ' . count($deleted) . ', ошибок: ' . count($failed),
+                ? 'Удалено элементов: '.count($deleted)
+                : 'Удалено: '.count($deleted).', ошибок: '.count($failed),
             data: ['deleted' => $deleted],
             errors: $failed,
         );

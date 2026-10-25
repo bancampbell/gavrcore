@@ -16,8 +16,7 @@ final class UpdateGroupData
         public readonly bool $status,
         public readonly int $ordering,
         public readonly Optional $permissionIds,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

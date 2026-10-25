@@ -6,13 +6,15 @@ namespace Tests\Feature\Modules\GalleryManager\Infrastructure\Repositories;
 
 use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Entities\GalleryImage;
+use App\Modules\GalleryManager\Domain\Events\GalleryCreated;
+use App\Modules\GalleryManager\Domain\Events\GalleryUpdated;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
 use App\Modules\GalleryManager\Infrastructure\Repositories\GalleryRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryImageModelFactory;
+use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\TestCase;
 
 class GalleryRepositoryTest extends TestCase
@@ -24,13 +26,13 @@ class GalleryRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new GalleryRepository();
+        $this->repository = new GalleryRepository;
         Event::fake();
     }
 
     public function test_find_by_id_returns_gallery_entity(): void
     {
-        $model = (new GalleryModelFactory())->create(['title' => 'Test']);
+        $model = (new GalleryModelFactory)->create(['title' => 'Test']);
 
         $gallery = $this->repository->findById($model->id);
 
@@ -46,8 +48,8 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_find_by_id_with_images_loads_relationship(): void
     {
-        $model = (new GalleryModelFactory())->create();
-        (new GalleryImageModelFactory())->count(2)->create(['gallery_id' => $model->id]);
+        $model = (new GalleryModelFactory)->create();
+        (new GalleryImageModelFactory)->count(2)->create(['gallery_id' => $model->id]);
 
         $gallery = $this->repository->findByIdWithImages($model->id);
 
@@ -56,8 +58,8 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_find_image_by_id_returns_gallery_image_entity(): void
     {
-        $model = (new GalleryModelFactory())->create();
-        $imageModel = (new GalleryImageModelFactory())->create(['gallery_id' => $model->id]);
+        $model = (new GalleryModelFactory)->create();
+        $imageModel = (new GalleryImageModelFactory)->create(['gallery_id' => $model->id]);
 
         $image = $this->repository->findImageById($imageModel->id);
 
@@ -67,7 +69,7 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_get_all_returns_collection_of_entities(): void
     {
-        (new GalleryModelFactory())->count(3)->create();
+        (new GalleryModelFactory)->count(3)->create();
 
         $galleries = $this->repository->getAll();
 
@@ -77,8 +79,8 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_get_all_with_image_count_includes_count(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
-        (new GalleryImageModelFactory())->count(5)->create(['gallery_id' => $gallery->id]);
+        $gallery = (new GalleryModelFactory)->create();
+        (new GalleryImageModelFactory)->count(5)->create(['gallery_id' => $gallery->id]);
 
         $galleries = $this->repository->getAllWithImageCount();
 
@@ -100,12 +102,12 @@ class GalleryRepositoryTest extends TestCase
 
         $this->assertDatabaseHas('galleries', ['title' => 'New Gallery']);
         $this->assertNotNull($result->id);
-        Event::assertDispatched(\App\Modules\GalleryManager\Domain\Events\GalleryCreated::class);
+        Event::assertDispatched(GalleryCreated::class);
     }
 
     public function test_update_persists_changes_and_dispatches_events(): void
     {
-        $model = (new GalleryModelFactory())->create(['title' => 'Old']);
+        $model = (new GalleryModelFactory)->create(['title' => 'Old']);
         $gallery = $this->repository->findById($model->id);
         $gallery->update(
             title: 'Updated',
@@ -122,12 +124,12 @@ class GalleryRepositoryTest extends TestCase
             'type' => 'slider',
             'status' => false,
         ]);
-        Event::assertDispatched(\App\Modules\GalleryManager\Domain\Events\GalleryUpdated::class);
+        Event::assertDispatched(GalleryUpdated::class);
     }
 
     public function test_delete_removes_gallery(): void
     {
-        $model = (new GalleryModelFactory())->create();
+        $model = (new GalleryModelFactory)->create();
 
         $this->repository->delete($model->id);
 
@@ -136,8 +138,8 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_add_image_creates_image_with_incremented_ordering(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
-        (new GalleryImageModelFactory())->create([
+        $gallery = (new GalleryModelFactory)->create();
+        (new GalleryImageModelFactory)->create([
             'gallery_id' => $gallery->id,
             'ordering' => 5,
         ]);
@@ -158,8 +160,8 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_update_image_updates_meta_fields(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
-        $imageModel = (new GalleryImageModelFactory())->create([
+        $gallery = (new GalleryModelFactory)->create();
+        $imageModel = (new GalleryImageModelFactory)->create([
             'gallery_id' => $gallery->id,
             'title' => 'Old Title',
         ]);
@@ -181,8 +183,8 @@ class GalleryRepositoryTest extends TestCase
 
     public function test_delete_image_removes_record(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
-        $imageModel = (new GalleryImageModelFactory())->create(['gallery_id' => $gallery->id]);
+        $gallery = (new GalleryModelFactory)->create();
+        $imageModel = (new GalleryImageModelFactory)->create(['gallery_id' => $gallery->id]);
 
         $this->repository->deleteImage($imageModel->id);
 

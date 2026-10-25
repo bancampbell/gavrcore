@@ -3,6 +3,7 @@
 namespace App\Modules\FormBuilder\Infrastructure\Models;
 
 use App\Modules\FormBuilder\Domain\Entities\FormSubmission;
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,8 +12,11 @@ class FormSubmissionModel extends Model
     protected $table = 'form_submissions';
 
     const STATUS_NEW = 'new';
+
     const STATUS_IN_PROGRESS = 'in_progress';
+
     const STATUS_COMPLETED = 'completed';
+
     const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [
@@ -47,6 +51,6 @@ class FormSubmissionModel extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(\App\Modules\UserManager\Infrastructure\Models\UserModel::class, 'user_id');
+        return $this->belongsTo(UserModel::class, 'user_id');
     }
 }

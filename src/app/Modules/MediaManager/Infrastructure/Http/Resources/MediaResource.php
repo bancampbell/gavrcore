@@ -37,7 +37,7 @@ class MediaResource extends JsonResource
         $i = (int) floor(log($bytes, 1024));
         $size = $bytes / pow(1024, $i);
 
-        return round($size, 1) . ' ' . $units[$i];
+        return round($size, 1).' '.$units[$i];
     }
 
     private function getIcon(string $filename): string

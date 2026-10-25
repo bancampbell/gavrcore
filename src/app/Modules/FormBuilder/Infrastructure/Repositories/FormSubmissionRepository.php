@@ -13,8 +13,12 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
     {
         $query = FormSubmissionModel::with('form');
 
-        if (!empty($filters['form_id'])) {
+        if (! empty($filters['form_id'])) {
             $query->where('form_id', $filters['form_id']);
+        }
+
+        if (! empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
         }
 
         if (isset($filters['status']) && $filters['status'] !== '') {
@@ -25,12 +29,12 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
             }
         }
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('data', 'like', '%' . $search . '%')
+                $q->where('data', 'like', '%'.$search.'%')
                     ->orWhereHas('form', function ($formQuery) use ($search) {
-                        $formQuery->where('title', 'like', '%' . $search . '%');
+                        $formQuery->where('title', 'like', '%'.$search.'%');
                     });
             });
         }
@@ -41,12 +45,13 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
     public function find(int $id): ?FormSubmission
     {
         $model = FormSubmissionModel::with('form')->find($id);
+
         return $model ? $this->toEntity($model) : null;
     }
 
     public function save(FormSubmission $submission): FormSubmission
     {
-        $model = $submission->id ? FormSubmissionModel::find($submission->id) : new FormSubmissionModel();
+        $model = $submission->id ? FormSubmissionModel::find($submission->id) : new FormSubmissionModel;
 
         $model->fill([
             'form_id' => $submission->formId,
@@ -58,30 +63,58 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
         ]);
 
         $model->save();
+
         return $this->toEntity($model);
     }
 
     public function markAsRead(int $id): bool
     {
         $model = FormSubmissionModel::find($id);
-        if (!$model) return false;
+        if (! $model) {
+            return false;
+        }
 
         if ($model->read_at === null) {
             $model->read_at = now();
+
             return $model->save();
         }
+
         return true;
     }
 
     public function delete(int $id): bool
     {
         $model = FormSubmissionModel::find($id);
+
         return $model ? $model->delete() : false;
     }
 
     public function countUnread(): int
     {
         return FormSubmissionModel::whereNull('read_at')->count();
+    }
+
+    public function getUserStats(int $userId): array
+    {
+        $rows = FormSubmissionModel::select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->where('user_id', $userId)
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $new = (int) ($rows[FormSubmission::STATUS_NEW] ?? 0);
+        $inProgress = (int) ($rows[FormSubmission::STATUS_IN_PROGRESS] ?? 0);
+        $completed = (int) ($rows[FormSubmission::STATUS_COMPLETED] ?? 0);
+        $rejected = (int) ($rows[FormSubmission::STATUS_REJECTED] ?? 0);
+
+        return [
+            'total' => $new + $inProgress + $completed + $rejected,
+            'new' => $new,
+            'in_progress' => $inProgress,
+            'completed' => $completed,
+            'rejected' => $rejected,
+        ];
     }
 
     private function toEntity(FormSubmissionModel $model): FormSubmission

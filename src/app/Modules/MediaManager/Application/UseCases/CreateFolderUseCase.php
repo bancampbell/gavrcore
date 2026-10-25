@@ -14,7 +14,7 @@ class CreateFolderUseCase
 
     public function execute(CreateFolderData $data): void
     {
-        $fullPath = $data->path ? $data->path . '/' . $data->name : $data->name;
+        $fullPath = $data->path ? $data->path.'/'.$data->name : $data->name;
 
         $depth = count(array_filter(explode('/', trim($fullPath, '/'))));
         if ($depth > $this->maxDepth) {

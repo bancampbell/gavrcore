@@ -8,6 +8,5 @@ final class UserDeleted
 {
     public function __construct(
         public readonly User $user,
-    ) {
-    }
+    ) {}
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
-use App\Modules\GalleryManager\Application\UseCases\GetGalleryForPublicUseCase;
 use App\Http\Controllers\Controller;
+use App\Modules\GalleryManager\Application\UseCases\GetGalleryForPublicUseCase;
 use Illuminate\Http\JsonResponse;
 
 class WebGalleryController extends Controller
@@ -18,7 +18,7 @@ class WebGalleryController extends Controller
     {
         $gallery = $this->getGalleryForPublicUseCase->execute($id);
 
-        if (!$gallery) {
+        if (! $gallery) {
             return response()->json(['message' => 'Gallery not found or not published'], 404);
         }
 

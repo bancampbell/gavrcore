@@ -54,17 +54,17 @@ class CreateFormUseCase
                 }
 
                 $message = $e->getMessage();
-                if (!str_contains($message, 'forms_alias_unique') && !str_contains($message, 'Duplicate entry')) {
+                if (! str_contains($message, 'forms_alias_unique') && ! str_contains($message, 'Duplicate entry')) {
                     throw $e;
                 }
 
                 // Race condition: кто-то занял alias между findByAlias и INSERT
-                $alias = $this->makeUniqueAlias($baseAlias . '-' . bin2hex(random_bytes(4)));
+                $alias = $this->makeUniqueAlias($baseAlias.'-'.bin2hex(random_bytes(4)));
                 $attempts++;
             }
         }
 
-        throw new \RuntimeException('Unable to generate unique alias after ' . $maxAttempts . ' attempts');
+        throw new \RuntimeException('Unable to generate unique alias after '.$maxAttempts.' attempts');
     }
 
     private function makeUniqueAlias(string $base): string
@@ -75,7 +75,7 @@ class CreateFormUseCase
         }
 
         do {
-            $alias = $base . '-' . bin2hex(random_bytes(4));
+            $alias = $base.'-'.bin2hex(random_bytes(4));
         } while ($this->repository->findByAlias($alias) !== null);
 
         return $alias;

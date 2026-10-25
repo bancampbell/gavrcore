@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Repositories;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Domain\Entities\Material;
-use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
-use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialUpdateData;
 use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
 use App\Modules\MaterialManager\Infrastructure\Repositories\MaterialRepository;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
@@ -21,20 +19,21 @@ class MaterialRepositoryTest extends TestCase
     use RefreshDatabase;
 
     private MaterialRepository $repository;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new MaterialRepository();
+        $this->repository = new MaterialRepository;
         $this->user = User::factory()->create();
         Cache::flush();
     }
 
     public function test_paginate_excludes_trash(): void
     {
-        (new MaterialModelFactory())->create(['state' => 'published']);
-        (new MaterialModelFactory())->create(['state' => 'trash']);
+        (new MaterialModelFactory)->create(['state' => 'published']);
+        (new MaterialModelFactory)->create(['state' => 'trash']);
 
         $result = $this->repository->paginate([]);
 
@@ -43,8 +42,8 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_paginate_filters_by_search(): void
     {
-        (new MaterialModelFactory())->create(['title' => 'Alpha Content']);
-        (new MaterialModelFactory())->create(['title' => 'Beta Other']);
+        (new MaterialModelFactory)->create(['title' => 'Alpha Content']);
+        (new MaterialModelFactory)->create(['title' => 'Beta Other']);
 
         $result = $this->repository->paginate(['search' => 'Alpha']);
 
@@ -54,7 +53,7 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_find_by_slug_returns_published_only(): void
     {
-        (new MaterialModelFactory())->create([
+        (new MaterialModelFactory)->create([
             'slug' => 'test-slug',
             'state' => 'draft',
         ]);
@@ -64,7 +63,7 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_find_by_slug_returns_future_scheduled_null(): void
     {
-        (new MaterialModelFactory())->create([
+        (new MaterialModelFactory)->create([
             'slug' => 'future',
             'state' => 'published',
             'published_at' => now()->addDay(),
@@ -75,7 +74,7 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_exists_by_slug(): void
     {
-        (new MaterialModelFactory())->create(['slug' => 'exists']);
+        (new MaterialModelFactory)->create(['slug' => 'exists']);
 
         $this->assertTrue($this->repository->existsBySlug('exists'));
         $this->assertFalse($this->repository->existsBySlug('missing'));
@@ -97,7 +96,7 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_save_updates_existing(): void
     {
-        $model = (new MaterialModelFactory())->create(['title' => 'Old']);
+        $model = (new MaterialModelFactory)->create(['title' => 'Old']);
         $material = $model->toDomain();
         $material = $material->update(new MaterialUpdateData(
             title: 'Updated',
@@ -126,7 +125,7 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_delete_soft_deletes(): void
     {
-        $model = (new MaterialModelFactory())->create();
+        $model = (new MaterialModelFactory)->create();
         $material = $model->toDomain();
 
         $this->repository->delete($material);
@@ -139,11 +138,11 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_restore_recoveres_material(): void
     {
-        $model = (new MaterialModelFactory())->create([
+        $model = (new MaterialModelFactory)->create([
             'state' => 'trash',
             'deleted_at' => now(),
         ]);
-        $material = $model->toDomain()->restore(new \DateTimeImmutable());
+        $material = $model->toDomain()->restore(new \DateTimeImmutable);
 
         $this->repository->restore($material);
 
@@ -161,16 +160,16 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_find_by_id_uses_cache(): void
     {
-        $model = (new MaterialModelFactory())->create();
+        $model = (new MaterialModelFactory)->create();
 
         $this->repository->findById($model->id);
-        $this->assertTrue(Cache::has('material_find:' . $model->id));
+        $this->assertTrue(Cache::has('material_find:'.$model->id));
     }
 
     public function test_clear_homepage_except(): void
     {
-        $keep = (new MaterialModelFactory())->create(['show_on_homepage' => true]);
-        $other = (new MaterialModelFactory())->create(['show_on_homepage' => true]);
+        $keep = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
+        $other = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
 
         $this->repository->clearHomepageExcept($keep->id);
 
@@ -180,7 +179,7 @@ class MaterialRepositoryTest extends TestCase
 
     public function test_bulk_publish_and_unpublish(): void
     {
-        $draft = (new MaterialModelFactory())->create(['state' => 'draft']);
+        $draft = (new MaterialModelFactory)->create(['state' => 'draft']);
 
         $this->repository->bulkPublish([$draft->id]);
         $this->assertDatabaseHas('materials', ['id' => $draft->id, 'state' => 'published']);

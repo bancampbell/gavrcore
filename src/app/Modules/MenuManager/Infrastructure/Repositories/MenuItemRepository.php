@@ -12,14 +12,20 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     public function getAll(int $menuTypeId, array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = MenuItemModel::where('menu_type_id', $menuTypeId);
-        if (! empty($filters['search'])) $query->where('title', 'like', '%'.$filters['search'].'%');
-        if (isset($filters['status'])) $query->where('status', $filters['status']);
+        if (! empty($filters['search'])) {
+            $query->where('title', 'like', '%'.$filters['search'].'%');
+        }
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
         return $query->orderBy('ordering')->paginate($perPage);
     }
 
     public function getTree(int $menuTypeId): array
     {
         $items = MenuItemModel::where('menu_type_id', $menuTypeId)->orderBy('ordering')->get();
+
         return $this->buildTree($items->toArray());
     }
 
@@ -52,6 +58,7 @@ class MenuItemRepository implements MenuItemRepositoryInterface
     {
         $item = MenuItemModel::findOrFail($id);
         $item->update($data);
+
         return $item->fresh();
     }
 
@@ -71,6 +78,7 @@ class MenuItemRepository implements MenuItemRepositoryInterface
             foreach ($order as $item) {
                 MenuItemModel::where('id', $item['id'])->update(['ordering' => $item['ordering']]);
             }
+
             return true;
         });
     }
@@ -177,10 +185,13 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         foreach ($items as $item) {
             if ($item['parent_id'] === $parentId) {
                 $children = $this->buildTree($items, $item['id']);
-                if ($children) $item['children'] = $children;
+                if ($children) {
+                    $item['children'] = $children;
+                }
                 $tree[] = $item;
             }
         }
+
         return $tree;
     }
 }

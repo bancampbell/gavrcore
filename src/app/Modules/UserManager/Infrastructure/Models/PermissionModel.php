@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
  * @property-read Collection<int, UserModel> $users
  * @property-read Collection<int, GroupModel> $groups
  */

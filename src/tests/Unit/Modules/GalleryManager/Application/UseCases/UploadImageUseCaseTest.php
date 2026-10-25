@@ -9,8 +9,8 @@ use App\Modules\GalleryManager\Domain\Entities\GalleryImage;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\Services\ImageStorageServiceInterface;
 use Illuminate\Http\UploadedFile;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class UploadImageUseCaseTest extends TestCase
 {
@@ -36,8 +36,7 @@ class UploadImageUseCaseTest extends TestCase
 
         $repository->shouldReceive('addImage')
             ->once()
-            ->with(5, Mockery::on(fn (array $data) =>
-                $data['image_path'] === '/storage/galleries/5/test.jpg'
+            ->with(5, Mockery::on(fn (array $data) => $data['image_path'] === '/storage/galleries/5/test.jpg'
                 && $data['title'] === 'Custom Title'
                 && $data['ordering'] === 0
                 && $data['status'] === true
@@ -68,8 +67,7 @@ class UploadImageUseCaseTest extends TestCase
 
         $repository->shouldReceive('addImage')
             ->once()
-            ->with(1, Mockery::on(fn (array $data) =>
-                $data['title'] === 'photo.png'
+            ->with(1, Mockery::on(fn (array $data) => $data['title'] === 'photo.png'
             ))
             ->andReturn(new GalleryImage(
                 id: 1, galleryId: 1, imagePath: '/storage/galleries/1/photo.png',

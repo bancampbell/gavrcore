@@ -8,6 +8,5 @@ class CategoryCreated
 {
     public function __construct(
         public readonly Category $category
-    ) {
-    }
+    ) {}
 }

@@ -22,7 +22,7 @@ class MenuItemResource extends JsonResource
             'status' => (bool) $this->status,
             'access' => $this->access,
             'language' => $this->language,
-            'menu_type' => $this->whenLoaded('menuType', fn() => ['title' => $this->menuType->title]),
+            'menu_type' => $this->whenLoaded('menuType', fn () => ['title' => $this->menuType->title]),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

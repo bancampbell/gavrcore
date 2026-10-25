@@ -13,14 +13,12 @@ final class Optional
     private function __construct(
         private readonly bool $present,
         private readonly mixed $value = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @template TValue
      *
      * @param  TValue  $value
-     *
      * @return self<TValue>
      */
     public static function of(mixed $value): self

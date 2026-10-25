@@ -15,7 +15,7 @@ class GalleryImageModelFactory extends Factory
     {
         return [
             'gallery_id' => 1,
-            'image_path' => '/storage/galleries/' . fake()->uuid() . '.jpg',
+            'image_path' => '/storage/galleries/'.fake()->uuid().'.jpg',
             'title' => fake()->optional()->words(2, true),
             'description' => fake()->optional()->sentence(),
             'alt_text' => fake()->optional()->word(),

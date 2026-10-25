@@ -2,15 +2,16 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
-use PHPUnit\Framework\TestCase;
 use Modules\MediaManager\Application\DTO\DeleteItemsData;
 use Modules\MediaManager\Application\DTO\OperationResult;
 use Modules\MediaManager\Application\UseCases\DeleteItemsUseCase;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
 class DeleteItemsUseCaseTest extends TestCase
 {
     private $repository;
+
     private $useCase;
 
     protected function setUp(): void

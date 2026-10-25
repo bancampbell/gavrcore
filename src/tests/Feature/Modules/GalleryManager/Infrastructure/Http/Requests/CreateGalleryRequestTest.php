@@ -12,13 +12,13 @@ class CreateGalleryRequestTest extends TestCase
 {
     public function test_authorize_returns_true(): void
     {
-        $request = new CreateGalleryRequest();
+        $request = new CreateGalleryRequest;
         $this->assertTrue($request->authorize());
     }
 
     public function test_rules_require_title_and_type(): void
     {
-        $request = new CreateGalleryRequest();
+        $request = new CreateGalleryRequest;
         $rules = $request->rules();
 
         $this->assertArrayHasKey('title', $rules);
@@ -29,7 +29,7 @@ class CreateGalleryRequestTest extends TestCase
 
     public function test_rules_type_must_be_valid_enum_value(): void
     {
-        $request = new CreateGalleryRequest();
+        $request = new CreateGalleryRequest;
         $rules = $request->rules();
 
         $validator = Validator::make(['type' => 'invalid'], ['type' => $rules['type']]);
@@ -43,7 +43,7 @@ class CreateGalleryRequestTest extends TestCase
 
     public function test_rules_settings_is_nullable_array(): void
     {
-        $request = new CreateGalleryRequest();
+        $request = new CreateGalleryRequest;
         $rules = $request->rules();
 
         $this->assertArrayHasKey('settings', $rules);
@@ -53,7 +53,7 @@ class CreateGalleryRequestTest extends TestCase
 
     public function test_rules_status_is_boolean(): void
     {
-        $request = new CreateGalleryRequest();
+        $request = new CreateGalleryRequest;
         $rules = $request->rules();
 
         $this->assertArrayHasKey('status', $rules);
@@ -62,7 +62,7 @@ class CreateGalleryRequestTest extends TestCase
 
     public function test_prepare_for_validation_merges_default_status(): void
     {
-        $request = new CreateGalleryRequest();
+        $request = new CreateGalleryRequest;
         $request->merge(['title' => 'Test', 'type' => 'grid']);
         $request->setContainer($this->app);
 

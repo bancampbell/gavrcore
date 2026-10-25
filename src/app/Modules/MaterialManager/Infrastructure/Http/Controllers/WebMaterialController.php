@@ -3,6 +3,7 @@
 namespace App\Modules\MaterialManager\Infrastructure\Http\Controllers;
 
 use App\Modules\MaterialManager\Application\DTO\MaterialFiltersData;
+use App\Modules\MaterialManager\Application\Services\MaterialBreadcrumbService;
 use App\Modules\MaterialManager\Application\UseCases\GetMaterialsUseCase;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\CategoryServiceInterface;
@@ -11,11 +12,10 @@ use App\Modules\MaterialManager\Domain\Services\FormServiceInterface;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
 use App\Modules\MenuManager\Application\UseCases\GetMenuTreeUseCase;
-use App\Modules\MaterialManager\Application\Services\MaterialBreadcrumbService;
 use App\Modules\SeoManager\Application\Services\BreadcrumbService;
+use App\Modules\SeoManager\Application\Services\MetaService;
 use App\Modules\SettingManager\Application\Services\SettingService;
 use App\Modules\ThemeManager\Application\Services\ThemeService;
-use App\Modules\SeoManager\Application\Services\MetaService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -83,7 +83,7 @@ class WebMaterialController
                 }
             }
 
-            if (!$allowed) {
+            if (! $allowed) {
                 $homepageMaterial = null;
             }
         }
@@ -91,7 +91,7 @@ class WebMaterialController
         $forms = [];
         if ($homepageMaterial && $homepageMaterial->content) {
             $formIds = $this->contentParser->extractFormIds($homepageMaterial->content);
-            if (!empty($formIds)) {
+            if (! empty($formIds)) {
                 $forms = $this->formService->findActiveByIds($formIds);
             }
         }
@@ -132,16 +132,16 @@ class WebMaterialController
     {
         $material = $this->repository->findBySlug($slug);
 
-        if (!$material) {
+        if (! $material) {
             abort(404);
         }
 
         if ($material->access !== MaterialAccess::PUBLIC) {
-            if (!auth()->check()) {
+            if (! auth()->check()) {
                 abort(403);
             }
 
-            if ($material->access === MaterialAccess::SPECIAL && !auth()->user()->hasPermission('materials.special')) {
+            if ($material->access === MaterialAccess::SPECIAL && ! auth()->user()->hasPermission('materials.special')) {
                 abort(403);
             }
         }
@@ -151,7 +151,7 @@ class WebMaterialController
         $formIds = $this->contentParser->extractFormIds($material->content);
         $forms = [];
 
-        if (!empty($formIds)) {
+        if (! empty($formIds)) {
             $forms = $this->formService->findActiveByIds($formIds);
         }
 
@@ -177,7 +177,7 @@ class WebMaterialController
     {
         $category = $this->categoryService->findBySlug($slug);
 
-        if (!$category) {
+        if (! $category) {
             abort(404);
         }
 

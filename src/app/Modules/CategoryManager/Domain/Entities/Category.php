@@ -20,8 +20,7 @@ class Category
         public readonly int $rgt,
         public readonly CategoryDepth $depth,
         public readonly CategoryStatus $status,
-    ) {
-    }
+    ) {}
 
     public static function fromArray(array $data): self
     {

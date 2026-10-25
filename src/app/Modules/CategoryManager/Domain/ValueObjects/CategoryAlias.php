@@ -6,6 +6,5 @@ class CategoryAlias
 {
     public function __construct(
         public readonly string $value
-    ) {
-    }
+    ) {}
 }

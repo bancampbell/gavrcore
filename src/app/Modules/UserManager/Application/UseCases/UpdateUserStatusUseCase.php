@@ -11,15 +11,13 @@ final class UpdateUserStatusUseCase
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-    ) {
-    }
+    ) {}
 
     /**
      * Массовая блокировка/разблокировка пользователей.
      *
      * @param  array<int, int|string>  $ids
      * @param  int  $currentUserId  id текущего админа — для защиты от самоблокировки
-     *
      * @return array{count: int, names: array<int, string>}
      */
     public function execute(array $ids, bool $blocked, int $currentUserId): array

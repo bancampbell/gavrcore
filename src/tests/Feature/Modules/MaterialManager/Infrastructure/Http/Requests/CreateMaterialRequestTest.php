@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Requests;
 
+use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -26,7 +27,7 @@ class CreateMaterialRequestTest extends TestCase
     /** @return array<class-string> */
     private function adminMiddleware(): array
     {
-        return [\App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware::class];
+        return [AdminMiddleware::class];
     }
 
     public function test_title_is_required(): void
@@ -40,7 +41,7 @@ class CreateMaterialRequestTest extends TestCase
 
     public function test_slug_must_be_unique(): void
     {
-        (new MaterialModelFactory())->create(['slug' => 'existing']);
+        (new MaterialModelFactory)->create(['slug' => 'existing']);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())

@@ -2,9 +2,9 @@
 
 namespace App\Modules\CategoryManager\Infrastructure\Providers;
 
+use App\Modules\CategoryManager\Application\Services\CategorySeoProvider;
 use App\Modules\CategoryManager\Domain\Repositories\CategoryRepositoryInterface;
 use App\Modules\CategoryManager\Domain\Services\CategoryTreeBuilderInterface;
-use App\Modules\CategoryManager\Application\Services\CategorySeoProvider;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\CategoryManager\Infrastructure\Policies\CategoryPolicy;
 use App\Modules\CategoryManager\Infrastructure\Repositories\CategoryRepository;
@@ -23,7 +23,7 @@ class CategoryManagerServiceProvider extends ServiceProvider
         $this->app->bind(CategoryTreeBuilderInterface::class, CategoryTreeBuilder::class);
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../../Config/category-manager.php',
+            __DIR__.'/../../Config/category-manager.php',
             'category-manager'
         );
 
@@ -40,14 +40,14 @@ class CategoryManagerServiceProvider extends ServiceProvider
     {
         Gate::policy(CategoryModel::class, CategoryPolicy::class);
 
-        $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../Database/Migrations');
 
         Route::middleware(['web', 'auth'])
             ->prefix('admin')
             ->name('admin.')
-            ->group(__DIR__ . '/../../Routes/admin.php');
+            ->group(__DIR__.'/../../Routes/admin.php');
 
         Route::middleware('web')
-            ->group(__DIR__ . '/../../Routes/web.php');
+            ->group(__DIR__.'/../../Routes/web.php');
     }
 }

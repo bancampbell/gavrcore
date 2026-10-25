@@ -8,6 +8,7 @@ use Modules\MediaManager\Infrastructure\Models\MediaAuditLog;
 class MediaAuditCommand extends Command
 {
     protected $signature = 'media:audit {--limit=50 : Количество последних записей}';
+
     protected $description = 'Просмотр аудит-лога медиа-менеджера';
 
     public function handle(): int
@@ -20,6 +21,7 @@ class MediaAuditCommand extends Command
 
         if ($logs->isEmpty()) {
             $this->warn('Аудит-лог пуст.');
+
             return self::SUCCESS;
         }
 

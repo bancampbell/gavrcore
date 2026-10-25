@@ -8,7 +8,6 @@ use App\Modules\FormBuilder\Domain\Repositories\FormRepositoryInterface;
 use App\Modules\FormBuilder\Domain\Services\SlugGeneratorInterface;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormFieldCollection;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormSettings;
-use App\Modules\FormBuilder\Domain\ValueObjects\FormStatus;
 
 class UpdateFormUseCase
 {
@@ -20,7 +19,9 @@ class UpdateFormUseCase
     public function execute(int $id, UpdateFormData $data): ?Form
     {
         $form = $this->repository->findById($id);
-        if (!$form) return null;
+        if (! $form) {
+            return null;
+        }
 
         $updateData = [
             'title' => $data->title,
@@ -31,7 +32,7 @@ class UpdateFormUseCase
 
         if ($data->alias !== null) {
             $updateData['alias'] = $data->alias;
-        } elseif (empty($form->alias) && !empty($data->title)) {
+        } elseif (empty($form->alias) && ! empty($data->title)) {
             $baseAlias = $this->slugGenerator->generate($data->title);
             if (trim($baseAlias) === '') {
                 $baseAlias = 'form';
@@ -40,7 +41,7 @@ class UpdateFormUseCase
             $alias = $baseAlias;
             $suffix = 1;
             while ($this->repository->findByAlias($alias) !== null) {
-                $alias = $baseAlias . '-' . $suffix++;
+                $alias = $baseAlias.'-'.$suffix++;
             }
 
             $updateData['alias'] = $alias;
@@ -57,6 +58,7 @@ class UpdateFormUseCase
         }
 
         $form->update($updateData);
+
         return $this->repository->save($form);
     }
 }

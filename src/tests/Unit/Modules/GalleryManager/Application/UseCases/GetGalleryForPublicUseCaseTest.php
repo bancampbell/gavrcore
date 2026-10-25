@@ -9,8 +9,8 @@ use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class GetGalleryForPublicUseCaseTest extends TestCase
 {

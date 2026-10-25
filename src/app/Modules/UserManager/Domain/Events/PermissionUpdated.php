@@ -8,6 +8,5 @@ final class PermissionUpdated
 {
     public function __construct(
         public readonly Permission $permission,
-    ) {
-    }
+    ) {}
 }

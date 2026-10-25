@@ -26,7 +26,7 @@ class UploadFileRequestTest extends TestCase
 
         $file = UploadedFile::fake()->create('photo.jpg', 100, 'image/jpeg');
 
-        $request = new UploadFileRequest();
+        $request = new UploadFileRequest;
         $validator = Validator::make(
             ['files' => [$file]],
             $request->rules()
@@ -41,7 +41,7 @@ class UploadFileRequestTest extends TestCase
 
         $file = UploadedFile::fake()->create('virus.exe', 100);
 
-        $request = new UploadFileRequest();
+        $request = new UploadFileRequest;
         $validator = Validator::make(
             ['files' => [$file]],
             $request->rules()
@@ -57,7 +57,7 @@ class UploadFileRequestTest extends TestCase
 
         $file = UploadedFile::fake()->create('virus.jpg', 100, 'application/x-msdownload');
 
-        $request = new UploadFileRequest();
+        $request = new UploadFileRequest;
         $validator = Validator::make(
             ['files' => [$file]],
             $request->rules()
@@ -73,7 +73,7 @@ class UploadFileRequestTest extends TestCase
 
         $file = UploadedFile::fake()->create('huge.jpg', 200 * 1024, 'image/jpeg');
 
-        $request = new UploadFileRequest();
+        $request = new UploadFileRequest;
         $validator = Validator::make(
             ['files' => [$file]],
             $request->rules()
@@ -92,7 +92,7 @@ class UploadFileRequestTest extends TestCase
             $files[] = UploadedFile::fake()->create("file{$i}.jpg", 100, 'image/jpeg');
         }
 
-        $request = new UploadFileRequest();
+        $request = new UploadFileRequest;
         $validator = Validator::make(
             ['files' => $files],
             $request->rules()

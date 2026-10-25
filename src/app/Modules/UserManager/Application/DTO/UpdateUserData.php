@@ -16,8 +16,7 @@ final class UpdateUserData
         public readonly bool $blocked,
         public readonly bool $activated,
         public readonly Optional $groupIds,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

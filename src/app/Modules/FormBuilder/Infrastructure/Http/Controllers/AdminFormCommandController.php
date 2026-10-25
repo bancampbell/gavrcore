@@ -67,7 +67,7 @@ class AdminFormCommandController
 
         $form = $this->updateFormUseCase->execute($id, $data);
 
-        if (!$form) {
+        if (! $form) {
             return response()->json(['message' => 'Форма не найдена'], 404);
         }
 
@@ -81,7 +81,7 @@ class AdminFormCommandController
     {
         $success = $this->updateFormStatusUseCase->execute($id, $request->validated('status'));
 
-        if (!$success) {
+        if (! $success) {
             return response()->json(['message' => 'Форма не найдена'], 404);
         }
 
@@ -97,7 +97,7 @@ class AdminFormCommandController
     {
         $deleted = $this->deleteFormUseCase->execute($id);
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json(['message' => 'Форма не найдена'], 404);
         }
 
@@ -113,7 +113,7 @@ class AdminFormCommandController
 
         $form = $this->updateFormFieldsUseCase->execute($data);
 
-        if (!$form) {
+        if (! $form) {
             return response()->json(['message' => 'Форма не найдена'], 404);
         }
 

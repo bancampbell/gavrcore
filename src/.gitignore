@@ -25,3 +25,13 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Посторонние артефакты (битые редиректы/вывод утилит, см. AUDIT-04)
+/test_files_*.txt
+/sions*
+/Admin,
+/admin@example.com,
+/build
+/vite
+/project_structure.txt
+/project_tree.txt

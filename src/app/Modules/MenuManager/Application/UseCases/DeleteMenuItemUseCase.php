@@ -27,6 +27,7 @@ class DeleteMenuItemUseCase
 
             $this->repository->lockByParent($item->menu_type_id, $item->parent_id);
             $this->repository->decrementOrdering($item->menu_type_id, $item->parent_id, $item->ordering);
+
             return $this->repository->delete($id);
         });
     }

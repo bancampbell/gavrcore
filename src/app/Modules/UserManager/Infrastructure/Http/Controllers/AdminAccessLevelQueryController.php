@@ -25,8 +25,7 @@ final class AdminAccessLevelQueryController extends Controller
         private readonly GetAccessLevelListUseCase $getAccessLevelList,
         private readonly GetAccessLevelByIdUseCase $getAccessLevelById,
         private readonly GetAllGroupsUseCase $getAllGroups,
-    ) {
-    }
+    ) {}
 
     public function index(AccessLevelIndexRequest $request): Response|JsonResponse
     {

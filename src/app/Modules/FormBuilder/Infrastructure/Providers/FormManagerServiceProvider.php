@@ -19,7 +19,7 @@ class FormManagerServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../../Config/form-manager.php',
+            __DIR__.'/../../Config/form-manager.php',
             'form-manager'
         );
 
@@ -31,14 +31,14 @@ class FormManagerServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../../Routes/admin.php');
+        $this->loadRoutesFrom(__DIR__.'/../../Routes/admin.php');
 
         $this->app->booted(function () {
-            $this->loadRoutesFrom(__DIR__ . '/../../Routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../../Routes/api.php');
         });
 
-        $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
-        $this->loadViewsFrom(__DIR__ . '/../../Infrastructure/views', 'form-manager');
+        $this->loadMigrationsFrom(__DIR__.'/../../Database/Migrations');
+        $this->loadViewsFrom(__DIR__.'/../../Infrastructure/views', 'form-manager');
 
         RateLimiter::for('form-submit', function ($request) {
             return Limit::perMinute(10)->by($request->ip());

@@ -11,7 +11,9 @@ use App\Modules\MaterialManager\Domain\Services\CategoryServiceInterface;
 use App\Modules\MaterialManager\Infrastructure\Http\Requests\MaterialIndexRequest;
 use App\Modules\MaterialManager\Infrastructure\Http\Resources\MaterialResource;
 use App\Modules\ThemeManager\Application\Services\ThemeService;
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,7 +43,7 @@ class AdminMaterialQueryController
         return Inertia::render('MaterialManager/Index', [
             'materials' => $paginated,
             'categories' => $this->categoryService->getAll(),
-            'authors' => \App\Modules\UserManager\Infrastructure\Models\UserModel::select('id', 'name')->orderBy('name')->get(),
+            'authors' => UserModel::select('id', 'name')->orderBy('name')->get(),
             'filters' => $filters->toArray(),
             'perPage' => $filters->perPage,
             'user' => auth()->user(),
@@ -91,7 +93,7 @@ class AdminMaterialQueryController
         ]);
     }
 
-    public function list(): \Illuminate\Http\JsonResponse
+    public function list(): JsonResponse
     {
         $result = $this->getMaterials->execute(
             MaterialFiltersData::fromRequest(['per_page' => 1000])

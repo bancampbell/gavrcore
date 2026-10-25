@@ -3,25 +3,24 @@
 namespace Modules\MediaManager\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
+use Modules\MediaManager\Application\DTO\PaginatedContentsData;
+use Modules\MediaManager\Application\UseCases\CopyItemUseCase;
+use Modules\MediaManager\Application\UseCases\CreateFolderUseCase;
+use Modules\MediaManager\Application\UseCases\DeleteItemsUseCase;
+use Modules\MediaManager\Application\UseCases\DeleteItemUseCase;
 use Modules\MediaManager\Application\UseCases\GetContentsUseCase;
 use Modules\MediaManager\Application\UseCases\GetFoldersUseCase;
-use Modules\MediaManager\Application\UseCases\CreateFolderUseCase;
-use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
-use Modules\MediaManager\Application\UseCases\DeleteItemUseCase;
-use Modules\MediaManager\Application\UseCases\DeleteItemsUseCase;
-use Modules\MediaManager\Application\UseCases\CopyItemUseCase;
-use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
 use Modules\MediaManager\Application\UseCases\GetPaginatedContentsUseCase;
-use Modules\MediaManager\Application\DTO\PaginatedContentsData;
+use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
+use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
+use Modules\MediaManager\Infrastructure\Http\Requests\CopyItemRequest;
 use Modules\MediaManager\Infrastructure\Http\Requests\CreateFolderRequest;
-use Modules\MediaManager\Infrastructure\Http\Requests\RenameItemRequest;
 use Modules\MediaManager\Infrastructure\Http\Requests\DeleteItemRequest;
 use Modules\MediaManager\Infrastructure\Http\Requests\DeleteItemsRequest;
-use Modules\MediaManager\Infrastructure\Http\Requests\CopyItemRequest;
+use Modules\MediaManager\Infrastructure\Http\Requests\RenameItemRequest;
 use Modules\MediaManager\Infrastructure\Http\Requests\UploadFileRequest;
 
 class MediaController extends Controller
@@ -68,6 +67,7 @@ class MediaController extends Controller
     {
         try {
             $useCase->execute($request->toDTO());
+
             return response()->json(['success' => true, 'message' => 'Папка создана']);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -78,6 +78,7 @@ class MediaController extends Controller
     {
         try {
             $useCase->execute($request->toDTO());
+
             return response()->json(['success' => true, 'message' => 'Переименовано успешно']);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -88,6 +89,7 @@ class MediaController extends Controller
     {
         try {
             $useCase->execute($request->toDTO());
+
             return response()->json(['success' => true, 'message' => 'Удалено успешно']);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -98,7 +100,7 @@ class MediaController extends Controller
     {
         $result = $useCase->execute($request->toDTO());
 
-        if (!$result->success) {
+        if (! $result->success) {
             return response()->json([
                 'success' => false,
                 'message' => $result->message,
@@ -118,6 +120,7 @@ class MediaController extends Controller
     {
         try {
             $useCase->execute($request->toDTO());
+
             return response()->json(['success' => true, 'message' => 'Скопировано успешно']);
         } catch (\RuntimeException $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
@@ -128,7 +131,7 @@ class MediaController extends Controller
     {
         $result = $useCase->execute($request->toDTO());
 
-        if (!$result->success) {
+        if (! $result->success) {
             return response()->json([
                 'success' => false,
                 'message' => $result->message,

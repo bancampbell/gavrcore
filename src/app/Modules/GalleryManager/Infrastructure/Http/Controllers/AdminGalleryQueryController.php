@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Modules\GalleryManager\Application\DTO\GalleryFiltersData;
 use App\Modules\GalleryManager\Application\UseCases\GetGalleryForEditUseCase;
 use App\Modules\GalleryManager\Application\UseCases\GetGalleryListUseCase;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -57,7 +57,7 @@ class AdminGalleryQueryController extends Controller
     {
         $gallery = $this->getGalleryForEditUseCase->execute($id);
 
-        if (!$gallery) {
+        if (! $gallery) {
             abort(404);
         }
 

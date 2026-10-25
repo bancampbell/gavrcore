@@ -9,8 +9,7 @@ final class GetAllGroupsUseCase
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groups,
-    ) {
-    }
+    ) {}
 
     public function execute(): Collection
     {

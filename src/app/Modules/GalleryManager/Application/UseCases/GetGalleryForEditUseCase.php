@@ -15,6 +15,7 @@ class GetGalleryForEditUseCase
     public function execute(int $id): ?array
     {
         $gallery = $this->repository->findByIdWithImages($id);
+
         return $gallery?->toArray();
     }
 }

@@ -11,8 +11,7 @@ final class CreatePermissionUseCase
 {
     public function __construct(
         private readonly PermissionRepositoryInterface $permissions,
-    ) {
-    }
+    ) {}
 
     public function execute(CreatePermissionData $data): Permission
     {

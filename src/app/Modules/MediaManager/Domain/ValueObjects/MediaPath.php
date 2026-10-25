@@ -30,7 +30,7 @@ class MediaPath
 
         // Проверка глубины
         if (count($segments) > self::MAX_DEPTH) {
-            throw new \InvalidArgumentException('Path exceeds maximum depth of ' . self::MAX_DEPTH);
+            throw new \InvalidArgumentException('Path exceeds maximum depth of '.self::MAX_DEPTH);
         }
 
         return $path;
@@ -57,6 +57,7 @@ class MediaPath
     public function getName(): string
     {
         $parts = explode('/', $this->value);
+
         return end($parts) ?: '';
     }
 
@@ -69,6 +70,7 @@ class MediaPath
         }
 
         $parts = explode('.', $name);
+
         return count($parts) > 1 ? strtolower(end($parts)) : '';
     }
 

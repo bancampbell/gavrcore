@@ -18,7 +18,6 @@ use Illuminate\Support\Carbon;
  * @property int $ordering
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
  * @property-read Collection<int, UserModel> $users
  * @property-read Collection<int, PermissionModel> $permissions
  * @property-read Collection<int, AccessLevelModel> $accessLevels

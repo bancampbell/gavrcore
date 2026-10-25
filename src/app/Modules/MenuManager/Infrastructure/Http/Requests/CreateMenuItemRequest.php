@@ -8,11 +8,15 @@ use Illuminate\Validation\Rule;
 
 class CreateMenuItemRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
         $menuTypeId = $this->route('menuTypeId');
+
         return [
             'parent_id' => [
                 'nullable',

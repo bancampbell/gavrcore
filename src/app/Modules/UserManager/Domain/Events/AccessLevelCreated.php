@@ -8,6 +8,5 @@ final class AccessLevelCreated
 {
     public function __construct(
         public readonly AccessLevel $accessLevel,
-    ) {
-    }
+    ) {}
 }

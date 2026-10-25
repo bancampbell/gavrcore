@@ -14,9 +14,12 @@ class UpdateFormFieldsUseCase
     public function execute(UpdateFormFieldsData $data): ?Form
     {
         $form = $this->repository->findById($data->formId);
-        if (!$form) return null;
+        if (! $form) {
+            return null;
+        }
 
         $form->update(['fields' => new FormFieldCollection($data->fields)]);
+
         return $this->repository->save($form);
     }
 }

@@ -8,8 +8,8 @@ use App\Modules\GalleryManager\Application\UseCases\DeleteImageUseCase;
 use App\Modules\GalleryManager\Domain\Entities\GalleryImage;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\Services\ImageStorageServiceInterface;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class DeleteImageUseCaseTest extends TestCase
 {

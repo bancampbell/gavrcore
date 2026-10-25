@@ -16,6 +16,7 @@ class GetSubmissionsUseCase
             'search' => $filters->search,
             'status' => $filters->status,
             'form_id' => $filters->formId,
+            'user_id' => $filters->userId,
         ], $perPage);
     }
 }

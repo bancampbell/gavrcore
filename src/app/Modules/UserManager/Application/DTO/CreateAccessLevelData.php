@@ -15,8 +15,7 @@ final class CreateAccessLevelData
         public readonly ?string $description,
         public readonly bool $status,
         public readonly array $groupIds = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

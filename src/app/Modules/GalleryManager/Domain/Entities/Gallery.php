@@ -12,6 +12,7 @@ class Gallery
 {
     /** @var array<GalleryImage> */
     private array $images = [];
+
     private array $domainEvents = [];
 
     public function __construct(
@@ -94,6 +95,7 @@ class Gallery
     {
         $events = $this->domainEvents;
         $this->domainEvents = [];
+
         return $events;
     }
 

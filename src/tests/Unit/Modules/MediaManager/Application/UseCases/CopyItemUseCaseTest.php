@@ -2,14 +2,15 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
-use PHPUnit\Framework\TestCase;
 use Modules\MediaManager\Application\DTO\CopyItemData;
 use Modules\MediaManager\Application\UseCases\CopyItemUseCase;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
 class CopyItemUseCaseTest extends TestCase
 {
     private $repository;
+
     private $useCase;
 
     protected function setUp(): void

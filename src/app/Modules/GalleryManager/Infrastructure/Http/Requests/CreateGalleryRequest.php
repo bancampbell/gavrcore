@@ -27,7 +27,7 @@ class CreateGalleryRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (!$this->has('status')) {
+        if (! $this->has('status')) {
             $this->merge(['status' => true]);
         }
     }

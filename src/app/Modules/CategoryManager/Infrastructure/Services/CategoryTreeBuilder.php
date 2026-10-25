@@ -10,7 +10,6 @@ class CategoryTreeBuilder implements CategoryTreeBuilderInterface
 {
     /**
      * @param  iterable<CategoryModel>  $categories
-     *
      * @return array<int, array{id: int, name: string, children: array<int, array<string, mixed>>}>
      */
     public function buildTree(iterable $categories, ?int $parentId = null): array
@@ -33,7 +32,6 @@ class CategoryTreeBuilder implements CategoryTreeBuilderInterface
 
     /**
      * @param  iterable<CategoryModel>  $categories
-     *
      * @return array<int, string>
      */
     public function getSelectOptions(iterable $categories, string $prefix = ''): array

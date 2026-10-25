@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Modules\MediaManager\Domain\Entities;
 
-use Tests\TestCase;
 use Modules\MediaManager\Domain\Entities\Media;
 use Modules\MediaManager\Domain\ValueObjects\MediaPath;
+use Tests\TestCase;
 
 class MediaTest extends TestCase
 {

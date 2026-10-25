@@ -2,11 +2,11 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
-use PHPUnit\Framework\TestCase;
-use Modules\MediaManager\Application\DTO\UploadFileData;
 use Modules\MediaManager\Application\DTO\OperationResult;
+use Modules\MediaManager\Application\DTO\UploadFileData;
 use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
 class UploadFileUseCaseTest extends TestCase
 {

@@ -23,7 +23,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string|null $last_login_ip
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
  * @property-read Collection<int, GroupModel> $groups
  * @property-read Collection<int, PermissionModel> $permissions
  */

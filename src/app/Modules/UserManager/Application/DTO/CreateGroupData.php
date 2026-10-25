@@ -16,8 +16,7 @@ final class CreateGroupData
         public readonly bool $status,
         public readonly int $ordering,
         public readonly array $permissionIds = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

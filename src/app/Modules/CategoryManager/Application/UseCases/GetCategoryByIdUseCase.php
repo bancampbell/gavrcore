@@ -9,8 +9,7 @@ class GetCategoryByIdUseCase
 {
     public function __construct(
         protected CategoryRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(int $id): ?CategoryModel
     {

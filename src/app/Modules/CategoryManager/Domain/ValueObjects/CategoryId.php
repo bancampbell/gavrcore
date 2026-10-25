@@ -6,6 +6,5 @@ class CategoryId
 {
     public function __construct(
         public readonly int $value
-    ) {
-    }
+    ) {}
 }

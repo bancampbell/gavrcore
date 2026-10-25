@@ -12,10 +12,13 @@ class UpdateFormStatusUseCase
     public function execute(int $id, bool $status): bool
     {
         $form = $this->repository->findById($id);
-        if (!$form) return false;
+        if (! $form) {
+            return false;
+        }
 
         $form->update(['status' => new FormStatus($status)]);
         $this->repository->save($form);
+
         return true;
     }
 }

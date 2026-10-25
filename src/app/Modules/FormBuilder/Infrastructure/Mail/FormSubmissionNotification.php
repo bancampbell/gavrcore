@@ -22,7 +22,7 @@ class FormSubmissionNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Новое сообщение с формы: ' . $this->form->title,
+            subject: 'Новое сообщение с формы: '.$this->form->title,
         );
     }
 
@@ -44,29 +44,42 @@ class FormSubmissionNotification extends Mailable
     private function getSenderName(): string
     {
         $data = $this->submission->data;
-        foreach (['name','Name','NAME','fullname','FullName','FULLNAME','fio','FIO','Fio'] as $f) {
-            if (!empty($data[$f])) return (string) $data[$f];
+        foreach (['name', 'Name', 'NAME', 'fullname', 'FullName', 'FULLNAME', 'fio', 'FIO', 'Fio'] as $f) {
+            if (! empty($data[$f])) {
+                return (string) $data[$f];
+            }
         }
-        if (!empty($data['email'])) return (string) $data['email'];
-        if (!empty($data['phone'])) return (string) $data['phone'];
+        if (! empty($data['email'])) {
+            return (string) $data['email'];
+        }
+        if (! empty($data['phone'])) {
+            return (string) $data['phone'];
+        }
+
         return 'Аноним';
     }
 
     private function getSenderEmail(): ?string
     {
         $data = $this->submission->data;
-        foreach (['email','Email','EMAIL','e-mail','mail'] as $f) {
-            if (!empty($data[$f])) return (string) $data[$f];
+        foreach (['email', 'Email', 'EMAIL', 'e-mail', 'mail'] as $f) {
+            if (! empty($data[$f])) {
+                return (string) $data[$f];
+            }
         }
+
         return null;
     }
 
     private function getSenderPhone(): ?string
     {
         $data = $this->submission->data;
-        foreach (['phone','Phone','PHONE','telephone','mobile','tel'] as $f) {
-            if (!empty($data[$f])) return (string) $data[$f];
+        foreach (['phone', 'Phone', 'PHONE', 'telephone', 'mobile', 'tel'] as $f) {
+            if (! empty($data[$f])) {
+                return (string) $data[$f];
+            }
         }
+
         return null;
     }
 }

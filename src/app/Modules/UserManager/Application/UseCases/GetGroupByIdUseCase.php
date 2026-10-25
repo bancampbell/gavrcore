@@ -10,8 +10,7 @@ final class GetGroupByIdUseCase
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groups,
-    ) {
-    }
+    ) {}
 
     public function execute(GroupId $id): ?Group
     {

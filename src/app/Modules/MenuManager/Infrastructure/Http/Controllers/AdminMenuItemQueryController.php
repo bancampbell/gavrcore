@@ -12,8 +12,8 @@ use App\Modules\MenuManager\Infrastructure\Http\Resources\MenuItemResource;
 use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
 use App\Modules\MenuManager\Infrastructure\Models\MenuTypeModel;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,7 +28,7 @@ class AdminMenuItemQueryController extends Controller
         private GetAllMenuItemsUseCase $getAllUseCase,
     ) {}
 
-    public function index(Request $request, int $menuTypeId): Response|\Illuminate\Http\JsonResponse
+    public function index(Request $request, int $menuTypeId): Response|JsonResponse
     {
         $this->authorize('viewAny', MenuItemModel::class);
 
@@ -45,6 +45,7 @@ class AdminMenuItemQueryController extends Controller
         }
 
         $menuType = MenuTypeModel::findOrFail($menuTypeId);
+
         return Inertia::render('MenuManager/MenuItems', [
             'user' => auth()->user(),
             'menuTypeId' => $menuTypeId,
@@ -62,17 +63,19 @@ class AdminMenuItemQueryController extends Controller
         ]);
     }
 
-    public function tree(int $menuTypeId): \Illuminate\Http\JsonResponse
+    public function tree(int $menuTypeId): JsonResponse
     {
         $this->authorize('viewAny', MenuItemModel::class);
 
         return response()->json($this->getTreeUseCase->execute($menuTypeId));
     }
 
-    public function show(int $id): \Illuminate\Http\JsonResponse
+    public function show(int $id): JsonResponse
     {
         $menuItem = $this->getByIdUseCase->execute($id);
-        if (! $menuItem) return response()->json(['message' => 'Menu item not found'], 404);
+        if (! $menuItem) {
+            return response()->json(['message' => 'Menu item not found'], 404);
+        }
 
         $this->authorize('view', $menuItem);
 
@@ -105,7 +108,7 @@ class AdminMenuItemQueryController extends Controller
         ]);
     }
 
-    public function getAllItems(Request $request): \Illuminate\Http\JsonResponse
+    public function getAllItems(Request $request): JsonResponse
     {
         $this->authorize('viewAny', MenuItemModel::class);
 

@@ -8,7 +8,6 @@ use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 
 class MaterialRepository implements MaterialRepositoryInterface
 {
@@ -29,12 +28,12 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     private function cacheKey(string $type, string|int $identifier): string
     {
-        return $this->cachePrefix() . "{$type}:{$identifier}";
+        return $this->cachePrefix()."{$type}:{$identifier}";
     }
 
     private function clearCache(Material $material, ?string $oldSlug = null): void
     {
-        if (!$this->cacheEnabled()) {
+        if (! $this->cacheEnabled()) {
             return;
         }
 
@@ -55,7 +54,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     private function clearCacheById(int $id): void
     {
-        if (!$this->cacheEnabled()) {
+        if (! $this->cacheEnabled()) {
             return;
         }
 
@@ -69,7 +68,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             ->where('state', '!=', 'trash');
 
         if (($filters['search'] ?? null) !== null && $filters['search'] !== '') {
-            $search = '%' . $filters['search'] . '%';
+            $search = '%'.$filters['search'].'%';
             $query->where(function ($q) use ($search) {
                 $q->whereRaw('LOWER(title) LIKE LOWER(?)', [$search])
                     ->orWhereRaw('LOWER(slug) LIKE LOWER(?)', [$search]);
@@ -84,7 +83,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             $query->where('category_id', $filters['category_id']);
         }
 
-        if (!empty($filters['access_levels'])) {
+        if (! empty($filters['access_levels'])) {
             $query->whereIn('access', $filters['access_levels']);
         } elseif (($filters['access'] ?? null) !== null && $filters['access'] !== '') {
             $query->where('access', $filters['access']);
@@ -97,7 +96,7 @@ class MaterialRepository implements MaterialRepositoryInterface
         $sort = $filters['sort'] ?? 'id';
         $direction = strtolower($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
         $allowedSorts = ['id', 'title', 'views', 'created_at'];
-        if (!in_array($sort, $allowedSorts, true)) {
+        if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'id';
         }
         $query->orderBy($sort, $direction);
@@ -144,8 +143,9 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function findById(int $id): ?Material
     {
-        if (!$this->cacheEnabled()) {
+        if (! $this->cacheEnabled()) {
             $model = MaterialModel::with(['category', 'user'])->find($id);
+
             return $model ? $model->toDomain() : null;
         }
 
@@ -154,6 +154,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             $this->cacheTtl(),
             function () use ($id) {
                 $model = MaterialModel::with(['category', 'user'])->find($id);
+
                 return $model ? $model->toDomain() : null;
             }
         );
@@ -162,6 +163,7 @@ class MaterialRepository implements MaterialRepositoryInterface
     public function findByIdWithLock(int $id): ?Material
     {
         $model = MaterialModel::with(['category', 'user'])->lockForUpdate()->find($id);
+
         return $model ? $model->toDomain() : null;
     }
 
@@ -225,6 +227,7 @@ class MaterialRepository implements MaterialRepositoryInterface
     public function findForEdit(int $id): ?Material
     {
         $model = MaterialModel::with(['category', 'user'])->find($id);
+
         return $model ? $model->toDomain() : null;
     }
 
@@ -359,7 +362,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function getListForSelect(): array
     {
-        if (!$this->cacheEnabled()) {
+        if (! $this->cacheEnabled()) {
             return $this->fetchListForSelect();
         }
 

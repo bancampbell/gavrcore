@@ -11,8 +11,8 @@ use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
 use Illuminate\Support\Collection;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class GetGalleryListUseCaseTest extends TestCase
 {

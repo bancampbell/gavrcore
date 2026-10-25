@@ -11,6 +11,7 @@ class FormResource extends JsonResource
     {
         /** @var Form $form */
         $form = $this->resource;
+
         return [
             'id' => $form->id,
             'title' => $form->title,

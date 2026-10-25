@@ -11,6 +11,7 @@ class SubmissionResource extends JsonResource
     {
         /** @var FormSubmission $sub */
         $sub = $this->resource;
+
         return [
             'id' => $sub->id,
             'form_id' => $sub->formId,

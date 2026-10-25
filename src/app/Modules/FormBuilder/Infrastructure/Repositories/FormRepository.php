@@ -16,10 +16,10 @@ class FormRepository implements FormRepositoryInterface
     {
         $query = FormModel::query();
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('title', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('description', 'like', '%' . $filters['search'] . '%');
+                $q->where('title', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('description', 'like', '%'.$filters['search'].'%');
             });
         }
 
@@ -33,21 +33,23 @@ class FormRepository implements FormRepositoryInterface
     public function findById(int $id): ?Form
     {
         $model = FormModel::find($id);
+
         return $model ? $this->toEntity($model) : null;
     }
 
     public function findByAlias(string $alias): ?Form
     {
         $model = FormModel::where('alias', $alias)->first();
+
         return $model ? $this->toEntity($model) : null;
     }
 
     public function save(Form $form): Form
     {
-        $model = $form->id ? FormModel::find($form->id) : new FormModel();
+        $model = $form->id ? FormModel::find($form->id) : new FormModel;
 
-        if (!$model) {
-            $model = new FormModel();
+        if (! $model) {
+            $model = new FormModel;
             $model->id = $form->id;
         }
 
@@ -64,12 +66,14 @@ class FormRepository implements FormRepositoryInterface
         ]);
 
         $model->save();
+
         return $this->toEntity($model);
     }
 
     public function delete(int $id): bool
     {
         $model = FormModel::find($id);
+
         return $model ? $model->delete() : false;
     }
 
@@ -78,6 +82,19 @@ class FormRepository implements FormRepositoryInterface
         return FormModel::select('id', 'title', 'alias', 'status', 'fields')
             ->orderBy('title')
             ->get()
+            ->toArray();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function listActiveForSelect(): array
+    {
+        return FormModel::select('id', 'title', 'alias', 'status', 'fields')
+            ->where('status', true)
+            ->orderBy('title')
+            ->get()
+            ->keyBy('id')
             ->toArray();
     }
 

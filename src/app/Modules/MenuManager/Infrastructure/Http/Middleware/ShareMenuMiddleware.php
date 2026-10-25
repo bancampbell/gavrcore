@@ -15,6 +15,7 @@ class ShareMenuMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         Inertia::share('mainMenu', $this->getMenuTreeUseCase->execute('main-menu'));
+
         return $next($request);
     }
 }

@@ -15,8 +15,7 @@ final class UpdateAccessLevelData
         public readonly ?string $description,
         public readonly bool $status,
         public readonly Optional $groupIds,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

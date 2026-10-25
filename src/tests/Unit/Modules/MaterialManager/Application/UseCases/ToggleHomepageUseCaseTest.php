@@ -15,7 +15,9 @@ use Tests\TestCase;
 class ToggleHomepageUseCaseTest extends TestCase
 {
     private MaterialRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private ToggleHomepageUseCase $useCase;
 
     protected function setUp(): void

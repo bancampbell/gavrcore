@@ -18,15 +18,15 @@ class GalleryManagerServiceProvider extends ServiceProvider
         $this->app->bind(ImageStorageServiceInterface::class, LocalImageStorageService::class);
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../../Config/gallery-manager.php',
+            __DIR__.'/../../Config/gallery-manager.php',
             'gallery-manager'
         );
     }
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
-        $this->loadRoutesFrom(__DIR__ . '/../../Routes/admin.php');
-        $this->loadRoutesFrom(__DIR__ . '/../../Routes/web.php');
+        $this->loadMigrationsFrom(__DIR__.'/../../Database/Migrations');
+        $this->loadRoutesFrom(__DIR__.'/../../Routes/admin.php');
+        $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
     }
 }

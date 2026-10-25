@@ -13,7 +13,7 @@ class CopyItemUseCase
 
     public function execute(CopyItemData $data): void
     {
-        if (!$this->repository->exists($data->path)) {
+        if (! $this->repository->exists($data->path)) {
             throw new \RuntimeException('Файл или папка не найдены');
         }
 

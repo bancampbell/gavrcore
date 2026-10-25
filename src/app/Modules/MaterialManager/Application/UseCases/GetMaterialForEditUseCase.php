@@ -15,7 +15,7 @@ final readonly class GetMaterialForEditUseCase
     {
         $material = $this->repository->findForEdit($id);
 
-        if (!$material) {
+        if (! $material) {
             throw new \DomainException('Material not found');
         }
 

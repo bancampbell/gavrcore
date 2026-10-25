@@ -29,8 +29,7 @@ final class AdminGroupCommandController extends Controller
         private readonly DeleteGroupUseCase $deleteGroup,
         private readonly GetGroupByIdUseCase $getGroupById,
         private readonly UpdateGroupStatusUseCase $updateGroupStatus,
-    ) {
-    }
+    ) {}
 
     public function store(StoreGroupRequest $request): RedirectResponse
     {

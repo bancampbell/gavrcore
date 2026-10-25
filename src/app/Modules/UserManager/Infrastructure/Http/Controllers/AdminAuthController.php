@@ -16,8 +16,7 @@ final class AdminAuthController extends Controller
 {
     public function __construct(
         private readonly LoginUserUseCase $loginUser,
-    ) {
-    }
+    ) {}
 
     /**
      * Показать страницу входа в админку

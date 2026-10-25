@@ -7,8 +7,7 @@ final class AccessLevelFiltersData
     public function __construct(
         public readonly ?string $search = null,
         public readonly ?bool $status = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

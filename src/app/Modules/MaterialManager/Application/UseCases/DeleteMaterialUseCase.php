@@ -20,7 +20,7 @@ final readonly class DeleteMaterialUseCase
         DB::transaction(function () use ($id, $actorId) {
             $material = $this->repository->findById($id);
 
-            if (!$material) {
+            if (! $material) {
                 throw new \DomainException('Material not found');
             }
 

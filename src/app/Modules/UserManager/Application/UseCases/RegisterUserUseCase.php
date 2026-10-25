@@ -63,6 +63,7 @@ final class RegisterUserUseCase
 
                     $candidate = $base.'-'.$suffix;
                     $suffix++;
+
                     continue;
                 }
 

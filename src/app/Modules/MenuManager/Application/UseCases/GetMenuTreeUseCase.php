@@ -60,6 +60,7 @@ class GetMenuTreeUseCase
                 $tree[] = $node;
             }
         }
+
         return $tree;
     }
 }

@@ -45,7 +45,7 @@ class HandleInertiaRequests extends Middleware
     {
         $path = $request->path();
 
-        if (!str_starts_with($path, 'admin')) {
+        if (! str_starts_with($path, 'admin')) {
             return '';
         }
 

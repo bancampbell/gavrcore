@@ -13,7 +13,7 @@ class DeleteItemUseCase
 
     public function execute(DeleteItemData $data): void
     {
-        if (!$this->repository->exists($data->path)) {
+        if (! $this->repository->exists($data->path)) {
             throw new \RuntimeException('Файл или папка не найдены');
         }
 

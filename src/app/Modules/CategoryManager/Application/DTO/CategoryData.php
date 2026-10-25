@@ -14,8 +14,7 @@ class CategoryData
         public readonly ?int $parent_id = null,
         public readonly ?bool $is_active = null,
         private readonly array $fields = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

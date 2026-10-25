@@ -19,6 +19,7 @@ class SendSubmissionNotificationUseCase
                 'form_id' => $form->id,
                 'form_title' => $form->title,
             ]);
+
             return;
         }
 

@@ -9,8 +9,7 @@ final class CreatePermissionData
         public readonly string $key,
         public readonly ?string $group,
         public readonly ?string $description,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

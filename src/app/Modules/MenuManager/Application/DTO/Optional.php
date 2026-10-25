@@ -10,6 +10,6 @@ final class Optional
 
     public static function value(): self
     {
-        return self::$instance ??= new self();
+        return self::$instance ??= new self;
     }
 }

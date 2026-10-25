@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Modules\MaterialManager\Domain\Entities;
 
 use App\Modules\MaterialManager\Domain\Entities\Material;
-use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialUpdateData;
 use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;

@@ -28,12 +28,12 @@ class UploadFileRequest extends FormRequest
         $maxUploadFiles = config('MediaManager.max_upload_files', 20);
 
         return [
-            'files' => ['required', 'array', 'max:' . $maxUploadFiles],
+            'files' => ['required', 'array', 'max:'.$maxUploadFiles],
             'files.*' => [
                 'required',
                 'file',
-                'mimetypes:' . implode(',', $allowedMimetypes),
-                'max:' . $maxFileSize,
+                'mimetypes:'.implode(',', $allowedMimetypes),
+                'max:'.$maxFileSize,
             ],
             'path' => ['nullable', 'string'],
         ];

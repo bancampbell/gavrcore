@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
+use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Testing\AssertableInertia as Assert;
-use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryImageModelFactory;
+use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\TestCase;
 
 class AdminGalleryQueryControllerTest extends TestCase
@@ -28,7 +29,7 @@ class AdminGalleryQueryControllerTest extends TestCase
     /** @return array<class-string> */
     private function adminMiddleware(): array
     {
-        return [\App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware::class];
+        return [AdminMiddleware::class];
     }
 
     public function test_index_requires_authentication(): void
@@ -64,8 +65,8 @@ class AdminGalleryQueryControllerTest extends TestCase
 
     public function test_list_returns_galleries_as_json(): void
     {
-        $gallery = (new GalleryModelFactory())->create(['title' => 'Test Gallery']);
-        (new GalleryImageModelFactory())->count(2)->create(['gallery_id' => $gallery->id]);
+        $gallery = (new GalleryModelFactory)->create(['title' => 'Test Gallery']);
+        (new GalleryImageModelFactory)->count(2)->create(['gallery_id' => $gallery->id]);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -83,8 +84,8 @@ class AdminGalleryQueryControllerTest extends TestCase
 
     public function test_list_filters_by_search(): void
     {
-        (new GalleryModelFactory())->create(['title' => 'Alpha Gallery']);
-        (new GalleryModelFactory())->create(['title' => 'Beta Gallery']);
+        (new GalleryModelFactory)->create(['title' => 'Alpha Gallery']);
+        (new GalleryModelFactory)->create(['title' => 'Beta Gallery']);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -99,8 +100,8 @@ class AdminGalleryQueryControllerTest extends TestCase
 
     public function test_list_filters_by_type(): void
     {
-        (new GalleryModelFactory())->create(['type' => 'grid']);
-        (new GalleryModelFactory())->create(['type' => 'slider']);
+        (new GalleryModelFactory)->create(['type' => 'grid']);
+        (new GalleryModelFactory)->create(['type' => 'slider']);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -114,8 +115,8 @@ class AdminGalleryQueryControllerTest extends TestCase
 
     public function test_list_filters_by_status(): void
     {
-        (new GalleryModelFactory())->create(['status' => true]);
-        (new GalleryModelFactory())->create(['status' => false]);
+        (new GalleryModelFactory)->create(['status' => true]);
+        (new GalleryModelFactory)->create(['status' => false]);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -129,8 +130,8 @@ class AdminGalleryQueryControllerTest extends TestCase
 
     public function test_edit_returns_inertia_for_existing_gallery(): void
     {
-        $gallery = (new GalleryModelFactory())->create(['title' => 'Editable']);
-        (new GalleryImageModelFactory())->count(2)->create(['gallery_id' => $gallery->id]);
+        $gallery = (new GalleryModelFactory)->create(['title' => 'Editable']);
+        (new GalleryImageModelFactory)->count(2)->create(['gallery_id' => $gallery->id]);
 
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -151,7 +152,7 @@ class AdminGalleryQueryControllerTest extends TestCase
         $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
             ->get(route('admin.galleries.edit', 9999))
-            ->assertOk()
+            ->assertNotFound()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Errors/NotFound', false)
             );

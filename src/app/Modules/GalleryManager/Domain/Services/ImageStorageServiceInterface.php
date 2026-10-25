@@ -9,5 +9,6 @@ use Illuminate\Http\UploadedFile;
 interface ImageStorageServiceInterface
 {
     public function store(UploadedFile $file, string $directory): string;
+
     public function delete(string $path): void;
 }

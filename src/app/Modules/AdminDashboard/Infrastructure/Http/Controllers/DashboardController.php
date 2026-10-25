@@ -4,8 +4,8 @@ namespace App\Modules\AdminDashboard\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel as Material;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;

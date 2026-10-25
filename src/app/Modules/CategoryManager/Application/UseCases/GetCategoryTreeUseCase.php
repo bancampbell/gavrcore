@@ -8,8 +8,7 @@ class GetCategoryTreeUseCase
 {
     public function __construct(
         protected CategoryRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, array<string, mixed>>

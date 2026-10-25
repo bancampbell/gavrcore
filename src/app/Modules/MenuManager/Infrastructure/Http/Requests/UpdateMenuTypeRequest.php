@@ -7,11 +7,15 @@ use Illuminate\Validation\Rule;
 
 class UpdateMenuTypeRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
         $id = $this->route('id');
+
         return [
             'title' => 'required|string|max:255',
             'alias' => ['nullable', 'string', 'max:255', Rule::unique('menu_types', 'alias')->ignore($id)],

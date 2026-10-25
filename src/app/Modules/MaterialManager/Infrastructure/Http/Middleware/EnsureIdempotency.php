@@ -13,12 +13,12 @@ class EnsureIdempotency
     {
         $key = $request->header('Idempotency-Key');
 
-        if (!$key || $request->isMethodSafe()) {
+        if (! $key || $request->isMethodSafe()) {
             return $next($request);
         }
 
-        $userId = $request->user()?->id ?? 'guest:' . $request->ip();
-        $cacheKey = 'idempotency:' . sha1($key . ':' . $userId);
+        $userId = $request->user()?->id ?? 'guest:'.$request->ip();
+        $cacheKey = 'idempotency:'.sha1($key.':'.$userId);
 
         if (Cache::has($cacheKey)) {
             $cached = Cache::get($cacheKey);

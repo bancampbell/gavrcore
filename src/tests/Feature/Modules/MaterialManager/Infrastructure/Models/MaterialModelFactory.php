@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Models;
 
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MaterialModelFactory extends Factory
@@ -18,7 +19,7 @@ class MaterialModelFactory extends Factory
             'slug' => $this->faker->unique()->slug(),
             'content' => $this->faker->paragraph(),
             'category_id' => null,
-            'user_id' => \App\Modules\UserManager\Infrastructure\Models\UserModel::factory(),
+            'user_id' => UserModel::factory(),
             'state' => 'draft',
             'access' => 'public',
             'views' => 0,

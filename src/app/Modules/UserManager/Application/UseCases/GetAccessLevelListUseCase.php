@@ -10,8 +10,7 @@ final class GetAccessLevelListUseCase
 {
     public function __construct(
         private readonly AccessLevelRepositoryInterface $accessLevels,
-    ) {
-    }
+    ) {}
 
     public function execute(AccessLevelFiltersData $filters): Collection
     {

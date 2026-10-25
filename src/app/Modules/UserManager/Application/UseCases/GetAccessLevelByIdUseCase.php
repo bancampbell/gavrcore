@@ -10,8 +10,7 @@ final class GetAccessLevelByIdUseCase
 {
     public function __construct(
         private readonly AccessLevelRepositoryInterface $accessLevels,
-    ) {
-    }
+    ) {}
 
     public function execute(AccessLevelId $id): ?AccessLevel
     {

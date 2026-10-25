@@ -2,19 +2,22 @@
 
 namespace Tests\Feature\Modules\MediaManager\Infrastructure\Http\Controllers;
 
-use Tests\TestCase;
+use App\Http\Middleware\ShareMenuMiddleware;
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Modules\MediaManager\Application\DTO\OperationResult;
+use Modules\MediaManager\Application\DTO\PaginatedContentsData;
+use Modules\MediaManager\Application\UseCases\CopyItemUseCase;
+use Modules\MediaManager\Application\UseCases\CreateFolderUseCase;
+use Modules\MediaManager\Application\UseCases\DeleteItemsUseCase;
+use Modules\MediaManager\Application\UseCases\DeleteItemUseCase;
 use Modules\MediaManager\Application\UseCases\GetContentsUseCase;
 use Modules\MediaManager\Application\UseCases\GetFoldersUseCase;
-use Modules\MediaManager\Application\UseCases\CreateFolderUseCase;
-use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
-use Modules\MediaManager\Application\UseCases\DeleteItemUseCase;
-use Modules\MediaManager\Application\UseCases\DeleteItemsUseCase;
-use Modules\MediaManager\Application\UseCases\CopyItemUseCase;
-use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
 use Modules\MediaManager\Application\UseCases\GetPaginatedContentsUseCase;
-use Modules\MediaManager\Application\DTO\PaginatedContentsData;
+use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
+use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
+use Tests\TestCase;
 
 class MediaControllerTest extends TestCase
 {
@@ -22,14 +25,14 @@ class MediaControllerTest extends TestCase
     {
         parent::setUp();
 
-        $user = $this->createMock(\App\Modules\UserManager\Infrastructure\Models\UserModel::class);
+        $user = $this->createMock(UserModel::class);
         $this->actingAs($user);
 
         Gate::define('manage-media', function () {
             return true;
         });
 
-        $this->withoutMiddleware(\App\Http\Middleware\ShareMenuMiddleware::class);
+        $this->withoutMiddleware(ShareMenuMiddleware::class);
     }
 
     public function test_index_returns_inertia_page(): void
@@ -200,7 +203,7 @@ class MediaControllerTest extends TestCase
         $useCase = $this->mock(DeleteItemsUseCase::class);
         $useCase->shouldReceive('execute')
             ->once()
-            ->andReturn(new \Modules\MediaManager\Application\DTO\OperationResult(
+            ->andReturn(new OperationResult(
                 success: true,
                 message: 'Удалено элементов: 2',
                 data: ['deleted' => ['folder1', 'folder2']],
@@ -237,7 +240,7 @@ class MediaControllerTest extends TestCase
         $useCase = $this->mock(UploadFileUseCase::class);
         $useCase->shouldReceive('execute')
             ->once()
-            ->andReturn(new \Modules\MediaManager\Application\DTO\OperationResult(
+            ->andReturn(new OperationResult(
                 success: true,
                 message: 'Загружено файлов: 2',
                 data: ['uploaded' => ['file1.jpg', 'file2.png']],

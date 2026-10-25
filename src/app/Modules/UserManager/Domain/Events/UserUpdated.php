@@ -8,6 +8,5 @@ final class UserUpdated
 {
     public function __construct(
         public readonly User $user,
-    ) {
-    }
+    ) {}
 }

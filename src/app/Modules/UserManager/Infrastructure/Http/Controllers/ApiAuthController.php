@@ -19,8 +19,7 @@ final class ApiAuthController extends Controller
     public function __construct(
         private readonly RegisterUserUseCase $registerUser,
         private readonly LoginUserUseCase $loginUser,
-    ) {
-    }
+    ) {}
 
     public function register(RegisterRequest $request): JsonResponse
     {

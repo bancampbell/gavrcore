@@ -28,8 +28,7 @@ final class AccessLevel
         public readonly int $ordering,
         public readonly bool $status,
         public readonly array $groups = [],
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, int>

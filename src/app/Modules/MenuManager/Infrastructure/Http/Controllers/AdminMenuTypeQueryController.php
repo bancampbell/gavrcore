@@ -9,6 +9,7 @@ use App\Modules\MenuManager\Application\UseCases\GetMenuTypeListUseCase;
 use App\Modules\MenuManager\Infrastructure\Http\Resources\MenuTypeResource;
 use App\Modules\MenuManager\Infrastructure\Models\MenuTypeModel;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
@@ -50,10 +51,12 @@ class AdminMenuTypeQueryController extends Controller
         ]);
     }
 
-    public function show(int $id): \Illuminate\Http\JsonResponse
+    public function show(int $id): JsonResponse
     {
         $menuType = $this->getByIdUseCase->execute($id);
-        if (! $menuType) return response()->json(['message' => 'Menu type not found'], 404);
+        if (! $menuType) {
+            return response()->json(['message' => 'Menu type not found'], 404);
+        }
 
         $this->authorize('view', $menuType);
 

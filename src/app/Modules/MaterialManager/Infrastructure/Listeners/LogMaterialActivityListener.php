@@ -2,7 +2,6 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Listeners;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\MaterialManager\Domain\Events\MaterialCreated;
 use App\Modules\MaterialManager\Domain\Events\MaterialDeleted;
 use App\Modules\MaterialManager\Domain\Events\MaterialForceDeleted;
@@ -12,6 +11,7 @@ use App\Modules\MaterialManager\Domain\Events\MaterialRestored;
 use App\Modules\MaterialManager\Domain\Events\MaterialUnpublished;
 use App\Modules\MaterialManager\Domain\Events\MaterialUpdated;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Spatie\Activitylog\Facades\Activity;
 
 class LogMaterialActivityListener
@@ -20,7 +20,7 @@ class LogMaterialActivityListener
     {
         $this->log(
             $event->material->id,
-            'Создан материал: ' . $event->material->title,
+            'Создан материал: '.$event->material->title,
             'created',
             $event->actorId
         );
@@ -30,7 +30,7 @@ class LogMaterialActivityListener
     {
         $this->log(
             $event->material->id,
-            'Обновлен материал: ' . $event->material->title,
+            'Обновлен материал: '.$event->material->title,
             'updated',
             $event->actorId
         );
@@ -40,7 +40,7 @@ class LogMaterialActivityListener
     {
         $this->log(
             $event->material->id,
-            'Перемещен в корзину: ' . $event->material->title,
+            'Перемещен в корзину: '.$event->material->title,
             'deleted',
             $event->actorId
         );
@@ -50,7 +50,7 @@ class LogMaterialActivityListener
     {
         $this->log(
             $event->material->id,
-            'Восстановлен из корзины: ' . $event->material->title,
+            'Восстановлен из корзины: '.$event->material->title,
             'restored',
             $event->actorId
         );
@@ -70,14 +70,14 @@ class LogMaterialActivityListener
             $activity = $activity->causedBy($causer);
         }
 
-        $activity->log('Полностью удален материал: ' . $event->material->title);
+        $activity->log('Полностью удален материал: '.$event->material->title);
     }
 
     public function handleMaterialPublished(MaterialPublished $event): void
     {
         $this->log(
             $event->material->id,
-            'Опубликован материал: ' . $event->material->title,
+            'Опубликован материал: '.$event->material->title,
             'published',
             $event->actorId
         );
@@ -87,7 +87,7 @@ class LogMaterialActivityListener
     {
         $this->log(
             $event->material->id,
-            'Снят с публикации: ' . $event->material->title,
+            'Снят с публикации: '.$event->material->title,
             'unpublished',
             $event->actorId
         );
@@ -98,7 +98,7 @@ class LogMaterialActivityListener
         $status = $event->material->showOnHomepage ? 'добавлен на' : 'удален с';
         $this->log(
             $event->material->id,
-            "Материал {$status} главной страницы: " . $event->material->title,
+            "Материал {$status} главной страницы: ".$event->material->title,
             'homepage_toggled',
             $event->actorId,
             ['show_on_homepage' => $event->material->showOnHomepage]
@@ -109,7 +109,7 @@ class LogMaterialActivityListener
     {
         $model = MaterialModel::find($materialId);
 
-        if (!$model) {
+        if (! $model) {
             return;
         }
 

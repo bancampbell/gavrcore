@@ -7,8 +7,8 @@ namespace Tests\Unit\Modules\GalleryManager\Application\UseCases;
 use App\Modules\GalleryManager\Application\UseCases\DeleteGalleryUseCase;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\Services\ImageStorageServiceInterface;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class DeleteGalleryUseCaseTest extends TestCase
 {

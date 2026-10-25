@@ -12,8 +12,13 @@ class MenuTypeRepository implements MenuTypeRepositoryInterface
     public function getAll(array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
         $query = MenuTypeModel::query()->withCount('items');
-        if (! empty($filters['search'])) $query->where('title', 'like', '%'.$filters['search'].'%');
-        if (isset($filters['status'])) $query->where('status', $filters['status']);
+        if (! empty($filters['search'])) {
+            $query->where('title', 'like', '%'.$filters['search'].'%');
+        }
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
         return $query->orderBy('ordering')->paginate($perPage);
     }
 
@@ -41,6 +46,7 @@ class MenuTypeRepository implements MenuTypeRepositoryInterface
     {
         $menuType = MenuTypeModel::findOrFail($id);
         $menuType->update($data);
+
         return $menuType->fresh();
     }
 
@@ -60,6 +66,7 @@ class MenuTypeRepository implements MenuTypeRepositoryInterface
             foreach ($order as $item) {
                 MenuTypeModel::where('id', $item['id'])->update(['ordering' => $item['ordering']]);
             }
+
             return true;
         });
     }

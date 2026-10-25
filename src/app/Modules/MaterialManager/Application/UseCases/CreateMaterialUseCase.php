@@ -23,24 +23,24 @@ final readonly class CreateMaterialUseCase
 
     public function execute(CreateMaterialData $data, int $actorId): Material
     {
-        $baseSlug = !empty($data->slug) ? $data->slug : $this->slugGenerator->generate($data->title);
+        $baseSlug = ! empty($data->slug) ? $data->slug : $this->slugGenerator->generate($data->title);
         if (empty($baseSlug)) {
-            $baseSlug = 'material-' . bin2hex(random_bytes(4));
+            $baseSlug = 'material-'.bin2hex(random_bytes(4));
         }
         $attempt = 0;
         $maxAttempts = 50;
 
         $lock = Cache::lock('material_manager_homepage', 10);
-        if (!$lock->get()) {
+        if (! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
             while ($attempt < $maxAttempts) {
                 $attempt++;
-                $slug = $attempt === 1 ? $baseSlug : $baseSlug . '-' . $attempt;
+                $slug = $attempt === 1 ? $baseSlug : $baseSlug.'-'.$attempt;
 
                 try {
-                    return DB::transaction(function () use ($data, $actorId, $slug, $baseSlug) {
+                    return DB::transaction(function () use ($data, $actorId, $slug) {
                         if ($this->repository->existsBySlugWithLock($slug)) {
                             if ($data->slug !== null) {
                                 throw new \DomainException('Материал с таким слагом уже существует');
@@ -88,6 +88,7 @@ final readonly class CreateMaterialUseCase
                         break;
                     }
                     usleep(random_int(10000, 100000));
+
                     continue;
                 } catch (\RuntimeException $e) {
                     if ($e->getMessage() === 'slug_collision') {
@@ -95,6 +96,7 @@ final readonly class CreateMaterialUseCase
                             break;
                         }
                         usleep(random_int(10000, 50000));
+
                         continue;
                     }
                     throw $e;
@@ -105,7 +107,7 @@ final readonly class CreateMaterialUseCase
         }
 
         throw new \DomainException(
-            'Не удалось создать материал: конфликт слага после ' . $maxAttempts . ' попыток'
+            'Не удалось создать материал: конфликт слага после '.$maxAttempts.' попыток'
         );
     }
 }

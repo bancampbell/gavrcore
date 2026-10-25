@@ -9,8 +9,7 @@ class DeleteCategoryUseCase
 {
     public function __construct(
         protected CategoryRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(CategoryModel $category): void
     {

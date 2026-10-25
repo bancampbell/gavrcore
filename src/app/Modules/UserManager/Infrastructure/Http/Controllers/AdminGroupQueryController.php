@@ -25,8 +25,7 @@ final class AdminGroupQueryController extends Controller
         private readonly GetGroupListUseCase $getGroupList,
         private readonly GetGroupByIdUseCase $getGroupById,
         private readonly GetPermissionListUseCase $getPermissionList,
-    ) {
-    }
+    ) {}
 
     public function index(GroupIndexRequest $request): Response|JsonResponse
     {

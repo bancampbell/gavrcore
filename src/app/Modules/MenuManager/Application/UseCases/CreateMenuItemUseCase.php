@@ -82,7 +82,7 @@ class CreateMenuItemUseCase
         $counter = 1;
 
         while ($this->repository->findByAliasWithLock($alias, $menuTypeId)) {
-            $alias = $originalAlias . '-' . $counter++;
+            $alias = $originalAlias.'-'.$counter++;
         }
 
         return $alias;

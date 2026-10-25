@@ -18,7 +18,7 @@ class DeleteImageUseCase
     {
         $image = $this->repository->findImageById($imageId);
 
-        if (!$image || $image->galleryId !== $galleryId) {
+        if (! $image || $image->galleryId !== $galleryId) {
             throw new \RuntimeException('Image not found');
         }
 

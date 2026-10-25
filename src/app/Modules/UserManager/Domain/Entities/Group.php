@@ -28,8 +28,7 @@ final class Group
         public readonly int $ordering,
         public readonly array $permissionIds = [],
         public readonly ?string $createdAt = null,
-    ) {
-    }
+    ) {}
 
     public function isActive(): bool
     {

@@ -8,8 +8,7 @@ final class UpdateAccessLevelOrderingUseCase
 {
     public function __construct(
         private readonly AccessLevelRepositoryInterface $accessLevels,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int, array{id: int, ordering: int}>  $order

@@ -12,10 +12,13 @@ class MenuTreeBuilder implements MenuTreeBuilderInterface
         foreach ($items as $item) {
             if ($item['parent_id'] === $parentId) {
                 $children = $this->buildTree($items, $item['id']);
-                if ($children) $item['children'] = $children;
+                if ($children) {
+                    $item['children'] = $children;
+                }
                 $tree[] = $item;
             }
         }
+
         return $tree;
     }
 }

@@ -19,8 +19,11 @@ use Tests\TestCase;
 class CreateMaterialUseCaseTest extends TestCase
 {
     private MaterialRepositoryInterface&MockObject $repository;
+
     private SlugGeneratorInterface&MockObject $slugGenerator;
+
     private ClockInterface&MockObject $clock;
+
     private CreateMaterialUseCase $useCase;
 
     protected function setUp(): void
@@ -46,7 +49,8 @@ class CreateMaterialUseCaseTest extends TestCase
     private function withId(Material $material, int $id): Material
     {
         $serialized = serialize($material);
-        $serialized = preg_replace('/"id";N;/', '"id";i:' . $id . ';', $serialized);
+        $serialized = preg_replace('/"id";N;/', '"id";i:'.$id.';', $serialized);
+
         return unserialize($serialized);
     }
 

@@ -10,7 +10,6 @@ use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\ClockInterface;
 use App\Modules\MaterialManager\Domain\Services\SlugGeneratorInterface;
-use App\Modules\MaterialManager\Domain\ValueObjects\MaterialAccess;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
 use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
 use Illuminate\Support\Facades\Event;
@@ -20,8 +19,11 @@ use Tests\TestCase;
 class UpdateMaterialUseCaseTest extends TestCase
 {
     private MaterialRepositoryInterface&MockObject $repository;
+
     private SlugGeneratorInterface&MockObject $slugGenerator;
+
     private ClockInterface&MockObject $clock;
+
     private UpdateMaterialUseCase $useCase;
 
     protected function setUp(): void
@@ -44,7 +46,8 @@ class UpdateMaterialUseCaseTest extends TestCase
     private function withId(Material $material, int $id): Material
     {
         $serialized = serialize($material);
-        $serialized = preg_replace('/"id";N;/', '"id";i:' . $id . ';', $serialized);
+        $serialized = preg_replace('/"id";N;/', '"id";i:'.$id.';', $serialized);
+
         return unserialize($serialized);
     }
 

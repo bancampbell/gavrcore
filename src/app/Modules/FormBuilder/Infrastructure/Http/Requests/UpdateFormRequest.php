@@ -6,14 +6,18 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateFormRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
         $formId = $this->route('form');
+
         return [
             'title' => 'required|string|max:255',
-            'alias' => 'nullable|string|max:255|unique:forms,alias,' . $formId,
+            'alias' => 'nullable|string|max:255|unique:forms,alias,'.$formId,
             'description' => 'nullable|string',
             'status' => 'nullable|boolean',
             'is_dynamic' => 'nullable|boolean',

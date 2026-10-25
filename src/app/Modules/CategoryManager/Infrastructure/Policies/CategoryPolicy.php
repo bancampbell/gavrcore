@@ -2,8 +2,8 @@
 
 namespace App\Modules\CategoryManager\Infrastructure\Policies;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 
 class CategoryPolicy
 {

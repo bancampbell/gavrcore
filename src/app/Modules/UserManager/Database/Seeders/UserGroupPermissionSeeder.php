@@ -7,6 +7,7 @@ use App\Modules\UserManager\Infrastructure\Models\PermissionModel;
 use App\Modules\UserManager\Infrastructure\Models\UserModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserGroupPermissionSeeder extends Seeder
 {
@@ -68,13 +69,21 @@ class UserGroupPermissionSeeder extends Seeder
         $managerPermissions = PermissionModel::whereNotIn('key', ['users.manage', 'groups.manage', 'permissions.manage'])->pluck('id')->toArray();
         $managerGroup->permissions()->sync($managerPermissions);
 
+        // Пароли из окружения; fallback на известные значения — только для local/testing.
+        // На проде без ADMIN_PASSWORD/MANAGER_PASSWORD пароль будет случайным: учётка
+        // создастся, но войти с известным паролем нельзя.
+        $adminPassword = env('ADMIN_PASSWORD')
+            ?: (app()->environment(['local', 'testing']) ? 'admin123' : Str::random(32));
+        $managerPassword = env('MANAGER_PASSWORD')
+            ?: (app()->environment(['local', 'testing']) ? 'manager123' : Str::random(32));
+
         // Создаём пользователя admin
         $admin = UserModel::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Administrator',
                 'username' => 'admin',
-                'password' => Hash::make('admin123'),
+                'password' => Hash::make($adminPassword),
                 'blocked' => false,
                 'activated' => true,
             ]
@@ -87,7 +96,7 @@ class UserGroupPermissionSeeder extends Seeder
             [
                 'name' => 'Manager',
                 'username' => 'manager',
-                'password' => Hash::make('manager123'),
+                'password' => Hash::make($managerPassword),
                 'blocked' => false,
                 'activated' => true,
             ]

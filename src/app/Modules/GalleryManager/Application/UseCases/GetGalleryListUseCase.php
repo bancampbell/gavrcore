@@ -19,12 +19,12 @@ class GetGalleryListUseCase
     {
         $galleries = $this->repository->getAllWithImageCount();
 
-        if (!$filters) {
+        if (! $filters) {
             return $galleries;
         }
 
         return $galleries->filter(function (Gallery $gallery) use ($filters) {
-            if ($filters->search && !str_contains(strtolower($gallery->title), strtolower($filters->search))) {
+            if ($filters->search && ! str_contains(strtolower($gallery->title), strtolower($filters->search))) {
                 return false;
             }
             if ($filters->type && $gallery->type->value !== $filters->type) {
@@ -33,6 +33,7 @@ class GetGalleryListUseCase
             if ($filters->status !== null && $gallery->status->value !== (int) $filters->status) {
                 return false;
             }
+
             return true;
         });
     }

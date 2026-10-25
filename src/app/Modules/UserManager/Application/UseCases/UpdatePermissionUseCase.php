@@ -12,8 +12,7 @@ final class UpdatePermissionUseCase
 {
     public function __construct(
         private readonly PermissionRepositoryInterface $permissions,
-    ) {
-    }
+    ) {}
 
     public function execute(PermissionId $id, UpdatePermissionData $data): Permission
     {

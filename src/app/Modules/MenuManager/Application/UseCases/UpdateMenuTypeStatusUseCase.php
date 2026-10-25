@@ -11,8 +11,11 @@ class UpdateMenuTypeStatusUseCase
     public function execute(int $id, bool $status): bool
     {
         $menuType = $this->repository->findById($id);
-        if (! $menuType) return false;
+        if (! $menuType) {
+            return false;
+        }
         $menuType->status = $status;
+
         return $menuType->save();
     }
 }

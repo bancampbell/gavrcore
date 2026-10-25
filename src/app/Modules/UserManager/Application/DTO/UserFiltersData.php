@@ -9,8 +9,7 @@ final class UserFiltersData
         public readonly ?bool $blocked = null,
         public readonly ?bool $activated = null,
         public readonly int $perPage = 20,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

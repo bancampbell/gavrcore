@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\GalleryManager\Infrastructure\Http\Controllers;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use App\Modules\GalleryManager\Domain\Services\ImageStorageServiceInterface;
+use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Mockery;
-use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryImageModelFactory;
+use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\TestCase;
 
 class AdminGalleryCommandControllerTest extends TestCase
@@ -32,13 +33,14 @@ class AdminGalleryCommandControllerTest extends TestCase
     /** @return array<class-string> */
     private function adminMiddleware(): array
     {
-        return [\App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware::class];
+        return [AdminMiddleware::class];
     }
 
     private function createFakeImage(string $name = 'test.jpg'): UploadedFile
     {
         $tmp = tempnam(sys_get_temp_dir(), 'test');
         file_put_contents($tmp, "\xFF\xD8\xFF\xE0\x00\x10JFIF\x00\x01\x01\x01\x00\x48\x00\x48\x00\x00\xFF\xD9");
+
         return new UploadedFile($tmp, $name, 'image/jpeg', null, true);
     }
 
@@ -101,7 +103,7 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_update_updates_gallery(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
+        $gallery = (new GalleryModelFactory)->create();
 
         $response = $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -130,7 +132,7 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_destroy_deletes_gallery(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
+        $gallery = (new GalleryModelFactory)->create();
 
         $response = $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -149,7 +151,7 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_publish_publishes_gallery(): void
     {
-        $gallery = (new GalleryModelFactory())->draft()->create();
+        $gallery = (new GalleryModelFactory)->draft()->create();
 
         $response = $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -171,7 +173,7 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_unpublish_unpublishes_gallery(): void
     {
-        $gallery = (new GalleryModelFactory())->create(['status' => true]);
+        $gallery = (new GalleryModelFactory)->create(['status' => true]);
 
         $response = $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -193,7 +195,7 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_upload_image_stores_file_and_returns_image_data(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
+        $gallery = (new GalleryModelFactory)->create();
         $file = $this->createFakeImage('test.jpg');
 
         $response = $this->actingAs($this->admin)
@@ -219,8 +221,8 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_update_image_updates_meta(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
-        $image = (new GalleryImageModelFactory())->create(['gallery_id' => $gallery->id]);
+        $gallery = (new GalleryModelFactory)->create();
+        $image = (new GalleryImageModelFactory)->create(['gallery_id' => $gallery->id]);
 
         $response = $this->actingAs($this->admin)
             ->withoutMiddleware($this->adminMiddleware())
@@ -250,8 +252,8 @@ class AdminGalleryCommandControllerTest extends TestCase
 
     public function test_delete_image_removes_image_record(): void
     {
-        $gallery = (new GalleryModelFactory())->create();
-        $image = (new GalleryImageModelFactory())->create([
+        $gallery = (new GalleryModelFactory)->create();
+        $image = (new GalleryImageModelFactory)->create([
             'gallery_id' => $gallery->id,
             'image_path' => '/storage/galleries/test.jpg',
         ]);

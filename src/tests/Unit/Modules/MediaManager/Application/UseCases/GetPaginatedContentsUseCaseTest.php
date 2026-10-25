@@ -3,10 +3,10 @@
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
 use Mockery;
-use PHPUnit\Framework\TestCase;
 use Modules\MediaManager\Application\DTO\PaginatedContentsData;
 use Modules\MediaManager\Application\UseCases\GetPaginatedContentsUseCase;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
 class GetPaginatedContentsUseCaseTest extends TestCase
 {

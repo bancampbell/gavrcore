@@ -10,8 +10,7 @@ class UpdateCategoryUseCase
 {
     public function __construct(
         protected CategoryRepositoryInterface $repository
-    ) {
-    }
+    ) {}
 
     public function execute(CategoryModel $category, CategoryData $data): CategoryModel
     {

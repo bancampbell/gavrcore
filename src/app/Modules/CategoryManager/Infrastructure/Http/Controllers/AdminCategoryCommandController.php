@@ -25,8 +25,7 @@ class AdminCategoryCommandController extends Controller
         protected UpdateCategoryUseCase $updateUseCase,
         protected DeleteCategoryUseCase $deleteUseCase,
         protected BulkDeleteCategoriesUseCase $bulkDeleteUseCase,
-    ) {
-    }
+    ) {}
 
     public function store(CreateCategoryRequest $request): JsonResponse
     {

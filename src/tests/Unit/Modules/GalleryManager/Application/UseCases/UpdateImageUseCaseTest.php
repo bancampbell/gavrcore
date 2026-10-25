@@ -7,8 +7,8 @@ namespace Tests\Unit\Modules\GalleryManager\Application\UseCases;
 use App\Modules\GalleryManager\Application\UseCases\UpdateImageUseCase;
 use App\Modules\GalleryManager\Domain\Entities\GalleryImage;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class UpdateImageUseCaseTest extends TestCase
 {

@@ -21,7 +21,7 @@ class ThemeService
                     'secondary' => '#7c3aed',
                     'bg' => '#f9fafb',
                     'surface' => '#ffffff',
-                ]
+                ],
             ],
             [
                 'id' => 'warm',
@@ -32,7 +32,7 @@ class ThemeService
                     'secondary' => '#ea580c',
                     'bg' => '#fef3c7',
                     'surface' => '#fffbeb',
-                ]
+                ],
             ],
             [
                 'id' => 'landing',
@@ -43,8 +43,8 @@ class ThemeService
                     'secondary' => '#dc2626',
                     'bg' => '#faf9fe',
                     'surface' => '#ffffff',
-                ]
-            ]
+                ],
+            ],
         ];
     }
 

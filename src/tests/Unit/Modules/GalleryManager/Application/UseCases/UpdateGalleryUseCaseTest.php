@@ -10,8 +10,8 @@ use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class UpdateGalleryUseCaseTest extends TestCase
 {
@@ -38,8 +38,7 @@ class UpdateGalleryUseCaseTest extends TestCase
 
         $repository->shouldReceive('update')
             ->once()
-            ->with(Mockery::on(fn (Gallery $g) =>
-                $g->id === 1
+            ->with(Mockery::on(fn (Gallery $g) => $g->id === 1
                 && $g->title === 'Updated'
                 && $g->status === GalleryStatus::PUBLISHED
             ));

@@ -22,8 +22,7 @@ final class User
         public readonly ?string $lastLoginAt = null,
         public readonly ?string $lastLoginIp = null,
         public readonly ?string $createdAt = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<int, int>

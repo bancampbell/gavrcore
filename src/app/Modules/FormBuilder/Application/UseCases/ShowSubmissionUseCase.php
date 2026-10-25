@@ -12,10 +12,11 @@ class ShowSubmissionUseCase
     public function execute(int $id): ?FormSubmission
     {
         $submission = $this->repository->find($id);
-        if ($submission && !$submission->isRead()) {
+        if ($submission && ! $submission->isRead()) {
             $this->repository->markAsRead($id);
             $submission->markAsRead();
         }
+
         return $submission;
     }
 }

@@ -12,6 +12,7 @@ use Tests\TestCase;
 class BulkDeleteUseCaseTest extends TestCase
 {
     private MaterialRepositoryInterface&MockObject $repository;
+
     private BulkDeleteUseCase $useCase;
 
     protected function setUp(): void

@@ -28,13 +28,13 @@ class MenuManagerServiceProvider extends ServiceProvider
         $this->app->bind(MenuItemRepositoryInterface::class, MenuItemRepository::class);
         $this->app->bind(SlugGeneratorInterface::class, SlugGenerator::class);
         $this->app->bind(MenuTreeBuilderInterface::class, MenuTreeBuilder::class);
-        $this->mergeConfigFrom(__DIR__ . '/../../Config/menu-manager.php', 'menu-manager');
+        $this->mergeConfigFrom(__DIR__.'/../../Config/menu-manager.php', 'menu-manager');
     }
 
     public function boot(Kernel $kernel): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
-        $this->loadViewsFrom(__DIR__ . '/../../Infrastructure/views', 'menu-manager');
+        $this->loadMigrationsFrom(__DIR__.'/../../Database/Migrations');
+        $this->loadViewsFrom(__DIR__.'/../../Infrastructure/views', 'menu-manager');
         $kernel->appendMiddlewareToGroup('web', ShareMenuMiddleware::class);
 
         $this->registerPolicies();
@@ -60,12 +60,12 @@ class MenuManagerServiceProvider extends ServiceProvider
     protected function mapAdminRoutes(): void
     {
         Route::middleware(['web', 'auth'])->prefix('admin/menu')
-            ->group(__DIR__ . '/../../Routes/admin.php');
+            ->group(__DIR__.'/../../Routes/admin.php');
     }
 
     protected function mapWebRoutes(): void
     {
         Route::middleware('web')
-            ->group(__DIR__ . '/../../Routes/web.php');
+            ->group(__DIR__.'/../../Routes/web.php');
     }
 }

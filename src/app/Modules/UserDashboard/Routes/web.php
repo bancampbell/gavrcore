@@ -19,6 +19,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/settings', [DashboardController::class, 'settings'])->name('dashboard.settings');
     Route::get('/dashboard/tickets', [DashboardController::class, 'tickets'])->name('dashboard.tickets');
     Route::get('/dashboard/tickets/new', [DashboardController::class, 'ticketsCreate'])->name('dashboard.tickets.create');
+    Route::get('/dashboard/tickets/{id}', [DashboardController::class, 'show'])->name('dashboard.tickets.show')->whereNumber('id');
 
     Route::put('/dashboard/profile', [DashboardController::class, 'updateProfile'])->name('dashboard.profile.update');
     Route::put('/dashboard/settings', [DashboardController::class, 'updateSettings'])->name('dashboard.settings.update');

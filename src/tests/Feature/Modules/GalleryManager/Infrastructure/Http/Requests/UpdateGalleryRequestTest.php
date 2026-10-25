@@ -12,13 +12,13 @@ class UpdateGalleryRequestTest extends TestCase
 {
     public function test_authorize_returns_true(): void
     {
-        $request = new UpdateGalleryRequest();
+        $request = new UpdateGalleryRequest;
         $this->assertTrue($request->authorize());
     }
 
     public function test_rules_structure(): void
     {
-        $request = new UpdateGalleryRequest();
+        $request = new UpdateGalleryRequest;
         $rules = $request->rules();
 
         $this->assertArrayHasKey('title', $rules);
@@ -32,7 +32,7 @@ class UpdateGalleryRequestTest extends TestCase
 
     public function test_type_must_be_valid_gallery_type(): void
     {
-        $request = new UpdateGalleryRequest();
+        $request = new UpdateGalleryRequest;
         $rules = $request->rules();
 
         $validator = Validator::make(['type' => 'slideshow'], ['type' => $rules['type']]);

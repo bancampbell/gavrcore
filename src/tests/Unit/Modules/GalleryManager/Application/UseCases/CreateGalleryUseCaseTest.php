@@ -10,8 +10,8 @@ use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
-use PHPUnit\Framework\TestCase;
 use Mockery;
+use PHPUnit\Framework\TestCase;
 
 class CreateGalleryUseCaseTest extends TestCase
 {
@@ -35,8 +35,7 @@ class CreateGalleryUseCaseTest extends TestCase
 
         $repository->shouldReceive('create')
             ->once()
-            ->with(Mockery::on(fn (Gallery $gallery) =>
-                $gallery->title === 'New Gallery'
+            ->with(Mockery::on(fn (Gallery $gallery) => $gallery->title === 'New Gallery'
                 && $gallery->type === GalleryType::GRID
                 && $gallery->status === GalleryStatus::PUBLISHED
             ))
@@ -73,8 +72,7 @@ class CreateGalleryUseCaseTest extends TestCase
 
         $repository->shouldReceive('create')
             ->once()
-            ->with(Mockery::on(fn (Gallery $gallery) =>
-                $gallery->status === GalleryStatus::DRAFT
+            ->with(Mockery::on(fn (Gallery $gallery) => $gallery->status === GalleryStatus::DRAFT
             ))
             ->andReturnUsing(fn (Gallery $g) => new Gallery(
                 id: 2, title: $g->title, type: $g->type,

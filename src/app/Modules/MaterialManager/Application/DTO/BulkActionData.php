@@ -20,7 +20,7 @@ final readonly class BulkActionData
         foreach ($rawIds as $id) {
             $intId = filter_var($id, FILTER_VALIDATE_INT);
             if ($intId === false) {
-                throw new \InvalidArgumentException('Invalid ID: ' . $id);
+                throw new \InvalidArgumentException('Invalid ID: '.$id);
             }
             $validated[] = $intId;
         }

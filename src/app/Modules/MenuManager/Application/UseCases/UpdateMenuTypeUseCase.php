@@ -13,7 +13,9 @@ class UpdateMenuTypeUseCase
     public function execute(int $id, UpdateMenuTypeData $data): MenuTypeModel
     {
         $existing = $this->repository->findById($id);
-        if (! $existing) throw new \RuntimeException('Menu type not found');
+        if (! $existing) {
+            throw new \RuntimeException('Menu type not found');
+        }
 
         $updateData = array_filter([
             'title' => $data->title,

@@ -51,7 +51,7 @@ class AdminSubmissionQueryController
     {
         $submission = $this->showSubmissionUseCase->execute($id);
 
-        if (!$submission) {
+        if (! $submission) {
             return response()->json(['message' => 'Обращение не найдено'], 404);
         }
 

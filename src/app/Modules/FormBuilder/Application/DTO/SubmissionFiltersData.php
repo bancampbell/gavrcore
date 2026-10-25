@@ -8,5 +8,6 @@ class SubmissionFiltersData
         public readonly ?string $search = null,
         public readonly ?string $status = null,
         public readonly ?int $formId = null,
+        public readonly ?int $userId = null,
     ) {}
 }

@@ -2,13 +2,22 @@
 
 namespace App\Modules\MaterialManager\Infrastructure\Providers;
 
+use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Domain\Events\MaterialCreated;
+use App\Modules\MaterialManager\Domain\Events\MaterialDeleted;
+use App\Modules\MaterialManager\Domain\Events\MaterialForceDeleted;
+use App\Modules\MaterialManager\Domain\Events\MaterialHomepageToggled;
+use App\Modules\MaterialManager\Domain\Events\MaterialPublished;
+use App\Modules\MaterialManager\Domain\Events\MaterialRestored;
+use App\Modules\MaterialManager\Domain\Events\MaterialUnpublished;
+use App\Modules\MaterialManager\Domain\Events\MaterialUpdated;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\CategoryServiceInterface;
 use App\Modules\MaterialManager\Domain\Services\ClockInterface;
 use App\Modules\MaterialManager\Domain\Services\ContentParserInterface;
 use App\Modules\MaterialManager\Domain\Services\FormServiceInterface;
 use App\Modules\MaterialManager\Domain\Services\SlugGeneratorInterface;
-use App\Modules\MaterialManager\Domain\Entities\Material;
+use App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener;
 use App\Modules\MaterialManager\Infrastructure\Policies\MaterialPolicy;
 use App\Modules\MaterialManager\Infrastructure\Repositories\MaterialRepository;
 use App\Modules\MaterialManager\Infrastructure\Services\CategoryService;
@@ -58,21 +67,21 @@ class MaterialManagerServiceProvider extends ServiceProvider
         );
 
         $this->mergeConfigFrom(
-            __DIR__ . '/../../Config/material-manager.php',
+            __DIR__.'/../../Config/material-manager.php',
             'material-manager'
         );
     }
 
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../../Routes/admin.php');
+        $this->loadRoutesFrom(__DIR__.'/../../Routes/admin.php');
         $this->app->booted(function () {
-            $this->loadRoutesFrom(__DIR__ . '/../../Routes/web.php');
+            $this->loadRoutesFrom(__DIR__.'/../../Routes/web.php');
         });
 
-        $this->loadViewsFrom(__DIR__ . '/../../Resources/views', 'material-manager');
+        $this->loadViewsFrom(__DIR__.'/../../Resources/views', 'material-manager');
 
-        $this->loadMigrationsFrom(__DIR__ . '/../../Database/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../Database/Migrations');
 
         $this->registerPolicies();
 
@@ -89,43 +98,43 @@ class MaterialManagerServiceProvider extends ServiceProvider
     private function registerListeners(): void
     {
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialCreated::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialCreated']
+            MaterialCreated::class,
+            [LogMaterialActivityListener::class, 'handleMaterialCreated']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialUpdated::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialUpdated']
+            MaterialUpdated::class,
+            [LogMaterialActivityListener::class, 'handleMaterialUpdated']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialDeleted::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialDeleted']
+            MaterialDeleted::class,
+            [LogMaterialActivityListener::class, 'handleMaterialDeleted']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialRestored::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialRestored']
+            MaterialRestored::class,
+            [LogMaterialActivityListener::class, 'handleMaterialRestored']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialForceDeleted::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialForceDeleted']
+            MaterialForceDeleted::class,
+            [LogMaterialActivityListener::class, 'handleMaterialForceDeleted']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialPublished::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialPublished']
+            MaterialPublished::class,
+            [LogMaterialActivityListener::class, 'handleMaterialPublished']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialUnpublished::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialUnpublished']
+            MaterialUnpublished::class,
+            [LogMaterialActivityListener::class, 'handleMaterialUnpublished']
         );
 
         Event::listen(
-            \App\Modules\MaterialManager\Domain\Events\MaterialHomepageToggled::class,
-            [\App\Modules\MaterialManager\Infrastructure\Listeners\LogMaterialActivityListener::class, 'handleMaterialHomepageToggled']
+            MaterialHomepageToggled::class,
+            [LogMaterialActivityListener::class, 'handleMaterialHomepageToggled']
         );
     }
 
@@ -133,11 +142,8 @@ class MaterialManagerServiceProvider extends ServiceProvider
     {
         RateLimiter::for('material-bulk', function (Request $request) {
             $userId = $request->user()?->id;
-            return Limit::perMinute(30)->by($userId ? 'user:' . $userId : 'ip:' . $request->ip());
-        });
 
-        RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            return Limit::perMinute(30)->by($userId ? 'user:'.$userId : 'ip:'.$request->ip());
         });
     }
 }

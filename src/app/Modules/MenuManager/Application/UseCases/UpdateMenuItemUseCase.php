@@ -155,7 +155,7 @@ class UpdateMenuItemUseCase
             if ($excludeId && $found->id === $excludeId) {
                 break;
             }
-            $alias = $originalAlias . '-' . $counter++;
+            $alias = $originalAlias.'-'.$counter++;
         }
 
         return $alias;

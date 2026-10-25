@@ -16,7 +16,6 @@ use Illuminate\Support\Carbon;
  * @property bool $status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
  * @property-read Collection<int, GroupModel> $groups
  */
 class AccessLevelModel extends Model

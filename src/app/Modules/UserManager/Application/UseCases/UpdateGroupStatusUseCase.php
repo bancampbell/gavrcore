@@ -11,8 +11,7 @@ final class UpdateGroupStatusUseCase
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groups,
-    ) {
-    }
+    ) {}
 
     public function execute(GroupId $id, bool $status): bool
     {

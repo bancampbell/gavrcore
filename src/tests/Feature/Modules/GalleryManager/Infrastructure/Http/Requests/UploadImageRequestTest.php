@@ -13,13 +13,13 @@ class UploadImageRequestTest extends TestCase
 {
     public function test_authorize_returns_true(): void
     {
-        $request = new UploadImageRequest();
+        $request = new UploadImageRequest;
         $this->assertTrue($request->authorize());
     }
 
     public function test_rules_require_image(): void
     {
-        $request = new UploadImageRequest();
+        $request = new UploadImageRequest;
         $rules = $request->rules();
 
         $this->assertArrayHasKey('image', $rules);
@@ -29,7 +29,7 @@ class UploadImageRequestTest extends TestCase
 
     public function test_rules_title_is_optional_string(): void
     {
-        $request = new UploadImageRequest();
+        $request = new UploadImageRequest;
         $rules = $request->rules();
 
         $this->assertArrayHasKey('title', $rules);
@@ -39,7 +39,7 @@ class UploadImageRequestTest extends TestCase
 
     public function test_image_must_be_valid_image_file(): void
     {
-        $request = new UploadImageRequest();
+        $request = new UploadImageRequest;
         $rules = $request->rules();
 
         $tmp = tempnam(sys_get_temp_dir(), 'test');

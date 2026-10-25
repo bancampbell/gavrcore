@@ -14,7 +14,7 @@ class LogMediaActivityListener
 {
     public function handle(object $event): void
     {
-        $log = new MediaAuditLog();
+        $log = new MediaAuditLog;
 
         match (true) {
             $event instanceof MediaUploaded => $log->fill([

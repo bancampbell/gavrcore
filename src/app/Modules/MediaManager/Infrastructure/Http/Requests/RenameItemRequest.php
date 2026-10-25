@@ -43,23 +43,27 @@ class RenameItemRequest extends FormRequest
 
                     if (in_array(strtolower($basename), $reserved, true)) {
                         $fail('Имя является зарезервированным системным именем.');
+
                         return;
                     }
 
                     if (str_starts_with($value, '.')) {
                         $fail('Имя не может начинаться с точки.');
+
                         return;
                     }
 
                     if (str_contains($value, '..')) {
                         $fail('Имя не может содержать двойные точки.');
+
                         return;
                     }
 
                     $forbidden = ['\\', '/', '|', '<', '>', ':', '"', '?', '*'];
                     foreach ($forbidden as $char) {
                         if (str_contains($value, $char)) {
-                            $fail('Имя содержит запрещённый символ: ' . $char);
+                            $fail('Имя содержит запрещённый символ: '.$char);
+
                             return;
                         }
                     }

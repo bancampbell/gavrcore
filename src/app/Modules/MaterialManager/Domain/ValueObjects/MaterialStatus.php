@@ -11,7 +11,7 @@ enum MaterialStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PUBLISHED => 'Опубликовано',
             self::DRAFT => 'Не опубликовано',
             self::ARCHIVED => 'Архив',
@@ -21,7 +21,7 @@ enum MaterialStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PUBLISHED => 'emerald',
             self::DRAFT => 'rose',
             self::ARCHIVED => 'slate',

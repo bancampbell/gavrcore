@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MenuTypeModel extends Model
 {
     protected $table = 'menu_types';
+
     protected $fillable = ['title', 'alias', 'description', 'ordering', 'status'];
+
     protected $casts = ['status' => 'boolean'];
 
     public function items(): HasMany

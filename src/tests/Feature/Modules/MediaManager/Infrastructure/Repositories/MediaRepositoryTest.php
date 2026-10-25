@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Modules\MediaManager\Infrastructure\Repositories;
 
-use Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
 use Modules\MediaManager\Infrastructure\Repositories\MediaRepository;
+use Tests\TestCase;
 
 class MediaRepositoryTest extends TestCase
 {
@@ -14,7 +14,7 @@ class MediaRepositoryTest extends TestCase
     {
         parent::setUp();
         Storage::fake('public');
-        $this->repository = new MediaRepository();
+        $this->repository = new MediaRepository;
     }
 
     public function test_create_folder_and_find_it(): void

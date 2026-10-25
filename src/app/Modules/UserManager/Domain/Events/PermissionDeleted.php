@@ -8,6 +8,5 @@ final class PermissionDeleted
 {
     public function __construct(
         public readonly Permission $permission,
-    ) {
-    }
+    ) {}
 }

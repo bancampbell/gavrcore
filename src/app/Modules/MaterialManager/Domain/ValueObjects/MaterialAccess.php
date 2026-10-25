@@ -10,7 +10,7 @@ enum MaterialAccess: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PUBLIC => 'Public',
             self::REGISTERED => 'Registered',
             self::SPECIAL => 'Special',

@@ -37,8 +37,8 @@ class SitemapController extends Controller
 
     private function generateXml(string $siteUrl, $materials, $categories): string
     {
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
         $xml .= "    <url>\n";
         $xml .= "        <loc>{$siteUrl}</loc>\n";
@@ -62,6 +62,7 @@ class SitemapController extends Controller
         }
 
         $xml .= '</urlset>';
+
         return $xml;
     }
 }

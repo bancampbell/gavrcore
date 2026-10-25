@@ -32,8 +32,7 @@ final class AdminAccessLevelCommandController extends Controller
         private readonly GetAccessLevelByIdUseCase $getAccessLevelById,
         private readonly UpdateAccessLevelStatusUseCase $updateAccessLevelStatus,
         private readonly UpdateAccessLevelOrderingUseCase $updateAccessLevelOrdering,
-    ) {
-    }
+    ) {}
 
     public function store(StoreAccessLevelRequest $request): RedirectResponse|JsonResponse
     {

@@ -16,7 +16,9 @@ use Tests\TestCase;
 class DeleteMaterialUseCaseTest extends TestCase
 {
     private MaterialRepositoryInterface&MockObject $repository;
+
     private ClockInterface&MockObject $clock;
+
     private DeleteMaterialUseCase $useCase;
 
     protected function setUp(): void

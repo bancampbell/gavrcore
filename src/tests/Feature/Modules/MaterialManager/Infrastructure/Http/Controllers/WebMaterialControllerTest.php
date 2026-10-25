@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
 
-use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
@@ -16,7 +15,7 @@ class WebMaterialControllerTest extends TestCase
 
     public function test_index_shows_homepage_material(): void
     {
-        $material = (new MaterialModelFactory())->create([
+        $material = (new MaterialModelFactory)->create([
             'state' => 'published',
             'published_at' => now()->subDay(),
             'show_on_homepage' => true,
@@ -34,7 +33,7 @@ class WebMaterialControllerTest extends TestCase
 
     public function test_index_hides_non_public_homepage_for_guests(): void
     {
-        (new MaterialModelFactory())->create([
+        (new MaterialModelFactory)->create([
             'state' => 'published',
             'published_at' => now()->subDay(),
             'show_on_homepage' => true,
@@ -50,7 +49,7 @@ class WebMaterialControllerTest extends TestCase
 
     public function test_show_displays_public_material(): void
     {
-        $material = (new MaterialModelFactory())->create([
+        $material = (new MaterialModelFactory)->create([
             'state' => 'published',
             'published_at' => now()->subDay(),
             'access' => 'public',
@@ -66,7 +65,7 @@ class WebMaterialControllerTest extends TestCase
 
     public function test_show_returns_403_for_registered_material_when_guest(): void
     {
-        $material = (new MaterialModelFactory())->create([
+        $material = (new MaterialModelFactory)->create([
             'state' => 'published',
             'published_at' => now()->subDay(),
             'access' => 'registered',
@@ -77,7 +76,7 @@ class WebMaterialControllerTest extends TestCase
 
     public function test_search_returns_results(): void
     {
-        (new MaterialModelFactory())->create([
+        (new MaterialModelFactory)->create([
             'title' => 'Unique Search Term',
             'state' => 'published',
             'published_at' => now()->subDay(),

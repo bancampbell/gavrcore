@@ -8,8 +8,7 @@ final class GroupFiltersData
         public readonly ?string $search = null,
         public readonly ?bool $status = null,
         public readonly int $perPage = 20,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data

@@ -9,6 +9,5 @@ final class GroupStatusChanged
     public function __construct(
         public readonly Group $group,
         public readonly bool $status,
-    ) {
-    }
+    ) {}
 }

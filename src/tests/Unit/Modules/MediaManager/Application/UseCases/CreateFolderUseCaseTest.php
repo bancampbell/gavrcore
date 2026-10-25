@@ -2,14 +2,15 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
-use PHPUnit\Framework\TestCase;
 use Modules\MediaManager\Application\DTO\CreateFolderData;
 use Modules\MediaManager\Application\UseCases\CreateFolderUseCase;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
+use PHPUnit\Framework\TestCase;
 
 class CreateFolderUseCaseTest extends TestCase
 {
     private $repository;
+
     private $useCase;
 
     protected function setUp(): void
