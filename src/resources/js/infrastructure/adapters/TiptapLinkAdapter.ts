@@ -66,6 +66,21 @@ export class TiptapLinkAdapter implements LinkPort {
     private buildLinkHtml(url: string, text: string, target: string, title: string): string {
         const linkTarget = target === '_blank' ? '_blank' : '_self';
         const linkTitle = title || '';
-        return `<a href="${url}" target="${linkTarget}" title="${linkTitle}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${text}</a>`;
+        return `<a href="${this.escapeAttribute(url)}" target="${linkTarget}" title="${this.escapeAttribute(linkTitle)}" rel="noopener noreferrer nofollow" class="text-blue-600 underline">${this.escapeText(text)}</a>`;
+    }
+
+    private escapeAttribute(value: string): string {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    private escapeText(value: string): string {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 }

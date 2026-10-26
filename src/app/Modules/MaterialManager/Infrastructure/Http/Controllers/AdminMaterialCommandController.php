@@ -60,7 +60,7 @@ class AdminMaterialCommandController
                 'success' => true,
                 'message' => 'Материал создан',
                 'id' => $material->id,
-            ]);
+            ], 201);
         }
 
         return redirect()->route('admin.materials.index')

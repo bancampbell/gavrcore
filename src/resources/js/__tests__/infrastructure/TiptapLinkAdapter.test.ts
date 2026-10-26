@@ -72,6 +72,27 @@ describe('TiptapLinkAdapter', () => {
         expect(html).toContain('New');
     });
 
+    it('escapes quotes in url and title to prevent attribute breakout (XSS)', () => {
+        const linkData = LinkData.create({
+            url: 'https://example.com/?q="onmouseover="alert(1)',
+            text: 'Quoted',
+            title: 'Подсказка "с кавычками" onfocus="alert(2)',
+        });
+
+        linkAdapter.insertLink(linkData, { from: 0, to: 5 });
+        const html = editorAdapter.getHTML();
+
+        // нет сырого выхода из значения атрибута
+        expect(html).not.toContain('q="onmouseover="');
+        expect(html).not.toContain('" onfocus="alert(2)"');
+        expect(html).toContain('&quot;');
+
+        // данные не повреждены экранированием — round-trip через парсер точный
+        const retrieved = linkAdapter.getLinkAt(1);
+        expect(retrieved?.url).toBe('https://example.com/?q="onmouseover="alert(1)');
+        expect(retrieved?.title).toBe('Подсказка "с кавычками" onfocus="alert(2)');
+    });
+
     it('getLinkAt returns link data', () => {
         const linkData = LinkData.create({
             url: 'https://example.com',

@@ -88,7 +88,7 @@ class AdminMaterialControllerTest extends TestCase
                 'state' => 'draft',
                 'access' => 'public',
             ])
-            ->assertOk()
+            ->assertCreated()
             ->assertJsonPath('success', true);
     }
 
