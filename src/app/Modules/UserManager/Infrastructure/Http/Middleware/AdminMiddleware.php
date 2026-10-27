@@ -5,13 +5,14 @@ namespace App\Modules\UserManager\Infrastructure\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
         if (! Auth::check()) {
-            return redirect()->route('home');
+            return redirect()->route('login');
         }
 
         $user = Auth::user();
@@ -32,8 +33,13 @@ class AdminMiddleware
         }
 
         if (! $user->isAdmin()) {
-            // ТИХИЙ редирект на главную без сообщения
-            return redirect()->route('home');
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Доступ запрещён'], 403);
+            }
+
+            return Inertia::render('Errors/Forbidden', [
+                'status' => 403,
+            ])->toResponse($request)->setStatusCode(403);
         }
 
         return $next($request);

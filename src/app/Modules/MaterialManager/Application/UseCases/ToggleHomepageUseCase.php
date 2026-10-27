@@ -2,6 +2,7 @@
 
 namespace App\Modules\MaterialManager\Application\UseCases;
 
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Domain\Events\MaterialHomepageToggled;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\ClockInterface;
@@ -14,6 +15,7 @@ final readonly class ToggleHomepageUseCase
     public function __construct(
         private MaterialRepositoryInterface $repository,
         private ClockInterface $clock,
+        private HomepageManager $homepageManager,
     ) {}
 
     public function execute(int $id, bool $showOnHomepage, int $actorId): void
@@ -34,7 +36,9 @@ final readonly class ToggleHomepageUseCase
                 $this->repository->save($updated);
 
                 if ($showOnHomepage) {
-                    $this->repository->clearHomepageExcept($id);
+                    $this->homepageManager->assign($id);
+                } else {
+                    $this->homepageManager->unassign($id);
                 }
 
                 DB::afterCommit(fn () => Event::dispatch(new MaterialHomepageToggled($updated, $actorId)));

@@ -24,6 +24,7 @@ use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Infrastructure\Http\Requests\BulkActionRequest;
 use App\Modules\MaterialManager\Infrastructure\Http\Requests\CreateMaterialRequest;
 use App\Modules\MaterialManager\Infrastructure\Http\Requests\UpdateMaterialRequest;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -84,6 +85,26 @@ class AdminMaterialCommandController
 
         return redirect()->route('admin.materials.index')
             ->with('success', 'Материал обновлён');
+    }
+
+    public function destroy(int $id): RedirectResponse|JsonResponse
+    {
+        $material = $this->repository->findById($id);
+
+        if (! $material) {
+            throw (new ModelNotFoundException())->setModel(Material::class, [$id]);
+        }
+
+        $this->authorize('moveToTrash', $material);
+
+        $this->deleteMaterial->execute($id, auth()->id());
+
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Материал перемещён в корзину']);
+        }
+
+        return redirect()->route('admin.materials.index')
+            ->with('success', 'Материал перемещён в корзину');
     }
 
     public function bulkTrash(BulkActionRequest $request): JsonResponse

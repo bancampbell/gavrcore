@@ -9,6 +9,7 @@ use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
 use Tests\TestCase;
 
 /**
@@ -62,5 +63,32 @@ class AdminSettingControllerTest extends TestCase
 
         $response->assertRedirect();
         $this->assertDatabaseHas('settings', ['key' => 'homepage_material_id', 'value' => '42']);
+    }
+
+    public function test_update_syncs_material_flags_with_homepage_assignment(): void
+    {
+        $first = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
+        $second = (new MaterialModelFactory)->create();
+
+        // Назначаем главный материал через страницу настроек
+        $this->actingAs($this->admin)
+            ->withoutMiddleware(AdminMiddleware::class)
+            ->post('/admin/settings', [
+                'homepage_type' => 'material',
+                'homepage_material_id' => $second->id,
+            ]);
+
+        $this->assertDatabaseHas('settings', ['key' => 'homepage_material_id', 'value' => (string) $second->id]);
+        $this->assertDatabaseHas('materials', ['id' => $second->id, 'show_on_homepage' => true]);
+        $this->assertDatabaseHas('materials', ['id' => $first->id, 'show_on_homepage' => false]);
+
+        // Переключаем главную на стандартную страницу — флаги сброшены
+        $this->actingAs($this->admin)
+            ->withoutMiddleware(AdminMiddleware::class)
+            ->post('/admin/settings', ['homepage_type' => 'default']);
+
+        $this->assertDatabaseHas('settings', ['key' => 'homepage_type', 'value' => 'default']);
+        $this->assertDatabaseHas('materials', ['id' => $second->id, 'show_on_homepage' => false]);
+        $this->assertDatabaseHas('materials', ['id' => $first->id, 'show_on_homepage' => false]);
     }
 }

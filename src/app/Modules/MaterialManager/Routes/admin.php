@@ -28,6 +28,7 @@ Route::middleware(['web', 'auth', 'admin'])
                     ->group(function () {
                         Route::post('/', 'store')->name('store');
                         Route::put('/{id}', 'update')->name('update')->whereNumber('id');
+                        Route::delete('/{id}', 'destroy')->name('destroy')->whereNumber('id');
                         Route::post('/bulk-trash', 'bulkTrash')->name('bulk-trash');
                         Route::post('/restore', 'restore')->name('restore');
                         Route::post('/force-delete', 'forceDelete')->name('force-delete');

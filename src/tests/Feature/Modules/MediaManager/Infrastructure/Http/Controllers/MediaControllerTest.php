@@ -35,6 +35,13 @@ class MediaControllerTest extends TestCase
         $this->withoutMiddleware(ShareMenuMiddleware::class);
     }
 
+    public function test_guest_is_redirected_to_login(): void
+    {
+        auth()->logout();
+
+        $this->get('/admin/media')->assertRedirect('/login');
+    }
+
     public function test_index_returns_inertia_page(): void
     {
         $response = $this->get('/admin/media');

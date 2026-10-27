@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use App\Modules\SettingManager\Application\Services\SettingService;
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
@@ -46,5 +47,9 @@ class SettingsSeeder extends Seeder
                 ]
             );
         }
+
+        // Флаг show_on_homepage — производный от настроек индикатор для списка:
+        // после назначения главной сразу приводим его к тому же состоянию
+        app(HomepageManager::class)->syncFlags();
     }
 }

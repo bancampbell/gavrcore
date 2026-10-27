@@ -3,6 +3,7 @@
 namespace App\Modules\MaterialManager\Application\UseCases;
 
 use App\Modules\MaterialManager\Application\DTO\UpdateMaterialData;
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Events\MaterialUpdated;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
@@ -22,6 +23,7 @@ final readonly class UpdateMaterialUseCase
         private MaterialRepositoryInterface $repository,
         private SlugGeneratorInterface $slugGenerator,
         private ClockInterface $clock,
+        private HomepageManager $homepageManager,
     ) {}
 
     public function execute(int $id, UpdateMaterialData $data, int $actorId): Material
@@ -115,7 +117,9 @@ final readonly class UpdateMaterialUseCase
                 $saved = $this->repository->save($updated);
 
                 if ($data->showOnHomepage === true) {
-                    $this->repository->clearHomepageExcept($saved->id);
+                    $this->homepageManager->assign($saved->id);
+                } elseif ($data->showOnHomepage === false) {
+                    $this->homepageManager->unassign($saved->id);
                 }
 
                 DB::afterCommit(fn () => Event::dispatch(new MaterialUpdated($saved, $actorId)));

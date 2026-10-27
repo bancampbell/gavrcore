@@ -69,6 +69,10 @@ class CategoryRepository implements CategoryRepositoryInterface
                         $array['alias'] = $this->generateUniqueAlias(Str::slug($data->name));
                     }
 
+                    $array['slug'] = $this->generateUniqueSlug(
+                        Str::slug($data->name ?? '') ?: ($array['alias'] ?? '')
+                    );
+
                     $array['is_active'] = $array['is_active'] ?? true;
 
                     $model = new CategoryModel($array);
@@ -260,6 +264,19 @@ class CategoryRepository implements CategoryRepositoryInterface
         }
 
         return $alias;
+    }
+
+    private function generateUniqueSlug(string $base): string
+    {
+        $slug = $base;
+        $counter = 1;
+
+        while (CategoryModel::where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 
     private function isUniqueViolation(QueryException $e): bool

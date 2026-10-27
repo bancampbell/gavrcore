@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
 
 use App\Modules\MaterialManager\Application\DTO\CreateMaterialData;
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Application\UseCases\CreateMaterialUseCase;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
@@ -24,6 +25,8 @@ class CreateMaterialUseCaseTest extends TestCase
 
     private ClockInterface&MockObject $clock;
 
+    private HomepageManager&MockObject $homepageManager;
+
     private CreateMaterialUseCase $useCase;
 
     protected function setUp(): void
@@ -35,11 +38,13 @@ class CreateMaterialUseCaseTest extends TestCase
         $this->slugGenerator = $this->createMock(SlugGeneratorInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+        $this->homepageManager = $this->createMock(HomepageManager::class);
 
         $this->useCase = new CreateMaterialUseCase(
             $this->repository,
             $this->slugGenerator,
             $this->clock,
+            $this->homepageManager,
         );
     }
 
@@ -127,7 +132,7 @@ class CreateMaterialUseCaseTest extends TestCase
         $this->useCase->execute($data, 1);
     }
 
-    public function test_clears_homepage_when_flag_is_set(): void
+    public function test_assigns_homepage_when_flag_is_set(): void
     {
         $data = new CreateMaterialData(
             title: 'Homepage',
@@ -150,7 +155,8 @@ class CreateMaterialUseCaseTest extends TestCase
 
         $this->slugGenerator->method('generate')->willReturn('homepage');
         $this->repository->method('existsBySlugWithLock')->willReturn(false);
-        $this->repository->expects($this->once())->method('clearHomepageExcept')->with(1);
+        $this->homepageManager->expects($this->once())->method('assign')->with(1);
+        $this->homepageManager->expects($this->never())->method('unassign');
         $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
 
         $this->useCase->execute($data, 1);

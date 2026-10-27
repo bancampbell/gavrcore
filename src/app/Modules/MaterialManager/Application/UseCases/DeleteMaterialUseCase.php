@@ -2,6 +2,7 @@
 
 namespace App\Modules\MaterialManager\Application\UseCases;
 
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Domain\Events\MaterialDeleted;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\ClockInterface;
@@ -13,6 +14,7 @@ final readonly class DeleteMaterialUseCase
     public function __construct(
         private MaterialRepositoryInterface $repository,
         private ClockInterface $clock,
+        private HomepageManager $homepageManager,
     ) {}
 
     public function execute(int $id, int $actorId): void
@@ -26,6 +28,9 @@ final readonly class DeleteMaterialUseCase
 
             $deleted = $material->moveToTrash($this->clock->now());
             $this->repository->delete($deleted);
+
+            // Если в корзину отправлен главный материал — снимаем главность
+            $this->homepageManager->unassign($id);
 
             DB::afterCommit(fn () => Event::dispatch(new MaterialDeleted($deleted, $actorId)));
         });

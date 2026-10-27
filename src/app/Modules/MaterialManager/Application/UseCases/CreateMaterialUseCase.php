@@ -3,6 +3,7 @@
 namespace App\Modules\MaterialManager\Application\UseCases;
 
 use App\Modules\MaterialManager\Application\DTO\CreateMaterialData;
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Events\MaterialCreated;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
@@ -19,6 +20,7 @@ final readonly class CreateMaterialUseCase
         private MaterialRepositoryInterface $repository,
         private SlugGeneratorInterface $slugGenerator,
         private ClockInterface $clock,
+        private HomepageManager $homepageManager,
     ) {}
 
     public function execute(CreateMaterialData $data, int $actorId): Material
@@ -73,7 +75,7 @@ final readonly class CreateMaterialUseCase
                         $saved = $this->repository->save($material);
 
                         if ($data->showOnHomepage) {
-                            $this->repository->clearHomepageExcept($saved->id);
+                            $this->homepageManager->assign($saved->id);
                         }
 
                         DB::afterCommit(fn () => Event::dispatch(new MaterialCreated($saved, $actorId)));

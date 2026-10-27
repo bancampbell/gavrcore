@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
@@ -25,6 +26,7 @@ class CategorySeeder extends Seeder
                 ['alias' => $cat['alias']],
                 [
                     'name' => $cat['name'],
+                    'slug' => Str::slug($cat['name']),
                     'description' => $cat['description'],
                     'is_active' => true,
                 ]

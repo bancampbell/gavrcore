@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
 
 use App\Modules\MaterialManager\Application\DTO\UpdateMaterialData;
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Application\UseCases\UpdateMaterialUseCase;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
@@ -24,6 +25,8 @@ class UpdateMaterialUseCaseTest extends TestCase
 
     private ClockInterface&MockObject $clock;
 
+    private HomepageManager&MockObject $homepageManager;
+
     private UpdateMaterialUseCase $useCase;
 
     protected function setUp(): void
@@ -35,11 +38,13 @@ class UpdateMaterialUseCaseTest extends TestCase
         $this->slugGenerator = $this->createMock(SlugGeneratorInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+        $this->homepageManager = $this->createMock(HomepageManager::class);
 
         $this->useCase = new UpdateMaterialUseCase(
             $this->repository,
             $this->slugGenerator,
             $this->clock,
+            $this->homepageManager,
         );
     }
 
@@ -212,7 +217,7 @@ class UpdateMaterialUseCaseTest extends TestCase
         $this->assertNotNull($result->publishedAt);
     }
 
-    public function test_clears_homepage_when_show_on_homepage_true(): void
+    public function test_assigns_homepage_when_show_on_homepage_true(): void
     {
         $material = Material::create(
             title: 'Test',
@@ -241,7 +246,81 @@ class UpdateMaterialUseCaseTest extends TestCase
 
         $this->repository->method('findByIdWithLock')->willReturn($material);
         $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
-        $this->repository->expects($this->once())->method('clearHomepageExcept')->with(1);
+        $this->homepageManager->expects($this->once())->method('assign')->with(1);
+        $this->homepageManager->expects($this->never())->method('unassign');
+
+        $this->useCase->execute(1, $data, 99);
+    }
+
+    public function test_unassigns_homepage_when_show_on_homepage_false(): void
+    {
+        $material = Material::create(
+            title: 'Test',
+            userId: 1,
+            slug: 'test',
+            showOnHomepage: true,
+        );
+
+        $data = new UpdateMaterialData(
+            title: NotSet::instance(),
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: false,
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->method('findByIdWithLock')->willReturn($material);
+        $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
+        $this->homepageManager->expects($this->once())->method('unassign')->with(1);
+        $this->homepageManager->expects($this->never())->method('assign');
+
+        $this->useCase->execute(1, $data, 99);
+    }
+
+    public function test_does_not_touch_homepage_when_flag_not_sent(): void
+    {
+        $material = Material::create(
+            title: 'Test',
+            userId: 1,
+            slug: 'test',
+        );
+
+        $data = new UpdateMaterialData(
+            title: 'New',
+            slug: NotSet::instance(),
+            content: NotSet::instance(),
+            categoryId: NotSet::instance(),
+            status: NotSet::instance(),
+            access: NotSet::instance(),
+            showOnHomepage: NotSet::instance(),
+            showDate: NotSet::instance(),
+            showAuthor: NotSet::instance(),
+            showCategory: NotSet::instance(),
+            showViews: NotSet::instance(),
+            useGlobalSettings: NotSet::instance(),
+            template: NotSet::instance(),
+            metaTitle: NotSet::instance(),
+            metaDescription: NotSet::instance(),
+            metaKeywords: NotSet::instance(),
+        );
+
+        $this->repository->method('findByIdWithLock')->willReturn($material);
+        $this->repository->method('existsBySlugWithLock')->willReturn(false);
+        $this->slugGenerator->method('generate')->willReturn('new');
+        $this->repository->method('save')->willReturnCallback(fn ($m) => $this->withId($m, 1));
+        $this->homepageManager->expects($this->never())->method('assign');
+        $this->homepageManager->expects($this->never())->method('unassign');
 
         $this->useCase->execute(1, $data, 99);
     }

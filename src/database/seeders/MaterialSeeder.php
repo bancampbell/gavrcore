@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
+use App\Modules\FormBuilder\Infrastructure\Models\FormModel;
 use App\Modules\MaterialManager\Infrastructure\Models\MaterialModel;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Database\Seeder;
@@ -67,6 +68,30 @@ class MaterialSeeder extends Seeder
                     'access' => $material['access'],
                     'views' => $material['views'],
                     'published_at' => $material['published_at'],
+                ]
+            );
+        }
+
+        // Демо-страница с формой обратной связи: показывает механизм
+        // form-шорткодов (FormRenderer/ShortcodeRenderer). Требует, чтобы
+        // FormsSeeder отработал раньше (DatabaseSeeder вызывает его выше).
+        $feedbackForm = FormModel::where('alias', 'feedback')->first();
+
+        if ($feedbackForm) {
+            $title = 'Обратная связь';
+
+            MaterialModel::firstOrCreate(
+                ['slug' => Str::slug($title)],
+                [
+                    'title' => $title,
+                    'alias' => Str::slug($title),
+                    'content' => '<h2>Обратная связь</h2><p>Заполните форму ниже, и мы ответим вам в ближайшее время.</p>[form id="'.$feedbackForm->id.'"]',
+                    'category_id' => $categories[0],
+                    'user_id' => $users[0],
+                    'state' => 'published',
+                    'access' => 'public',
+                    'views' => 0,
+                    'published_at' => '2026-09-01 09:00:00',
                 ]
             );
         }

@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
 
+use App\Modules\FormBuilder\Database\Seeders\FormsSeeder;
+use App\Modules\FormBuilder\Infrastructure\Models\FormModel;
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
+use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\MaterialSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
 use Tests\TestCase;
@@ -120,5 +126,45 @@ class WebMaterialControllerTest extends TestCase
                 ->component('Search/Index', false)
                 ->has('materials.data')
             );
+    }
+
+    public function test_seeded_demo_material_renders_form_shortcode(): void
+    {
+        // AUDIT-22: MaterialSeeder создаёт демо-страницу с шорткодом [form id]
+        User::factory()->count(2)->create();
+        $this->seed([CategorySeeder::class, FormsSeeder::class, MaterialSeeder::class]);
+
+        $form = FormModel::where('alias', 'feedback')->firstOrFail();
+
+        $this->get('/material/obratnaia-sviaz')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Show', false)
+                ->has('forms')
+                ->where("forms.{$form->id}.id", $form->id)
+            );
+    }
+
+    public function test_seeded_demo_form_accepts_submission(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+
+        User::factory()->count(2)->create();
+        $this->seed([CategorySeeder::class, FormsSeeder::class, MaterialSeeder::class]);
+
+        $form = FormModel::where('alias', 'feedback')->firstOrFail();
+
+        $response = $this->postJson("/api/forms/{$form->id}/submit", [
+            'name' => 'Тест Пользователь',
+            'email' => 'test@example.com',
+            'message' => 'Проверка демо-формы.',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('message', 'Форма успешно отправлена');
+
+        $this->assertDatabaseHas('form_submissions', [
+            'form_id' => $form->id,
+        ]);
     }
 }

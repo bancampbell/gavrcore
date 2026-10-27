@@ -337,11 +337,19 @@ class MaterialRepository implements MaterialRepositoryInterface
         MaterialModel::where('id', $material->id)->increment('views');
     }
 
-    public function clearHomepageExcept(int $excludeId): void
+    public function syncHomepageFlag(?int $homepageMaterialId): void
     {
-        MaterialModel::where('id', '!=', $excludeId)
-            ->where('show_on_homepage', true)
+        MaterialModel::where('show_on_homepage', true)
+            ->when(
+                $homepageMaterialId !== null,
+                fn ($query) => $query->where('id', '!=', $homepageMaterialId)
+            )
             ->update(['show_on_homepage' => false]);
+
+        if ($homepageMaterialId !== null) {
+            MaterialModel::where('id', $homepageMaterialId)
+                ->update(['show_on_homepage' => true]);
+        }
     }
 
     public function lockHomepageRows(): void

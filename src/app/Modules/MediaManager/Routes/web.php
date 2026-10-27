@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\MediaManager\Infrastructure\Http\Controllers\MediaController;
 
-Route::middleware(['web', 'can:manage-media'])->prefix('admin/media')->group(function () {
+Route::middleware(['web', 'auth', 'can:manage-media'])->prefix('admin/media')->group(function () {
     Route::get('/', [MediaController::class, 'index'])->name('admin.media.index');
 
     Route::get('/contents', [MediaController::class, 'getContents'])->name('admin.media.contents');

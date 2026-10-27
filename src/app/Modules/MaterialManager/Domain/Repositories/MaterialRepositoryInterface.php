@@ -43,7 +43,7 @@ interface MaterialRepositoryInterface
 
     public function incrementViews(Material $material): void;
 
-    public function clearHomepageExcept(int $excludeId): void;
+    public function syncHomepageFlag(?int $homepageMaterialId): void;
 
     public function lockHomepageRows(): void;
 

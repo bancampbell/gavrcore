@@ -6,6 +6,7 @@ use App\Modules\MaterialManager\Application\DTO\MaterialFiltersData;
 use App\Modules\MaterialManager\Application\UseCases\GetMaterialForEditUseCase;
 use App\Modules\MaterialManager\Application\UseCases\GetMaterialsUseCase;
 use App\Modules\MaterialManager\Application\UseCases\GetTrashMaterialsUseCase;
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Services\CategoryServiceInterface;
 use App\Modules\MaterialManager\Infrastructure\Http\Requests\MaterialIndexRequest;
@@ -27,6 +28,7 @@ class AdminMaterialQueryController
         private readonly GetMaterialForEditUseCase $getMaterialForEdit,
         private readonly CategoryServiceInterface $categoryService,
         private readonly ThemeService $themeService,
+        private readonly HomepageManager $homepageManager,
     ) {}
 
     public function index(MaterialIndexRequest $request): Response
@@ -85,8 +87,13 @@ class AdminMaterialQueryController
         $material = $this->getMaterialForEdit->execute($id);
         $this->authorize('update', $material);
 
+        $materialArray = $material->toArray();
+        // Состояние чекбокса «На главной» определяется настройками
+        // (homepage_type/homepage_material_id), а не колонкой show_on_homepage
+        $materialArray['show_on_homepage'] = $this->homepageManager->isHomepage($material->id);
+
         return Inertia::render('MaterialManager/Edit', [
-            'material' => $material->toArray(),
+            'material' => $materialArray,
             'categories' => $this->categoryService->getAll(),
             'user' => auth()->user(),
             'title' => 'Редактировать материал',

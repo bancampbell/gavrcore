@@ -3,6 +3,7 @@
 namespace App\Modules\SettingManager\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\SettingManager\Application\Services\SettingService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,9 +13,12 @@ class AdminSettingController extends Controller
 {
     protected SettingService $settingService;
 
-    public function __construct(SettingService $settingService)
+    protected HomepageManager $homepageManager;
+
+    public function __construct(SettingService $settingService, HomepageManager $homepageManager)
     {
         $this->settingService = $settingService;
+        $this->homepageManager = $homepageManager;
     }
 
     public function index(): Response
@@ -57,6 +61,12 @@ class AdminSettingController extends Controller
         ]);
 
         $this->settingService->updateSettings($validated);
+
+        // Главная изменена через страницу настроек — приводим флаги материалов
+        // к тому же состоянию, чтобы список показывал то, что выбрано здесь
+        if (array_key_exists('homepage_type', $validated) || array_key_exists('homepage_material_id', $validated)) {
+            $this->homepageManager->syncFlags();
+        }
 
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Settings saved successfully']);

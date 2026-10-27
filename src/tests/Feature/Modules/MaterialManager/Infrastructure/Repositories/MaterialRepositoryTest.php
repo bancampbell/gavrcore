@@ -166,15 +166,26 @@ class MaterialRepositoryTest extends TestCase
         $this->assertTrue(Cache::has('material_find:'.$model->id));
     }
 
-    public function test_clear_homepage_except(): void
+    public function test_sync_homepage_flag_sets_flag_and_clears_others(): void
     {
         $keep = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
         $other = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
 
-        $this->repository->clearHomepageExcept($keep->id);
+        $this->repository->syncHomepageFlag($keep->id);
 
         $this->assertDatabaseHas('materials', ['id' => $keep->id, 'show_on_homepage' => true]);
         $this->assertDatabaseHas('materials', ['id' => $other->id, 'show_on_homepage' => false]);
+    }
+
+    public function test_sync_homepage_flag_with_null_clears_all(): void
+    {
+        $one = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
+        $two = (new MaterialModelFactory)->create(['show_on_homepage' => true]);
+
+        $this->repository->syncHomepageFlag(null);
+
+        $this->assertDatabaseHas('materials', ['id' => $one->id, 'show_on_homepage' => false]);
+        $this->assertDatabaseHas('materials', ['id' => $two->id, 'show_on_homepage' => false]);
     }
 
     public function test_bulk_publish_and_unpublish(): void

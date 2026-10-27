@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Modules\MaterialManager\Application\UseCases;
 
+use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Application\UseCases\ToggleHomepageUseCase;
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
@@ -18,6 +19,8 @@ class ToggleHomepageUseCaseTest extends TestCase
 
     private ClockInterface&MockObject $clock;
 
+    private HomepageManager&MockObject $homepageManager;
+
     private ToggleHomepageUseCase $useCase;
 
     protected function setUp(): void
@@ -28,11 +31,12 @@ class ToggleHomepageUseCaseTest extends TestCase
         $this->repository = $this->createMock(MaterialRepositoryInterface::class);
         $this->clock = $this->createMock(ClockInterface::class);
         $this->clock->method('now')->willReturn(new \DateTimeImmutable('2026-01-01 12:00:00'));
+        $this->homepageManager = $this->createMock(HomepageManager::class);
 
-        $this->useCase = new ToggleHomepageUseCase($this->repository, $this->clock);
+        $this->useCase = new ToggleHomepageUseCase($this->repository, $this->clock, $this->homepageManager);
     }
 
-    public function test_enables_homepage_and_clears_others(): void
+    public function test_enables_homepage_and_assigns_settings(): void
     {
         $material = Material::create(title: 'Test', userId: 1, slug: 'test');
 
@@ -41,7 +45,8 @@ class ToggleHomepageUseCaseTest extends TestCase
             ->with(1)
             ->willReturn($material);
 
-        $this->repository->expects($this->once())->method('clearHomepageExcept')->with(1);
+        $this->homepageManager->expects($this->once())->method('assign')->with(1);
+        $this->homepageManager->expects($this->never())->method('unassign');
 
         $this->repository->expects($this->once())
             ->method('save')
@@ -50,7 +55,7 @@ class ToggleHomepageUseCaseTest extends TestCase
         $this->useCase->execute(1, true, 99);
     }
 
-    public function test_disables_homepage_without_clearing_others(): void
+    public function test_disables_homepage_and_unassigns_settings(): void
     {
         $material = Material::create(title: 'Test', userId: 1, slug: 'test', showOnHomepage: true);
 
@@ -59,7 +64,8 @@ class ToggleHomepageUseCaseTest extends TestCase
             ->with(1)
             ->willReturn($material);
 
-        $this->repository->expects($this->never())->method('clearHomepageExcept');
+        $this->homepageManager->expects($this->once())->method('unassign')->with(1);
+        $this->homepageManager->expects($this->never())->method('assign');
 
         $this->repository->expects($this->once())
             ->method('save')
