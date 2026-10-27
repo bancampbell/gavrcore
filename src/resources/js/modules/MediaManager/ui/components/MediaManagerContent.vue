@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useToast } from '@/composables/useToast';
 import FolderTree from './FolderTree.vue';
 import MediaHeader from './MediaHeader.vue';
@@ -190,6 +190,7 @@ const {
     selectFolder,
     openFolder,
     selectFileItem,
+    selectFileByUrl,
     selectedFileForPicker,
     isSelected,
 } = useMediaManager(
@@ -218,6 +219,10 @@ const handleUploadWrapper = async (files: FileList) => {
     }
 };
 
+watch(selectedFileForPicker, (file) => {
+    emit('fileSelected', file);
+});
+
 const confirmSelection = () => {
     if (selectedFileForPicker.value) {
         emit('select', selectedFileForPicker.value);
@@ -228,6 +233,7 @@ defineExpose({
     confirmSelection,
     selectedFileForPicker,
     getSelectedFile: () => selectedFileForPicker.value,
+    selectFileByUrl,
 });
 
 onMounted(async () => {

@@ -66,7 +66,7 @@ export function useEditorCommands(
     }
 
     function handleImageInsert(data: any): void {
-        const { url, alt, title, width, height, _pos } = data;
+        const { url, alt, title, width, height, align, float, margin, _pos } = data;
 
         if (_pos !== undefined && _pos !== -1) {
             const ed = editorAdapter.getEditor();
@@ -76,18 +76,41 @@ export function useEditorCommands(
                     const styleParts: string[] = [];
                     if (width) styleParts.push(`width: ${width}px`);
                     if (height) styleParts.push(`height: ${height}px`);
+                    if (float === 'left') {
+                        styleParts.push('float: left');
+                        if (margin) styleParts.push(`margin-right: ${margin}px`);
+                    } else if (float === 'right') {
+                        styleParts.push('float: right');
+                        if (margin) styleParts.push(`margin-left: ${margin}px`);
+                    }
 
-                    const attrs: Record<string, any> = { ...node.attrs, src: url, alt: alt || '', title: title || '' };
-                    if (width) attrs.width = String(width);
-                    if (height) attrs.height = String(height);
-                    if (styleParts.length > 0) attrs.style = styleParts.join('; ');
+                    const attrs: Record<string, any> = {
+                        ...node.attrs,
+                        src: url,
+                        alt: alt || '',
+                        title: title || '',
+                        align: align || null,
+                        float: float || null,
+                        style: styleParts.join('; ') || null,
+                    };
+                    if (width) attrs.width = String(width); else delete attrs.width;
+                    if (height) attrs.height = String(height); else delete attrs.height;
 
                     const tr = ed.state.tr.setNodeMarkup(_pos, undefined, attrs);
                     ed.view.dispatch(tr);
                 }
             }
         } else {
-            const imageData = ImageData.create({ url, alt: alt || '', title: title || '', width: width || null, height: height || null });
+            const imageData = ImageData.create({
+                url,
+                alt: alt || '',
+                title: title || '',
+                width: width || null,
+                height: height || null,
+                align,
+                float,
+                margin,
+            });
             insertImage(imageData, _pos ?? undefined);
         }
 

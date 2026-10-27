@@ -171,35 +171,52 @@ function openFileManager(): void {
 function handleOpenImageModal(): void {
     const imgEl = document.querySelector('.tiptap img.selected-image') as HTMLImageElement | null;
 
-    if (imgEl) {
-        const imageId = imgEl.getAttribute('data-image-id');
-        if (imageId) {
-            const pos = imageAdapter.findImageById(imageId);
-            if (pos !== -1) {
-                editorState.selectImageAt(pos);
-                const ed = editorAdapter.getEditor();
-                if (ed) {
-                    const node = ed.state.doc.nodeAt(pos);
-                    if (node && node.type.name === 'image') {
-                        imageEditData.value = {
-                            url: node.attrs.src || '',
-                            alt: node.attrs.alt || '',
-                            title: node.attrs.title || '',
-                            width: node.attrs.width ? String(node.attrs.width) : '',
-                            height: node.attrs.height ? String(node.attrs.height) : '',
-                            _pos: pos,
-                        };
-                    }
-                }
-            }
-        }
-        imageModalKey.value++;
-        showImageModal.value = true;
-    } else {
+    if (!imgEl) {
         imageEditData.value = null;
         imageModalKey.value++;
         showImageModal.value = true;
+        return;
     }
+
+    let pos = -1;
+    const imageId = imgEl.getAttribute('data-image-id');
+    if (imageId) {
+        pos = imageAdapter.findImageById(imageId);
+    }
+    if (pos === -1) {
+        // Картинки, вставленные как HTML (insertContent), imageId не имеют —
+        // ищем узел по src.
+        pos = imageAdapter.findImagePosition(imgEl.getAttribute('src') || '');
+    }
+
+    if (pos !== -1) {
+        editorState.selectImageAt(pos);
+        const ed = editorAdapter.getEditor();
+        const node = ed?.state.doc.nodeAt(pos);
+        if (node && node.type.name === 'image') {
+            const style = node.attrs.style || '';
+            const floatMatch = style.match(/float:\s*(left|right)/);
+            const marginMatch = style.match(/margin-(?:right|left):\s*(\d+)px/);
+            imageEditData.value = {
+                url: node.attrs.src || '',
+                alt: node.attrs.alt || '',
+                title: node.attrs.title || '',
+                width: node.attrs.width ? String(node.attrs.width) : '',
+                height: node.attrs.height ? String(node.attrs.height) : '',
+                align: node.attrs.align || '',
+                float: node.attrs.float || (floatMatch ? floatMatch[1] : ''),
+                margin: marginMatch ? marginMatch[1] : '',
+                _pos: pos,
+            };
+        } else {
+            imageEditData.value = null;
+        }
+    } else {
+        imageEditData.value = null;
+    }
+
+    imageModalKey.value++;
+    showImageModal.value = true;
 }
 
 function closeImageModal(): void {

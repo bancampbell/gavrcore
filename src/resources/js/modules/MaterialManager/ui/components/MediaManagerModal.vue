@@ -14,6 +14,7 @@
                     mode="picker"
                     @select="onSelect"
                     @fileSelected="onFileSelected"
+                    @loaded="syncSelection"
                 />
             </div>
 
@@ -50,18 +51,19 @@ const emit = defineEmits<{
 const mediaManagerRef = ref<InstanceType<typeof MediaManager> | null>(null);
 const selectedFile = ref<{ url: string; name: string; path: string } | null>(null);
 
-watch(() => props.show, async (val) => {
-    if (val && props.selectedUrl) {
-        await nextTick();
-        setTimeout(() => {
-            mediaManagerRef.value?.selectFileByUrl?.(props.selectedUrl);
-        }, 500);
-    }
+const syncSelection = async () => {
+    if (!props.show || !props.selectedUrl) return;
+    await nextTick();
+    mediaManagerRef.value?.selectFileByUrl?.(props.selectedUrl);
+};
+
+watch(() => props.show, (val) => {
+    if (val) syncSelection();
 });
 
 const close = () => { selectedFile.value = null; emit('close'); };
 const onSelect = (file: { url: string; name: string; path: string }) => { selectedFile.value = file; };
-const onFileSelected = (file: { url: string; name: string; path: string } | null) => { if (file) selectedFile.value = file; };
+const onFileSelected = (file: { url: string; name: string; path: string } | null) => { selectedFile.value = file; };
 const insertFile = () => { if (selectedFile.value) { emit('select', selectedFile.value); close(); } };
 </script>
 

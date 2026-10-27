@@ -92,6 +92,7 @@ const props = defineProps<{
         align?: string;
         float?: string;
         margin?: string;
+        _pos?: number;
     } | null;
 }>();
 
@@ -107,6 +108,7 @@ const emit = defineEmits<{
         float: string;
         margin: string;
         oldUrl?: string;
+        _pos?: number;
     }): void;
 }>();
 
@@ -122,6 +124,8 @@ const imageFloat = ref('');
 const imageMargin = ref('');
 const showMediaManager = ref(false);
 
+// immediate: модалка пересоздаётся через :key при каждом открытии и монтируется
+// уже с show=true — без immediate watch не сработал бы и поля остались пустыми.
 watch(() => props.show, (val) => {
     if (val && props.editData) {
         imageUrl.value = props.editData.url || '';
@@ -142,7 +146,7 @@ watch(() => props.show, (val) => {
         imageFloat.value = '';
         imageMargin.value = '';
     }
-});
+}, { immediate: true });
 
 const close = () => { emit('close'); };
 const openFileManager = () => { showMediaManager.value = true; };
@@ -165,6 +169,7 @@ const insertImage = () => {
         float: imageFloat.value,
         margin: imageMargin.value,
         oldUrl: props.editData?.url,
+        _pos: props.editData?._pos,
     });
     close();
 };

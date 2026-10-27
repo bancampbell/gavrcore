@@ -176,7 +176,7 @@ watch(() => props.show, (val) => {
         searchTerm.value = '';
         searchResults.value = [];
     }
-});
+}, { immediate: true });
 
 const close = () => { emit('close'); };
 const openFileManager = () => { showMediaManager.value = true; };

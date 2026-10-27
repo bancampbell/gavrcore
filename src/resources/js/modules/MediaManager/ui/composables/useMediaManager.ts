@@ -198,6 +198,30 @@ export function useMediaManager(
         }
     };
 
+    const pickFile = (item: MediaItem) => {
+        picker.pickFile(item);
+        selection.selectedItems.value = [item.path];
+        selection.selectedItem.value = item;
+    };
+
+    // Подсветка файла, соответствующего уже используемому URL (например src
+    // редактируемой картинки), при открытии файлового менеджера.
+    const selectFileByUrl = (url: string): boolean => {
+        if (!url) return false;
+
+        const normalizedUrl = url.replace(/^https?:\/\/[^/]+/, '');
+        const file = contents.sortedFilteredFiles.value.find((item) => {
+            if (item.type !== 'file') return false;
+            const fileUrl = `/storage/uploads/${item.path}`;
+            return normalizedUrl === fileUrl || normalizedUrl.endsWith(`/${item.path}`);
+        });
+
+        if (!file) return false;
+
+        pickFile(file);
+        return true;
+    };
+
     const toggleSelect = (path: string, item: MediaItem) => {
         if (mode === 'picker' && item.type === 'file') {
             const isCurrentlySelected = picker.isPicked(path) || selection.selectedItems.value.includes(path);
@@ -296,6 +320,7 @@ export function useMediaManager(
         selectFolder,
         openFolder,
         selectFileItem,
+        selectFileByUrl,
         isSelected,
     };
 }
