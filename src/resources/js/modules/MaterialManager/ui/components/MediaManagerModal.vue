@@ -61,6 +61,13 @@ watch(() => props.show, (val) => {
     if (val) syncSelection();
 });
 
+// URL текущего файла может появиться или измениться уже после открытия
+// менеджера (loaded на тот момент уже прозвенел) — повторяем синхронизацию
+// выбора и прокрутки, чтобы выбранный файл не терялся.
+watch(() => props.selectedUrl, () => {
+    if (props.show) syncSelection();
+});
+
 const close = () => { selectedFile.value = null; emit('close'); };
 const onSelect = (file: { url: string; name: string; path: string }) => { selectedFile.value = file; };
 const onFileSelected = (file: { url: string; name: string; path: string } | null) => { selectedFile.value = file; };

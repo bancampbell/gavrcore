@@ -37,6 +37,7 @@ describe('MediaManagerModal: синхронизация выбора с selected
         vi.clearAllMocks();
         document.body.innerHTML = '';
         Element.prototype.scrollTo = vi.fn();
+        Element.prototype.scrollIntoView = vi.fn();
         (mediaApi.loadFolders as any).mockResolvedValue([]);
         (mediaApi.loadPaginatedContents as any).mockResolvedValue({
             data: [
@@ -107,6 +108,39 @@ describe('MediaManagerModal: синхронизация выбора с selected
 
         const insertBtn = document.body.querySelector('.media-manager-footer .btn-insert') as HTMLButtonElement;
         expect(insertBtn.disabled).toBe(true);
+    });
+
+    it('прокручивает список к выбранному файлу при синхронизации', async () => {
+        const files = Array.from({ length: 30 }, (_, i) => ({
+            name: `file${i + 1}.jpg`,
+            path: `file${i + 1}.jpg`,
+            type: 'file',
+        }));
+        (mediaApi.loadPaginatedContents as any).mockResolvedValue({
+            data: files,
+            total: 30,
+            page: 1,
+            per_page: 50,
+            last_page: 1,
+        });
+
+        const scrollIntoView = vi.fn();
+        Element.prototype.scrollIntoView = scrollIntoView;
+
+        mount(MediaManagerModal, {
+            props: { show: true, user: { id: 1 }, selectedUrl: '/storage/uploads/file30.jpg' },
+            attachTo: document.body,
+        });
+        await flushPromises();
+        await flushPromises();
+
+        const selectedEl = document.body.querySelector('[data-file-path="file30.jpg"]') as HTMLElement;
+        expect(selectedEl).not.toBeNull();
+        expect(selectedEl.classList.contains(SELECTED_CLASS)).toBe(true);
+
+        expect(scrollIntoView).toHaveBeenCalledTimes(1);
+        expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest' });
+        expect(scrollIntoView.mock.contexts[0]).toBe(selectedEl);
     });
 
     it('подсвечивает файл при повторном открытии модалки', async () => {

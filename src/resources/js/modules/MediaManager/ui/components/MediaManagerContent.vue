@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 import { useToast } from '@/composables/useToast';
 import FolderTree from './FolderTree.vue';
 import MediaHeader from './MediaHeader.vue';
@@ -203,6 +203,20 @@ const handlePageChange = (page: number) => {
     loadData(page);
 };
 
+// Обёртка над синхронизацией выбора по URL: после успешного пика прокручиваем
+// список к выбранному файлу (один раз при открытии/синхронизации модалки).
+// Поиск файла асинхронен (может переключиться страница), поэтому скроллим
+// только после обновления DOM.
+const selectFileByUrlWithScroll = async (url: string): Promise<boolean> => {
+    if (!(await selectFileByUrl(url))) return false;
+    const path = selectedFileForPicker.value?.path;
+    if (path) {
+        await nextTick();
+        contentPanelRef.value?.scrollToFile?.(path);
+    }
+    return true;
+};
+
 const toggleFolderExpand = (folderPath: string) => {
     const index = expandedFolders.value.indexOf(folderPath);
     if (index > -1) {
@@ -233,7 +247,7 @@ defineExpose({
     confirmSelection,
     selectedFileForPicker,
     getSelectedFile: () => selectedFileForPicker.value,
-    selectFileByUrl,
+    selectFileByUrl: selectFileByUrlWithScroll,
 });
 
 onMounted(async () => {

@@ -107,4 +107,18 @@ describe('TiptapLinkAdapter', () => {
         expect(retrieved).not.toBeNull();
         expect(retrieved?.url).toBe('https://example.com');
     });
+
+    it('getLinkAt возвращает текст ВСЕГО якоря (mark-диапазон), а не кусок узла', () => {
+        // якорь из трёх узлов: «Первое » + «второе»(bold) + « третье»
+        editor.commands.setContent('<p>до <a href="/a">Первое <strong>второе</strong> третье</a> после</p>');
+
+        // позиция внутри среднего слова — старый код вернул бы «орое»
+        const retrieved = linkAdapter.getLinkAt(14);
+        expect(retrieved?.url).toBe('/a');
+        expect(retrieved?.text).toBe('Первое второе третье');
+
+        // позиция в конце якоря: граничная — читается через pos-1
+        const atEnd = linkAdapter.getLinkAt(23);
+        expect(atEnd?.text).toBe('Первое второе третье');
+    });
 });

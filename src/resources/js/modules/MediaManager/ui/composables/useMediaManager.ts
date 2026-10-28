@@ -205,16 +205,29 @@ export function useMediaManager(
     };
 
     // Подсветка файла, соответствующего уже используемому URL (например src
-    // редактируемой картинки), при открытии файлового менеджера.
-    const selectFileByUrl = (url: string): boolean => {
-        if (!url) return false;
-
-        const normalizedUrl = url.replace(/^https?:\/\/[^/]+/, '');
-        const file = contents.sortedFilteredFiles.value.find((item) => {
+    // редактируемой картинки), при открытии файлового менеджера. Менеджер
+    // работает постранично (per_page = 20): если файл не на текущей странице,
+    // перебираем страницы, переключаемся на нужную и только потом подсвечиваем.
+    const findFileByUrl = (normalizedUrl: string) =>
+        contents.sortedFilteredFiles.value.find((item) => {
             if (item.type !== 'file') return false;
             const fileUrl = `/storage/uploads/${item.path}`;
             return normalizedUrl === fileUrl || normalizedUrl.endsWith(`/${item.path}`);
         });
+
+    const selectFileByUrl = async (url: string): Promise<boolean> => {
+        if (!url) return false;
+
+        const normalizedUrl = url.replace(/^https?:\/\/[^/]+/, '');
+
+        let file = findFileByUrl(normalizedUrl);
+        const lastPage = contents.paginatedData.value?.last_page ?? 1;
+        for (let page = 1; !file && page <= lastPage; page++) {
+            if (contents.paginatedData.value?.page !== page) {
+                await contents.load(navigation.currentPath.value, page);
+            }
+            file = findFileByUrl(normalizedUrl);
+        }
 
         if (!file) return false;
 

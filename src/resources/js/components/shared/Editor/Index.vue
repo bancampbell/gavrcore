@@ -23,7 +23,7 @@
                 :align-text-left="() => commands.alignText('left')"
                 :align-text-center="() => commands.alignText('center')"
                 :align-text-right="() => commands.alignText('right')"
-                :open-link-modal="() => commands.handleOpenLinkModal(editorState.selectedLink)"
+                :open-link-modal="handleOpenLinkModal"
                 :open-image-modal="handleOpenImageModal"
                 :open-gallery-modal="handleOpenGalleryModal"
                 :toggle-html="toggleHtmlMode"
@@ -100,6 +100,7 @@ const imageModalKey = ref(0);
 let contentUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const selection = useEditorSelection(
+    editorAdapter,
     imageAdapter,
     editorState.selectedImage,
     editorState.selectedLink,
@@ -166,6 +167,24 @@ function insertFormShortcode(formId: number): void {
 
 function openFileManager(): void {
     // TODO: implement file manager
+}
+
+function handleOpenLinkModal(): void {
+    // Перед открытием диалога обновляем выделенную ссылку: selectedLink может
+    // быть устаревшим, а класс .selected-link — потерян после перерендера DOM
+    // редактора (например, когда ссылку только что обновили).
+    selection.syncLinkSelectionFromDOM();
+    if (!editorState.selectedLink.value) {
+        // .selected-link потерян после перерендера DOM — каретка стоит рядом
+        // со ссылкой (после обновления — сразу за ней), читаем ссылку по ней.
+        const sel = editorAdapter.getSelection();
+        const link = linkAdapter.getLinkAt(sel.from)
+            ?? (sel.from > 1 ? linkAdapter.getLinkAt(sel.from - 1) : null);
+        if (link) {
+            editorState.selectLink(link);
+        }
+    }
+    commands.handleOpenLinkModal(editorState.selectedLink);
 }
 
 function handleOpenImageModal(): void {

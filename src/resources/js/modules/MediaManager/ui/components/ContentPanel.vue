@@ -164,6 +164,15 @@ const emit = defineEmits<{
 
 const scrollContainer = ref<HTMLDivElement | null>(null);
 
+// Прокрутка списка к файлу (например, при синхронизации выбора по URL при
+// открытии модалки), чтобы выбранный файл был виден без ручного скролла.
+const scrollToFile = (path: string) => {
+    const el = scrollContainer.value?.querySelector(`[data-file-path="${path}"]`);
+    el?.scrollIntoView({ block: 'nearest' });
+};
+
+defineExpose({ scrollToFile });
+
 watch(() => props.folders, () => {
     scrollContainer.value?.scrollTo({ top: 0, behavior: 'smooth' });
 }, { flush: 'post' });

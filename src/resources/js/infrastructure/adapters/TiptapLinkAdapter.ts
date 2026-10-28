@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core';
+import { getMarkRange } from '@tiptap/core';
 import type { Node } from '@tiptap/pm/model';
 import type { LinkPort } from '../../domain/ports/LinkPort';
 import { LinkData } from '../../domain/values/LinkData';
@@ -25,42 +26,89 @@ export class TiptapLinkAdapter implements LinkPort {
 
         const newText = data.text || oldText;
         const linkHtml = this.buildLinkHtml(data.url, newText, data.target, data.title);
+        const range = this.findLinkRange(oldText);
 
-        let found = false;
+        if (!range) {
+            // Ссылку не нашли — документ не трогаем. Вставка новой ссылки
+            // рядом существующую не удаляет и даёт «СтароеНовое» из двух якорей.
+            console.warn(`TiptapLinkAdapter.updateLink: ссылка с текстом "${oldText}" не найдена`);
+            return;
+        }
 
-        this.editor.state.doc.descendants((node: Node, pos: number) => {
-            if (found) return false;
-            if (node.isText && node.text === oldText) {
-                const hasLink = node.marks.some(mark => mark.type.name === 'link');
-                if (hasLink) {
-                    this.editor?.chain().focus().setTextSelection({ from: pos, to: pos + oldText.length }).insertContent(linkHtml).run();
-                    found = true;
-                    return false;
-                }
+        this.editor.chain().focus().setTextSelection(range).insertContent(linkHtml).run();
+    }
+
+    // Диапазон существующей ссылки: точное совпадение текста, а при рассинхроне
+    // textContent(DOM) и text-узлов ProseMirror (якорь из нескольких узлов,
+    // например с форматированием внутри) — разметка link под текущим выделением.
+    private findLinkRange(oldText: string): { from: number; to: number } | null {
+        const ed = this.editor;
+        if (!ed) return null;
+
+        const linkType = ed.schema.marks.link;
+        if (!linkType) return null;
+
+        let exact: { from: number; to: number } | null = null;
+
+        ed.state.doc.descendants((node: Node, pos: number) => {
+            if (exact) return false;
+            if (!node.isText) return true;
+            const hasLink = node.marks.some(mark => mark.type === linkType);
+            if (hasLink && node.text === oldText) {
+                exact = { from: pos, to: pos + node.nodeSize };
+                return false;
             }
             return true;
         });
 
-        if (!found) {
-            this.insertLink(data);
+        if (exact) return exact;
+
+        const { selection } = ed.state;
+        const fromPos = selection.$from.pos;
+        const candidates = [fromPos, fromPos - 1];
+
+        for (const pos of candidates) {
+            const range = this.getLinkMarkRange(pos);
+            if (range) return range;
         }
+
+        return null;
     }
 
     getLinkAt(pos: number): LinkData | null {
         if (!this.editor) return null;
 
-        const node = this.editor.state.doc.nodeAt(pos);
+        const $pos = this.editor.state.doc.resolve(pos);
+        // внутри текстового узла nodeAfter пуст — берём ближайший соседний узел
+        const node = $pos.nodeAfter ?? $pos.nodeBefore;
         if (!node) return null;
 
         const linkMark = node.marks.find(mark => mark.type.name === 'link');
         if (!linkMark) return null;
 
+        // текст ВСЕГО якоря по полному mark-диапазону ссылки, а не текст
+        // одного узла: якорь из нескольких узлов (форматирование внутри)
+        // иначе отдаётся частично
+        const range = this.getLinkMarkRange(pos) ?? this.getLinkMarkRange(pos - 1);
+        const text = range
+            ? this.editor.state.doc.textBetween(range.from, range.to)
+            : (node.text ?? '');
+
         return LinkData.create({
             url: linkMark.attrs.href || '',
-            text: node.text || '',
+            text,
             target: linkMark.attrs.target || '_self',
             title: linkMark.attrs.title || '',
         });
+    }
+
+    private getLinkMarkRange(pos: number): { from: number; to: number } | null {
+        const ed = this.editor;
+        if (!ed) return null;
+        const linkType = ed.schema.marks.link;
+        if (!linkType || pos < 0 || pos > ed.state.doc.content.size) return null;
+        const range = getMarkRange(ed.state.doc.resolve(pos), linkType);
+        return range ? { from: range.from, to: range.to } : null;
     }
 
     private buildLinkHtml(url: string, text: string, target: string, title: string): string {

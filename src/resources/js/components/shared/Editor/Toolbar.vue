@@ -1,5 +1,5 @@
 <template>
-    <div class="border-b border-slate-200 bg-white px-3 py-2.5 flex flex-wrap items-center gap-1 sticky top-0 z-10 shadow-sm">
+    <div class="toolbar border-b border-slate-200 bg-white px-3 py-2.5 flex flex-wrap items-center gap-1 sticky top-0 z-10 shadow-sm">
         <!-- Форматирование текста -->
         <div class="flex items-center gap-0.5">
             <button

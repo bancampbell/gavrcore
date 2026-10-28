@@ -75,6 +75,7 @@ describe('Editor: редактирование существующего изо
         vi.clearAllMocks();
         document.body.innerHTML = '';
         Element.prototype.scrollTo = vi.fn();
+        Element.prototype.scrollIntoView = vi.fn();
     });
 
     it('клик по картинке → модалка открывается с данными узла; подтверждение обновляет узел, а не вставляет новый', async () => {
