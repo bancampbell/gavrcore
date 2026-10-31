@@ -58,6 +58,7 @@ export function useEditorCommands(
                 text: linkData.text,
                 target: linkData.target,
                 title: linkData.title,
+                _pos: linkData._pos,
             });
         } else {
             const selection = editorAdapter.getSelection();

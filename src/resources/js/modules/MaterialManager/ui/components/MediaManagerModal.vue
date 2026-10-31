@@ -14,7 +14,7 @@
                     mode="picker"
                     @select="onSelect"
                     @fileSelected="onFileSelected"
-                    @loaded="syncSelection"
+                    @loaded="onLoaded"
                 />
             </div>
 
@@ -50,15 +50,28 @@ const emit = defineEmits<{
 
 const mediaManagerRef = ref<InstanceType<typeof MediaManager> | null>(null);
 const selectedFile = ref<{ url: string; name: string; path: string } | null>(null);
+// Синхронизация выбора допустима только после первичной загрузки менеджера.
+// Раньше (по watch(show)) она стартовала до loaded: paginatedData ещё пуст,
+// selectFileByUrl не знал числа страниц и дублировал запрос 1-й страницы.
+// В браузере этот «лишний» запрос с сетевой задержкой мог завершиться уже
+// ПОСЛЕ переключения на нужную страницу и перезаписать его — синхронизация
+// выглядела частичной (страница/подсветка терялись). Менеджер пересоздаётся
+// при каждом открытии (v-if) и всегда шлёт loaded — этого достаточно.
+const managerReady = ref(false);
 
 const syncSelection = async () => {
-    if (!props.show || !props.selectedUrl) return;
+    if (!props.show || !props.selectedUrl || !managerReady.value) return;
     await nextTick();
     mediaManagerRef.value?.selectFileByUrl?.(props.selectedUrl);
 };
 
+const onLoaded = () => {
+    managerReady.value = true;
+    syncSelection();
+};
+
 watch(() => props.show, (val) => {
-    if (val) syncSelection();
+    if (!val) managerReady.value = false;
 });
 
 // URL текущего файла может появиться или измениться уже после открытия

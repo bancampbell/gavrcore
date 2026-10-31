@@ -94,6 +94,7 @@ const props = defineProps<{
         text: string;
         target: string;
         title: string;
+        _pos?: { from: number; to: number } | null;
     } | null;
     selectedText?: string;
 }>();
@@ -101,7 +102,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'insert', data: { url: string; text: string; target: string; title: string }): void;
-    (e: 'edit', data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }): void;
+    (e: 'edit', data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string; _pos?: { from: number; to: number } | null }): void;
 }>();
 
 const user = inject('user') as any;
@@ -229,7 +230,9 @@ const insertLink = () => {
     if (!linkUrl.value) { alert('Введите адрес ссылки'); return; }
     const targetValue = linkTarget.value === '_blank' ? '_blank' : '_self';
     if (isEditMode.value) {
-        emit('edit', { oldText: originalLinkText.value, newUrl: linkUrl.value, newText: linkText.value || linkUrl.value, newTarget: targetValue, newTitle: linkTitle.value });
+        // _pos — mark-диапазон редактируемой ссылки, захваченный при открытии
+        // диалога: updateLink правит узел по позиции, а не по тексту якоря.
+        emit('edit', { oldText: originalLinkText.value, newUrl: linkUrl.value, newText: linkText.value || linkUrl.value, newTarget: targetValue, newTitle: linkTitle.value, _pos: props.editData?._pos ?? null });
         originalLinkText.value = linkText.value || linkUrl.value;
         originalLinkUrl.value = linkUrl.value;
     } else {

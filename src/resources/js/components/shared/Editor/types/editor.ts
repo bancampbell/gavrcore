@@ -15,6 +15,7 @@ export interface LinkData {
     text: string;
     target: string;
     title: string;
+    _pos?: { from: number; to: number } | null;
 }
 
 export interface EditorProps {

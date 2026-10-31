@@ -56,7 +56,27 @@ describe('useEditorCommands', () => {
                 text: 'текст ссылки',
                 target: '_blank',
                 title: 'Подсказка',
+                _pos: null,
             });
+        });
+
+        it('переносит позиционный диапазон (_pos) выделенной ссылки в editLink', () => {
+            const emit = vi.fn();
+            const commands = createCommands(emit);
+            const selectedLink = ref(LinkData.create({
+                url: 'https://example.com',
+                text: 'текст ссылки',
+                target: '_blank',
+                title: 'Подсказка',
+                oldText: 'текст ссылки',
+                _pos: { from: 1, to: 13 },
+            }));
+
+            commands.handleOpenLinkModal(selectedLink);
+
+            expect(emit).toHaveBeenCalledWith('editLink', expect.objectContaining({
+                _pos: { from: 1, to: 13 },
+            }));
         });
 
         it('без выделенной ссылки эмитит openLinkModal с текстом выделения', () => {

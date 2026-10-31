@@ -299,4 +299,68 @@ describe('Editor: редактирование существующей ссыл
         expect(ed().state.doc.textContent).toBe('до Б после');
         expect((document.body.querySelector('.tiptap a') as HTMLAnchorElement).textContent).toBe('Б');
     });
+
+    it('три смежные ссылки с похожими якорями: КАЖДАЯ редактируется, повторное открытие — новый URL, дублей нет', async () => {
+        // контент из реального кейса: вставка списка ссылок с внешнего сайта,
+        // якоря почти одинаковые и стоят плотно
+        const threeLinks = '<p>' +
+            '<a href="/c1" target="_self" title="" rel="noopener noreferrer nofollow" class="text-blue-600 underline">Предложения о размере цен (тарифов)...корректировка 2</a>' +
+            '<a href="/c2" target="_self" title="" rel="noopener noreferrer nofollow" class="text-blue-600 underline">Предложение о размере цен...</a>' +
+            '<a href="/c3" target="_self" title="" rel="noopener noreferrer nofollow" class="text-blue-600 underline">Предложения о размере цен...корректировка</a>' +
+            '</p>';
+        mount(createHarness(threeLinks), {
+            attachTo: document.body,
+            global: { provide: { user: { id: 1 } } },
+        });
+        await flushPromises();
+        await waitForEditorDebounce();
+
+        const openDialogForLinkAt = async (index: number) => {
+            const link = document.body.querySelectorAll('.tiptap a')[index] as HTMLAnchorElement;
+            link.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            await flushPromises();
+            (document.body.querySelector('button[title="Вставить ссылку"]') as HTMLButtonElement).click();
+            await flushPromises();
+        };
+
+        const submitWithUrl = async (newUrl: string) => {
+            const urlField = document.body.querySelector('.link-modal .form-row input') as HTMLInputElement;
+            urlField.value = newUrl;
+            urlField.dispatchEvent(new Event('input'));
+            await flushPromises();
+            const submitBtn = Array.from(document.body.querySelectorAll('.link-modal .modal-footer button'))
+                .find(b => b.textContent?.trim() === 'Вставить ссылку') as HTMLButtonElement;
+            submitBtn.click();
+            await flushPromises();
+            await waitForEditorDebounce();
+        };
+
+        const hrefs = () => Array.from(document.body.querySelectorAll('.tiptap a'))
+            .map(a => (a as HTMLAnchorElement).getAttribute('href'));
+
+        const originalHrefs = ['/c1', '/c2', '/c3'];
+        expect(hrefs()).toEqual(originalHrefs);
+
+        // редактируем КАЖДУЮ ссылку по очереди
+        for (let i = 0; i < 3; i++) {
+            await openDialogForLinkAt(i);
+            expect(urlInput().value).toBe(originalHrefs[i]);
+
+            await submitWithUrl(`/new-${i + 1}`);
+
+            // ровно три якоря (никаких дублей «СтароеНовое»); на шаге i уже
+            // отредактированы ссылки 0..i — каждая со своим новым URL
+            expect(document.body.querySelectorAll('.tiptap a')).toHaveLength(3);
+            const expected = originalHrefs.map((h, j) => (j <= i ? `/new-${j + 1}` : h));
+            expect(hrefs()).toEqual(expected);
+        }
+
+        // повторное открытие КАЖДОЙ ссылки показывает новый URL
+        for (let i = 0; i < 3; i++) {
+            await openDialogForLinkAt(i);
+            expect(urlInput().value).toBe(`/new-${i + 1}`);
+            (document.body.querySelector('.link-modal .modal-close') as HTMLButtonElement).click();
+            await flushPromises();
+        }
+    });
 });

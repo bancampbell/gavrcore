@@ -302,11 +302,11 @@ function insertLink(data: { url: string; text: string; target: string; title: st
     editorRef.value?.setLinkOnSelection(data.url, data.text, data.target, data.title);
 }
 
-function updateLink(data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }): void {
+function updateLink(data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string; _pos?: { from: number; to: number } | null }): void {
     editorRef.value?.updateExistingLink(data);
 }
 
-function handleEditLink(data: { oldText: string; url: string; text: string; target: string; title: string }): void {
+function handleEditLink(data: { oldText: string; url: string; text: string; target: string; title: string; _pos?: { from: number; to: number } | null }): void {
     editLinkData.value = data;
     showLinkModal.value = true;
 }

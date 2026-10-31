@@ -1,8 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import { getMarkRange } from '@tiptap/core';
-import type { Node } from '@tiptap/pm/model';
 import type { LinkPort } from '../../domain/ports/LinkPort';
-import { LinkData } from '../../domain/values/LinkData';
+import { LinkData, type LinkPosition } from '../../domain/values/LinkData';
 
 export class TiptapLinkAdapter implements LinkPort {
     private editor: Editor | null = null;
@@ -21,58 +20,49 @@ export class TiptapLinkAdapter implements LinkPort {
         this.editor.chain().focus().setTextSelection({ from, to }).insertContent(linkHtml).run();
     }
 
+    // Редактирование строго по позиции: _pos — mark-диапазон ссылки, захваченный
+    // при клике/синке из DOM (getMarkRange). Текстовый поиск по oldText удалён:
+    // на плотно стоящих похожих якорях он цеплял соседнюю ссылку или промахивался,
+    // а «не нашёл → вставить рядом» давало дубли «СтароеНовое» из двух якорей.
+    // Нет позиции или позиция протухла — документ не трогаем, только warn.
     updateLink(oldText: string, data: LinkData): void {
         if (!this.editor) return;
 
+        const range = this.resolveLinkRange(data._pos, oldText);
+        if (!range) return;
+
         const newText = data.text || oldText;
         const linkHtml = this.buildLinkHtml(data.url, newText, data.target, data.title);
-        const range = this.findLinkRange(oldText);
 
-        if (!range) {
-            // Ссылку не нашли — документ не трогаем. Вставка новой ссылки
-            // рядом существующую не удаляет и даёт «СтароеНовое» из двух якорей.
-            console.warn(`TiptapLinkAdapter.updateLink: ссылка с текстом "${oldText}" не найдена`);
-            return;
-        }
-
-        this.editor.chain().focus().setTextSelection(range).insertContent(linkHtml).run();
+        this.editor.chain().focus().setTextSelection({ from: range.from, to: range.to }).insertContent(linkHtml).run();
     }
 
-    // Диапазон существующей ссылки: точное совпадение текста, а при рассинхроне
-    // textContent(DOM) и text-узлов ProseMirror (якорь из нескольких узлов,
-    // например с форматированием внутри) — разметка link под текущим выделением.
-    private findLinkRange(oldText: string): { from: number; to: number } | null {
+    private resolveLinkRange(pos: LinkPosition | null, oldText: string): LinkPosition | null {
         const ed = this.editor;
         if (!ed) return null;
 
         const linkType = ed.schema.marks.link;
         if (!linkType) return null;
 
-        let exact: { from: number; to: number } | null = null;
-
-        ed.state.doc.descendants((node: Node, pos: number) => {
-            if (exact) return false;
-            if (!node.isText) return true;
-            const hasLink = node.marks.some(mark => mark.type === linkType);
-            if (hasLink && node.text === oldText) {
-                exact = { from: pos, to: pos + node.nodeSize };
-                return false;
-            }
-            return true;
-        });
-
-        if (exact) return exact;
-
-        const { selection } = ed.state;
-        const fromPos = selection.$from.pos;
-        const candidates = [fromPos, fromPos - 1];
-
-        for (const pos of candidates) {
-            const range = this.getLinkMarkRange(pos);
-            if (range) return range;
+        if (!pos) {
+            console.warn(`TiptapLinkAdapter.updateLink: нет позиции (_pos) для ссылки "${oldText}" — документ не изменён`);
+            return null;
         }
 
-        return null;
+        const { from, to } = pos;
+        if (from < 0 || from >= to || to > ed.state.doc.content.size) {
+            console.warn(`TiptapLinkAdapter.updateLink: позиция (${from}..${to}) вне документа для ссылки "${oldText}" — документ не изменён`);
+            return null;
+        }
+
+        // Позиция протухла (документ менялся между открытием диалога и submit)?
+        // На диапазоне уже нет mark link — ничего не затираем.
+        if (!ed.state.doc.rangeHasMark(from, to, linkType)) {
+            console.warn(`TiptapLinkAdapter.updateLink: позиция (${from}..${to}) больше не указывает на ссылку "${oldText}" — документ не изменён`);
+            return null;
+        }
+
+        return { from, to };
     }
 
     getLinkAt(pos: number): LinkData | null {
@@ -99,6 +89,7 @@ export class TiptapLinkAdapter implements LinkPort {
             text,
             target: linkMark.attrs.target || '_self',
             title: linkMark.attrs.title || '',
+            _pos: range ?? null,
         });
     }
 

@@ -72,6 +72,7 @@ describe('LinkModal: редактирование существующей сс�
             newText: 'текст ссылки',
             newTarget: '_blank',
             newTitle: 'Новая подсказка',
+            _pos: null,
         });
         expect(wrapper.emitted('insert')).toBeFalsy();
     });

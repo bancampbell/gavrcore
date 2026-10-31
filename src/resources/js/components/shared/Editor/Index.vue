@@ -102,6 +102,7 @@ let contentUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
 const selection = useEditorSelection(
     editorAdapter,
     imageAdapter,
+    linkAdapter,
     editorState.selectedImage,
     editorState.selectedLink,
     editorState.clearImageSelection,
@@ -249,13 +250,14 @@ function setLinkOnSelection(url: string, linkText: string, target: string, title
     emit('update:modelValue', editorAdapter.getHTML());
 }
 
-function updateExistingLink(data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string }): void {
+function updateExistingLink(data: { oldText: string; newUrl: string; newText: string; newTarget: string; newTitle: string; _pos?: { from: number; to: number } | null }): void {
     const linkData = LinkData.create({
         url: data.newUrl,
         text: data.newText,
         target: data.newTarget,
         title: data.newTitle,
         oldText: data.oldText,
+        _pos: data._pos ?? null,
     });
     editorState.updateLink(data.oldText, linkData);
     emit('update:modelValue', editorAdapter.getHTML());
