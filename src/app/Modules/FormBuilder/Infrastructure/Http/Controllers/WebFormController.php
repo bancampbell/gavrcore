@@ -14,6 +14,16 @@ use Illuminate\Support\Facades\Validator;
 
 class WebFormController
 {
+    /**
+     * Расширения, разрешённые к загрузке через публичные формы.
+     * SVG намеренно исключён: это исполняемый XML, отдаваемый с same-origin
+     * — stored-XSS под доменом сайта. Без этого whitelist любой аноним
+     * загружал произвольные файлы на public-диск.
+     */
+    private const ALLOWED_UPLOAD_EXTENSIONS = 'jpg,jpeg,png,gif,webp,pdf,txt,doc,docx,xls,xlsx,zip';
+
+    private const MAX_UPLOAD_KB = 10240;
+
     public function __construct(
         protected GetFormByIdUseCase $getFormByIdUseCase,
         protected CreateSubmissionUseCase $createSubmissionUseCase,
@@ -56,6 +66,15 @@ class WebFormController
             if ($field['required'] ?? false) {
                 $rules[$field['name']] = 'required';
             }
+        }
+
+        // К вложениям применяем whitelist расширений и лимит размера —
+        // независимо от того, описано ли поле в конфигурации формы.
+        foreach ($request->allFiles() as $key => $file) {
+            $fileRules = ['file', 'mimes:'.self::ALLOWED_UPLOAD_EXTENSIONS, 'max:'.self::MAX_UPLOAD_KB];
+            $rules[$key] = isset($rules[$key])
+                ? array_merge((array) $rules[$key], $fileRules)
+                : $fileRules;
         }
 
         $validator = Validator::make($request->all(), $rules);

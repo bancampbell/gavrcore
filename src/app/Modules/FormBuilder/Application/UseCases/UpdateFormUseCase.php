@@ -8,6 +8,7 @@ use App\Modules\FormBuilder\Domain\Repositories\FormRepositoryInterface;
 use App\Modules\FormBuilder\Domain\Services\SlugGeneratorInterface;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormFieldCollection;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormSettings;
+use Illuminate\Database\QueryException;
 
 class UpdateFormUseCase
 {
@@ -30,23 +31,6 @@ class UpdateFormUseCase
             'status' => $data->status,
         ];
 
-        if ($data->alias !== null) {
-            $updateData['alias'] = $data->alias;
-        } elseif (empty($form->alias) && ! empty($data->title)) {
-            $baseAlias = $this->slugGenerator->generate($data->title);
-            if (trim($baseAlias) === '') {
-                $baseAlias = 'form';
-            }
-
-            $alias = $baseAlias;
-            $suffix = 1;
-            while ($this->repository->findByAlias($alias) !== null) {
-                $alias = $baseAlias.'-'.$suffix++;
-            }
-
-            $updateData['alias'] = $alias;
-        }
-
         if ($data->fields !== null) {
             $updateData['fields'] = new FormFieldCollection($data->fields);
         }
@@ -57,8 +41,59 @@ class UpdateFormUseCase
             $updateData['is_dynamic'] = $data->isDynamic;
         }
 
-        $form->update($updateData);
+        // baseAlias !== null только когда alias генерируем сами —
+        // только в этом случае конфликт уникального индекса разрешим перегенерацией.
+        $baseAlias = null;
 
-        return $this->repository->save($form);
+        if ($data->alias !== null) {
+            $updateData['alias'] = $data->alias;
+        } elseif (empty($form->alias) && ! empty($data->title)) {
+            $baseAlias = $this->slugGenerator->generate($data->title);
+            if (trim($baseAlias) === '') {
+                $baseAlias = 'form';
+            }
+
+            $updateData['alias'] = $this->makeUniqueAlias($baseAlias);
+        }
+
+        $attempts = 0;
+        $maxAttempts = 10;
+
+        while ($attempts < $maxAttempts) {
+            $form->update($updateData);
+
+            try {
+                return $this->repository->save($form);
+            } catch (QueryException $e) {
+                // alias передан явно клиентом — это валидационный конфликт,
+                // гонку перегенерацией не разрешить; прокидываем как 422/500 на валидации.
+                if ($data->alias !== null || $baseAlias === null) {
+                    throw $e;
+                }
+
+                $message = $e->getMessage();
+                if (! str_contains($message, 'forms_alias_unique') && ! str_contains($message, 'Duplicate entry')) {
+                    throw $e;
+                }
+
+                // Race condition: alias заняли между findByAlias и UPDATE.
+                // Перегенерируем суффикс и повторяем сохранение.
+                $updateData['alias'] = $baseAlias.'-'.bin2hex(random_bytes(4));
+                $attempts++;
+            }
+        }
+
+        throw new \RuntimeException('Unable to generate unique alias after '.$maxAttempts.' attempts');
+    }
+
+    private function makeUniqueAlias(string $base): string
+    {
+        $alias = $base;
+        $suffix = 1;
+        while ($this->repository->findByAlias($alias) !== null) {
+            $alias = $base.'-'.$suffix++;
+        }
+
+        return $alias;
     }
 }

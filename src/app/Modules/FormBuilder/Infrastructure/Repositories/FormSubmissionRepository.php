@@ -30,11 +30,19 @@ class FormSubmissionRepository implements FormSubmissionRepositoryInterface
         }
 
         if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('data', 'like', '%'.$search.'%')
+            $search = '%'.$filters['search'].'%';
+
+            // data — json-колонка. На PostgreSQL у json нет оператора LIKE
+            // (data LIKE ? → 42883), поэтому колонка приводится к text.
+            // На MySQL/SQLite json хранится/кастуется как текст — LIKE
+            // работает нативно.
+            $driver = FormSubmissionModel::query()->getConnection()->getDriverName();
+            $dataLike = $driver === 'pgsql' ? 'data::text LIKE ?' : 'data LIKE ?';
+
+            $query->where(function ($q) use ($search, $dataLike) {
+                $q->whereRaw($dataLike, [$search])
                     ->orWhereHas('form', function ($formQuery) use ($search) {
-                        $formQuery->where('title', 'like', '%'.$search.'%');
+                        $formQuery->where('title', 'like', $search);
                     });
             });
         }
