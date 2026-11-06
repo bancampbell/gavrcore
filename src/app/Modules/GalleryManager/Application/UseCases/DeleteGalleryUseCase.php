@@ -18,12 +18,12 @@ class DeleteGalleryUseCase
     {
         $gallery = $this->repository->findByIdWithImages($id);
 
+        $this->repository->delete($id);
+
         if ($gallery) {
             foreach ($gallery->images() as $image) {
                 $this->storage->delete($image->imagePath);
             }
         }
-
-        $this->repository->delete($id);
     }
 }

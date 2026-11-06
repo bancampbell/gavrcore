@@ -17,14 +17,23 @@ class UploadImageUseCase
 
     public function execute(int $galleryId, UploadedFile $file, ?string $title): array
     {
+        if (! $this->repository->findById($galleryId)) {
+            throw new \RuntimeException('Gallery not found');
+        }
+
         $path = $this->storage->store($file, "galleries/{$galleryId}");
 
-        $image = $this->repository->addImage($galleryId, [
-            'image_path' => $path,
-            'title' => $title ?? $file->getClientOriginalName(),
-            'ordering' => 0,
-            'status' => true,
-        ]);
+        try {
+            $image = $this->repository->addImage($galleryId, [
+                'image_path' => $path,
+                'title' => $title ?? $file->getClientOriginalName(),
+                'ordering' => 0,
+                'status' => true,
+            ]);
+        } catch (\Throwable $e) {
+            $this->storage->delete($path);
+            throw $e;
+        }
 
         return $image->toArray();
     }

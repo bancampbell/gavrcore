@@ -19,7 +19,9 @@ class GalleryFiltersData
         return new self(
             search: $request->input('search'),
             type: $request->input('type'),
-            status: $request->has('status') ? (bool) $request->input('status') : null,
+            status: $request->has('status')
+                ? filter_var($request->input('status'), FILTER_VALIDATE_BOOLEAN)
+                : null,
         );
     }
 }

@@ -24,6 +24,13 @@ class GalleryRepository implements GalleryRepositoryInterface
         return $model ? $this->toEntity($model) : null;
     }
 
+    public function findByIdForUpdate(int $id): ?Gallery
+    {
+        $model = GalleryModel::where('id', $id)->lockForUpdate()->first();
+
+        return $model ? $this->toEntity($model) : null;
+    }
+
     public function findByIdWithImages(int $id): ?Gallery
     {
         $model = GalleryModel::with('images')->find($id);
@@ -77,14 +84,21 @@ class GalleryRepository implements GalleryRepositoryInterface
 
     public function update(Gallery $gallery): Gallery
     {
-        $model = GalleryModel::findOrFail($gallery->id);
-        $model->update([
-            'title' => $gallery->title,
-            'type' => $gallery->type->value,
-            'settings' => $gallery->settings,
-            'status' => $gallery->status->value,
-            'ordering' => $gallery->ordering,
-        ]);
+        $model = DB::transaction(function () use ($gallery) {
+            $model = GalleryModel::where('id', $gallery->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $model->update([
+                'title' => $gallery->title,
+                'type' => $gallery->type->value,
+                'settings' => $gallery->settings,
+                'status' => $gallery->status->value,
+                'ordering' => $gallery->ordering,
+            ]);
+
+            return $model;
+        });
 
         foreach ($gallery->releaseEvents() as $event) {
             event($event);
@@ -110,6 +124,11 @@ class GalleryRepository implements GalleryRepositoryInterface
     public function addImage(int $galleryId, array $data): GalleryImage
     {
         $model = DB::transaction(function () use ($galleryId, $data) {
+            // Блокируем родительскую галерею, чтобы сериализовать конкурентные
+            // вставки даже тогда, когда в галерее ещё нет изображений
+            // (иначе две параллельные вставки получат одинаковый ordering).
+            GalleryModel::where('id', $galleryId)->lockForUpdate()->firstOrFail();
+
             $lastImage = GalleryImageModel::where('gallery_id', $galleryId)
                 ->lockForUpdate()
                 ->orderBy('ordering', 'desc')

@@ -12,6 +12,8 @@ interface GalleryRepositoryInterface
 {
     public function findById(int $id): ?Gallery;
 
+    public function findByIdForUpdate(int $id): ?Gallery;
+
     public function findByIdWithImages(int $id): ?Gallery;
 
     public function findImageById(int $imageId): ?GalleryImage;

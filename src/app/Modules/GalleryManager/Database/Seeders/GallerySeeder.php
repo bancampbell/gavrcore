@@ -62,7 +62,7 @@ class GallerySeeder extends Seeder
                 $this->ensurePlaceholderImage($path, $galleryData['color'], $imageTitle);
 
                 GalleryImageModel::firstOrCreate(
-                    ['gallery_id' => $gallery->id, 'image_path' => $path],
+                    ['gallery_id' => $gallery->id, 'image_path' => '/storage/'.$path],
                     [
                         'title' => $imageTitle,
                         'alt_text' => $galleryData['title'].' — '.$imageTitle,
