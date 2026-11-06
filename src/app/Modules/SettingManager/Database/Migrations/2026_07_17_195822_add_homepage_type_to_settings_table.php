@@ -8,7 +8,7 @@ return new class extends Migration
     public function up(): void
     {
         // Добавляем запись в таблицу settings
-        DB::table('settings')->insert([
+        DB::table('settings')->insertOrIgnore([
             'key' => 'homepage_type',
             'value' => 'material',
             'type' => 'string',

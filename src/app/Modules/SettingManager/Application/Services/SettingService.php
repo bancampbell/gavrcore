@@ -3,6 +3,7 @@
 namespace App\Modules\SettingManager\Application\Services;
 
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
+use Illuminate\Database\QueryException;
 
 class SettingService
 {
@@ -45,14 +46,19 @@ class SettingService
                     $type = 'number';
                 }
 
-                Setting::create([
-                    'key' => $key,
-                    'value' => $value,
-                    'type' => $type,
-                    'group' => 'general',
-                    'label' => $key,
-                    'order' => 0,
-                ]);
+                try {
+                    Setting::create([
+                        'key' => $key,
+                        'value' => $value,
+                        'type' => $type,
+                        'group' => 'general',
+                        'label' => $key,
+                        'order' => 0,
+                    ]);
+                } catch (QueryException $e) {
+                    // Ключ успел появиться между first() и create() — догоняем значением
+                    Setting::where('key', $key)->update(['value' => $value]);
+                }
             }
         }
     }
