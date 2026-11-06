@@ -1,8 +1,13 @@
 <?php
 
-use App\Modules\CategoryManager\Infrastructure\Http\Controllers\WebCategoryController;
-use Illuminate\Support\Facades\Route;
-
-Route::middleware('web')->group(function () {
-    Route::get('category/{slug}', [WebCategoryController::class, 'show'])->name('category.show');
-});
+/*
+|--------------------------------------------------------------------------
+| CategoryManager — публичные web-роуты
+|--------------------------------------------------------------------------
+|
+| Здесь нет публичных роутов: страница категории /category/{slug}
+| обслуживается MaterialManager (Routes/web.php, WebMaterialController::category).
+| Ранее здесь дублировался роут с именем category.show — из-за совпадения
+| URI и имени выигрывал первый зарегистрированный роут (недетерминированно),
+| а route('category.show') разрешался в последний зарегистрированный.
+*/

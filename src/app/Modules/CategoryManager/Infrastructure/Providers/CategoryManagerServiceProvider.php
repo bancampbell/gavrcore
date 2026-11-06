@@ -47,7 +47,8 @@ class CategoryManagerServiceProvider extends ServiceProvider
             ->name('admin.')
             ->group(__DIR__.'/../../Routes/admin.php');
 
-        Route::middleware('web')
-            ->group(__DIR__.'/../../Routes/web.php');
+        // Публичный роут /category/{slug} регистрирует MaterialManager.
+        // loadRoutesFrom для Routes/web.php убран: файл пуст, дублирование
+        // category.show больше не происходит.
     }
 }
