@@ -6,6 +6,7 @@ use App\Modules\MaterialManager\Application\Services\HomepageManager;
 use App\Modules\MaterialManager\Domain\Events\MaterialHomepageToggled;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\ClockInterface;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -20,8 +21,8 @@ final readonly class ToggleHomepageUseCase
 
     public function execute(int $id, bool $showOnHomepage, int $actorId): void
     {
-        $lock = Cache::lock('material_manager_homepage', 10);
-        if (! $lock->get()) {
+        $lock = $this->acquireHomepageLock();
+        if ($lock !== null && ! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
@@ -44,7 +45,20 @@ final readonly class ToggleHomepageUseCase
                 DB::afterCommit(fn () => Event::dispatch(new MaterialHomepageToggled($updated, $actorId)));
             });
         } finally {
-            $lock->release();
+            $lock?->release();
+        }
+    }
+
+    /**
+     * file/array драйверы кэша не поддерживают Cache::lock (BadMethodCallException).
+     * Как в MediaRepository::acquireLock: без блокировки операция не падает.
+     */
+    private function acquireHomepageLock(): ?Lock
+    {
+        try {
+            return Cache::lock('material_manager_homepage', 10);
+        } catch (\BadMethodCallException) {
+            return null;
         }
     }
 }

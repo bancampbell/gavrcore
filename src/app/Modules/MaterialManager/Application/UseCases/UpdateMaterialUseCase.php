@@ -12,6 +12,8 @@ use App\Modules\MaterialManager\Domain\Services\SlugGeneratorInterface;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialStatus;
 use App\Modules\MaterialManager\Domain\ValueObjects\MaterialUpdateData;
 use App\Modules\MaterialManager\Domain\ValueObjects\NotSet;
+use Illuminate\Contracts\Cache\Lock;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +30,8 @@ final readonly class UpdateMaterialUseCase
 
     public function execute(int $id, UpdateMaterialData $data, int $actorId): Material
     {
-        $lock = Cache::lock('material_manager_homepage', 10);
-        if (! $lock->get()) {
+        $lock = $this->acquireHomepageLock();
+        if ($lock !== null && ! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
@@ -37,7 +39,8 @@ final readonly class UpdateMaterialUseCase
                 $material = $this->repository->findByIdWithLock($id);
 
                 if (! $material) {
-                    throw new \DomainException('Material not found');
+                    // 404 вместо 500 (см. GetMaterialForEditUseCase)
+                    throw (new ModelNotFoundException())->setModel(Material::class, [$id]);
                 }
 
                 $domainData = $data->toDomain();
@@ -47,7 +50,11 @@ final readonly class UpdateMaterialUseCase
                 if (! empty($domainData->slug) && ! ($domainData->slug instanceof NotSet)) {
                     $newSlug = $domainData->slug;
                 } elseif ($domainData->title !== null && ! ($domainData->title instanceof NotSet)) {
-                    $newSlug = $this->slugGenerator->generate($domainData->title);
+                    $generated = $this->slugGenerator->generate($domainData->title);
+                    // Пустая генерация (например, регистр/символы вне таблицы
+                    // транслитерации) — slug не меняем вместо падения с
+                    // «Slug cannot be empty».
+                    $newSlug = $generated !== '' ? $generated : $material->slug;
                 }
 
                 if ($newSlug !== null && $newSlug !== $material->slug) {
@@ -129,7 +136,24 @@ final readonly class UpdateMaterialUseCase
         } catch (UniqueConstraintViolationException $e) {
             throw new \DomainException('Материал с таким слагом уже существует');
         } finally {
-            $lock->release();
+            $lock?->release();
+        }
+    }
+
+    /**
+     * Драйверы кэша file/array не поддерживают locking: Cache::lock()
+     * бросает BadMethodCallException → 500 на create/update материала.
+     * Как в MediaRepository::acquireLock: операция выполняется без блокировки,
+     * но не падает. Блокировка остаётся обязательной там, где драйвер её
+     * поддерживает (redis/memcached/database) — race homepage не защищён
+     * на file-кэше, что приемлемо: это best-effort страховка от double-assign.
+     */
+    private function acquireHomepageLock(): ?Lock
+    {
+        try {
+            return Cache::lock('material_manager_homepage', 10);
+        } catch (\BadMethodCallException) {
+            return null;
         }
     }
 }

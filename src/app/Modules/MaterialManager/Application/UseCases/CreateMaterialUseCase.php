@@ -9,6 +9,7 @@ use App\Modules\MaterialManager\Domain\Events\MaterialCreated;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
 use App\Modules\MaterialManager\Domain\Services\ClockInterface;
 use App\Modules\MaterialManager\Domain\Services\SlugGeneratorInterface;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -32,8 +33,8 @@ final readonly class CreateMaterialUseCase
         $attempt = 0;
         $maxAttempts = 50;
 
-        $lock = Cache::lock('material_manager_homepage', 10);
-        if (! $lock->get()) {
+        $lock = $this->acquireHomepageLock();
+        if ($lock !== null && ! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
@@ -105,11 +106,27 @@ final readonly class CreateMaterialUseCase
                 }
             }
         } finally {
-            $lock->release();
+            $lock?->release();
         }
 
         throw new \DomainException(
             'Не удалось создать материал: конфликт слага после '.$maxAttempts.' попыток'
         );
+    }
+
+    /**
+     * Драйверы кэша file/array не поддерживают locking: Cache::lock()
+     * бросает BadMethodCallException → 500. Как в MediaRepository::acquireLock:
+     * без блокировки операция не падает, гонка homepage остаётся возможной,
+     * но доменная инвариантность (одна главная) восстанавливается assign'ом
+     * последней записи — приемлемый best-effort для не-locking драйверов.
+     */
+    private function acquireHomepageLock(): ?Lock
+    {
+        try {
+            return Cache::lock('material_manager_homepage', 10);
+        } catch (\BadMethodCallException) {
+            return null;
+        }
     }
 }

@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 
 class AdminMaterialCommandController
 {
@@ -54,7 +55,14 @@ class AdminMaterialCommandController
     public function store(CreateMaterialRequest $request): RedirectResponse|JsonResponse
     {
         $data = CreateMaterialData::fromArray($request->validated(), auth()->id());
-        $material = $this->createMaterial->execute($data, auth()->id());
+
+        try {
+            $material = $this->createMaterial->execute($data, auth()->id());
+        } catch (\DomainException $e) {
+            // Конфликт явно переданного слага (и прочие доменные отказы) —
+            // это 422, а не 500
+            throw ValidationException::withMessages(['slug' => $e->getMessage()]);
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -74,7 +82,15 @@ class AdminMaterialCommandController
         $this->authorize('update', $material);
 
         $data = UpdateMaterialData::fromArray($request->validated());
-        $updated = $this->updateMaterial->execute($id, $data, auth()->id());
+
+        try {
+            $updated = $this->updateMaterial->execute($id, $data, auth()->id());
+        } catch (\DomainException $e) {
+            // Конфликт слага / пустой slug — доменный отказ, 422 вместо 500.
+            // «Материал не найден» здесь больше не прилетает: use case
+            // бросает ModelNotFoundException → 404.
+            throw ValidationException::withMessages(['slug' => $e->getMessage()]);
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -97,7 +113,17 @@ class AdminMaterialCommandController
 
         $this->authorize('moveToTrash', $material);
 
-        $this->deleteMaterial->execute($id, auth()->id());
+        try {
+            $this->deleteMaterial->execute($id, auth()->id());
+        } catch (\DomainException $e) {
+            // Гонка состояний (материал уже в корзине и т.п.) — 422, не 500
+            if (request()->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return redirect()->route('admin.materials.index')
+                ->withErrors(['material' => $e->getMessage()]);
+        }
 
         if (request()->expectsJson()) {
             return response()->json(['message' => 'Материал перемещён в корзину']);

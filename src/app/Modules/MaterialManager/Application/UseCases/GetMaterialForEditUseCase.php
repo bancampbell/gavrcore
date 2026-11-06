@@ -4,6 +4,7 @@ namespace App\Modules\MaterialManager\Application\UseCases;
 
 use App\Modules\MaterialManager\Domain\Entities\Material;
 use App\Modules\MaterialManager\Domain\Repositories\MaterialRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 final readonly class GetMaterialForEditUseCase
 {
@@ -16,7 +17,9 @@ final readonly class GetMaterialForEditUseCase
         $material = $this->repository->findForEdit($id);
 
         if (! $material) {
-            throw new \DomainException('Material not found');
+            // ModelNotFoundException Laravel отрендерит как 404;
+            // DomainException уходил в 500.
+            throw (new ModelNotFoundException())->setModel(Material::class, [$id]);
         }
 
         return $material;
