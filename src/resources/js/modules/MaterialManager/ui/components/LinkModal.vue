@@ -122,18 +122,18 @@ const expandedCategories = ref<number[]>([]);
 const showMediaManager = ref(false);
 
 const getMaterialUrl = (material: any): string => {
-    if (material.slug) return `/${material.slug}`;
-    if (material.alias) return `/${material.alias}`;
-    return `/materials/${material.id}`;
+    if (material.slug) return `/material/${material.slug}`;
+    if (material.alias) return `/material/${material.alias}`;
+    return `/material/${material.id}`;
 };
 
 const expandToMaterial = (url: string) => {
     if (!url || !props.materials) return;
     const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
     const material = props.materials.find((m: any) => {
-        if (m.slug && (cleanUrl === m.slug || url === `/${m.slug}`)) return true;
-        if (m.alias && (cleanUrl === m.alias || url === `/${m.alias}`)) return true;
-        if (url === `/materials/${m.id}`) return true;
+        if (m.slug && (cleanUrl === m.slug || cleanUrl === `material/${m.slug}` || url === `/${m.slug}`)) return true;
+        if (m.alias && (cleanUrl === m.alias || cleanUrl === `material/${m.alias}` || url === `/${m.alias}`)) return true;
+        if (url === `/materials/${m.id}` || url === `/material/${m.id}`) return true;
         return false;
     });
     if (material) {
