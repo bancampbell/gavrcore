@@ -76,13 +76,16 @@ class DashboardController extends Controller
     }
 
     /**
-     * Карточка заявки пользователя
+     * Карточка заявки пользователя.
+     *
+     * Владение проверяется внутри ShowSubmissionUseCase (по viewerId) ДО
+     * markAsRead — чужая заявка по прямому URL не помечается прочитанной.
      */
     public function show(int $id): Response
     {
-        $submission = $this->showSubmissionUseCase->execute($id);
+        $submission = $this->showSubmissionUseCase->execute($id, (int) auth()->id());
 
-        abort_unless($submission !== null && $submission->userId === (int) auth()->id(), 404);
+        abort_unless($submission !== null, 404);
 
         $form = $this->getFormByIdUseCase->execute($submission->formId);
 
