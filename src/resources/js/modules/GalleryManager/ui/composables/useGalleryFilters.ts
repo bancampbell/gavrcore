@@ -21,7 +21,7 @@ export function useGalleryFilters(galleries: Ref<GalleryListItem[]> | ComputedRe
         }
 
         if (filters.value.status !== '') {
-            items = items.filter(g => g.status === (filters.value.status === '1'));
+            items = items.filter(g => Number(g.status) === Number(filters.value.status));
         }
 
         return items;

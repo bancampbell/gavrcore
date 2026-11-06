@@ -76,7 +76,7 @@
 import { ref, computed, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { galleryApi } from '../../infrastructure/api/gallery-api';
-import type { GalleryListItem } from '../../types';
+import type { GalleryListItem } from '../types';
 
 const props = defineProps<{ show: boolean }>();
 

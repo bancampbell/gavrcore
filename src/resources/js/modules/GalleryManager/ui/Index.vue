@@ -19,10 +19,10 @@
                     </template>
 
                     <template v-if="selectedIds.length > 0">
-                        <button @click="publishSelected" class="admin-btn admin-btn-secondary">
+                        <button @click="publishSelected" :disabled="bulkActionLoading" class="admin-btn admin-btn-secondary">
                             Опубликовать
                         </button>
-                        <button @click="unpublishSelected" class="admin-btn admin-btn-secondary">
+                        <button @click="unpublishSelected" :disabled="bulkActionLoading" class="admin-btn admin-btn-secondary">
                             Снять с публикации
                         </button>
                         <button @click="openDeleteModal" class="admin-btn admin-btn-danger">
@@ -224,7 +224,7 @@ import { useGallerySelection } from './composables/useGallerySelection';
 import { useGalleryNotifications } from './composables/useGalleryNotifications';
 import { useGalleryModals } from './composables/useGalleryModals';
 import { galleryApi } from '../infrastructure/api/gallery-api';
-import type { GalleryListItem } from '../types';
+import type { GalleryListItem } from './types';
 
 const props = defineProps<{ user: any; title: string }>();
 
@@ -236,6 +236,7 @@ const { createModalOpen, deleteModalOpen, deleteLoading, openCreateModal, closeC
 
 const perPage = ref(20);
 const currentPage = ref(1);
+const bulkActionLoading = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const pagination = computed(() => {
@@ -320,7 +321,8 @@ const confirmDelete = async () => {
 };
 
 const publishSelected = async () => {
-    if (selectedIds.value.length === 0) return;
+    if (selectedIds.value.length === 0 || bulkActionLoading.value) return;
+    bulkActionLoading.value = true;
     try {
         await Promise.all(selectedIds.value.map(id => galleryApi.publish(id)));
         showNotification('Галереи опубликованы', 'success');
@@ -328,11 +330,14 @@ const publishSelected = async () => {
         await loadGalleries();
     } catch (error) {
         showNotification('Ошибка при публикации', 'error');
+    } finally {
+        bulkActionLoading.value = false;
     }
 };
 
 const unpublishSelected = async () => {
-    if (selectedIds.value.length === 0) return;
+    if (selectedIds.value.length === 0 || bulkActionLoading.value) return;
+    bulkActionLoading.value = true;
     try {
         await Promise.all(selectedIds.value.map(id => galleryApi.unpublish(id)));
         showNotification('Галереи сняты с публикации', 'success');
@@ -340,6 +345,8 @@ const unpublishSelected = async () => {
         await loadGalleries();
     } catch (error) {
         showNotification('Ошибка при снятии с публикации', 'error');
+    } finally {
+        bulkActionLoading.value = false;
     }
 };
 

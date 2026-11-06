@@ -314,7 +314,7 @@ import ConfirmModal from '@/components/shared/ConfirmModal.vue';
 import { galleryApi } from '../infrastructure/api/gallery-api';
 import { useGallerySettings } from './composables/useGallerySettings';
 import { useGalleryNotifications } from './composables/useGalleryNotifications';
-import type { Gallery, GalleryImage } from '../types';
+import type { Gallery, GalleryImage } from './types';
 
 const props = defineProps<{
     user: any;
