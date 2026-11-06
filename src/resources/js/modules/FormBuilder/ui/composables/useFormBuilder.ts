@@ -15,7 +15,7 @@ function cloneField(field: FormField): FormField {
 }
 
 export function useFormBuilder(formFields: FormField[]) {
-    const fields = ref<FormField[]>(Array.isArray(formFields) ? formFields : []);
+    const fields = ref<FormField[]>(Array.isArray(formFields) ? formFields.map(cloneField) : []);
     const saving = ref(false);
     const editingIndex = ref<number | null>(null);
     const editingField = ref<FormField | null>(null);
