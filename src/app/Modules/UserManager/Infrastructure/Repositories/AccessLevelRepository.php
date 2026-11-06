@@ -162,10 +162,16 @@ final class AccessLevelRepository implements AccessLevelRepositoryInterface
      */
     private function isAliasConflict(QueryException $e): bool
     {
-        // MySQL: 1062, PostgreSQL: 23505, SQLite: 8/19/1555/2067 (SQLITE_CONSTRAINT*)
-        $code = (string) ($e->errorInfo[1] ?? $e->getCode());
+        // MySQL: 1062, PostgreSQL: 23505, SQLite: 8/19/1555/2067 (SQLITE_CONSTRAINT*).
+        // Драйвер pgsql кладёт в errorInfo[1] свой код (7), а не SQLSTATE —
+        // 23505 ищем в errorInfo[0]/getCode().
+        $codes = array_filter([
+            (string) ($e->errorInfo[1] ?? ''),
+            (string) ($e->errorInfo[0] ?? ''),
+            (string) $e->getCode(),
+        ]);
 
-        if (! in_array($code, ['1062', '23505', '8', '19', '1555', '2067'], true)) {
+        if (! count(array_intersect($codes, ['1062', '23505', '8', '19', '1555', '2067']))) {
             return false;
         }
 
