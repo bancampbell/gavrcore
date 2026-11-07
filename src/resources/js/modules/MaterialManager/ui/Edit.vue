@@ -208,7 +208,7 @@ import ImageModal from './components/ImageModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
 import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
 import { useSidebarSections } from '@/composables/useSidebarSections';
-import { createEditorContext, provideEditorContext } from '@/infrastructure/di/editorContext';
+import { createEditorContext, provideEditorContext } from '@/modules/MaterialManager/infrastructure/di/editorContext';
 
 const props = defineProps<{
     user: User;

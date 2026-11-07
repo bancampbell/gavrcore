@@ -12,7 +12,7 @@
 
 ## Фаза 2. Editor-кластер → MaterialManager (3 сессии)
 Цель: весь поддомен редактора живёт внутри модуля MaterialManager.
-- [ ] T2.1 Hexagon (только .ts): domain/{ports,values}/**, application/usecases/**, infrastructure/{adapters,di}/** → modules/MaterialManager/{domain,application,infrastructure}/** (зеркалить текущие пути). Обновить импорты UI/тестов на новые пути. Проверка: vitest, build. UI и тесты пока не двигаем.
+- [x] T2.1 Hexagon (только .ts): domain/{ports,values}/**, application/usecases/**, infrastructure/{adapters,di}/** → modules/MaterialManager/{domain,application,infrastructure}/** (зеркалить текущие пути). Обновить импорты UI/тестов на новые пути. Проверка: vitest, build. UI и тесты пока не двигаем. — 2026-11-07
 - [ ] T2.2 UI: components/shared/Editor/** → modules/MaterialManager/ui/editor/; components/shared/{FormSelectModal,GallerySelectModal}.vue → modules/MaterialManager/ui/editor/modals/; composables/useEditor{,Commands,Selection}.ts → modules/MaterialManager/ui/editor/composables/. Обновить импорты (Edit.vue, Create.vue, тесты). Проверка: vitest, build, визуально: редактор открывается, тулбар, вставка галереи/формы.
 - [ ] T2.3 Тесты: __tests__/{application,composables,editor,infrastructure}/** → __tests__/modules/material-manager/editor/**. Обновить пути импортов. Проверка: vitest (весь сьют).
 

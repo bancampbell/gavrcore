@@ -24,7 +24,7 @@ vi.mock('@/modules/MediaManager/infrastructure/api/media-api', () => ({
 import { mediaApi } from '@/modules/MediaManager/infrastructure/api/media-api';
 import EditorComponent from '@/components/shared/Editor/Index.vue';
 import LinkModal from '@/modules/MaterialManager/ui/components/LinkModal.vue';
-import { createEditorContext, provideEditorContext, type EditorContext } from '@/infrastructure/di/editorContext';
+import { createEditorContext, provideEditorContext, type EditorContext } from '@/modules/MaterialManager/infrastructure/di/editorContext';
 
 let context: EditorContext;
 let lastEditPayload: any = null;

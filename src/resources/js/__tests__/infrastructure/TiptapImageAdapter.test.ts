@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import { TiptapImageAdapter } from '../../infrastructure/adapters/TiptapImageAdapter';
-import { TiptapEditorAdapter } from '../../infrastructure/adapters/TiptapEditorAdapter';
+import { TiptapImageAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapImageAdapter';
+import { TiptapEditorAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
 import { ResizableImage } from '../../components/shared/Editor/extensions/ResizableImage';
-import { ImageData } from '../../domain/values/ImageData';
+import { ImageData } from '../../modules/MaterialManager/domain/values/ImageData';
 
 describe('TiptapImageAdapter', () => {
     let imageAdapter: TiptapImageAdapter;

@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import { TiptapLinkAdapter } from '../../infrastructure/adapters/TiptapLinkAdapter';
-import { TiptapEditorAdapter } from '../../infrastructure/adapters/TiptapEditorAdapter';
-import { LinkData } from '../../domain/values/LinkData';
+import { TiptapLinkAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapLinkAdapter';
+import { TiptapEditorAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
+import { LinkData } from '../../modules/MaterialManager/domain/values/LinkData';
 
 describe('TiptapLinkAdapter', () => {
     let linkAdapter: TiptapLinkAdapter;

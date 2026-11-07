@@ -1,7 +1,7 @@
 import type { Ref } from 'vue';
-import type { TiptapEditorAdapter } from '@/infrastructure/adapters/TiptapEditorAdapter';
-import { ImageData } from '@/domain/values/ImageData';
-import { LinkData } from '@/domain/values/LinkData';
+import type { TiptapEditorAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
+import { ImageData } from '@/modules/MaterialManager/domain/values/ImageData';
+import { LinkData } from '@/modules/MaterialManager/domain/values/LinkData';
 
 export function useEditorCommands(
     editorAdapter: TiptapEditorAdapter,

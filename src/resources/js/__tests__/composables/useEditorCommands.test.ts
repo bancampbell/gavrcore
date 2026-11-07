@@ -4,10 +4,10 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { useEditorCommands } from '@/composables/useEditorCommands';
-import { TiptapEditorAdapter } from '@/infrastructure/adapters/TiptapEditorAdapter';
-import { TiptapImageAdapter } from '@/infrastructure/adapters/TiptapImageAdapter';
+import { TiptapEditorAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
+import { TiptapImageAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapImageAdapter';
 import { ResizableImage } from '@/components/shared/Editor/extensions/ResizableImage';
-import { LinkData } from '@/domain/values/LinkData';
+import { LinkData } from '@/modules/MaterialManager/domain/values/LinkData';
 
 describe('useEditorCommands', () => {
     let editor: Editor;

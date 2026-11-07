@@ -1,10 +1,10 @@
 import { ref, computed, type Ref } from 'vue';
 import { getMarkRange } from '@tiptap/core';
-import type { TiptapEditorAdapter } from '@/infrastructure/adapters/TiptapEditorAdapter';
-import type { TiptapImageAdapter } from '@/infrastructure/adapters/TiptapImageAdapter';
-import type { TiptapLinkAdapter } from '@/infrastructure/adapters/TiptapLinkAdapter';
-import { LinkData } from '@/domain/values/LinkData';
-import type { ImageData as DomainImageData } from '@/domain/values/ImageData';
+import type { TiptapEditorAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
+import type { TiptapImageAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapImageAdapter';
+import type { TiptapLinkAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapLinkAdapter';
+import { LinkData } from '@/modules/MaterialManager/domain/values/LinkData';
+import type { ImageData as DomainImageData } from '@/modules/MaterialManager/domain/values/ImageData';
 
 export interface SelectionState {
     selectedImageAlign: Ref<string>;

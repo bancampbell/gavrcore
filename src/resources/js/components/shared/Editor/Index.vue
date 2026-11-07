@@ -81,8 +81,8 @@ import DOMPurify from 'dompurify';
 import { useEditor } from '@/composables/useEditor';
 import { useEditorSelection } from '@/composables/useEditorSelection';
 import { useEditorCommands } from '@/composables/useEditorCommands';
-import { ImageData } from '@/domain/values/ImageData';
-import { LinkData } from '@/domain/values/LinkData';
+import { ImageData } from '@/modules/MaterialManager/domain/values/ImageData';
+import { LinkData } from '@/modules/MaterialManager/domain/values/LinkData';
 
 const props = defineProps<EditorProps>();
 const emit = defineEmits<EditorEmits>();

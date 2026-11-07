@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { InsertLinkUseCase } from '../../application/usecases/InsertLinkUseCase';
-import type { EditorPort } from '../../domain/ports/EditorPort';
-import type { LinkPort } from '../../domain/ports/LinkPort';
-import { LinkData } from '../../domain/values/LinkData';
-import { Selection } from '../../domain/values/Selection';
+import { InsertLinkUseCase } from '../../modules/MaterialManager/application/usecases/InsertLinkUseCase';
+import type { EditorPort } from '../../modules/MaterialManager/domain/ports/EditorPort';
+import type { LinkPort } from '../../modules/MaterialManager/domain/ports/LinkPort';
+import { LinkData } from '../../modules/MaterialManager/domain/values/LinkData';
+import { Selection } from '../../modules/MaterialManager/domain/values/Selection';
 
 describe('InsertLinkUseCase', () => {
     let editorPort: EditorPort;

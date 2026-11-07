@@ -6,7 +6,7 @@ import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 import { TableKit } from '@tiptap/extension-table';
-import { TiptapEditorAdapter } from '../../infrastructure/adapters/TiptapEditorAdapter';
+import { TiptapEditorAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
 import { ResizableImage } from '../../components/shared/Editor/extensions/ResizableImage';
 import { CustomDiv } from '../../components/shared/Editor/extensions/CustomDiv';
 import { PreserveAttributes } from '../../components/shared/Editor/extensions/PreserveAttributes';
