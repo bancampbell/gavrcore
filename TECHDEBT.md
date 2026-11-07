@@ -1,0 +1,23 @@
+# TECHDEBT — зачистка после деплоя (2026-11)
+
+## Бэкенд
+1. **MediaManager** — аудит-лог мёртв: 5 доменных событий нигде не диспатчатся, media_audit_logs всегда пуст. Решить: диспатчить события или вычистить инфраструктуру (миграция+listener+тесты).
+2. **MenuManager** — (а) race: два конкурентных create пунктов в пустой scope дают дублирование ordering=0 (как GalleryManager раньше — там закрыли блокировкой); (б) UpdateMenuTypeUseCase без retry на unique-нарушение (в FormBuilder такой же фикс был сделан — унифицировать).
+3. **SettingManager / ThemeManager** — auth()-&gt;user() целиком в Inertia props (password hash в исходнике страницы). Передавать only(id,name,email) как в соседних контроллерах.
+4. **Единая обработка гонки lazy-create** по settings.key: SettingService::set / ThemeService::setCurrentTheme / initializeDefaultSettings — паттерн find→create без retry (в SettingManager частично закрыт, унифицировать).
+5. **Унифицировать детект unique-violation** по эталону UserManager (errorInfo[0]/getCode(), не errorInfo[1]). Проверить FormBuilder (str_contains по тексту ошибки), MaterialManager, MenuManager.
+6. **GalleryManager** — GetGalleryListUseCase фильтрует в памяти (тянет всю таблицу). Фильтры и пагинация — в SQL.
+7. **Все модули** — голые RuntimeException без доменной типизации (контроллер не отличит 404 от 500).
+
+## Фронтенд
+8. **AdminDashboard** — getSubjectName() мёртв: subject_type не существует в данных бэкенда. Удалить или переписать по реальной структуре activities.
+9. **CategoryManager** — alias правило UpdateCategoryRequest: добавить nullable, ЕСЛИ появятся записи с NULL alias (ConvertEmptyStringsToNull ловит '' → null → 422, сейчас записей 0).
+10. **GalleryManager** — клик по названию в desktop-таблице дублирует toggleSelect (выделение строки прыгает при навигации).
+11. **SeoManager** — meta.schema никем не заполняется (проверено: ни один SeoProvider) → v-html-ветка в Show.vue мертва. Удалить ветку или заполнить провайдеров.
+12. **MaterialManager** — (а) 'state' нет в sort-whitelist бэкенда → сортировка по колонке «Статус» молча не работает; (б) Trash.vue передаёт MouseEvent в count → текст модалки «[object MouseEvent]».
+13. **MenuManager** — Index.vue:128 router.visit(..., {props}) — опции props в Inertia нет, молча игнорируется. Убрать мёртвую опцию.
+14. **FormBuilder** — notification.type='info' не в union Toast/ConfirmModal (рендерится стилем ошибки); клик по &lt;Link&gt; в строке таблицы триггерит toggleSelect.
+15. **MediaManager** — selectedFileForPicker экспонирован, но никем не вызывается; selectedFiles не очищается после неудачной загрузки.
+16. **По всем модулям** — лишний `Authorization: Bearer &lt;localStorage token&gt;` на session-эндпоинтах (безвредно, но шумно); мёртвые методы в api-слоях и composables (submitForm/form/openEditModal, getById/updateOrdering/getAll и т.п.).
+17. **SettingManager** — saveAndClose ведёт на /admin/dashboard?message=..., но дашборд query-параметр message не читает → подтверждение «Настройки сохранены» после переадресации молча не показывается (Index.vue:493). Передать флеш через Inertia-shared prop или убрать параметр.
+18. **ThemeManager** — (а) захардкоженные URL вместо route(): '/admin/themes' (Index.vue:190) и '/admin/dashboard' (Index.vue:237) — при смене prefix/name роутов фронт молча поедет; (б) после успешного применения темы — полный window.location.reload() (Index.vue:205) вместо обновления через Inertia-навигацию.
