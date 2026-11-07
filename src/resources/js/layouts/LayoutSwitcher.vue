@@ -23,7 +23,6 @@ const layouts = {
     warm: () => import('@/layouts/WarmLayout.vue'),
     landing: () => import('@/layouts/LandingLayout.vue'),
     admin: () => import('@/layouts/AdminLayout.vue'),
-    empty: () => import('@/layouts/EmptyLayout.vue'),
 };
 
 const CurrentLayout = shallowRef(null);
