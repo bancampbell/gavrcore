@@ -186,7 +186,7 @@ const renderContent = () => {
             if (galleryCache.has(galleryId)) {
                 return Promise.resolve({ galleryId, data: galleryCache.get(galleryId) });
             }
-            return axios.get(`/api/galleries/${galleryId}`)
+            return axios.get(`/galleries/${galleryId}`)
                 .then(response => {
                     galleryCache.set(galleryId, response.data);
                     return { galleryId, data: response.data };
