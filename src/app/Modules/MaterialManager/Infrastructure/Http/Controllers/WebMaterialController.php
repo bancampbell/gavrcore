@@ -49,7 +49,7 @@ class WebMaterialController
         if ($this->themeService->isLandingTheme()) {
             $allForms = $this->formService->findAllActive();
 
-            return Inertia::render('landing/Index', [
+            return Inertia::render('Site/Landing/Index', [
                 'appSettings' => $settings,
                 'currentTheme' => $currentTheme,
                 'mainMenu' => $this->getMenuTree->execute('main-menu'),

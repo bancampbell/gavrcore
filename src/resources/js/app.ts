@@ -4,7 +4,6 @@ import { createInertiaApp } from '@inertiajs/vue3';
 createInertiaApp({
     resolve: async (name) => {
         const pages = import.meta.glob<DefineComponent>([
-            './Pages/**/*.vue',
             './modules/**/*.vue',
         ]);
 
