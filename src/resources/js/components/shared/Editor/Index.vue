@@ -10,7 +10,7 @@
 
         <div v-show="!editorState.isHtmlMode.value" class="flex-1 overflow-auto">
             <Toolbar
-                :editor="editorAdapter.getEditor()"
+                :editor="editor"
                 :selected-link-data="selection.selectedLinkDataForToolbar.value"
                 :selected-image-data="selection.selectedImageDataForToolbar.value"
                 :selected-image-align="selection.selectedImageAlign.value"
@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, shallowRef, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -90,7 +90,7 @@ const editorState = useEditor();
 const { editorAdapter, imageAdapter, linkAdapter } = editorState;
 
 const editorElement = ref<HTMLElement>();
-let editor: Editor | null = null;
+const editor = shallowRef<Editor | null>(null);
 
 const showGalleryModal = ref(false);
 const showFormModal = ref(false);
@@ -138,8 +138,8 @@ function handleOpenGalleryModal(): void {
     showGalleryModal.value = true;
 }
 
-function insertGallery(gallery: any): void {
-    const shortcode = `[gallery id="${gallery.id}" name="${gallery.name || gallery.title}"]`;
+function insertGallery(galleryId: number, galleryName: string): void {
+    const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
     editorAdapter.insertContent(shortcode);
     showGalleryModal.value = false;
     emit('update:modelValue', editorAdapter.getHTML());
@@ -319,7 +319,7 @@ onMounted(async () => {
     await nextTick();
     if (!editorElement.value) return;
 
-    editor = new Editor({
+    editor.value = new Editor({
         element: editorElement.value,
         extensions: [
             StarterKit.configure({
@@ -358,9 +358,9 @@ onMounted(async () => {
         },
     });
 
-    editorAdapter.init(editor);
-    imageAdapter.init(editor);
-    linkAdapter.init(editor);
+    editorAdapter.init(editor.value);
+    imageAdapter.init(editor.value);
+    linkAdapter.init(editor.value);
 
     clickHandler = (e: MouseEvent) => selection.handleClick(e);
     document.addEventListener('click', clickHandler);
@@ -399,8 +399,8 @@ onMounted(async () => {
 watch(() => props.modelValue, (newValue) => {
     if (contentUpdateTimeout) clearTimeout(contentUpdateTimeout);
     contentUpdateTimeout = setTimeout(() => {
-        if (editor && newValue !== editor.getHTML()) {
-            editor.commands.setContent(newValue || '<p></p>');
+        if (editor.value && newValue !== editor.value.getHTML()) {
+            editor.value.commands.setContent(newValue || '<p></p>');
         }
         contentUpdateTimeout = null;
     }, 300);
