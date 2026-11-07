@@ -65,6 +65,17 @@ class AdminSettingControllerTest extends TestCase
         $this->assertDatabaseHas('settings', ['key' => 'homepage_material_id', 'value' => '42']);
     }
 
+    public function test_update_save_and_close_redirects_to_dashboard_with_flash(): void
+    {
+        $response = $this->actingAs($this->admin)
+            ->withoutMiddleware(AdminMiddleware::class)
+            ->post('/admin/settings', ['site_name' => 'Save and Close', 'close' => true]);
+
+        $response->assertRedirect('/admin/dashboard');
+        $response->assertSessionHas('success', 'Настройки сохранены');
+        $this->assertDatabaseHas('settings', ['key' => 'site_name', 'value' => 'Save and Close']);
+    }
+
     public function test_update_syncs_material_flags_with_homepage_assignment(): void
     {
         $first = (new MaterialModelFactory)->create(['show_on_homepage' => true]);

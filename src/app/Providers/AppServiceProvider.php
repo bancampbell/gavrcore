@@ -30,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
                     'user' => auth()->user() ? auth()->user()->only(['id', 'name', 'email']) : null,
                 ];
             },
+            'flash' => fn () => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ],
             'mainMenu' => function () {
                 try {
                     $useCase = app(GetMenuTreeUseCase::class);

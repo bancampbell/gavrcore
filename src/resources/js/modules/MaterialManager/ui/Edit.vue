@@ -472,13 +472,12 @@ async function saveAndClose(): Promise<void> {
         return;
     }
     loading.value = true;
-    try {
-        await axios.put(`/admin/materials/${props.material.id}`, form.value);
-        router.visit('/admin/materials?message=Материал+обновлён');
-    } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
-        loading.value = false;
-    }
+    router.put(`/admin/materials/${props.material.id}`, form.value, {
+        onError: () => {
+            showNotification('Ошибка при сохранении', 'error');
+            loading.value = false;
+        },
+    });
 }
 
 onMounted(async () => {

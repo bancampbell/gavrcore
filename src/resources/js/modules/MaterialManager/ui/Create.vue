@@ -472,13 +472,12 @@ async function saveAndClose(): Promise<void> {
         return;
     }
     loading.value = true;
-    try {
-        await axios.post('/admin/materials', form.value);
-        router.visit('/admin/materials?message=Материал+создан');
-    } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
-        loading.value = false;
-    }
+    router.post('/admin/materials', form.value, {
+        onError: () => {
+            showNotification('Ошибка при сохранении', 'error');
+            loading.value = false;
+        },
+    });
 }
 
 async function saveAndCreate(): Promise<void> {

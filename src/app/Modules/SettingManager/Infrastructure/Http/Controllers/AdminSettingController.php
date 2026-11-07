@@ -72,6 +72,10 @@ class AdminSettingController extends Controller
             return response()->json(['message' => 'Settings saved successfully']);
         }
 
+        if ($request->boolean('close')) {
+            return redirect()->route('admin.dashboard')->with('success', 'Настройки сохранены');
+        }
+
         return redirect()->back()->with('success', 'Settings saved');
     }
 }

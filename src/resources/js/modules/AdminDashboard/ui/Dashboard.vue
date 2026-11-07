@@ -178,13 +178,16 @@
                 </div>
             </div>
         </div>
+
+        <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
     </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { computed, ref, onMounted } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
+import Toast from '@/components/shared/Toast.vue';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps<{
@@ -193,6 +196,29 @@ const props = defineProps<{
     activities: any;
     title: string;
 }>();
+
+const page = usePage();
+
+const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
+let notificationTimeout: number | null = null;
+
+function showNotification(message: string, type: 'success' | 'error' = 'success'): void {
+    if (notificationTimeout) clearTimeout(notificationTimeout);
+    notification.value = { show: true, message, type };
+    notificationTimeout = window.setTimeout(() => {
+        notification.value.show = false;
+    }, 5000);
+}
+
+onMounted(() => {
+    const flash = page.props.flash as { success?: string; error?: string } | undefined;
+    if (flash?.success) {
+        showNotification(flash.success, 'success');
+    }
+    if (flash?.error) {
+        showNotification(flash.error, 'error');
+    }
+});
 
 const currentDate = computed(() => {
     return new Date().toLocaleDateString('ru-RU', {

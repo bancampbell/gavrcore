@@ -486,15 +486,12 @@ const save = async () => {
 
 const saveAndClose = async () => {
     loading.value = true;
-    try {
-        await axios.post('/admin/settings', settings.value, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        router.visit('/admin/dashboard?message=Настройки+сохранены');
-    } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
-        loading.value = false;
-    }
+    router.post('/admin/settings', { ...settings.value, close: true }, {
+        onError: () => {
+            showNotification('Ошибка при сохранении', 'error');
+            loading.value = false;
+        },
+    });
 };
 
 onMounted(() => {

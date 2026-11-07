@@ -75,6 +75,7 @@ class AdminMaterialControllerTest extends TestCase
             ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'Материал создан');
         $this->assertDatabaseHas('materials', ['slug' => 'test-material']);
     }
 
@@ -125,6 +126,7 @@ class AdminMaterialControllerTest extends TestCase
             ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'Материал обновлён');
         $this->assertDatabaseHas('materials', ['id' => $material->id, 'title' => 'Updated']);
     }
 
