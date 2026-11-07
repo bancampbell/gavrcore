@@ -42,7 +42,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import DashboardLayout from '@/layouts/DashboardLayout.vue';
+import DashboardLayout from '@/modules/UserDashboard/ui/layouts/DashboardLayout.vue';
 
 const props = defineProps({
     user: Object,

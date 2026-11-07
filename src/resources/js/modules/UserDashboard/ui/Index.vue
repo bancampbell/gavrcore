@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import DashboardLayout from '@/layouts/DashboardLayout.vue';
+import DashboardLayout from '@/modules/UserDashboard/ui/layouts/DashboardLayout.vue';
 
 defineProps({
     user: Object,

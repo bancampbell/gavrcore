@@ -7,7 +7,7 @@
 - [x] T0.1 Удалить: layouts/EmptyLayout.vue (ветка в LayoutSwitcher недостижима — currentTheme ∈ {default,warm,landing}; удалить и саму ветку из map), пустые папки: api/, Pages/Themes/Landing/, components/shared/Editor/composables/. Проверка: grep ссылок на удалённое, vitest, build. — 2026-11-07
 
 ## Фаза 1. Одиночные потребители (1 сессия)
-- [ ] T1.1 Перенести layouts/DashboardLayout.vue → modules/UserDashboard/ui/layouts/DashboardLayout.vue. Обновить импорты (6 страниц UserDashboard + grep по проекту). Проверка: vitest, build, кабинет открывается визуально.
+- [x] T1.1 Перенести layouts/DashboardLayout.vue → modules/UserDashboard/ui/layouts/DashboardLayout.vue. Обновить импорты (6 страниц UserDashboard + grep по проекту). Проверка: vitest, build, кабинет открывается визуально. — 2026-11-07
 - [ ] T1.2 Перенести components/shared/AuthCard.vue → modules/UserManager/ui/Auth/AuthCard.vue. Обновить импорты (Login.vue, Register.vue). Проверка: vitest, build, страницы логина/регистрации визуально.
 
 ## Фаза 2. Editor-кластер → MaterialManager (3 сессии)
