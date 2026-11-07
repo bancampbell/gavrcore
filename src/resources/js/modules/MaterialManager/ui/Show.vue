@@ -64,7 +64,7 @@
 import {Head, usePage} from '@inertiajs/vue3';
 import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
 import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
-import Breadcrumbs from '@/components/shared/Breadcrumbs.vue';
+import Breadcrumbs from '@/modules/Site/ui/components/Breadcrumbs.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};

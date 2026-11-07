@@ -118,7 +118,7 @@ class WebMaterialController
             $breadcrumbs = $this->breadcrumbService->forHome();
         }
 
-        return Inertia::render('Index', [
+        return Inertia::render('Site/Home', [
             'homepageMaterial' => $homepageMaterial ? (new MaterialResource($homepageMaterial))->toArray(request()) : null,
             'forms' => $forms,
             'mainMenu' => $this->getMenuTree->execute('main-menu'),
@@ -201,7 +201,7 @@ class WebMaterialController
         $meta = $this->metaService->for($category);
         $breadcrumbs = $this->breadcrumbService->forCategory($category);
 
-        return Inertia::render('Category/Show', [
+        return Inertia::render('Site/Category/Show', [
             'category' => $category,
             'materials' => $materials->toArray(),
             'categories' => $this->categoryService->getAll(),
@@ -235,7 +235,7 @@ class WebMaterialController
 
         $breadcrumbs = $this->materialBreadcrumbService->forSearch($search);
 
-        return Inertia::render('Search/Index', [
+        return Inertia::render('Site/Search/Index', [
             'materials' => $materials->toArray(),
             'categories' => $this->categoryService->getAll(),
             'search' => $search,

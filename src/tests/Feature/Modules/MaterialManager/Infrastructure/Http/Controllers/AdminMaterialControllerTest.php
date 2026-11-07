@@ -191,7 +191,7 @@ class AdminMaterialControllerTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Index', false)
+                ->component('Site/Home', false)
                 ->where('homepageMaterial', null)
             );
     }
@@ -219,7 +219,7 @@ class AdminMaterialControllerTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Index', false)
+                ->component('Site/Home', false)
                 ->where('homepageMaterial.id', $second->id)
             );
     }

@@ -37,7 +37,7 @@ class WebMaterialControllerTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Index', false)
+                ->component('Site/Home', false)
                 ->has('homepageMaterial')
                 ->where('homepageMaterial.id', $material->id)
             );
@@ -123,7 +123,7 @@ class WebMaterialControllerTest extends TestCase
         $this->get(route('search', ['q' => 'Unique Search']))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Search/Index', false)
+                ->component('Site/Search/Index', false)
                 ->has('materials.data')
             );
     }
