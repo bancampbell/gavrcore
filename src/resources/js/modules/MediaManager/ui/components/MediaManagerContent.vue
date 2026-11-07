@@ -52,7 +52,7 @@
                 @sort-desc="setSortOrder('desc')"
                 @open-search="openSearch"
                 @clear-search="clearSearch"
-                @update:search-query="(val: string) => searchQuery.value = val"
+                @update:search-query="updateSearchQuery"
                 @toggle-select="toggleSelect"
                 @select-folder="selectFolder"
                 @open-folder="openFolder"
@@ -198,6 +198,10 @@ const {
     props.mode,
     props.acceptedFiles,
 );
+
+const updateSearchQuery = (val: string) => {
+    searchQuery.value = val;
+};
 
 const handlePageChange = (page: number) => {
     loadData(page);

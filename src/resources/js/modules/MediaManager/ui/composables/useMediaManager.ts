@@ -280,6 +280,10 @@ export function useMediaManager(
         }, 300);
     });
 
+    watch(() => contents.sortOrder.value, () => {
+        loadData(1);
+    });
+
     return {
         allFolders: contents.allFolders,
         contents: contents.contents,
