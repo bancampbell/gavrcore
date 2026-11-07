@@ -225,7 +225,7 @@ describe('Editor: редактирование существующей ссыл
         await flushPromises();
         (document.body.querySelector('.link-modal .material-item') as HTMLElement).click();
         await flushPromises();
-        expect(urlInput().value).toBe('/material-b');
+        expect(urlInput().value).toBe('/material/material-b');
 
         textInput().value = 'Б';
         textInput().dispatchEvent(new Event('input'));
@@ -233,10 +233,10 @@ describe('Editor: редактирование существующей ссыл
         await submit();
 
         // 5. в документе ОДИН якорь с текстом «Б»: никакого «Материал АБ»
-        expect(lastEditPayload).toMatchObject({ oldText: 'Материал А', newText: 'Б', newUrl: '/material-b' });
+        expect(lastEditPayload).toMatchObject({ oldText: 'Материал А', newText: 'Б', newUrl: '/material/material-b' });
         expect(document.body.querySelectorAll('.tiptap a')).toHaveLength(1);
         const html = context.editorAdapter.getHTML();
-        expect(html).toContain('href="/material-b"');
+        expect(html).toContain('href="/material/material-b"');
         expect(html).not.toContain('href="/a"');
         const docText = ed().state.doc.textContent;
         expect(docText).not.toContain('АБ');
@@ -294,7 +294,7 @@ describe('Editor: редактирование существующей ссыл
         // якорь заменён целиком: один якорь, новый href и текст
         expect(document.body.querySelectorAll('.tiptap a')).toHaveLength(1);
         const html = context.editorAdapter.getHTML();
-        expect(html).toContain('href="/material-b"');
+        expect(html).toContain('href="/material/material-b"');
         expect(html).not.toContain('href="/a"');
         expect(ed().state.doc.textContent).toBe('до Б после');
         expect((document.body.querySelector('.tiptap a') as HTMLAnchorElement).textContent).toBe('Б');
