@@ -1,10 +1,12 @@
 import type { EditorPort } from '../../domain/ports/EditorPort';
+import { formatHtmlForEditing } from './formatHtmlForEditing';
 
 export class ToggleHtmlModeUseCase {
     constructor(private readonly editorPort: EditorPort) {}
 
-    getCurrentHtml(): string {
-        return this.editorPort.getHTML();
+    async getCurrentHtml(): Promise<string> {
+        const html = this.editorPort.getHTML();
+        return formatHtmlForEditing(html);
     }
 
     applyHtml(html: string): void {

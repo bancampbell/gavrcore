@@ -89,7 +89,7 @@ export function useEditor() {
         selectedLink.value = null;
     }
 
-    function getCurrentHtml(): string {
+    function getCurrentHtml(): Promise<string> {
         return toggleHtmlModeUseCase.getCurrentHtml();
     }
 

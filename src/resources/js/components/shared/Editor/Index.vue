@@ -121,9 +121,9 @@ const commands = useEditorCommands(
     emit,
 );
 
-function toggleHtmlMode(): void {
+async function toggleHtmlMode(): Promise<void> {
     if (!editorState.isHtmlMode.value) {
-        editorState.htmlContent.value = editorState.getCurrentHtml();
+        editorState.htmlContent.value = await editorState.getCurrentHtml();
         editorState.isHtmlMode.value = true;
     } else {
         handleApplyHtml();
