@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { InsertImageUseCase } from '../../modules/MaterialManager/application/usecases/InsertImageUseCase';
-import type { EditorPort } from '../../modules/MaterialManager/domain/ports/EditorPort';
-import type { ImagePort } from '../../modules/MaterialManager/domain/ports/ImagePort';
-import { ImageData } from '../../modules/MaterialManager/domain/values/ImageData';
-import { Selection } from '../../modules/MaterialManager/domain/values/Selection';
+import { InsertImageUseCase } from '../../../../../modules/MaterialManager/application/usecases/InsertImageUseCase';
+import type { EditorPort } from '../../../../../modules/MaterialManager/domain/ports/EditorPort';
+import type { ImagePort } from '../../../../../modules/MaterialManager/domain/ports/ImagePort';
+import { ImageData } from '../../../../../modules/MaterialManager/domain/values/ImageData';
+import { Selection } from '../../../../../modules/MaterialManager/domain/values/Selection';
 
 describe('InsertImageUseCase', () => {
     let editorPort: EditorPort;

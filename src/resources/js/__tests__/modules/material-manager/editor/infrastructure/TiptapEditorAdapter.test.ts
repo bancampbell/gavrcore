@@ -6,10 +6,10 @@ import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 import { TableKit } from '@tiptap/extension-table';
-import { TiptapEditorAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
-import { ResizableImage } from '../../modules/MaterialManager/ui/editor/extensions/ResizableImage';
-import { CustomDiv } from '../../modules/MaterialManager/ui/editor/extensions/CustomDiv';
-import { PreserveAttributes } from '../../modules/MaterialManager/ui/editor/extensions/PreserveAttributes';
+import { TiptapEditorAdapter } from '../../../../../modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
+import { ResizableImage } from '../../../../../modules/MaterialManager/ui/editor/extensions/ResizableImage';
+import { CustomDiv } from '../../../../../modules/MaterialManager/ui/editor/extensions/CustomDiv';
+import { PreserveAttributes } from '../../../../../modules/MaterialManager/ui/editor/extensions/PreserveAttributes';
 
 describe('TiptapEditorAdapter', () => {
     let adapter: TiptapEditorAdapter;

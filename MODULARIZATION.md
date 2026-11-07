@@ -14,7 +14,7 @@
 Цель: весь поддомен редактора живёт внутри модуля MaterialManager.
 - [x] T2.1 Hexagon (только .ts): domain/{ports,values}/**, application/usecases/**, infrastructure/{adapters,di}/** → modules/MaterialManager/{domain,application,infrastructure}/** (зеркалить текущие пути). Обновить импорты UI/тестов на новые пути. Проверка: vitest, build. UI и тесты пока не двигаем. — 2026-11-07
 - [x] T2.2 UI: components/shared/Editor/** → modules/MaterialManager/ui/editor/; components/shared/{FormSelectModal,GallerySelectModal}.vue → modules/MaterialManager/ui/editor/modals/; composables/useEditor{,Commands,Selection}.ts → modules/MaterialManager/ui/editor/composables/. Обновить импорты (Edit.vue, Create.vue, тесты). Проверка: vitest, build, визуально: редактор открывается, тулбар, вставка галереи/формы. — 2026-11-07
-- [ ] T2.3 Тесты: __tests__/{application,composables,editor,infrastructure}/** → __tests__/modules/material-manager/editor/**. Обновить пути импортов. Проверка: vitest (весь сьют).
+- [x] T2.3 Тесты: __tests__/{application,composables,editor,infrastructure}/** → __tests__/modules/material-manager/editor/**. Обновить пути импортов. Проверка: vitest (весь сьют). — 2026-11-07
 
 ## Фаза 3. Публичный сайт → modules/Site (после фаз 0–2, по одной задаче за сессию)
 - [ ] T3.0 Решение по структуре: зафиксировать здесь целевые имена Inertia-страниц (например Site/Home, Site/Category/Show...) и структуру modules/Site/ui/. Без кода — только план, согласовать с человеком.
