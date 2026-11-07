@@ -14,7 +14,6 @@ class MenuItemResource extends JsonResource
             'menu_type_id' => $this->menu_type_id,
             'parent_id' => $this->parent_id,
             'title' => $this->title,
-            'alias' => $this->alias,
             'link_type' => $this->link_type,
             'link_value' => $this->link_value,
             'target' => $this->target,

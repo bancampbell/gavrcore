@@ -15,10 +15,6 @@ interface MenuItemRepositoryInterface
 
     public function findByIdWithLock(int $id): ?MenuItemModel;
 
-    public function findByAlias(string $alias, int $menuTypeId): ?MenuItemModel;
-
-    public function findByAliasWithLock(string $alias, int $menuTypeId): ?MenuItemModel;
-
     public function create(array $data): MenuItemModel;
 
     public function update(int $id, array $data): MenuItemModel;

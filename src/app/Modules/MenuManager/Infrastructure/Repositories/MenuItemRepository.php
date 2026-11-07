@@ -39,16 +39,6 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         return MenuItemModel::where('id', $id)->lockForUpdate()->first();
     }
 
-    public function findByAlias(string $alias, int $menuTypeId): ?MenuItemModel
-    {
-        return MenuItemModel::where('alias', $alias)->where('menu_type_id', $menuTypeId)->first();
-    }
-
-    public function findByAliasWithLock(string $alias, int $menuTypeId): ?MenuItemModel
-    {
-        return MenuItemModel::where('alias', $alias)->where('menu_type_id', $menuTypeId)->lockForUpdate()->first();
-    }
-
     public function create(array $data): MenuItemModel
     {
         return MenuItemModel::create($data);

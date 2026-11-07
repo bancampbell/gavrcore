@@ -43,7 +43,7 @@ class MenuSeeder extends Seeder
 
         // Создаём пункты для Main Menu
         MenuItemModel::firstOrCreate(
-            ['menu_type_id' => $mainMenu->id, 'alias' => 'o-kompanii'],
+            ['menu_type_id' => $mainMenu->id, 'title' => 'О компании'],
             [
                 'parent_id' => null,
                 'title' => 'О компании',
@@ -58,7 +58,7 @@ class MenuSeeder extends Seeder
         );
 
         MenuItemModel::firstOrCreate(
-            ['menu_type_id' => $mainMenu->id, 'alias' => 'rukovodstvo'],
+            ['menu_type_id' => $mainMenu->id, 'title' => 'Руководство'],
             [
                 'parent_id' => null,
                 'title' => 'Руководство',
@@ -73,7 +73,7 @@ class MenuSeeder extends Seeder
         );
 
         MenuItemModel::firstOrCreate(
-            ['menu_type_id' => $mainMenu->id, 'alias' => 'kontakty'],
+            ['menu_type_id' => $mainMenu->id, 'title' => 'Контакты'],
             [
                 'parent_id' => null,
                 'title' => 'Контакты',

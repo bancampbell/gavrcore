@@ -17,11 +17,7 @@
                         <div class="flex flex-wrap items-center gap-6">
                             <div class="flex items-center gap-3">
                                 <label class="admin-form-label whitespace-nowrap">Заголовок *</label>
-                                <input v-model="form.title" @input="updateAlias" type="text" class="admin-form-input" style="width: 384px;" placeholder="Введите заголовок..." />
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <label class="admin-form-label whitespace-nowrap">Алиас</label>
-                                <input v-model="form.alias" type="text" class="admin-form-input" style="width: 256px;" placeholder="останется пустым - сгенерируется автоматически" />
+                                <input v-model="form.title" type="text" class="admin-form-input" style="width: 384px;" placeholder="Введите заголовок..." />
                             </div>
                         </div>
                     </div>
@@ -137,7 +133,6 @@ const form = ref({
     menu_type_id: props.menuTypeId,
     parent_id: null as number | null,
     title: '',
-    alias: '',
     link_type: 'url',
     link_value: '',
     target: '_self',
@@ -209,16 +204,6 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     notificationTimeout = window.setTimeout(() => { notification.value.show = false; }, 5000);
 };
 
-const updateAlias = () => {
-    if (!form.value.title) { form.value.alias = ''; return; }
-    let alias = form.value.title.toLowerCase().replace(/[^a-zа-яё0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const ruMap: Record<string, string> = {
-        'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sh','ъ':'','ы':'y','ь':'','э':'e','ю':'yu','я':'ya'
-    };
-    alias = alias.split('').map(char => ruMap[char] || char).join('');
-    form.value.alias = alias;
-};
-
 const selectMaterial = (material: { id: number; title: string; slug: string }) => {
     form.value.link_value = material.slug;
 };
@@ -231,7 +216,6 @@ const prepareSubmitData = () => {
     const d: any = {
         parent_id: form.value.parent_id,
         title: form.value.title,
-        alias: form.value.alias,
         link_type: form.value.link_type,
         link_value: form.value.link_value,
         target: form.value.target,
@@ -276,7 +260,6 @@ const saveAndCreate = async () => {
     try {
         await menuItemsApi.create(form.value.menu_type_id, prepareSubmitData());
         form.value.title = '';
-        form.value.alias = '';
         form.value.link_value = '';
         form.value.parent_id = null;
         form.value.after_id = null;

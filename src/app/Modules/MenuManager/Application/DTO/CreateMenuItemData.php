@@ -8,7 +8,6 @@ class CreateMenuItemData
         public int $menuTypeId,
         public ?int $parentId,
         public string $title,
-        public ?string $alias,
         public string $linkType,
         public ?string $linkValue,
         public string $target,

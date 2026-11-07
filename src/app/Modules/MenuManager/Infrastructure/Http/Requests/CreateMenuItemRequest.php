@@ -33,7 +33,6 @@ class CreateMenuItemRequest extends FormRequest
                 },
             ],
             'title' => 'required|string|max:255',
-            'alias' => ['nullable', 'string', 'max:255', Rule::unique('menu_items', 'alias')->where('menu_type_id', $menuTypeId)],
             'link_type' => 'required|in:url,material,category,separator,heading,external',
             'link_value' => [
                 'nullable',
@@ -63,7 +62,6 @@ class CreateMenuItemRequest extends FormRequest
     {
         return [
             'title.required' => 'Введите заголовок',
-            'alias.unique' => 'Пункт меню с таким алиасом уже существует в этом меню',
             'link_value.required' => 'Укажите категорию',
         ];
     }

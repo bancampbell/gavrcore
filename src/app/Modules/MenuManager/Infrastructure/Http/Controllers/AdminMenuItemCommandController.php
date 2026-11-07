@@ -40,7 +40,6 @@ class AdminMenuItemCommandController extends Controller
             menuTypeId: $menuTypeId,
             parentId: $request->input('parent_id'),
             title: $request->input('title'),
-            alias: $request->input('alias'),
             linkType: $request->input('link_type') ?? 'url',
             linkValue: $request->input('link_value'),
             target: $request->input('target') ?? '_self',
@@ -66,7 +65,6 @@ class AdminMenuItemCommandController extends Controller
         $data = new UpdateMenuItemData(
             parentId: $request->has('parent_id') ? $request->input('parent_id') : Optional::value(),
             title: $request->input('title'),
-            alias: $request->input('alias'),
             linkType: $request->input('link_type'),
             linkValue: $request->input('link_value'),
             target: $request->input('target'),

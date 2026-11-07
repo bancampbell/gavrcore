@@ -7,7 +7,6 @@ class UpdateMenuItemData
     public function __construct(
         public int|Optional|null $parentId = null,
         public ?string $title = null,
-        public ?string $alias = null,
         public ?string $linkType = null,
         public ?string $linkValue = null,
         public ?string $target = null,
