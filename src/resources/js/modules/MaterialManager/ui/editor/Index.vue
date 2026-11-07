@@ -73,14 +73,14 @@ import { CustomDiv } from './extensions/CustomDiv';
 import { PreserveAttributes } from './extensions/PreserveAttributes';
 import { CleanPaste } from './extensions/CleanPaste';
 import type { EditorProps, EditorEmits } from './types/editor';
-import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
-import FormSelectModal from '@/components/shared/FormSelectModal.vue';
+import GallerySelectModal from './modals/GallerySelectModal.vue';
+import FormSelectModal from './modals/FormSelectModal.vue';
 import ImageModal from '@/modules/MaterialManager/ui/components/ImageModal.vue';
 import RawHtmlEditor from './RawHtmlEditor.vue';
 import DOMPurify from 'dompurify';
-import { useEditor } from '@/composables/useEditor';
-import { useEditorSelection } from '@/composables/useEditorSelection';
-import { useEditorCommands } from '@/composables/useEditorCommands';
+import { useEditor } from './composables/useEditor';
+import { useEditorSelection } from './composables/useEditorSelection';
+import { useEditorCommands } from './composables/useEditorCommands';
 import { ImageData } from '@/modules/MaterialManager/domain/values/ImageData';
 import { LinkData } from '@/modules/MaterialManager/domain/values/LinkData';
 
@@ -426,5 +426,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
-@import '../../../../css/editor.css';
+@import '../../../../../css/editor.css';
 </style>

@@ -22,7 +22,7 @@ vi.mock('@/modules/MediaManager/infrastructure/api/media-api', () => ({
 }));
 
 import { mediaApi } from '@/modules/MediaManager/infrastructure/api/media-api';
-import EditorComponent from '@/components/shared/Editor/Index.vue';
+import EditorComponent from '@/modules/MaterialManager/ui/editor/Index.vue';
 import { createEditorContext, provideEditorContext, type EditorContext } from '@/modules/MaterialManager/infrastructure/di/editorContext';
 
 let context: EditorContext;

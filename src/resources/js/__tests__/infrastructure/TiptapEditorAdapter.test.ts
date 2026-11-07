@@ -7,9 +7,9 @@ import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
 import { TableKit } from '@tiptap/extension-table';
 import { TiptapEditorAdapter } from '../../modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
-import { ResizableImage } from '../../components/shared/Editor/extensions/ResizableImage';
-import { CustomDiv } from '../../components/shared/Editor/extensions/CustomDiv';
-import { PreserveAttributes } from '../../components/shared/Editor/extensions/PreserveAttributes';
+import { ResizableImage } from '../../modules/MaterialManager/ui/editor/extensions/ResizableImage';
+import { CustomDiv } from '../../modules/MaterialManager/ui/editor/extensions/CustomDiv';
+import { PreserveAttributes } from '../../modules/MaterialManager/ui/editor/extensions/PreserveAttributes';
 
 describe('TiptapEditorAdapter', () => {
     let adapter: TiptapEditorAdapter;

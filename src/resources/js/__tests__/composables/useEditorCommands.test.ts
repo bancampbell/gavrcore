@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import { useEditorCommands } from '@/composables/useEditorCommands';
+import { useEditorCommands } from '@/modules/MaterialManager/ui/editor/composables/useEditorCommands';
 import { TiptapEditorAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapEditorAdapter';
 import { TiptapImageAdapter } from '@/modules/MaterialManager/infrastructure/adapters/TiptapImageAdapter';
-import { ResizableImage } from '@/components/shared/Editor/extensions/ResizableImage';
+import { ResizableImage } from '@/modules/MaterialManager/ui/editor/extensions/ResizableImage';
 import { LinkData } from '@/modules/MaterialManager/domain/values/LinkData';
 
 describe('useEditorCommands', () => {

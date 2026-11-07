@@ -201,12 +201,12 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import type { User, Material } from '@/types';
 import type { Category } from '@/modules/CategoryManager/ui/types';
-import Editor from '@/components/shared/Editor/Index.vue';
-import RawHtmlEditor from '@/components/shared/Editor/RawHtmlEditor.vue';
+import Editor from './editor/Index.vue';
+import RawHtmlEditor from './editor/RawHtmlEditor.vue';
 import LinkModal from './components/LinkModal.vue';
 import ImageModal from './components/ImageModal.vue';
 import MediaManagerModal from './components/MediaManagerModal.vue';
-import GallerySelectModal from '@/components/shared/GallerySelectModal.vue';
+import GallerySelectModal from './editor/modals/GallerySelectModal.vue';
 import { useSidebarSections } from '@/composables/useSidebarSections';
 import { createEditorContext, provideEditorContext } from '@/modules/MaterialManager/infrastructure/di/editorContext';
 

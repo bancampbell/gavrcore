@@ -1,7 +1,7 @@
 import { ref, readonly, type Ref } from 'vue';
-import { useEditorContext } from '../modules/MaterialManager/infrastructure/di/editorContext';
-import type { ImageData } from '../modules/MaterialManager/domain/values/ImageData';
-import type { LinkData } from '../modules/MaterialManager/domain/values/LinkData';
+import { useEditorContext } from '../../../infrastructure/di/editorContext';
+import type { ImageData } from '../../../domain/values/ImageData';
+import type { LinkData } from '../../../domain/values/LinkData';
 
 export function useEditor() {
     const context = useEditorContext();
