@@ -66,6 +66,7 @@ import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
+import { TableKit } from '@tiptap/extension-table';
 import Toolbar from './Toolbar.vue';
 import { ResizableImage } from './extensions';
 import { CustomDiv } from './extensions/CustomDiv';
@@ -283,7 +284,7 @@ function insertContent(html: string, position?: number): void {
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
             'section', 'article', 'header', 'footer', 'nav',
         ],
-        ALLOWED_ATTR: ['href', 'target', 'title', 'src', 'alt', 'width', 'height', 'style', 'class', 'id', 'data-align', 'data-float'],
+        ALLOWED_ATTR: ['href', 'target', 'title', 'src', 'alt', 'width', 'height', 'style', 'class', 'id', 'data-align', 'data-float', 'rowspan', 'colspan'],
         ALLOW_DATA_ATTR: false,
         ADD_URI_SAFE_ATTR: ['src', 'href'],
     });
@@ -337,6 +338,7 @@ onMounted(async () => {
             Underline,
             Strike,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            TableKit,
             CleanPaste,
         ],
         content: props.modelValue || '<p>Начните писать здесь...</p>',

@@ -5,6 +5,7 @@ import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
+import { TableKit } from '@tiptap/extension-table';
 import { TiptapEditorAdapter } from '../../infrastructure/adapters/TiptapEditorAdapter';
 import { ResizableImage } from '../../components/shared/Editor/extensions/ResizableImage';
 import { CustomDiv } from '../../components/shared/Editor/extensions/CustomDiv';
@@ -29,6 +30,7 @@ describe('TiptapEditorAdapter', () => {
                 Underline,
                 Strike,
                 TextAlign.configure({ types: ['heading', 'paragraph'] }),
+                TableKit,
             ],
             content: '<p>Test content</p>',
         });
@@ -91,5 +93,17 @@ describe('TiptapEditorAdapter', () => {
         adapter.setContent('<p>Updated</p>');
         adapter.triggerUpdate(adapter.getHTML());
         expect(updatedHtml).toContain('<p>Updated</p>');
+    });
+
+    it('setContent keeps table structure with rowspan on getHTML', () => {
+        adapter.setContent('<table><tbody><tr><td rowspan="2">Cell A</td><td>Cell B</td></tr><tr><td>Cell C</td></tr></tbody></table>');
+        const html = adapter.getHTML();
+        expect(html).toContain('<table');
+        expect(html).toContain('<tr>');
+        expect(html).toContain('rowspan="2"');
+        expect(html).toContain('Cell A');
+        expect(html).toContain('Cell B');
+        expect(html).toContain('Cell C');
+        expect(html).toContain('</table>');
     });
 });
