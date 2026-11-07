@@ -53,6 +53,19 @@ class CreateMaterialRequestTest extends TestCase
             ->assertJsonValidationErrors(['slug']);
     }
 
+    public function test_slug_must_not_use_reserved_first_segment(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->postJson(route('admin.materials.store'), [
+                'title' => 'Test',
+                'slug' => 'search',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['slug'])
+            ->assertJsonPath('errors.slug.0', 'Адрес \'search\' занят системным');
+    }
+
     public function test_state_must_be_valid_enum(): void
     {
         $this->actingAs($this->admin)

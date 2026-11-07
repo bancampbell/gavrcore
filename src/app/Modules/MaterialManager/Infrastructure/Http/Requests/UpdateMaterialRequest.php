@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 
 class UpdateMaterialRequest extends FormRequest
 {
+    private const RESERVED_SLUGS = [
+        'admin', 'api', 'search', 'sitemap', 'storage', 'material', 'category',
+        'login', 'register', 'dashboard', 'galleries',
+    ];
+
     public function authorize(): bool
     {
         $user = $this->user();
@@ -39,7 +44,7 @@ class UpdateMaterialRequest extends FormRequest
 
         return [
             'title' => 'sometimes|required|string|max:255',
-            'slug' => "nullable|string|max:255|unique:materials,slug,{$materialId},id",
+            'slug' => ['nullable', 'string', 'max:255', "unique:materials,slug,{$materialId},id", Rule::notIn(self::RESERVED_SLUGS)],
             'content' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'state' => ['nullable', Rule::in(['published', 'draft', 'archived'])],
@@ -61,6 +66,7 @@ class UpdateMaterialRequest extends FormRequest
     {
         return [
             'title.required' => 'Заголовок обязателен',
+            'slug.not_in' => 'Адрес \':input\' занят системным',
             'category_id.exists' => 'Выбранная категория не существует',
             'state.in' => 'Некорректный статус',
             'template.in' => 'Некорректный шаблон',

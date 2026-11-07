@@ -44,7 +44,7 @@ const fakeRect = { x: 0, y: 0, top: 0, left: 0, right: 0, bottom: 0, width: 0, h
 (Range.prototype as any).getClientRects = () => [fakeRect];
 (Range.prototype as any).getBoundingClientRect = () => fakeRect;
 
-function createHarness(initialContent: string, materials: any[] = []) {
+function createHarness(initialContent: string, materials: any[] = [], categories: any[] = []) {
     return defineComponent({
         setup() {
             context = createEditorContext();
@@ -71,7 +71,7 @@ function createHarness(initialContent: string, materials: any[] = []) {
                 }),
                 h(LinkModal as any, {
                     show: showLinkModal.value,
-                    categories: [],
+                    categories,
                     materials,
                     editData: editLinkData.value,
                     selectedText: selectedLinkText.value,
@@ -88,9 +88,13 @@ const waitForEditorDebounce = () => new Promise((resolve) => setTimeout(resolve,
 
 const LINK_X_HTML = '<p>до <a href="/materials/5" target="_self" title="" rel="noopener noreferrer nofollow" class="text-blue-600 underline">Материал X</a> после</p>';
 
+const CATEGORIES = [
+    { id: 5, name: 'Новости', alias: 'novosti', parent_id: null },
+];
+
 const MATERIALS = [
     { id: 1, title: 'Материал А', slug: 'material-a', category_id: null },
-    { id: 2, title: 'Материал Б', slug: 'material-b', category_id: null },
+    { id: 2, title: 'Материал Б', slug: 'material-b', category_id: 5 },
 ];
 
 const urlInput = () => document.body.querySelector('.link-modal .form-row input') as HTMLInputElement;
@@ -170,7 +174,7 @@ describe('Editor: редактирование существующей ссыл
     });
 
     it('редактирование заменяет текст якоря целиком: многоузловый якорь → один якорь с новым текстом', async () => {
-        mount(createHarness('<p>Материал А</p>', MATERIALS), {
+        mount(createHarness('<p>Материал А</p>', MATERIALS, CATEGORIES), {
             attachTo: document.body,
             global: { provide: { user: { id: 1 } } },
         });
@@ -225,7 +229,7 @@ describe('Editor: редактирование существующей ссыл
         await flushPromises();
         (document.body.querySelector('.link-modal .material-item') as HTMLElement).click();
         await flushPromises();
-        expect(urlInput().value).toBe('/material/material-b');
+        expect(urlInput().value).toBe('/novosti/material-b');
 
         textInput().value = 'Б';
         textInput().dispatchEvent(new Event('input'));
@@ -233,10 +237,10 @@ describe('Editor: редактирование существующей ссыл
         await submit();
 
         // 5. в документе ОДИН якорь с текстом «Б»: никакого «Материал АБ»
-        expect(lastEditPayload).toMatchObject({ oldText: 'Материал А', newText: 'Б', newUrl: '/material/material-b' });
+        expect(lastEditPayload).toMatchObject({ oldText: 'Материал А', newText: 'Б', newUrl: '/novosti/material-b' });
         expect(document.body.querySelectorAll('.tiptap a')).toHaveLength(1);
         const html = context.editorAdapter.getHTML();
-        expect(html).toContain('href="/material/material-b"');
+        expect(html).toContain('href="/novosti/material-b"');
         expect(html).not.toContain('href="/a"');
         const docText = ed().state.doc.textContent;
         expect(docText).not.toContain('АБ');
@@ -244,8 +248,33 @@ describe('Editor: редактирование существующей ссыл
         expect((document.body.querySelector('.tiptap a') as HTMLAnchorElement).textContent).toBe('Б');
     });
 
+    it('материал без категории вставляется корневым адресом /{slug}', async () => {
+        mount(createHarness('<p>Материал А</p>', MATERIALS, CATEGORIES), {
+            attachTo: document.body,
+            global: { provide: { user: { id: 1 } } },
+        });
+        await flushPromises();
+        await waitForEditorDebounce();
+
+        const ed = () => context.editorAdapter.getEditor()!;
+        ed().commands.setTextSelection({ from: 1, to: 1 + 'Материал А'.length });
+        (document.body.querySelector('button[title="Вставить ссылку"]') as HTMLButtonElement).click();
+        await flushPromises();
+
+        const searchInput = document.body.querySelector('.link-modal .search-input') as HTMLInputElement;
+        searchInput.value = 'Материал А';
+        searchInput.dispatchEvent(new Event('input'));
+        await flushPromises();
+        (document.body.querySelector('.link-modal .search-button') as HTMLButtonElement).click();
+        await flushPromises();
+        (document.body.querySelector('.link-modal .material-item') as HTMLElement).click();
+        await flushPromises();
+
+        expect(urlInput().value).toBe('/material-a');
+    });
+
     it('якорь из 3 слов: открытие по каретке внутри слова подставляет все 3 слова, замена — целиком', async () => {
-        mount(createHarness('<p>до <a href="/a">Первое <strong>второе</strong> третье</a> после</p>', MATERIALS), {
+        mount(createHarness('<p>до <a href="/a">Первое <strong>второе</strong> третье</a> после</p>', MATERIALS, CATEGORIES), {
             attachTo: document.body,
             global: { provide: { user: { id: 1 } } },
         });
@@ -294,7 +323,7 @@ describe('Editor: редактирование существующей ссыл
         // якорь заменён целиком: один якорь, новый href и текст
         expect(document.body.querySelectorAll('.tiptap a')).toHaveLength(1);
         const html = context.editorAdapter.getHTML();
-        expect(html).toContain('href="/material/material-b"');
+        expect(html).toContain('href="/novosti/material-b"');
         expect(html).not.toContain('href="/a"');
         expect(ed().state.doc.textContent).toBe('до Б после');
         expect((document.body.querySelector('.tiptap a') as HTMLAnchorElement).textContent).toBe('Б');

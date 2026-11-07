@@ -19,7 +19,8 @@ class SitemapController extends Controller
     {
         $xml = Cache::remember('sitemap', 3600, function () {
             $materials = MaterialModel::where('state', 'published')
-                ->select('slug', 'updated_at')
+                ->with('category')
+                ->select('slug', 'category_id', 'updated_at')
                 ->get();
 
             $categories = CategoryModel::select('alias', 'updated_at')
@@ -54,8 +55,12 @@ class SitemapController extends Controller
         }
 
         foreach ($materials as $material) {
+            $loc = $material->category
+                ? "{$siteUrl}/{$material->category->alias}/{$material->slug}"
+                : "{$siteUrl}/{$material->slug}";
+
             $xml .= "    <url>\n";
-            $xml .= "        <loc>{$siteUrl}/material/{$material->slug}</loc>\n";
+            $xml .= "        <loc>{$loc}</loc>\n";
             $xml .= "        <lastmod>{$material->updated_at->toW3cString()}</lastmod>\n";
             $xml .= "        <priority>0.6</priority>\n";
             $xml .= "    </url>\n";

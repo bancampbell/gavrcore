@@ -18,6 +18,7 @@ use App\Modules\SeoManager\Application\Services\BreadcrumbService;
 use App\Modules\SeoManager\Application\Services\MetaService;
 use App\Modules\SettingManager\Application\Services\SettingService;
 use App\Modules\ThemeManager\Application\Services\ThemeService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -175,6 +176,53 @@ class WebMaterialController
             'currentTheme' => $currentTheme,
             'breadcrumbs' => $breadcrumbs,
         ]);
+    }
+
+    public function showInCategory(string $category, string $slug): Response
+    {
+        $categoryModel = $this->categoryService->findBySlug($category);
+
+        if (! $categoryModel) {
+            abort(404);
+        }
+
+        $material = $this->repository->findBySlug($slug);
+
+        if (! $material || $material->categoryId !== (int) $categoryModel->id) {
+            abort(404);
+        }
+
+        return $this->show($slug);
+    }
+
+    public function showRoot(string $slug): Response
+    {
+        $material = $this->repository->findBySlug($slug);
+
+        if (! $material || $material->categoryId !== null) {
+            abort(404);
+        }
+
+        return $this->show($slug);
+    }
+
+    public function legacyShow(string $slug): RedirectResponse
+    {
+        $material = $this->repository->findBySlug($slug);
+
+        if (! $material) {
+            abort(404);
+        }
+
+        $category = $material->categoryId !== null
+            ? $this->categoryService->findById($material->categoryId)
+            : null;
+
+        $path = $category
+            ? '/'.$category->alias.'/'.$material->slug
+            : '/'.$material->slug;
+
+        return redirect($path, 301);
     }
 
     public function category(string $slug, Request $request): Response

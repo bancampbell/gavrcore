@@ -56,7 +56,7 @@
                                 <span v-if="showAuthor">Автор: {{ homepageMaterial.user?.name }}</span>
                                 <span v-if="showViews">Просмотров: {{ homepageMaterial.views }}</span>
                             </div>
-                            <Link :href="`/material/${homepageMaterial.slug}`" class="text-indigo-600 hover:text-indigo-800">
+                            <Link :href="materialUrl(homepageMaterial)" class="text-indigo-600 hover:text-indigo-800">
                                 Читать полностью →
                             </Link>
                         </div>
@@ -124,5 +124,10 @@ const showViews = useGlobal
 const formatDate = (date) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('ru-RU');
+};
+
+const materialUrl = (material) => {
+    const slug = material.slug || material.alias;
+    return material.category ? `/${material.category.slug}/${slug}` : `/${slug}`;
 };
 </script>

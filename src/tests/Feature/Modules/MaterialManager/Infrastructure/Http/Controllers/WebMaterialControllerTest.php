@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\MaterialManager\Infrastructure\Http\Controllers;
 
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\FormBuilder\Database\Seeders\FormsSeeder;
 use App\Modules\FormBuilder\Infrastructure\Models\FormModel;
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
@@ -92,12 +93,109 @@ class WebMaterialControllerTest extends TestCase
             'access' => 'public',
         ]);
 
-        $this->get(route('material.show', $material->slug))
+        $this->get('/'.$material->slug)
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('MaterialManager/Show', false)
                 ->where('material.id', $material->id)
             );
+    }
+
+    public function test_material_with_category_renders_at_category_slug_url(): void
+    {
+        $category = CategoryModel::factory()->create(['alias' => 'novosti']);
+        $material = (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => $category->id,
+            'slug' => 'strategiia-razvitiia',
+        ]);
+
+        $this->get('/novosti/strategiia-razvitiia')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Show', false)
+                ->where('material.id', $material->id)
+            );
+    }
+
+    public function test_category_slug_url_returns_404_when_category_mismatch(): void
+    {
+        $category = CategoryModel::factory()->create(['alias' => 'novosti']);
+        $otherCategory = CategoryModel::factory()->create(['alias' => 'dokumenty']);
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => $category->id,
+            'slug' => 'strategiia-razvitiia',
+        ]);
+
+        $this->get("/{$otherCategory->alias}/strategiia-razvitiia")->assertNotFound();
+    }
+
+    public function test_root_slug_renders_material_without_category(): void
+    {
+        $material = (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => null,
+            'slug' => 'contacts',
+        ]);
+
+        $this->get('/contacts')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Show', false)
+                ->where('material.id', $material->id)
+            );
+    }
+
+    public function test_root_slug_returns_404_when_material_has_category(): void
+    {
+        $category = CategoryModel::factory()->create(['alias' => 'novosti']);
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => $category->id,
+            'slug' => 'strategiia-razvitiia',
+        ]);
+
+        $this->get('/strategiia-razvitiia')->assertNotFound();
+    }
+
+    public function test_legacy_material_url_redirects_to_category_slug(): void
+    {
+        $category = CategoryModel::factory()->create(['alias' => 'novosti']);
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => $category->id,
+            'slug' => 'strategiia-razvitiia',
+        ]);
+
+        $this->get('/material/strategiia-razvitiia')
+            ->assertStatus(301)
+            ->assertRedirect('/novosti/strategiia-razvitiia');
+    }
+
+    public function test_legacy_material_url_redirects_to_root_slug_without_category(): void
+    {
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => null,
+            'slug' => 'contacts',
+        ]);
+
+        $this->get('/material/contacts')
+            ->assertStatus(301)
+            ->assertRedirect('/contacts');
     }
 
     public function test_show_returns_403_for_registered_material_when_guest(): void
@@ -108,7 +206,7 @@ class WebMaterialControllerTest extends TestCase
             'access' => 'registered',
         ]);
 
-        $this->get(route('material.show', $material->slug))->assertForbidden();
+        $this->get('/'.$material->slug)->assertForbidden();
     }
 
     public function test_search_returns_results(): void
@@ -136,7 +234,8 @@ class WebMaterialControllerTest extends TestCase
 
         $form = FormModel::where('alias', 'feedback')->firstOrFail();
 
-        $this->get('/material/obratnaia-sviaz')
+        // Демо-материал привязан к первой категории сидера (Uncategorized)
+        $this->get('/uncategorized/obratnaia-sviaz')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('MaterialManager/Show', false)

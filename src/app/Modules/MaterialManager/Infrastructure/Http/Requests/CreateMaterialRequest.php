@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 
 class CreateMaterialRequest extends FormRequest
 {
+    private const RESERVED_SLUGS = [
+        'admin', 'api', 'search', 'sitemap', 'storage', 'material', 'category',
+        'login', 'register', 'dashboard', 'galleries',
+    ];
+
     public function authorize(): bool
     {
         return $this->user()->can('create', Material::class);
@@ -17,7 +22,7 @@ class CreateMaterialRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:materials,slug',
+            'slug' => ['nullable', 'string', 'max:255', 'unique:materials,slug', Rule::notIn(self::RESERVED_SLUGS)],
             'content' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'state' => ['nullable', Rule::in(['published', 'draft', 'archived'])],
@@ -39,6 +44,7 @@ class CreateMaterialRequest extends FormRequest
         return [
             'title.required' => 'Заголовок обязателен',
             'title.max' => 'Заголовок не может превышать 255 символов',
+            'slug.not_in' => 'Адрес \':input\' занят системным',
             'category_id.exists' => 'Выбранная категория не существует',
             'state.in' => 'Некорректный статус',
         ];

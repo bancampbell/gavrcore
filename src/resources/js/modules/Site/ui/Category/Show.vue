@@ -39,7 +39,7 @@
                         </div>
 
                         <h2 class="text-xl font-bold text-gray-900 mb-2">
-                            <Link :href="`/material/${material.slug || material.alias}`" class="hover:text-indigo-600">
+                            <Link :href="materialUrl(material)" class="hover:text-indigo-600">
                                 {{ material.title }}
                             </Link>
                         </h2>
@@ -124,5 +124,10 @@ const excerpt = (content) => {
     if (!content) return '';
     const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     return text.length > 220 ? text.slice(0, 220) + '…' : text;
+};
+
+const materialUrl = (material) => {
+    const slug = material.slug || material.alias;
+    return material.category ? `/${material.category.slug}/${slug}` : `/${slug}`;
 };
 </script>
