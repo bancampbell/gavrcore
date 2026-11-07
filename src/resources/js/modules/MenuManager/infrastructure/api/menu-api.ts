@@ -18,7 +18,7 @@ export interface MenuItem {
     parent_id: number | null;
     title: string;
     alias: string;
-    link_type: 'url' | 'material' | 'separator' | 'heading' | 'external';
+    link_type: 'url' | 'material' | 'category' | 'separator' | 'heading' | 'external';
     link_value: string | null;
     target: '_self' | '_blank';
     ordering: number;

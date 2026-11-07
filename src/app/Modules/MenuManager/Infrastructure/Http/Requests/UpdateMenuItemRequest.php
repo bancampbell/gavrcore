@@ -2,6 +2,7 @@
 
 namespace App\Modules\MenuManager\Infrastructure\Http\Requests;
 
+use App\Modules\CategoryManager\Infrastructure\Models\CategoryModel;
 use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -40,8 +41,21 @@ class UpdateMenuItemRequest extends FormRequest
             ],
             'title' => 'required|string|max:255',
             'alias' => ['nullable', 'string', 'max:255', Rule::unique('menu_items', 'alias')->where('menu_type_id', $menuTypeId)->ignore($id)],
-            'link_type' => 'required|in:url,material,separator,heading,external',
-            'link_value' => 'nullable|string',
+            'link_type' => 'required|in:url,material,category,separator,heading,external',
+            'link_value' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn () => $this->input('link_type') === 'category'),
+                function ($attribute, $value, $fail) {
+                    if ($this->input('link_type') !== 'category') {
+                        return;
+                    }
+                    if (! CategoryModel::where('slug', $value)->exists()) {
+                        $fail('Категория с таким слагом не существует.');
+                    }
+                },
+            ],
             'target' => 'nullable|in:_self,_blank',
             'ordering' => 'nullable|integer',
             'status' => 'nullable|boolean',
@@ -57,6 +71,7 @@ class UpdateMenuItemRequest extends FormRequest
         return [
             'title.required' => 'Введите заголовок',
             'alias.unique' => 'Пункт меню с таким алиасом уже существует в этом меню',
+            'link_value.required' => 'Укажите категорию',
         ];
     }
 

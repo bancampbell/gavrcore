@@ -16,6 +16,7 @@ class CategoryTreeResource extends JsonResource
             'id' => $this['id'],
             'name' => $this['name'],
             'alias' => $this['alias'],
+            'slug' => $this['slug'],
             'description' => $this['description'],
             'depth' => $this['depth'],
             'lft' => $this['lft'],

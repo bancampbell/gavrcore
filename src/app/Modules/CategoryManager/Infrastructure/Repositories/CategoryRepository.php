@@ -237,6 +237,7 @@ class CategoryRepository implements CategoryRepositoryInterface
                     'id' => $category->id,
                     'name' => $category->name,
                     'alias' => $category->alias,
+                    'slug' => $category->slug,
                     'description' => $category->description,
                     'depth' => $category->depth,
                     'lft' => $category->lft,

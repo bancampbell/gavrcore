@@ -49,6 +49,7 @@ export function useMenuItems() {
         const labels: Record<string, string> = {
             url: 'URL',
             material: 'Материал',
+            category: 'Список материалов категории',
             separator: 'Разделитель',
             heading: 'Заголовок',
             external: 'Внешний URL',

@@ -33,6 +33,7 @@
                                     <select v-model="form.link_type" class="admin-form-select w-full max-w-md">
                                         <option value="url">URL</option>
                                         <option value="material">Материал</option>
+                                        <option value="category">Список материалов категории</option>
                                         <option value="separator">Разделитель</option>
                                         <option value="heading">Заголовок</option>
                                         <option value="external">Внешний URL</option>
@@ -41,8 +42,9 @@
                                 <div v-if="form.link_type !== 'separator' && form.link_type !== 'heading'">
                                     <label class="admin-form-label">Ссылка</label>
                                     <div class="flex gap-2 max-w-md">
-                                        <input v-model="form.link_value" type="text" class="admin-form-input flex-1" :placeholder="form.link_type === 'material' ? 'Выберите материал' : 'https://...'" :readonly="form.link_type === 'material'" />
+                                        <input v-model="form.link_value" type="text" class="admin-form-input flex-1" :placeholder="form.link_type === 'material' ? 'Выберите материал' : form.link_type === 'category' ? 'Выберите категорию' : 'https://...'" :readonly="form.link_type === 'material' || form.link_type === 'category'" />
                                         <button v-if="form.link_type === 'material'" @click="showMaterialModal = true" type="button" class="admin-btn admin-btn-secondary whitespace-nowrap">Выбрать</button>
+                                        <button v-else-if="form.link_type === 'category'" @click="showCategoryModal = true" type="button" class="admin-btn admin-btn-secondary whitespace-nowrap">Выбрать</button>
                                     </div>
                                 </div>
                                 <div>
@@ -107,6 +109,7 @@
         </div>
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
         <MaterialSelectorModal :show="showMaterialModal" @close="showMaterialModal = false" @select="selectMaterial" />
+        <CategorySelectorModal :show="showCategoryModal" @close="showCategoryModal = false" @select="selectCategory" />
     </AdminLayout>
 </template>
 
@@ -116,6 +119,7 @@ import { Head, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 import MaterialSelectorModal from './components/MaterialSelectorModal.vue';
+import CategorySelectorModal from './components/CategorySelectorModal.vue';
 import { menuTypesApi, menuItemsApi, type MenuType, type MenuItem } from '@/modules/MenuManager/infrastructure/api/menu-api';
 
 const props = defineProps<{ user: any; title?: string; menuTypeId: number }>();
@@ -125,6 +129,7 @@ const parentOptions = ref<(MenuItem & { level: number })[]>([]);
 const orderOptions = ref<(MenuItem & { level: number })[]>([]);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 const showMaterialModal = ref(false);
+const showCategoryModal = ref(false);
 const positionType = ref<'first' | 'after'>('first');
 let notificationTimeout: number | null = null;
 
@@ -143,7 +148,7 @@ const form = ref({
 });
 
 watch(() => form.value.link_type, (newType) => {
-    if (newType !== 'material') {
+    if (newType !== 'material' && newType !== 'category') {
         form.value.link_value = '';
     }
 });
@@ -216,6 +221,10 @@ const updateAlias = () => {
 
 const selectMaterial = (material: { id: number; title: string; slug: string }) => {
     form.value.link_value = material.slug;
+};
+
+const selectCategory = (category: { id: number; name: string; slug: string }) => {
+    form.value.link_value = category.slug;
 };
 
 const prepareSubmitData = () => {
