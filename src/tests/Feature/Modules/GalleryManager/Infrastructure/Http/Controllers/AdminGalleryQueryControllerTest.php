@@ -154,7 +154,7 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->get(route('admin.galleries.edit', 9999))
             ->assertNotFound()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Errors/NotFound', false)
+                ->component('Site/Errors/NotFound', false)
             );
     }
 }

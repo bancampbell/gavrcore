@@ -108,7 +108,7 @@ class DashboardControllerTest extends TestCase
 
         $this->actingAs($user)->get("/dashboard/tickets/{$submission->id}")
             ->assertNotFound()
-            ->assertInertia(fn (Assert $page) => $page->component('Errors/NotFound', false));
+            ->assertInertia(fn (Assert $page) => $page->component('Site/Errors/NotFound', false));
     }
 
     public function test_show_returns_404_for_missing_submission(): void
@@ -117,6 +117,6 @@ class DashboardControllerTest extends TestCase
 
         $this->actingAs($user)->get('/dashboard/tickets/9999')
             ->assertNotFound()
-            ->assertInertia(fn (Assert $page) => $page->component('Errors/NotFound', false));
+            ->assertInertia(fn (Assert $page) => $page->component('Site/Errors/NotFound', false));
     }
 }

@@ -82,7 +82,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 429);
             }
 
-            return Inertia::render('Errors/429', [
+            return Inertia::render('Site/Errors/TooManyRequests', [
                 'message' => 'Слишком много попыток. Пожалуйста, подождите '.$retryAfter.' секунд.',
                 'retry_after' => $retryAfter,
             ])->toResponse($request)->setStatusCode(429);
@@ -96,7 +96,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
 
-            return Inertia::render('Errors/NotFound', [
+            return Inertia::render('Site/Errors/NotFound', [
                 'status' => 404,
             ])->toResponse($request)->setStatusCode(404);
         });
@@ -113,7 +113,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 500);
             }
 
-            return Inertia::render('Errors/ServerError', [
+            return Inertia::render('Site/Errors/ServerError', [
                 'status' => 500,
             ])->toResponse($request)->setStatusCode(500);
         });

@@ -30,7 +30,7 @@ class AdminMiddlewareTest extends TestCase
         $response = $this->actingAs($user)->get('/admin/dashboard');
 
         $response->assertForbidden()
-            ->assertInertia(fn (Assert $page) => $page->component('Errors/Forbidden', false));
+            ->assertInertia(fn (Assert $page) => $page->component('Site/Errors/Forbidden', false));
     }
 
     public function test_non_admin_user_gets_forbidden_json_for_ajax(): void

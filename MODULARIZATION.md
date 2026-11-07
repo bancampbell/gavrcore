@@ -17,10 +17,39 @@
 - [x] T2.3 Тесты: __tests__/{application,composables,editor,infrastructure}/** → __tests__/modules/material-manager/editor/**. Обновить пути импортов. Проверка: vitest (весь сьют). — 2026-11-07
 
 ## Фаза 3. Публичный сайт → modules/Site (после фаз 0–2, по одной задаче за сессию)
-- [ ] T3.0 Решение по структуре: зафиксировать здесь целевые имена Inertia-страниц (например Site/Home, Site/Category/Show...) и структуру modules/Site/ui/. Без кода — только план, согласовать с человеком.
-- [ ] T3.1 Errors: Pages/Errors/{Forbidden,429,NotFound,ServerError}.vue → modules/Site/ui/errors/. Обновить: bootstrap/app.php (exception handlers), AdminMiddleware, app.ts resolver. Проверка: vitest, build, страницы 403/404/429/500 визуально.
-- [ ] T3.2 Index/Category/Search → modules/Site/ui/pages/... Обновить PHP Inertia::render имена в контроллерах + resolver. Проверка: vitest, build, публичные страницы визуально.
-- [ ] T3.3 landing/Index → modules/Site/ui/landing/. Проверка: build, лендинг визуально.
+- [x] T3.0 Контракт переноса публичного сайта в modules/Site (задача-план, без кода) — 2026-11-07
+
+  Целевая структура:
+  ```
+  modules/Site/
+  ├── ui/pages/Home.vue                  Inertia-имя: 'Site/Home'          (сейчас Pages/Index.vue, рендерится как 'Index')
+  ├── ui/pages/Category/Show.vue         Inertia-имя: 'Site/Category/Show' (сейчас Pages/Category/Show.vue)
+  ├── ui/pages/Search/Index.vue          Inertia-имя: 'Site/Search/Index'  (сейчас Pages/Search/Index.vue)
+  ├── ui/landing/Index.vue               Inertia-имя: 'Site/Landing/Index' (сейчас Pages/landing/Index.vue)
+  ├── ui/errors/{Forbidden,NotFound,ServerError,TooManyRequests}.vue
+  │                                      Inertia-имя: 'Site/Errors/<Name>' (сейчас Pages/Errors/*: Forbidden, 429→TooManyRequests, NotFound, ServerError)
+  └── ui/components/Breadcrumbs.vue      (уезжает из components/shared — потребители: Pages/*)
+  ```
+
+  Правила переименования:
+  1. Только переименование путей/имён Inertia-страниц — никакой логики в контроллерах, middleware, обработчиках.
+  2. Компонент 429.vue переименовать файлом в TooManyRequests.vue (имя класса/страницы чище); вызовы обновить.
+  3. app.ts: glob './Pages/**' (строка 7) удаляется ТОЛЬКО в T3.3 (последний перенос), до этого Pages glob остаётся — одна страница не должна резолвиться из двух мест одновременно. В T3.1–T3.2 после переноса старые файлы удаляются, так что коллизии нет; glob физически пустеет к T3.3.
+  4. MenuItem.vue и прочие shared-компоненты тем НЕ трогаем (у них потребители themes/*).
+  5. После T3.3 папка Pages/ должна быть удалена полностью (пустая).
+- [x] T3.1 Errors: Pages/Errors/{Forbidden,NotFound,ServerError}.vue → modules/Site/ui/errors/; Pages/Errors/429.vue → modules/Site/ui/errors/TooManyRequests.vue (переименование файлом). Обновить PHP-точки (только строки Inertia::render, логику не трогать):
+  - src/app/Modules/UserManager/Infrastructure/Http/Middleware/AdminMiddleware.php:40 — 'Errors/Forbidden' → 'Site/Errors/Forbidden';
+  - src/bootstrap/app.php:85 — 'Errors/429' → 'Site/Errors/TooManyRequests';
+  - src/bootstrap/app.php:99 — 'Errors/NotFound' → 'Site/Errors/NotFound';
+  - src/bootstrap/app.php:116 — 'Errors/ServerError' → 'Site/Errors/ServerError'.
+  Старые файлы в Pages/Errors/ удалить. app.ts resolver НЕ менять (Pages glob остаётся). Проверка: vitest, build, страницы 403/404/429/500 визуально. — 2026-11-07
+- [ ] T3.2 Index/Category/Search + Breadcrumbs:
+  - Pages/Index.vue → modules/Site/ui/pages/Home.vue (Inertia-имя 'Index' → 'Site/Home');
+  - Pages/Category/Show.vue → modules/Site/ui/pages/Category/Show.vue ('Category/Show' → 'Site/Category/Show');
+  - Pages/Search/Index.vue → modules/Site/ui/pages/Search/Index.vue ('Search/Index' → 'Site/Search/Index');
+  - components/shared/Breadcrumbs.vue → modules/Site/ui/components/Breadcrumbs.vue; обновить импорты в Pages/Index.vue:79, Pages/Category/Show.vue:89, Pages/Search/Index.vue:108 (файлы переезжают вместе со страницами) и в modules/MaterialManager/ui/Show.vue:67.
+  Обновить Inertia::render в src/app/Modules/MaterialManager/Infrastructure/Http/Controllers/WebMaterialController.php (найден grep'ом по src/app): строка 121 'Index' → 'Site/Home', строка 204 'Category/Show' → 'Site/Category/Show', строка 238 'Search/Index' → 'Site/Search/Index' (строка 52 'landing/Index' НЕ трогать — это T3.3). app.ts resolver НЕ менять. Старые файлы удалить. Проверка: vitest, build, публичные страницы визуально.
+- [ ] T3.3 landing: Pages/landing/Index.vue → modules/Site/ui/landing/Index.vue. Обновить Inertia::render в src/app/Modules/MaterialManager/Infrastructure/Http/Controllers/WebMaterialController.php:52 — 'landing/Index' → 'Site/Landing/Index'. Удалить glob './Pages/**/*.vue' в app.ts (строка 7) и удалить пустую папку Pages/ целиком. Проверка: build, лендинг визуально.
 
 ## После всех фаз
-- [ ] T4.1 Финальная проверка: вне modules/ остались только app.ts, d.ts, layouts/{AdminLayout,LayoutSwitcher,Default,Warm,Landing}, components/Admin/**, components/shared/{Toast,ToastContainer,ConfirmModal,CookieConsent,GlobalLightbox,ShortcodeRenderer,MenuItem,Breadcrumbs}, composables/{useToast,useSidebarSections}, services/, themes/, css/, types/, __tests__ (только modules/). Аудит повторить (тот же промт), сверить.
+- [ ] T4.1 Финальная проверка: вне modules/ остались только app.ts, d.ts, layouts/{AdminLayout,LayoutSwitcher,Default,Warm,Landing}, components/Admin/**, components/shared/{Toast,ToastContainer,ConfirmModal,CookieConsent,GlobalLightbox,ShortcodeRenderer,MenuItem}, composables/{useToast,useSidebarSections}, services/, themes/, css/, types/, __tests__ (только modules/). Аудит повторить (тот же промт), сверить.

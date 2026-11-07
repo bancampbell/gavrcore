@@ -37,7 +37,7 @@ class AdminMiddleware
                 return response()->json(['message' => 'Доступ запрещён'], 403);
             }
 
-            return Inertia::render('Errors/Forbidden', [
+            return Inertia::render('Site/Errors/Forbidden', [
                 'status' => 403,
             ])->toResponse($request)->setStatusCode(403);
         }
