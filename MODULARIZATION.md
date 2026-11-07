@@ -8,7 +8,7 @@
 
 ## Фаза 1. Одиночные потребители (1 сессия)
 - [x] T1.1 Перенести layouts/DashboardLayout.vue → modules/UserDashboard/ui/layouts/DashboardLayout.vue. Обновить импорты (6 страниц UserDashboard + grep по проекту). Проверка: vitest, build, кабинет открывается визуально. — 2026-11-07
-- [ ] T1.2 Перенести components/shared/AuthCard.vue → modules/UserManager/ui/Auth/AuthCard.vue. Обновить импорты (Login.vue, Register.vue). Проверка: vitest, build, страницы логина/регистрации визуально.
+- [x] T1.2 Перенести components/shared/AuthCard.vue → modules/UserManager/ui/Auth/AuthCard.vue. Обновить импорты (Login.vue, Register.vue). Проверка: vitest, build, страницы логина/регистрации визуально. — 2026-11-07
 
 ## Фаза 2. Editor-кластер → MaterialManager (3 сессии)
 Цель: весь поддомен редактора живёт внутри модуля MaterialManager.

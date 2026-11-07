@@ -83,7 +83,7 @@
 import { ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
-import AuthCard from '@/components/shared/AuthCard.vue';
+import AuthCard from '@/modules/UserManager/ui/Auth/AuthCard.vue';
 
 const props = defineProps<{
     loginUrl?: string;
