@@ -242,8 +242,8 @@ const gridStyle = computed(() => {
     if (alignment === 'right') justifyContent = 'flex-end';
 
     return {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        display: 'flex',
+        flexWrap: 'wrap',
         gap: gutterValue.value + 'px',
         justifyContent,
     };
