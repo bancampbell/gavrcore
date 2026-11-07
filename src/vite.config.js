@@ -12,13 +12,9 @@ export default defineConfig({
             refresh: true,
         }),
         vue(),
-        inertia({
-            pages: [
-                'resources/js/Pages/**/*.vue',
-                'resources/js/themes/**/*.vue',
-                'resources/js/modules/**/*.vue',
-            ],
-        }),
+        // @inertiajs/vite не имеет опции pages (только ssr/frameworks);
+        // резолв страниц — в resources/js/app.ts (resolve + import.meta.glob)
+        inertia(),
         {
             name: 'copy-themes',
             closeBundle() {
