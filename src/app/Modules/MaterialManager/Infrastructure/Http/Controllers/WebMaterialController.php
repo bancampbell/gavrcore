@@ -133,14 +133,8 @@ class WebMaterialController
         ]);
     }
 
-    public function show(string $slug): Response
+    public function show(Material $material): Response
     {
-        $material = $this->repository->findBySlug($slug);
-
-        if (! $material) {
-            abort(404);
-        }
-
         if ($material->access !== MaterialAccess::PUBLIC) {
             if (! auth()->check()) {
                 abort(403);
@@ -186,24 +180,27 @@ class WebMaterialController
             abort(404);
         }
 
-        $material = $this->repository->findBySlug($slug);
+        // slug уникален только в рамках категории — ищем сразу с этим
+        // скоупом, иначе одноимённый материал из другой категории дал бы
+        // ложный 404/чужой рендер.
+        $material = $this->repository->findBySlugInCategory($slug, (int) $categoryModel->id);
 
-        if (! $material || $material->categoryId !== (int) $categoryModel->id) {
+        if (! $material) {
             abort(404);
         }
 
-        return $this->show($slug);
+        return $this->show($material);
     }
 
     public function showRoot(string $slug): Response
     {
-        $material = $this->repository->findBySlug($slug);
+        $material = $this->repository->findRootBySlug($slug);
 
-        if (! $material || $material->categoryId !== null) {
+        if (! $material) {
             abort(404);
         }
 
-        return $this->show($slug);
+        return $this->show($material);
     }
 
     public function legacyShow(string $slug): RedirectResponse

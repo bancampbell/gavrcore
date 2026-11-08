@@ -41,10 +41,21 @@ class UpdateMaterialRequest extends FormRequest
     public function rules(): array
     {
         $materialId = $this->route('id');
+        $categoryId = $this->resolveScopeCategoryId();
 
         return [
             'title' => 'sometimes|required|string|max:255',
-            'slug' => ['nullable', 'string', 'max:255', "unique:materials,slug,{$materialId},id", Rule::notIn(self::RESERVED_SLUGS)],
+            'slug' => [
+                'nullable', 'string', 'max:255',
+                Rule::unique('materials', 'slug')
+                    ->ignore($materialId)
+                    ->where(
+                        fn ($query) => $categoryId !== null
+                            ? $query->where('category_id', $categoryId)
+                            : $query->whereNull('category_id')
+                    ),
+                Rule::notIn(self::RESERVED_SLUGS),
+            ],
             'content' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'state' => ['nullable', Rule::in(['published', 'draft', 'archived'])],
@@ -67,9 +78,28 @@ class UpdateMaterialRequest extends FormRequest
         return [
             'title.required' => 'Заголовок обязателен',
             'slug.not_in' => 'Адрес \':input\' занят системным',
+            'slug.unique' => $this->resolveScopeCategoryId() !== null
+                ? 'В этой категории уже есть материал с таким адресом'
+                : 'Материал с таким адресом уже существует',
             'category_id.exists' => 'Выбранная категория не существует',
             'state.in' => 'Некорректный статус',
             'template.in' => 'Некорректный шаблон',
         ];
+    }
+
+    /**
+     * Категория, в рамках которой проверяем уникальность slug: переданная
+     * в запросе (включая явный null — переезд в корень) либо текущая
+     * категория материала. Должна совпадать со скоупом в use case.
+     */
+    private function resolveScopeCategoryId(): ?int
+    {
+        if ($this->has('category_id')) {
+            $value = $this->input('category_id');
+
+            return $value !== null ? (int) $value : null;
+        }
+
+        return MaterialModel::find((int) $this->route('id'))?->category_id;
     }
 }

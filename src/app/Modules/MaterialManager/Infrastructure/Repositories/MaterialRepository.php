@@ -191,9 +191,39 @@ class MaterialRepository implements MaterialRepositoryInterface
         return $model ? $model->toDomain() : null;
     }
 
-    public function existsBySlug(string $slug, ?int $excludeId = null): bool
+    public function findBySlugInCategory(string $slug, int $categoryId): ?Material
+    {
+        $model = MaterialModel::where('slug', $slug)
+            ->where('category_id', $categoryId)
+            ->where('state', 'published')
+            ->where('published_at', '<=', now())
+            ->with(['category', 'user'])
+            ->first();
+
+        return $model ? $model->toDomain() : null;
+    }
+
+    public function findRootBySlug(string $slug): ?Material
+    {
+        $model = MaterialModel::where('slug', $slug)
+            ->whereNull('category_id')
+            ->where('state', 'published')
+            ->where('published_at', '<=', now())
+            ->with(['category', 'user'])
+            ->first();
+
+        return $model ? $model->toDomain() : null;
+    }
+
+    public function existsBySlug(string $slug, ?int $excludeId = null, ?int $categoryId = null): bool
     {
         $query = MaterialModel::where('slug', $slug);
+
+        if ($categoryId !== null) {
+            $query->where('category_id', $categoryId);
+        } else {
+            $query->whereNull('category_id');
+        }
 
         if ($excludeId !== null) {
             $query->where('id', '!=', $excludeId);
@@ -202,9 +232,15 @@ class MaterialRepository implements MaterialRepositoryInterface
         return $query->exists();
     }
 
-    public function existsBySlugWithLock(string $slug, ?int $excludeId = null): bool
+    public function existsBySlugWithLock(string $slug, ?int $excludeId = null, ?int $categoryId = null): bool
     {
         $query = MaterialModel::where('slug', $slug)->lockForUpdate();
+
+        if ($categoryId !== null) {
+            $query->where('category_id', $categoryId);
+        } else {
+            $query->whereNull('category_id');
+        }
 
         if ($excludeId !== null) {
             $query->where('id', '!=', $excludeId);

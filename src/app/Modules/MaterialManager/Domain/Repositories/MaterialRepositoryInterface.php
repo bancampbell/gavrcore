@@ -21,9 +21,13 @@ interface MaterialRepositoryInterface
 
     public function findBySlug(string $slug): ?Material;
 
-    public function existsBySlug(string $slug, ?int $excludeId = null): bool;
+    public function findBySlugInCategory(string $slug, int $categoryId): ?Material;
 
-    public function existsBySlugWithLock(string $slug, ?int $excludeId = null): bool;
+    public function findRootBySlug(string $slug): ?Material;
+
+    public function existsBySlug(string $slug, ?int $excludeId = null, ?int $categoryId = null): bool;
+
+    public function existsBySlugWithLock(string $slug, ?int $excludeId = null, ?int $categoryId = null): bool;
 
     public function findForEdit(int $id): ?Material;
 

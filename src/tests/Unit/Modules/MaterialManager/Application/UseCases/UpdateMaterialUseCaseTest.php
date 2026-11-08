@@ -90,7 +90,7 @@ class UpdateMaterialUseCaseTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('existsBySlugWithLock')
-            ->with('new-slug', null)
+            ->with('new-slug', null, null)
             ->willReturn(false);
 
         $this->repository->expects($this->once())
@@ -175,7 +175,7 @@ class UpdateMaterialUseCaseTest extends TestCase
         $this->repository->method('existsBySlugWithLock')->willReturn(true);
 
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Материал с таким слагом уже существует');
+        $this->expectExceptionMessage('Материал с таким адресом уже существует');
 
         $this->useCase->execute(1, $data, 99);
     }

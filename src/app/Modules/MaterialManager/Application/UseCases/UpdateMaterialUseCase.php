@@ -61,8 +61,18 @@ final readonly class UpdateMaterialUseCase
                     if ($newSlug === '') {
                         throw new \DomainException('Slug cannot be empty');
                     }
-                    if ($this->repository->existsBySlugWithLock($newSlug, $material->id)) {
-                        throw new \DomainException('Материал с таким слагом уже существует');
+                    // Уникальность slug — в рамках новой категории (если
+                    // передана) либо текущей; для безкатегорийных — среди
+                    // прочих безкатегорийных (category_id IS NULL).
+                    $scopeCategoryId = $domainData->categoryId instanceof NotSet
+                        ? $material->categoryId
+                        : $domainData->categoryId;
+                    if ($this->repository->existsBySlugWithLock($newSlug, $material->id, $scopeCategoryId)) {
+                        throw new \DomainException(
+                            $scopeCategoryId !== null
+                                ? 'В этой категории уже есть материал с таким адресом'
+                                : 'Материал с таким адресом уже существует'
+                        );
                     }
                 }
 
@@ -121,7 +131,24 @@ final readonly class UpdateMaterialUseCase
                     );
                 }
 
-                $saved = $this->repository->save($updated);
+                try {
+                    $saved = $this->repository->save($updated);
+                } catch (UniqueConstraintViolationException) {
+                    // Переезд в категорию со сменой slug без валидационной
+                    // проверки (category_id пришёл вместе со slug, гонка
+                    // правок): конфликт частичного unique-индекса
+                    // (category_id, slug) — 422, а не 500 (детект unique
+                    // по эталону UserManager, п.5).
+                    $scopeCategoryId = $domainData->categoryId instanceof NotSet
+                        ? $material->categoryId
+                        : $domainData->categoryId;
+
+                    throw new \DomainException(
+                        $scopeCategoryId !== null
+                            ? 'В этой категории уже есть материал с таким адресом'
+                            : 'Материал с таким адресом уже существует'
+                    );
+                }
 
                 if ($data->showOnHomepage === true) {
                     $this->homepageManager->assign($saved->id);
@@ -133,8 +160,6 @@ final readonly class UpdateMaterialUseCase
 
                 return $saved;
             });
-        } catch (UniqueConstraintViolationException $e) {
-            throw new \DomainException('Материал с таким слагом уже существует');
         } finally {
             $lock?->release();
         }

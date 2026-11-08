@@ -26,92 +26,71 @@ final readonly class CreateMaterialUseCase
 
     public function execute(CreateMaterialData $data, int $actorId): Material
     {
-        $baseSlug = ! empty($data->slug) ? $data->slug : $this->slugGenerator->generate($data->title);
-        if (empty($baseSlug)) {
-            $baseSlug = 'material-'.bin2hex(random_bytes(4));
+        $slug = ! empty($data->slug) ? $data->slug : $this->slugGenerator->generate($data->title);
+        if (empty($slug)) {
+            $slug = 'material-'.bin2hex(random_bytes(4));
         }
-        $attempt = 0;
-        $maxAttempts = 50;
 
         $lock = $this->acquireHomepageLock();
         if ($lock !== null && ! $lock->get()) {
             throw new \DomainException('Не удалось получить блокировку главной страницы');
         }
         try {
-            while ($attempt < $maxAttempts) {
-                $attempt++;
-                $slug = $attempt === 1 ? $baseSlug : $baseSlug.'-'.$attempt;
+            return DB::transaction(function () use ($data, $actorId, $slug) {
+                if ($this->repository->existsBySlugWithLock($slug, null, $data->categoryId)) {
+                    throw new \DomainException($this->duplicateSlugMessage($data->categoryId));
+                }
+
+                $now = $this->clock->now();
+
+                $material = Material::create(
+                    title: $data->title,
+                    userId: $data->userId,
+                    slug: $slug,
+                    categoryId: $data->categoryId,
+                    content: $data->content,
+                    status: $data->status,
+                    access: $data->access,
+                    showOnHomepage: $data->showOnHomepage,
+                    showDate: $data->showDate,
+                    showAuthor: $data->showAuthor,
+                    showCategory: $data->showCategory,
+                    showViews: $data->showViews,
+                    useGlobalSettings: $data->useGlobalSettings,
+                    metaTitle: $data->metaTitle,
+                    metaDescription: $data->metaDescription,
+                    metaKeywords: $data->metaKeywords,
+                    createdAt: $now,
+                );
 
                 try {
-                    return DB::transaction(function () use ($data, $actorId, $slug) {
-                        if ($this->repository->existsBySlugWithLock($slug)) {
-                            if ($data->slug !== null) {
-                                throw new \DomainException('Материал с таким слагом уже существует');
-                            }
-                            throw new \RuntimeException('slug_collision');
-                        }
-
-                        $now = $this->clock->now();
-
-                        $material = Material::create(
-                            title: $data->title,
-                            userId: $data->userId,
-                            slug: $slug,
-                            categoryId: $data->categoryId,
-                            content: $data->content,
-                            status: $data->status,
-                            access: $data->access,
-                            showOnHomepage: $data->showOnHomepage,
-                            showDate: $data->showDate,
-                            showAuthor: $data->showAuthor,
-                            showCategory: $data->showCategory,
-                            showViews: $data->showViews,
-                            useGlobalSettings: $data->useGlobalSettings,
-                            metaTitle: $data->metaTitle,
-                            metaDescription: $data->metaDescription,
-                            metaKeywords: $data->metaKeywords,
-                            createdAt: $now,
-                        );
-
-                        $saved = $this->repository->save($material);
-
-                        if ($data->showOnHomepage) {
-                            $this->homepageManager->assign($saved->id);
-                        }
-
-                        DB::afterCommit(fn () => Event::dispatch(new MaterialCreated($saved, $actorId)));
-
-                        return $saved;
-                    });
-                } catch (UniqueConstraintViolationException $e) {
-                    if ($data->slug !== null) {
-                        throw new \DomainException('Материал с таким слагом уже существует');
-                    }
-                    if ($attempt >= $maxAttempts) {
-                        break;
-                    }
-                    usleep(random_int(10000, 100000));
-
-                    continue;
-                } catch (\RuntimeException $e) {
-                    if ($e->getMessage() === 'slug_collision') {
-                        if ($attempt >= $maxAttempts) {
-                            break;
-                        }
-                        usleep(random_int(10000, 50000));
-
-                        continue;
-                    }
-                    throw $e;
+                    $saved = $this->repository->save($material);
+                } catch (UniqueConstraintViolationException) {
+                    // Гонка созданий: оба запроса прошли валидацию и
+                    // exists-check, проигравший на частичном unique-индексе
+                    // (category_id, slug) получает 422, а не 500 (детект
+                    // unique по эталону UserManager, п.5).
+                    throw new \DomainException($this->duplicateSlugMessage($data->categoryId));
                 }
-            }
+
+                if ($data->showOnHomepage) {
+                    $this->homepageManager->assign($saved->id);
+                }
+
+                DB::afterCommit(fn () => Event::dispatch(new MaterialCreated($saved, $actorId)));
+
+                return $saved;
+            });
         } finally {
             $lock?->release();
         }
+    }
 
-        throw new \DomainException(
-            'Не удалось создать материал: конфликт слага после '.$maxAttempts.' попыток'
-        );
+    private function duplicateSlugMessage(?int $categoryId): string
+    {
+        return $categoryId !== null
+            ? 'В этой категории уже есть материал с таким адресом'
+            : 'Материал с таким адресом уже существует';
     }
 
     /**

@@ -87,7 +87,7 @@ class CreateMaterialUseCaseTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('existsBySlugWithLock')
-            ->with('hello-world')
+            ->with('hello-world', null, null)
             ->willReturn(false);
 
         $this->repository->expects($this->once())
@@ -123,11 +123,43 @@ class CreateMaterialUseCaseTest extends TestCase
 
         $this->repository->expects($this->once())
             ->method('existsBySlugWithLock')
-            ->with('taken')
+            ->with('taken', null, null)
             ->willReturn(true);
 
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Материал с таким слагом уже существует');
+        $this->expectExceptionMessage('Материал с таким адресом уже существует');
+
+        $this->useCase->execute($data, 1);
+    }
+
+    public function test_throws_in_category_scope_when_explicit_slug_already_exists(): void
+    {
+        $data = new CreateMaterialData(
+            title: 'Hello',
+            slug: 'taken',
+            content: null,
+            categoryId: 5,
+            userId: 1,
+            status: MaterialStatus::DRAFT,
+            access: MaterialAccess::PUBLIC,
+            showOnHomepage: false,
+            showDate: true,
+            showAuthor: true,
+            showCategory: true,
+            showViews: true,
+            useGlobalSettings: true,
+            metaTitle: null,
+            metaDescription: null,
+            metaKeywords: null,
+        );
+
+        $this->repository->expects($this->once())
+            ->method('existsBySlugWithLock')
+            ->with('taken', null, 5)
+            ->willReturn(true);
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('В этой категории уже есть материал с таким адресом');
 
         $this->useCase->execute($data, 1);
     }

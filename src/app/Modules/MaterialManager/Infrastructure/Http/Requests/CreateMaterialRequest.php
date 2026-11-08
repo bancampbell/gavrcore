@@ -20,9 +20,21 @@ class CreateMaterialRequest extends FormRequest
 
     public function rules(): array
     {
+        // Уникальность slug — в рамках категории; безкатегорийный материал
+        // проверяется среди прочих безкатегорийных (category_id IS NULL).
+        $categoryId = $this->filled('category_id') ? (int) $this->input('category_id') : null;
+
         return [
             'title' => 'required|string|max:255',
-            'slug' => ['nullable', 'string', 'max:255', 'unique:materials,slug', Rule::notIn(self::RESERVED_SLUGS)],
+            'slug' => [
+                'nullable', 'string', 'max:255',
+                Rule::unique('materials', 'slug')->where(
+                    fn ($query) => $categoryId !== null
+                        ? $query->where('category_id', $categoryId)
+                        : $query->whereNull('category_id')
+                ),
+                Rule::notIn(self::RESERVED_SLUGS),
+            ],
             'content' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'state' => ['nullable', Rule::in(['published', 'draft', 'archived'])],
@@ -45,6 +57,9 @@ class CreateMaterialRequest extends FormRequest
             'title.required' => 'Заголовок обязателен',
             'title.max' => 'Заголовок не может превышать 255 символов',
             'slug.not_in' => 'Адрес \':input\' занят системным',
+            'slug.unique' => $this->filled('category_id')
+                ? 'В этой категории уже есть материал с таким адресом'
+                : 'Материал с таким адресом уже существует',
             'category_id.exists' => 'Выбранная категория не существует',
             'state.in' => 'Некорректный статус',
         ];
