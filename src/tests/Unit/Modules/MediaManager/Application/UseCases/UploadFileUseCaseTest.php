@@ -2,14 +2,27 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\OperationResult;
 use Modules\MediaManager\Application\DTO\UploadFileData;
 use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
+use Modules\MediaManager\Domain\Events\MediaUploaded;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class UploadFileUseCaseTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $user = new UserModel();
+        $user->forceFill(['id' => 1, 'name' => 'Admin', 'email' => 'admin@example.com']);
+        $this->actingAs($user);
+        Event::fake();
+    }
+
     public function test_execute_uploads_files_successfully(): void
     {
         $repo = $this->createMock(MediaRepositoryInterface::class);
@@ -36,6 +49,8 @@ class UploadFileUseCaseTest extends TestCase
         $this->assertInstanceOf(OperationResult::class, $result);
         $this->assertTrue($result->success);
         $this->assertStringContainsString('2', $result->message);
+        Event::assertDispatched(MediaUploaded::class, fn ($event) => $event->userId === 1 && $event->path === 'uploads/file1.jpg');
+        Event::assertDispatchedTimes(MediaUploaded::class, 2);
     }
 
     public function test_execute_throws_exception_when_folder_not_exists(): void

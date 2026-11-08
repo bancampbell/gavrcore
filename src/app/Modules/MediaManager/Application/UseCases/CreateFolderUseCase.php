@@ -2,7 +2,9 @@
 
 namespace Modules\MediaManager\Application\UseCases;
 
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\CreateFolderData;
+use Modules\MediaManager\Domain\Events\FolderCreated;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 
 class CreateFolderUseCase
@@ -26,5 +28,7 @@ class CreateFolderUseCase
         }
 
         $this->repository->createFolder($data->name, $data->path);
+
+        Event::dispatch(new FolderCreated(auth()->id(), $fullPath));
     }
 }

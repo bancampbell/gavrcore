@@ -2,11 +2,14 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\DeleteItemsData;
 use Modules\MediaManager\Application\DTO\OperationResult;
 use Modules\MediaManager\Application\UseCases\DeleteItemsUseCase;
+use Modules\MediaManager\Domain\Events\MediaDeleted;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class DeleteItemsUseCaseTest extends TestCase
 {
@@ -16,6 +19,13 @@ class DeleteItemsUseCaseTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
+        $user = new UserModel();
+        $user->forceFill(['id' => 1, 'name' => 'Admin', 'email' => 'admin@example.com']);
+        $this->actingAs($user);
+        Event::fake();
+
         $this->repository = $this->createMock(MediaRepositoryInterface::class);
         $this->useCase = new DeleteItemsUseCase($this->repository);
     }
@@ -40,6 +50,8 @@ class DeleteItemsUseCaseTest extends TestCase
         $this->assertTrue($result->success);
         $this->assertEquals('Удалено элементов: 3', $result->message);
         $this->assertEquals(['folder1', 'folder2', 'file.txt'], $result->data['deleted']);
+        Event::assertDispatchedTimes(MediaDeleted::class, 3);
+        Event::assertDispatched(MediaDeleted::class, fn ($event) => $event->userId === 1 && $event->path === 'folder1');
     }
 
     public function test_execute_skips_non_existent_items(): void

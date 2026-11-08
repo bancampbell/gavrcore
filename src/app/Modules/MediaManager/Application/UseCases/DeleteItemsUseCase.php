@@ -2,8 +2,10 @@
 
 namespace Modules\MediaManager\Application\UseCases;
 
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\DeleteItemsData;
 use Modules\MediaManager\Application\DTO\OperationResult;
+use Modules\MediaManager\Domain\Events\MediaDeleted;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 
 class DeleteItemsUseCase
@@ -27,6 +29,8 @@ class DeleteItemsUseCase
             try {
                 $this->repository->delete($path);
                 $deleted[] = $path;
+
+                Event::dispatch(new MediaDeleted(auth()->id(), $path));
             } catch (\RuntimeException $e) {
                 $failed[] = ['path' => $path, 'reason' => $e->getMessage()];
             }

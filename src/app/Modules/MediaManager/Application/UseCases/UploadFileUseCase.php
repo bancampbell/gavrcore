@@ -2,8 +2,10 @@
 
 namespace Modules\MediaManager\Application\UseCases;
 
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\OperationResult;
 use Modules\MediaManager\Application\DTO\UploadFileData;
+use Modules\MediaManager\Domain\Events\MediaUploaded;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 
 class UploadFileUseCase
@@ -23,6 +25,13 @@ class UploadFileUseCase
                 $data->files,
                 $data->path
             );
+
+            foreach ($uploaded as $name) {
+                Event::dispatch(new MediaUploaded(
+                    auth()->id(),
+                    $data->path ? $data->path.'/'.$name : $name,
+                ));
+            }
 
             return new OperationResult(
                 success: true,

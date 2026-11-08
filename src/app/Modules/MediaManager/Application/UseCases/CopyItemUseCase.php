@@ -2,7 +2,9 @@
 
 namespace Modules\MediaManager\Application\UseCases;
 
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\CopyItemData;
+use Modules\MediaManager\Domain\Events\MediaCopied;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 
 class CopyItemUseCase
@@ -18,5 +20,7 @@ class CopyItemUseCase
         }
 
         $this->repository->copy($data->path);
+
+        Event::dispatch(new MediaCopied(auth()->id(), $data->path));
     }
 }

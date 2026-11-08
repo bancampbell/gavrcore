@@ -2,13 +2,26 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\RenameItemData;
 use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
+use Modules\MediaManager\Domain\Events\MediaRenamed;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class RenameItemUseCaseTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $user = new UserModel();
+        $user->forceFill(['id' => 1, 'name' => 'Admin', 'email' => 'admin@example.com']);
+        $this->actingAs($user);
+        Event::fake();
+    }
+
     public function test_execute_renames_item_successfully(): void
     {
         $repo = $this->createMock(MediaRepositoryInterface::class);
@@ -24,6 +37,10 @@ class RenameItemUseCaseTest extends TestCase
         $data = new RenameItemData(oldPath: 'old-folder', newName: 'new-folder');
 
         $useCase->execute($data);
+
+        Event::assertDispatched(MediaRenamed::class, fn ($event) => $event->userId === 1
+            && $event->oldPath === 'old-folder'
+            && $event->newPath === 'new-folder');
     }
 
     public function test_execute_throws_exception_when_item_not_found(): void

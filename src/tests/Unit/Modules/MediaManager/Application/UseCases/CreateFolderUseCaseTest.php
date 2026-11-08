@@ -2,10 +2,13 @@
 
 namespace Tests\Unit\Modules\MediaManager\Application\UseCases;
 
+use App\Modules\UserManager\Infrastructure\Models\UserModel;
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\CreateFolderData;
 use Modules\MediaManager\Application\UseCases\CreateFolderUseCase;
+use Modules\MediaManager\Domain\Events\FolderCreated;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class CreateFolderUseCaseTest extends TestCase
 {
@@ -15,6 +18,13 @@ class CreateFolderUseCaseTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+
+        $user = new UserModel();
+        $user->forceFill(['id' => 1, 'name' => 'Admin', 'email' => 'admin@example.com']);
+        $this->actingAs($user);
+        Event::fake();
+
         $this->repository = $this->createMock(MediaRepositoryInterface::class);
         $this->useCase = new CreateFolderUseCase($this->repository, 10);
     }
@@ -35,6 +45,8 @@ class CreateFolderUseCaseTest extends TestCase
             ->with('new-folder', '');
 
         $this->useCase->execute($data);
+
+        Event::assertDispatched(FolderCreated::class, fn ($event) => $event->userId === 1 && $event->path === 'new-folder');
     }
 
     public function test_execute_throws_exception_when_folder_already_exists(): void

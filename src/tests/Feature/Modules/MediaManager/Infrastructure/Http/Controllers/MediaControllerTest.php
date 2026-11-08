@@ -4,8 +4,10 @@ namespace Tests\Feature\Modules\MediaManager\Infrastructure\Http\Controllers;
 
 use App\Http\Middleware\ShareMenuMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Modules\MediaManager\Application\DTO\OperationResult;
 use Modules\MediaManager\Application\DTO\PaginatedContentsData;
 use Modules\MediaManager\Application\UseCases\CopyItemUseCase;
@@ -22,6 +24,8 @@ use Tests\TestCase;
 
 class MediaControllerTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -347,5 +351,116 @@ class MediaControllerTest extends TestCase
         $response = $this->get('/admin/media');
 
         $response->assertStatus(403);
+    }
+
+    public function test_upload_writes_media_audit_log(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->makeDirectory('uploads');
+        $user = UserModel::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/admin/media/upload', [
+                'files' => [UploadedFile::fake()->create('photo.jpg', 10, 'image/jpeg')],
+                'path' => '',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('media_audit_logs', [
+            'user_id' => $user->id,
+            'action' => 'upload',
+            'path' => 'photo.jpg',
+        ]);
+    }
+
+    public function test_delete_item_writes_media_audit_log(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('uploads/file.txt', 'content');
+        $user = UserModel::factory()->create();
+
+        $this->actingAs($user)
+            ->deleteJson('/admin/media/item', ['path' => 'file.txt'])
+            ->assertOk();
+
+        $this->assertDatabaseHas('media_audit_logs', [
+            'user_id' => $user->id,
+            'action' => 'delete',
+            'path' => 'file.txt',
+        ]);
+    }
+
+    public function test_delete_multiple_writes_media_audit_log_per_item(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('uploads/a.txt', 'a');
+        Storage::disk('public')->put('uploads/b.txt', 'b');
+        $user = UserModel::factory()->create();
+
+        $this->actingAs($user)
+            ->deleteJson('/admin/media/items', ['paths' => ['a.txt', 'b.txt']])
+            ->assertOk();
+
+        foreach (['a.txt', 'b.txt'] as $path) {
+            $this->assertDatabaseHas('media_audit_logs', [
+                'user_id' => $user->id,
+                'action' => 'delete',
+                'path' => $path,
+            ]);
+        }
+    }
+
+    public function test_create_folder_writes_media_audit_log(): void
+    {
+        Storage::fake('public');
+        $user = UserModel::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/admin/media/folder', ['name' => 'docs', 'path' => ''])
+            ->assertOk();
+
+        $this->assertDatabaseHas('media_audit_logs', [
+            'user_id' => $user->id,
+            'action' => 'folder_created',
+            'path' => 'docs',
+        ]);
+    }
+
+    public function test_rename_item_writes_media_audit_log(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('uploads/old.txt', 'content');
+        $user = UserModel::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/admin/media/rename', [
+                'old_path' => 'old.txt',
+                'new_name' => 'new.txt',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('media_audit_logs', [
+            'user_id' => $user->id,
+            'action' => 'rename',
+            'path' => 'new.txt',
+            'old_path' => 'old.txt',
+        ]);
+    }
+
+    public function test_copy_item_writes_media_audit_log(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('uploads/file.txt', 'content');
+        $user = UserModel::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson('/admin/media/copy', ['path' => 'file.txt'])
+            ->assertOk();
+
+        $this->assertDatabaseHas('media_audit_logs', [
+            'user_id' => $user->id,
+            'action' => 'copy',
+            'path' => 'file.txt',
+        ]);
     }
 }

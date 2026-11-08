@@ -2,7 +2,9 @@
 
 namespace Modules\MediaManager\Application\UseCases;
 
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\DeleteItemData;
+use Modules\MediaManager\Domain\Events\MediaDeleted;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 
 class DeleteItemUseCase
@@ -18,5 +20,7 @@ class DeleteItemUseCase
         }
 
         $this->repository->delete($data->path);
+
+        Event::dispatch(new MediaDeleted(auth()->id(), $data->path));
     }
 }

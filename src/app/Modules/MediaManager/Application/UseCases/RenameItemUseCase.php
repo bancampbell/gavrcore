@@ -2,7 +2,9 @@
 
 namespace Modules\MediaManager\Application\UseCases;
 
+use Illuminate\Support\Facades\Event;
 use Modules\MediaManager\Application\DTO\RenameItemData;
+use Modules\MediaManager\Domain\Events\MediaRenamed;
 use Modules\MediaManager\Domain\Repositories\MediaRepositoryInterface;
 
 class RenameItemUseCase
@@ -18,5 +20,13 @@ class RenameItemUseCase
         }
 
         $this->repository->rename($data->oldPath, $data->newName);
+
+        $parent = dirname($data->oldPath);
+
+        Event::dispatch(new MediaRenamed(
+            auth()->id(),
+            $data->oldPath,
+            $parent === '.' ? $data->newName : $parent.'/'.$data->newName,
+        ));
     }
 }
