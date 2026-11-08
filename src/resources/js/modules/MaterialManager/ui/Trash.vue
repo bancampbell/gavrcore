@@ -10,7 +10,7 @@
                 <div class="flex flex-wrap gap-2.5 justify-between items-center">
                     <div class="flex flex-wrap gap-2.5">
                         <button @click="restoreSelected" :disabled="selectedMaterials.length === 0" class="admin-btn admin-btn-secondary">Восстановить</button>
-                        <button @click="openDeleteModal" :disabled="selectedMaterials.length === 0" class="admin-btn admin-btn-danger">Удалить навсегда</button>
+                        <button @click="openDeleteModal(selectedMaterials.length)" :disabled="selectedMaterials.length === 0" class="admin-btn admin-btn-danger">Удалить навсегда</button>
                         <button @click="openEmptyTrashModal" :disabled="materials.data?.length === 0" class="admin-btn admin-btn-danger">Очистить корзину</button>
                     </div>
                     <Link href="/admin/materials" class="text-sm text-slate-500 hover:text-slate-700">← Назад к материалам</Link>

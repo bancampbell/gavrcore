@@ -51,6 +51,20 @@ class MaterialRepositoryTest extends TestCase
         $this->assertSame('Alpha Content', $result->items[0]->title);
     }
 
+    public function test_paginate_sorts_by_state(): void
+    {
+        (new MaterialModelFactory)->create(['state' => 'published']);
+        (new MaterialModelFactory)->create(['state' => 'archived']);
+        (new MaterialModelFactory)->create(['state' => 'draft']);
+
+        $result = $this->repository->paginate(['sort' => 'state', 'direction' => 'asc']);
+
+        $this->assertSame(
+            ['archived', 'draft', 'published'],
+            array_map(fn (Material $m) => $m->status->value, $result->items)
+        );
+    }
+
     public function test_find_by_slug_returns_published_only(): void
     {
         (new MaterialModelFactory)->create([

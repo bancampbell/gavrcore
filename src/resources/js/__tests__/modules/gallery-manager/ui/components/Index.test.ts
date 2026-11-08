@@ -146,6 +146,15 @@ describe('Index.vue', () => {
         expect(wrapper.vm.selectedIds).not.toContain(1);
     });
 
+    it('does not toggle selection when clicking title link', async () => {
+        const wrapper = mount(Index, { props: { user: {}, title: 'Галереи' } });
+        await flushPromises();
+        const link = wrapper.find('a.title-text');
+        expect(link.exists()).toBe(true);
+        await link.trigger('click');
+        expect(wrapper.vm.selectedIds).toHaveLength(0);
+    });
+
     it('selects all via checkbox', async () => {
         const wrapper = mount(Index, { props: { user: {}, title: 'Галереи' } });
         await flushPromises();

@@ -51,6 +51,24 @@ class AdminMaterialControllerTest extends TestCase
             );
     }
 
+    public function test_index_sorts_by_state(): void
+    {
+        (new MaterialModelFactory)->create(['state' => 'published']);
+        (new MaterialModelFactory)->create(['state' => 'archived']);
+        (new MaterialModelFactory)->create(['state' => 'draft']);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->get(route('admin.materials.index', ['sort' => 'state', 'direction' => 'asc']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Index', false)
+                ->where('materials.data.0.state', 'archived')
+                ->where('materials.data.1.state', 'draft')
+                ->where('materials.data.2.state', 'published')
+            );
+    }
+
     public function test_create_returns_inertia_page(): void
     {
         $this->actingAs($this->admin)

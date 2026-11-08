@@ -23,7 +23,7 @@ class MaterialIndexRequest extends FormRequest
             'author' => 'nullable|exists:users,id',
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
-            'sort' => ['nullable', Rule::in(['id', 'title', 'views', 'created_at'])],
+            'sort' => ['nullable', Rule::in(['id', 'title', 'state', 'views', 'created_at'])],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ];
     }

@@ -128,7 +128,7 @@
                                     />
                                 </td>
                                 <td class="col-title" @click.stop="toggleSelect(gallery.id)">
-                                    <Link :href="`/admin/galleries/${gallery.id}/edit`" class="title-text">
+                                    <Link :href="`/admin/galleries/${gallery.id}/edit`" class="title-text" @click.stop>
                                         {{ gallery.title }}
                                     </Link>
                                 </td>

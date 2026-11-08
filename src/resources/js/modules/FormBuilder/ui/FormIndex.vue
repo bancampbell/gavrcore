@@ -37,7 +37,7 @@
                             <tbody>
                             <tr v-for="form in forms.data" :key="form.id" class="cursor-pointer" :class="{ 'bg-blue-50/50': selectedForms.includes(form.id) }">
                                 <td class="col-checkbox" @click.stop><input type="checkbox" :checked="selectedForms.includes(form.id)" @change="toggleSelect(form.id)" class="admin-checkbox" /></td>
-                                <td class="col-title" @click="toggleSelect(form.id)"><Link :href="`/admin/forms/${form.id}/edit`" class="title-text">{{ form.title }}</Link></td>
+                                <td class="col-title" @click="toggleSelect(form.id)"><Link :href="`/admin/forms/${form.id}/edit`" class="title-text" @click.stop>{{ form.title }}</Link></td>
                                 <td class="col-alias" @click="toggleSelect(form.id)">{{ form.alias }}</td>
                                 <td class="col-status" @click="toggleSelect(form.id)"><span class="status-badge" :class="form.status ? 'status-published' : 'status-draft'">{{ form.status ? 'Опубликовано' : 'Черновик' }}</span></td>
                                 <td class="col-items" @click="toggleSelect(form.id)"><span class="stat-badge stat-badge-blue">{{ form.fields ? form.fields.length : 0 }}</span></td>

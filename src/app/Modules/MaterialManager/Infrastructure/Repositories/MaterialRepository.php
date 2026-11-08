@@ -95,7 +95,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
         $sort = $filters['sort'] ?? 'id';
         $direction = strtolower($filters['direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-        $allowedSorts = ['id', 'title', 'views', 'created_at'];
+        $allowedSorts = ['id', 'title', 'state', 'views', 'created_at'];
         if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'id';
         }

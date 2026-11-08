@@ -75,7 +75,6 @@ const handleLoaded = () => {
 defineExpose({
     confirmSelection: () => contentRef.value?.confirmSelection?.(),
     getSelectedFile: () => contentRef.value?.getSelectedFile?.(),
-    selectedFileForPicker: () => contentRef.value?.selectedFileForPicker,
     selectFileByUrl: (url: string) => contentRef.value?.selectFileByUrl?.(url) ?? false,
 });
 </script>

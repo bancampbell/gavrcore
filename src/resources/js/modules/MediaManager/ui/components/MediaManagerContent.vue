@@ -232,9 +232,8 @@ const toggleFolderExpand = (folderPath: string) => {
 
 const handleUploadWrapper = async (files: FileList) => {
     const success = await handleUpload(files);
-    if (success) {
-        uploadModalRef.value?.clearFiles();
-    }
+    uploadModalRef.value?.clearFiles();
+    return success;
 };
 
 watch(selectedFileForPicker, (file) => {
@@ -249,7 +248,6 @@ const confirmSelection = () => {
 
 defineExpose({
     confirmSelection,
-    selectedFileForPicker,
     getSelectedFile: () => selectedFileForPicker.value,
     selectFileByUrl: selectFileByUrlWithScroll,
 });

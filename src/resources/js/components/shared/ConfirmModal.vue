@@ -28,7 +28,7 @@
                         <!-- Цветная полоса сверху -->
                         <div
                             class="h-1 w-full"
-                            :class="type === 'danger' ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-yellow-400 to-yellow-500'"
+                            :class="type === 'danger' ? 'bg-gradient-to-r from-red-500 to-red-600' : type === 'info' ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-yellow-400 to-yellow-500'"
                         ></div>
 
                         <!-- Заголовок -->
@@ -36,10 +36,13 @@
                             <div class="flex items-start gap-4">
                                 <div
                                     class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                                    :class="type === 'danger' ? 'bg-red-50' : 'bg-yellow-50'"
+                                    :class="type === 'danger' ? 'bg-red-50' : type === 'info' ? 'bg-blue-50' : 'bg-yellow-50'"
                                 >
                                     <svg v-if="type === 'danger'" class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <svg v-else-if="type === 'info'" class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <svg v-else class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -74,7 +77,9 @@
                                 :class="[
                                     type === 'danger'
                                         ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-200 shadow-sm shadow-red-100'
-                                        : 'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-200 shadow-sm shadow-yellow-100'
+                                        : type === 'info'
+                                            ? 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-200 shadow-sm shadow-blue-100'
+                                            : 'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-200 shadow-sm shadow-yellow-100'
                                 ]"
                             >
                                 <span v-if="loading" class="inline-block mr-2">
@@ -87,8 +92,7 @@
                         </div>
 
                         <!-- Декоративные элементы -->
-                        <div v-if="type === 'danger'" class="absolute -top-12 -right-12 w-32 h-32 bg-red-500/5 rounded-full blur-2xl"></div>
-                        <div v-else class="absolute -top-12 -right-12 w-32 h-32 bg-yellow-500/5 rounded-full blur-2xl"></div>
+                        <div class="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-2xl" :class="type === 'danger' ? 'bg-red-500/5' : type === 'info' ? 'bg-blue-500/5' : 'bg-yellow-500/5'"></div>
                     </div>
                 </Transition>
             </div>
@@ -102,7 +106,7 @@ interface Props {
     title: string;
     message: string;
     confirmText: string;
-    type: 'danger' | 'warning';
+    type: 'danger' | 'warning' | 'info';
     loading: boolean;
 }
 

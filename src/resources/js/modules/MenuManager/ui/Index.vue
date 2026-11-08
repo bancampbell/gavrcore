@@ -36,7 +36,7 @@
                             <div class="flex items-start gap-3">
                                 <input type="checkbox" v-model="selectedMenuTypes" :value="type.id" class="mt-1 admin-checkbox">
                                 <div class="flex-1">
-                                    <button @click.stop="goToMenuItems(type.id, type.title)" class="menu-type-name">{{ type.title }}</button>
+                                    <button @click.stop="goToMenuItems(type.id)" class="menu-type-name">{{ type.title }}</button>
                                     <div class="text-sm text-slate-500 mt-1">Алиас: {{ type.alias }}</div>
                                     <div class="flex flex-wrap gap-4 mt-2 text-xs">
                                         <span class="text-slate-500">ID: {{ type.id }}</span>
@@ -68,7 +68,7 @@
                                 <td class="col-checkbox"><input type="checkbox" :checked="selectedMenuTypes.includes(type.id)" @change="toggleSelect(type.id)" class="admin-checkbox" /></td>
                                 <td class="col-id" @click="toggleSelect(type.id)">{{ type.id }}</td>
                                 <td class="col-title" @click="toggleSelect(type.id)">
-                                    <button @click.stop="goToMenuItems(type.id, type.title)" class="menu-type-name" style="display: inline-block !important; background: none; border: none; cursor: pointer; font-weight: 500; color: #1e5981; font-size: 15px; padding: 0; text-align: left;">{{ type.title }}</button>
+                                    <button @click.stop="goToMenuItems(type.id)" class="menu-type-name" style="display: inline-block !important; background: none; border: none; cursor: pointer; font-weight: 500; color: #1e5981; font-size: 15px; padding: 0; text-align: left;">{{ type.title }}</button>
                                 </td>
                                 <td class="col-alias" @click="toggleSelect(type.id)">{{ type.alias }}</td>
                                 <td class="col-status" @click="toggleSelect(type.id)">
@@ -124,8 +124,8 @@ const deleteLoading = ref(false);
 const deleteMessage = ref('');
 const itemsToDelete = ref<number[]>([]);
 
-const goToMenuItems = (menuTypeId: number, title: string) => {
-    router.visit(`/admin/menu/types/${menuTypeId}/items`, { props: { menuTypeId, menuTypeTitle: title } });
+const goToMenuItems = (menuTypeId: number) => {
+    router.visit(`/admin/menu/types/${menuTypeId}/items`);
 };
 
 const toggleSelect = (id: number) => {
