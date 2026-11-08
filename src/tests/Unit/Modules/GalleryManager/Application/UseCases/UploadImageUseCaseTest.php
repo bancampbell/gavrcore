@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Modules\GalleryManager\Application\UseCases;
 
 use App\Modules\GalleryManager\Application\UseCases\UploadImageUseCase;
+use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Entities\GalleryImage;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
 use App\Modules\GalleryManager\Domain\Services\ImageStorageServiceInterface;
+use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
+use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
 use Illuminate\Http\UploadedFile;
 use Mockery;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +31,11 @@ class UploadImageUseCaseTest extends TestCase
 
         $file = Mockery::mock(UploadedFile::class);
         $file->shouldReceive('getClientOriginalName')->andReturn('original.jpg');
+
+        $repository->shouldReceive('findById')->with(5)->once()->andReturn(
+            new Gallery(id: 5, title: 'Test', type: GalleryType::GRID,
+                settings: [], status: GalleryStatus::PUBLISHED, ordering: 0)
+        );
 
         $storage->shouldReceive('store')
             ->once()
@@ -62,6 +70,11 @@ class UploadImageUseCaseTest extends TestCase
 
         $file = Mockery::mock(UploadedFile::class);
         $file->shouldReceive('getClientOriginalName')->andReturn('photo.png');
+
+        $repository->shouldReceive('findById')->with(1)->once()->andReturn(
+            new Gallery(id: 1, title: 'Test', type: GalleryType::GRID,
+                settings: [], status: GalleryStatus::PUBLISHED, ordering: 0)
+        );
 
         $storage->shouldReceive('store')->andReturn('/storage/galleries/1/photo.png');
 

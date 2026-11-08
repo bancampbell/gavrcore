@@ -9,6 +9,7 @@ use App\Modules\GalleryManager\Infrastructure\Models\GalleryImageModel;
 use App\Modules\GalleryManager\Infrastructure\Models\GalleryModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryImageModelFactory;
 use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryModelFactory;
 use Tests\TestCase;
@@ -51,6 +52,8 @@ class WebGalleryControllerTest extends TestCase
     public function test_seeded_galleries_are_publicly_available(): void
     {
         // AUDIT-20: GallerySeeder создаёт демо-галереи с placeholder-файлами
+        Storage::fake('public');
+
         $this->seed(GallerySeeder::class);
 
         $galleries = GalleryModel::with('images')->get();
@@ -62,7 +65,9 @@ class WebGalleryControllerTest extends TestCase
             $this->assertCount(3, $gallery->images);
 
             foreach ($gallery->images as $image) {
-                Storage::disk('public')->assertExists($image->image_path);
+                // image_path — публичный URL вида /storage/galleries/{id}/photo-N.png,
+                // на диске файл лежит по относительному пути без префикса /storage/.
+                Storage::disk('public')->assertExists(Str::after($image->image_path, '/storage/'));
             }
 
             $this->getJson("/galleries/{$gallery->id}")
