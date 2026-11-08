@@ -27,10 +27,8 @@
                 :open-image-modal="handleOpenImageModal"
                 :open-gallery-modal="handleOpenGalleryModal"
                 :toggle-html="toggleHtmlMode"
-                :open-file-manager="openFileManager"
                 :open-form-modal="openFormModal"
                 :is-raw-html-mode="editorState.isHtmlMode.value"
-                @toggle-raw-html="emit('toggleRawHtml')"
             />
 
             <div class="tiptap p-4 h-full max-w-none" ref="editorElement"></div>
@@ -66,6 +64,7 @@ import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
 import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
 import { TableKit } from '@tiptap/extension-table';
 import Toolbar from './Toolbar.vue';
 import { ResizableImage } from './extensions';
@@ -77,6 +76,7 @@ import GallerySelectModal from './modals/GallerySelectModal.vue';
 import FormSelectModal from './modals/FormSelectModal.vue';
 import ImageModal from '@/modules/MaterialManager/ui/components/ImageModal.vue';
 import RawHtmlEditor from './RawHtmlEditor.vue';
+import { buildGalleryShortcode, buildFormShortcode } from './shortcodes';
 import DOMPurify from 'dompurify';
 import { useEditor } from './composables/useEditor';
 import { useEditorSelection } from './composables/useEditorSelection';
@@ -140,8 +140,7 @@ function handleOpenGalleryModal(): void {
 }
 
 function insertGallery(galleryId: number, galleryName: string): void {
-    const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
-    editorAdapter.insertContent(shortcode);
+    editorAdapter.insertContent(buildGalleryShortcode(galleryId, galleryName));
     showGalleryModal.value = false;
     emit('update:modelValue', editorAdapter.getHTML());
 }
@@ -151,8 +150,7 @@ function openFormModal(): void {
 }
 
 function insertForm(form: any): void {
-    const shortcode = `[form id="${form.id}"]`;
-    editorAdapter.insertContent(shortcode);
+    editorAdapter.insertContent(buildFormShortcode(form.id));
     showFormModal.value = false;
     emit('update:modelValue', editorAdapter.getHTML());
 }
@@ -162,13 +160,9 @@ function insertFormShortcode(formId: number): void {
     if (!selectionObj.isEmpty) {
         editorAdapter.insertContent(`<div style="text-align: center;">${selectionObj.text}</div>`);
     } else {
-        editorAdapter.insertContent(`[form id="${formId}"]`);
+        editorAdapter.insertContent(buildFormShortcode(formId));
     }
     emit('update:modelValue', editorAdapter.getHTML());
-}
-
-function openFileManager(): void {
-    // TODO: implement file manager
 }
 
 function handleOpenLinkModal(): void {
@@ -340,8 +334,12 @@ onMounted(async () => {
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             TableKit,
             CleanPaste,
+            Placeholder.configure({
+                placeholder: 'Начните писать здесь...',
+                showOnlyCurrent: false,
+            }),
         ],
-        content: props.modelValue || '<p>Начните писать здесь...</p>',
+        content: props.modelValue || '',
         editorProps: {
             transformPastedHTML(html: string) {
                 return html
@@ -399,10 +397,13 @@ onMounted(async () => {
 });
 
 watch(() => props.modelValue, (newValue) => {
+    // Пустую модель не затираем: пустой документ показывает плейсхолдер
+    // Placeholder-расширения (TECHDEBT п.26).
+    if (!newValue) return;
     if (contentUpdateTimeout) clearTimeout(contentUpdateTimeout);
     contentUpdateTimeout = setTimeout(() => {
         if (editor.value && newValue !== editor.value.getHTML()) {
-            editor.value.commands.setContent(newValue || '<p></p>');
+            editor.value.commands.setContent(newValue);
         }
         contentUpdateTimeout = null;
     }, 300);

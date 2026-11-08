@@ -42,22 +42,11 @@
                         <div class="flex-1">
                             <div class="border border-slate-300 rounded-lg overflow-hidden h-full">
                                 <Editor
-                                    v-if="!showRawHtml"
                                     :key="editorKey"
                                     ref="editorRef"
                                     v-model="form.content"
                                     @open-link-modal="openLinkModal"
-                                    @open-image-modal="openImageModal"
-                                    @open-image-manager="openImageManager"
                                     @edit-link="handleEditLink"
-                                    @open-gallery-modal="openGalleryModal"
-                                    @toggle-raw-html="toggleRawHtml"
-                                />
-                                <RawHtmlEditor
-                                    v-else
-                                    :model-value="rawHtmlContent"
-                                    @update:model-value="applyRawHtml"
-                                    @close="closeRawHtml"
                                 />
                             </div>
                         </div>
@@ -185,12 +174,6 @@
         <Toast :show="notification.show" :message="notification.message" :type="notification.type" />
 
         <LinkModal :show="showLinkModal" :categories="categories" :materials="materials" :edit-data="editLinkData" :selected-text="selectedLinkText" @close="closeLinkModal" @insert="insertLink" @edit="updateLink" />
-
-        <ImageModal :show="showImageModal" :edit-data="editImageData" @close="closeImageModal" @insert="onImageInsert" />
-
-        <MediaManagerModal :show="showImageManager" :user="user" :selected-url="selectedMediaUrl" mode="file" @close="closeImageManager" @select="onMediaManagerSelect" />
-
-        <GallerySelectModal :show="showGalleryModal" @close="closeGalleryModal" @select="insertGallery" />
     </AdminLayout>
 </template>
 
@@ -203,11 +186,7 @@ import Toast from '@/components/shared/Toast.vue';
 import type { User } from '@/types';
 import type { Category } from '@/modules/CategoryManager/ui/types';
 import Editor from './editor/Index.vue';
-import RawHtmlEditor from './editor/RawHtmlEditor.vue';
 import LinkModal from './components/LinkModal.vue';
-import ImageModal from './components/ImageModal.vue';
-import MediaManagerModal from './components/MediaManagerModal.vue';
-import GallerySelectModal from './editor/modals/GallerySelectModal.vue';
 import { useSidebarSections } from '@/composables/useSidebarSections';
 import { createEditorContext, provideEditorContext } from '@/modules/MaterialManager/infrastructure/di/editorContext';
 
@@ -223,13 +202,8 @@ provideEditorContext(editorContext);
 
 const loading = ref(false);
 const showLinkModal = ref(false);
-const showImageModal = ref(false);
-const showImageManager = ref(false);
-const showGalleryModal = ref(false);
 const materials = ref<any[]>([]);
 const editLinkData = ref<any>(null);
-const editImageData = ref<any>(null);
-const selectedMediaUrl = ref('');
 const editorRef = ref<any>(null);
 const selectedLinkText = ref('');
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
@@ -256,27 +230,6 @@ const form = ref({
 });
 
 const isSlugManuallyEdited = ref(false);
-const showRawHtml = ref(false);
-const rawHtmlContent = ref('');
-
-function toggleRawHtml(): void {
-    if (!showRawHtml.value) {
-        rawHtmlContent.value = form.value.content || '';
-        showRawHtml.value = true;
-    } else {
-        showRawHtml.value = false;
-    }
-}
-
-function closeRawHtml(): void {
-    showRawHtml.value = false;
-}
-
-// FIX: Blocker #5 — removed editorKey++ and nextTick/insertContent race condition.
-function applyRawHtml(html: string): void {
-    form.value.content = html;
-    showRawHtml.value = false;
-}
 
 function showNotification(message: string, type: 'success' | 'error' = 'success'): void {
     if (notificationTimeout) clearTimeout(notificationTimeout);
@@ -309,119 +262,6 @@ function updateLink(data: { oldText: string; newUrl: string; newText: string; ne
 function handleEditLink(data: { oldText: string; url: string; text: string; target: string; title: string; _pos?: { from: number; to: number } | null }): void {
     editLinkData.value = data;
     showLinkModal.value = true;
-}
-
-const savedCursorPosition = ref(0);
-
-function openImageModal(imageData?: any): void {
-    if (editorRef.value) {
-        savedCursorPosition.value = editorRef.value.getCursorPosition?.() || 0;
-    }
-    editImageData.value = imageData || null;
-    showImageModal.value = true;
-}
-
-function openImageManager(imageData?: any): void {
-    editImageData.value = imageData || null;
-    if (imageData?.url) {
-        const urlParts = imageData.url.split('/');
-        urlParts.pop();
-        selectedMediaUrl.value = urlParts.join('/') || '/';
-    } else {
-        selectedMediaUrl.value = '';
-    }
-    showImageManager.value = true;
-}
-
-function closeImageModal(): void {
-    showImageModal.value = false;
-    editImageData.value = null;
-}
-
-function onImageInsert(data: any): void {
-    if (data.oldUrl) {
-        editorRef.value?.updateImage(data.oldUrl, data);
-    } else {
-        const html = buildImageHtml(data);
-        editorRef.value?.insertContent(html, savedCursorPosition.value);
-    }
-    closeImageModal();
-}
-
-function buildImageHtml(data: any): string {
-    let imgHtml = `<img src="${data.url}"`;
-    if (data.alt) imgHtml += ` alt="${data.alt}"`;
-    if (data.title) imgHtml += ` title="${data.title}"`;
-    if (data.width) imgHtml += ` width="${data.width}"`;
-    if (data.height) imgHtml += ` height="${data.height}"`;
-    const styleParts: string[] = [];
-    if (data.width) styleParts.push(`width: ${data.width}px`);
-    if (data.height) styleParts.push(`height: ${data.height}px`);
-    styleParts.push('display: block');
-    if (data.align === 'center') {
-        styleParts.push('margin-left: auto', 'margin-right: auto');
-    } else if (data.align === 'left') {
-        styleParts.push('margin-left: 0', 'margin-right: auto');
-    } else if (data.align === 'right') {
-        styleParts.push('margin-left: auto', 'margin-right: 0');
-    }
-    if (data.float === 'left') {
-        styleParts.push('float: left');
-        if (data.margin) styleParts.push(`margin-right: ${data.margin}px`);
-    } else if (data.float === 'right') {
-        styleParts.push('float: right');
-        if (data.margin) styleParts.push(`margin-left: ${data.margin}px`);
-    }
-    if (styleParts.length > 0) {
-        imgHtml += ` style="${styleParts.join('; ')}"`;
-    }
-    imgHtml += ` />`;
-    return imgHtml;
-}
-
-function closeImageManager(): void {
-    showImageManager.value = false;
-    editImageData.value = null;
-    selectedMediaUrl.value = '';
-}
-
-function onMediaManagerSelect(file: { url: string; name: string; path: string; options?: { alt?: string; width?: string; height?: string } }): void {
-    if (editImageData.value) {
-        editorRef.value?.updateImage(editImageData.value.url, {
-            url: file.url,
-            alt: file.options?.alt || file.name,
-            title: editImageData.value.title || '',
-            width: file.options?.width || '',
-            height: file.options?.height || '',
-            align: editImageData.value.align || '',
-            float: editImageData.value.float || '',
-            margin: editImageData.value.margin || '',
-        });
-        editImageData.value = null;
-    } else {
-        const html = buildImageHtml({
-            url: file.url,
-            alt: file.options?.alt || file.name,
-            width: file.options?.width || '',
-            height: file.options?.height || '',
-        });
-        editorRef.value?.insertContent(html, savedCursorPosition.value);
-    }
-    closeImageManager();
-}
-
-function openGalleryModal(): void {
-    showGalleryModal.value = true;
-}
-
-function closeGalleryModal(): void {
-    showGalleryModal.value = false;
-}
-
-function insertGallery(galleryId: number, galleryName: string): void {
-    const shortcode = `[gallery id="${galleryId}" name="${galleryName}"]`;
-    editorRef.value?.insertContent(shortcode, savedCursorPosition.value);
-    closeGalleryModal();
 }
 
 function generateSlug(text: string): string {
@@ -498,8 +338,6 @@ async function saveAndCreate(): Promise<void> {
         };
         isSlugManuallyEdited.value = false;
         editorKey.value++;
-        rawHtmlContent.value = '';
-        showRawHtml.value = false;
         showNotification('Материал создан. Можете создать следующий', 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');

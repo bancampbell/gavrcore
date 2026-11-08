@@ -25,8 +25,5 @@ export interface EditorProps {
 export interface EditorEmits {
     (e: 'update:modelValue', value: string): void;
     (e: 'openLinkModal'): void;
-    (e: 'openImageManager', imageData?: ImageData): void;
     (e: 'editLink', data: LinkData): void;
-    (e: 'open-gallery-modal'): void;
-    (e: 'toggleRawHtml'): void;
 }

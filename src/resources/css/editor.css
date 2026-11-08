@@ -248,3 +248,12 @@
     margin-top: 0.75rem;
     margin-bottom: 0.5rem;
 }
+
+/* === ПЛЕЙСХОЛДЕР === */
+.tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    color: #94a3b8;
+}

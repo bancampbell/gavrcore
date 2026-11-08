@@ -239,13 +239,6 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8 6 2 12 8 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span>{{ isRawHtmlMode ? 'Визуально' : 'HTML' }}</span>
             </button>
-            <button
-                @click="openFileManager"
-                class="w-9 h-9 rounded-lg transition flex items-center justify-center text-slate-600 hover:bg-slate-100"
-                title="Файловый менеджер"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-            </button>
         </div>
     </div>
 </template>
@@ -273,7 +266,6 @@ defineProps<{
     openImageModal: () => void;
     openGalleryModal: () => void;
     toggleHtml: () => void;
-    openFileManager: () => void;
     openFormModal?: () => void;
     isRawHtmlMode?: boolean;
 }>();
