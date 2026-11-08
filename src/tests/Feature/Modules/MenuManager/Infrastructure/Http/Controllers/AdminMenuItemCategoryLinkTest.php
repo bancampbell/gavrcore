@@ -14,7 +14,8 @@ use Tests\TestCase;
 
 /**
  * Пункт меню типа 'category' («Список материалов категории»):
- * link_type допускается, link_value обязателен и должен быть существующим slug категории.
+ * link_type допускается, link_value обязателен и должен быть существующим alias категории
+ * (публичный роут /category/{slug} резолвит категорию по alias — TECHDEBT п.34).
  */
 class AdminMenuItemCategoryLinkTest extends TestCase
 {
@@ -41,9 +42,9 @@ class AdminMenuItemCategoryLinkTest extends TestCase
         ]);
     }
 
-    public function test_create_menu_item_with_category_link_type_stores_slug(): void
+    public function test_create_menu_item_with_category_link_type_stores_alias(): void
     {
-        CategoryModel::factory()->create(['slug' => 'novosti']);
+        CategoryModel::factory()->create(['alias' => 'novosti']);
 
         $response = $this->actingAs($this->admin)->postJson("/admin/menu/types/{$this->menuType->id}/items", [
             'title' => 'Новости',
@@ -71,21 +72,39 @@ class AdminMenuItemCategoryLinkTest extends TestCase
         $response->assertJsonValidationErrors(['link_value']);
     }
 
-    public function test_category_link_value_must_be_existing_category_slug(): void
+    public function test_category_link_value_must_be_existing_category_alias(): void
     {
         $response = $this->actingAs($this->admin)->postJson("/admin/menu/types/{$this->menuType->id}/items", [
             'title' => 'Новости',
             'link_type' => 'category',
-            'link_value' => 'ne-sushchestvuyushchiy-slug',
+            'link_value' => 'ne-sushchestvuyushchiy-alias',
         ]);
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['link_value']);
     }
 
-    public function test_update_menu_item_to_category_link_type_validates_slug(): void
+    /**
+     * slug категории может отличаться от alias (и даже быть NULL) — пункт меню
+     * валидируется строго по alias, иначе публичная ссылка отдала бы 404.
+     */
+    public function test_category_link_value_is_validated_by_alias_not_slug(): void
     {
-        CategoryModel::factory()->create(['slug' => 'novosti']);
+        CategoryModel::factory()->create(['alias' => 'novosti', 'slug' => 'news']);
+
+        $response = $this->actingAs($this->admin)->postJson("/admin/menu/types/{$this->menuType->id}/items", [
+            'title' => 'Новости',
+            'link_type' => 'category',
+            'link_value' => 'news',
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['link_value']);
+    }
+
+    public function test_update_menu_item_to_category_link_type_validates_alias(): void
+    {
+        CategoryModel::factory()->create(['alias' => 'novosti']);
         $item = MenuItemModel::create([
             'menu_type_id' => $this->menuType->id,
             'title' => 'Пункт',
@@ -104,7 +123,7 @@ class AdminMenuItemCategoryLinkTest extends TestCase
         $invalid = $this->actingAs($this->admin)->putJson("/admin/menu/items/{$item->id}", [
             'title' => 'Пункт',
             'link_type' => 'category',
-            'link_value' => 'ne-sushchestvuyushchiy-slug',
+            'link_value' => 'ne-sushchestvuyushchiy-alias',
         ]);
         $invalid->assertUnprocessable();
         $invalid->assertJsonValidationErrors(['link_value']);

@@ -27,7 +27,7 @@
                             <div class="w-16 text-center text-gray-600">{{ category.id }}</div>
                             <div class="flex-1">
                                 <div class="font-medium text-gray-900">{{ '— '.repeat(category.depth || 0) }}{{ category.name }}</div>
-                                <div class="text-xs text-gray-400">Слаг: {{ category.slug }}</div>
+                                <div class="text-xs text-gray-400">Алиас: {{ category.alias }}</div>
                             </div>
                         </div>
                         <div v-if="categoryList.length === 0 && !loading" class="text-center py-8 text-gray-500">Категории не найдены</div>
@@ -46,23 +46,24 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import axios from 'axios';
 
-const props = defineProps<{ show: boolean; selectedSlug?: string }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'select', category: { id: number; name: string; slug: string }): void }>();
+const props = defineProps<{ show: boolean; selectedAlias?: string }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'select', category: { id: number; name: string; alias: string }): void }>();
 
 const loading = ref(false);
 const filters = ref({ search: '' });
 const flatCategories = ref<any[]>([]);
 const selectedId = ref<number | null>(null);
 
-// /admin/categories/tree отдаёт вложенное дерево (поле slug добавлено для MenuManager),
-// поэтому перед фильтрацией оно разворачивается в плоский список с отступами по depth.
+// /admin/categories/tree отдаёт вложенное дерево; MenuManager хранит в link_value
+// alias категории (публичный роут /category/{slug} резолвит по alias), поэтому
+// перед фильтрацией дерево разворачивается в плоский список с отступами по depth.
 const categoryList = computed(() => {
     const search = filters.value.search.trim().toLowerCase();
     return flatCategories.value.filter((category) => {
         if (!search) return true;
         const name = String(category.name ?? '').toLowerCase();
-        const slug = String(category.slug ?? '').toLowerCase();
-        return name.includes(search) || slug.includes(search);
+        const alias = String(category.alias ?? '').toLowerCase();
+        return name.includes(search) || alias.includes(search);
     });
 });
 
@@ -93,7 +94,7 @@ const resetFilters = () => { filters.value = { search: '' }; };
 const selectCategory = (category: any) => { selectedId.value = category.id; };
 const confirmSelect = () => {
     const category = flatCategories.value.find(c => c.id === selectedId.value);
-    if (category) { emit('select', { id: category.id, name: category.name, slug: category.slug }); close(); }
+    if (category) { emit('select', { id: category.id, name: category.name, alias: category.alias }); close(); }
 };
 const close = () => { selectedId.value = null; emit('close'); };
 
@@ -101,8 +102,8 @@ watch(() => props.show, async (val) => {
     if (val) {
         filters.value = { search: '' }; selectedId.value = null;
         await loadCategories();
-        if (props.selectedSlug) {
-            const found = flatCategories.value.find(c => c.slug === props.selectedSlug);
+        if (props.selectedAlias) {
+            const found = flatCategories.value.find(c => c.alias === props.selectedAlias);
             if (found) {
                 selectedId.value = found.id;
                 await nextTick();

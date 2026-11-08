@@ -50,8 +50,8 @@ class UpdateMenuItemRequest extends FormRequest
                     if ($this->input('link_type') !== 'category') {
                         return;
                     }
-                    if (! CategoryModel::where('slug', $value)->exists()) {
-                        $fail('Категория с таким слагом не существует.');
+                    if (! CategoryModel::where('alias', $value)->exists()) {
+                        $fail('Категория с таким алиасом не существует.');
                     }
                 },
             ],

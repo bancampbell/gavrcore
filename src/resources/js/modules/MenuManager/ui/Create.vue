@@ -208,8 +208,8 @@ const selectMaterial = (material: { id: number; title: string; slug: string }) =
     form.value.link_value = material.slug;
 };
 
-const selectCategory = (category: { id: number; name: string; slug: string }) => {
-    form.value.link_value = category.slug;
+const selectCategory = (category: { id: number; name: string; alias: string }) => {
+    form.value.link_value = category.alias;
 };
 
 const prepareSubmitData = () => {

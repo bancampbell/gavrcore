@@ -16,13 +16,13 @@ const tree = [
     {
         id: 1,
         name: 'Новости',
-        slug: 'novosti',
+        alias: 'novosti',
         depth: 0,
         children: [
-            { id: 2, name: 'Архив', slug: 'novosti-arkhiv', depth: 1, children: [] },
+            { id: 2, name: 'Архив', alias: 'novosti-arkhiv', depth: 1, children: [] },
         ],
     },
-    { id: 3, name: 'О компании', slug: 'o-kompanii', depth: 0, children: [] },
+    { id: 3, name: 'О компании', alias: 'o-kompanii', depth: 0, children: [] },
 ]
 
 describe('CategorySelectorModal', () => {
@@ -54,7 +54,7 @@ describe('CategorySelectorModal', () => {
         expect(document.body.textContent).not.toContain('Категории не найдены')
     })
 
-    it('при выборе эмитит select с id, name и slug (заполняет пункт меню)', async () => {
+    it('при выборе эмитит select с id, name и alias (заполняет пункт меню)', async () => {
         vi.mocked(axios.get).mockResolvedValueOnce({ data: { data: tree } })
         const wrapper = await openModal()
 
@@ -72,7 +72,7 @@ describe('CategorySelectorModal', () => {
 
         const events = wrapper.emitted('select')
         expect(events).toBeTruthy()
-        expect(events![0]).toEqual([{ id: 1, name: 'Новости', slug: 'novosti' }])
+        expect(events![0]).toEqual([{ id: 1, name: 'Новости', alias: 'novosti' }])
         expect(wrapper.emitted('close')).toBeTruthy()
     })
 

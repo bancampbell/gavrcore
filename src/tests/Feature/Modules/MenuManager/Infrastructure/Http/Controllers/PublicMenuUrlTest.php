@@ -67,7 +67,7 @@ class PublicMenuUrlTest extends TestCase
 
     public function test_category_item_gets_category_url(): void
     {
-        CategoryModel::factory()->create(['slug' => 'novosti']);
+        CategoryModel::factory()->create(['alias' => 'novosti']);
         $this->createItem('Новости', 'category', 'novosti', 1);
 
         $tree = $this->getTree();
