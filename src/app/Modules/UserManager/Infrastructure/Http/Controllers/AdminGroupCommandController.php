@@ -31,11 +31,15 @@ final class AdminGroupCommandController extends Controller
         private readonly UpdateGroupStatusUseCase $updateGroupStatus,
     ) {}
 
-    public function store(StoreGroupRequest $request): RedirectResponse
+    public function store(StoreGroupRequest $request): RedirectResponse|JsonResponse
     {
         $this->authorize('create', Group::class);
 
         $this->createGroup->execute(CreateGroupData::fromArray($request->validated()));
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Группа создана']);
+        }
 
         return redirect()->route('admin.groups.index')
             ->with('success', 'Группа создана');

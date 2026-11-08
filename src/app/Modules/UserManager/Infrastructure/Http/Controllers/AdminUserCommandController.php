@@ -34,7 +34,7 @@ final class AdminUserCommandController extends Controller
         private readonly UpdateUserStatusUseCase $updateUserStatus,
     ) {}
 
-    public function store(StoreUserRequest $request): RedirectResponse
+    public function store(StoreUserRequest $request): RedirectResponse|JsonResponse
     {
         $this->authorize('create', User::class);
 
@@ -43,6 +43,10 @@ final class AdminUserCommandController extends Controller
         Activity::causedBy(auth()->user())
             ->withProperties(['user_id' => $user->id?->value])
             ->log('Создан пользователь: '.$user->name);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Пользователь создан']);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Пользователь создан');
