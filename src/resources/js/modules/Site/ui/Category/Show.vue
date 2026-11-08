@@ -19,65 +19,50 @@
         <div class="container mx-auto px-4">
             <Breadcrumbs :items="breadcrumbs || []" />
 
-            <div class="bg-white rounded-lg shadow p-6 mb-6">
-                <h1 class="text-3xl font-bold text-gray-900">{{ category?.name }}</h1>
-                <p v-if="category?.description" class="mt-2 text-gray-600">{{ category.description }}</p>
-            </div>
+            <div class="bg-white rounded-lg shadow">
+                <div class="p-6 border-b border-gray-100">
+                    <h1 class="text-3xl font-bold text-gray-900">{{ category?.name }}</h1>
+                    <p v-if="category?.description" class="mt-2 text-gray-600">{{ category.description }}</p>
+                </div>
 
-            <div v-if="materialsList.length" class="space-y-4">
-                <div
-                    v-for="material in materialsList"
-                    :key="material.id"
-                    class="bg-white rounded-lg shadow overflow-hidden"
-                >
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-gray-500">{{ formatDate(material.published_at || material.created_at) }}</span>
-                            <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                {{ material.category?.name || 'Без категории' }}
-                            </span>
-                        </div>
-
-                        <h2 class="text-xl font-bold text-gray-900 mb-2">
-                            <Link :href="materialUrl(material)" class="hover:text-indigo-600">
+                <template v-if="materialsList.length">
+                    <div class="divide-y divide-gray-100">
+                        <div
+                            v-for="material in materialsList"
+                            :key="material.id"
+                            class="px-6 py-3 hover:bg-blue-50 transition-colors"
+                        >
+                            <Link :href="materialUrl(material)" class="text-gray-900 hover:text-indigo-600">
                                 {{ material.title }}
                             </Link>
-                        </h2>
-
-                        <p v-if="excerpt(material.content)" class="text-gray-600 mb-3">{{ excerpt(material.content) }}</p>
-
-                        <div class="flex items-center justify-between text-sm text-gray-500">
-                            <span v-if="material.user?.name">Автор: {{ material.user.name }}</span>
-                            <span v-if="material.views !== undefined">Просмотров: {{ material.views }}</span>
                         </div>
                     </div>
-                </div>
-
-                <div v-if="materials.last_page > 1" class="flex items-center justify-between bg-white rounded-lg shadow px-6 py-4">
-                    <Link
-                        v-if="materials.prev_page_url"
-                        :href="materials.prev_page_url"
-                        class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800"
-                    >
-                        ← Назад
-                    </Link>
-                    <span v-else class="text-gray-300">← Назад</span>
-
-                    <span class="text-sm text-gray-500">Страница {{ materials.current_page }} из {{ materials.last_page }}</span>
-
-                    <Link
-                        v-if="materials.next_page_url"
-                        :href="materials.next_page_url"
-                        class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800"
-                    >
-                        Вперёд →
-                    </Link>
-                    <span v-else class="text-gray-300">Вперёд →</span>
+                </template>
+                <div v-else class="p-8 text-center text-gray-500">
+                    <p>В этой категории пока нет материалов.</p>
                 </div>
             </div>
 
-            <div v-else class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                <p>В этой категории пока нет материалов.</p>
+            <div v-if="materialsList.length && materials.last_page > 1" class="flex items-center justify-between bg-white rounded-lg shadow px-6 py-4 mt-4">
+                <Link
+                    v-if="materials.prev_page_url"
+                    :href="materials.prev_page_url"
+                    class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800"
+                >
+                    ← Назад
+                </Link>
+                <span v-else class="text-gray-300">← Назад</span>
+
+                <span class="text-sm text-gray-500">Страница {{ materials.current_page }} из {{ materials.last_page }}</span>
+
+                <Link
+                    v-if="materials.next_page_url"
+                    :href="materials.next_page_url"
+                    class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800"
+                >
+                    Вперёд →
+                </Link>
+                <span v-else class="text-gray-300">Вперёд →</span>
             </div>
         </div>
     </LayoutSwitcher>
@@ -114,17 +99,6 @@ const siteDescription = appSettings.site_description || '';
 const siteKeywords = appSettings.seo_keywords || '';
 
 const materialsList = props.materials?.data || [];
-
-const formatDate = (date) => {
-    if (!date) return '';
-    return new Date(date).toLocaleDateString('ru-RU');
-};
-
-const excerpt = (content) => {
-    if (!content) return '';
-    const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    return text.length > 220 ? text.slice(0, 220) + '…' : text;
-};
 
 const materialUrl = (material) => {
     const slug = material.slug || material.alias;
