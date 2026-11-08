@@ -26,7 +26,7 @@ class AdminSettingController extends Controller
         $settings = $this->settingService->getAllSettings();
 
         return Inertia::render('SettingManager/Settings/Index', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'settings' => $settings,
             'title' => 'Общие настройки',
         ]);

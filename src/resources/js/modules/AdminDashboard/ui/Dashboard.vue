@@ -127,9 +127,6 @@
                                 <div class="flex items-center flex-wrap gap-1">
                                     <span class="text-sm text-slate-700">
                                         {{ getEventText(activity) }}
-                                        <span v-if="getSubjectName(activity)" class="font-medium text-[#3071a9]">
-                                            "{{ getSubjectName(activity) }}"
-                                        </span>
                                     </span>
                                     <span class="text-xs text-slate-400">
                                         {{ getCauserName(activity) }}
@@ -259,20 +256,6 @@ const getCauserName = (activity: any) => {
         return activity.causer.name || activity.causer.email || 'Пользователь';
     }
     return 'Система';
-};
-
-const getSubjectName = (activity: any) => {
-    if (!activity.subject) return null;
-
-    if (activity.subject_type === 'App\\Models\\Material') {
-        return activity.subject.title || 'Материал #' + activity.subject.id;
-    }
-
-    if (activity.subject_type === 'App\\Models\\User') {
-        return activity.subject.name || activity.subject.email || 'Пользователь #' + activity.subject.id;
-    }
-
-    return null;
 };
 
 const getChangedFields = (activity: any) => {

@@ -9,6 +9,7 @@ use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Feature\Modules\MaterialManager\Infrastructure\Models\MaterialModelFactory;
 use Tests\TestCase;
 
@@ -27,6 +28,22 @@ class AdminSettingControllerTest extends TestCase
         parent::setUp();
         $this->admin = User::factory()->create();
         Gate::before(fn (User $user) => $user->id === $this->admin->id ? true : null);
+    }
+
+    public function test_index_exposes_only_safe_user_fields(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware(AdminMiddleware::class)
+            ->get('/admin/settings')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('SettingManager/Settings/Index', false)
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
+            );
     }
 
     public function test_update_accepts_homepage_type(): void

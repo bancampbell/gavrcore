@@ -21,9 +21,6 @@
 
             <!-- Canonical -->
             <link rel="canonical" :href="meta?.canonical || window.location.href" />
-
-            <!-- JSON-LD Schema -->
-            <script type="application/ld+json" v-html="meta?.schema || null" v-if="meta?.schema" />
         </Head>
 
         <div class="container mx-auto px-4">

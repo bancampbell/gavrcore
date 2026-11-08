@@ -23,7 +23,7 @@ class AdminThemeController extends Controller
         $currentTheme = $this->themeService->getCurrentTheme();
 
         return Inertia::render('ThemeManager/Themes/Index', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'themes' => $themes,
             'currentTheme' => $currentTheme,
             'title' => 'Темы оформления',
