@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\GavrInstallCommand;
 use App\Modules\CookieConsent\Infrastructure\Http\Middleware\CheckCookieConsent;
 use App\Modules\MenuManager\Infrastructure\Http\Middleware\ShareMenuMiddleware;
 use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        GavrInstallCommand::class,
+    ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
             EnsureFrontendRequestsAreStateful::class,
