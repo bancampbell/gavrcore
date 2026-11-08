@@ -46,6 +46,11 @@ export function useAccessLevels(props: { accessLevels: AccessLevel[] }) {
     const updatePagination = () => {
         pagination.value.total = filteredLevels.value.length;
         pagination.value.last_page = Math.ceil(pagination.value.total / perPage.value) || 1;
+        // После удаления последней записи на последней странице текущая
+        // страница может уйти за пределы — возвращаем на последнюю
+        if (pagination.value.current_page > pagination.value.last_page) {
+            pagination.value.current_page = pagination.value.last_page;
+        }
         pagination.value.from = (pagination.value.current_page - 1) * perPage.value + 1;
         pagination.value.to = Math.min(pagination.value.current_page * perPage.value, pagination.value.total);
     };
@@ -133,9 +138,14 @@ export function useAccessLevels(props: { accessLevels: AccessLevel[] }) {
         }
     };
 
-    // Перезагружаем props с сервера после мутаций
+    // Перезагружаем props с сервера после мутаций. Пагинация — клиентская
+    // ref: computed-список обновится сам после merge пропсов, а счётчик
+    // «Показано X–Y из Z» нужно пересчитывать вручную (useAccessLevels.ts,
+    // причина устаревания счётчика после delete/toggle).
     const reloadLevels = () => {
-        router.reload({ only: ['accessLevels'] });
+        router.reload({ only: ['accessLevels'] })
+            .then(() => updatePagination())
+            .catch(() => {});
     };
 
     const deleteLevel = (level: AccessLevel) => {

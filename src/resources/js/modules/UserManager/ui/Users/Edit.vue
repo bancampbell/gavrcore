@@ -196,6 +196,18 @@ const showNotification = (message: string, type: 'success' | 'error' = 'success'
     }, 5000);
 };
 
+// Образец — Groups/Edit.vue: при 422 читаем полевые errors.* (email/username/
+// blocked/groups), а не только англ. generic message.
+const validationErrorMessage = (error: any): string => {
+    const errors = error?.response?.data?.errors ?? {};
+    for (const field of ['email', 'username', 'blocked', 'groups']) {
+        if (Array.isArray(errors[field]) && errors[field][0]) {
+            return errors[field][0];
+        }
+    }
+    return error?.response?.data?.message || 'Ошибка при сохранении';
+};
+
 const isGroupSelected = (groupId: number) => {
     return form.value.groups.includes(groupId);
 };
@@ -228,7 +240,7 @@ const save = async () => {
         await usersApi.update(props.editUser.id, form.value);
         showNotification('Пользователь сохранён', 'success');
     } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
+        showNotification(validationErrorMessage(error), 'error');
     } finally {
         loading.value = false;
     }
@@ -249,7 +261,7 @@ const saveAndClose = async () => {
         await usersApi.update(props.editUser.id, form.value);
         router.visit('/admin/users?message=Пользователь+обновлён');
     } catch (error: any) {
-        showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
+        showNotification(validationErrorMessage(error), 'error');
         loading.value = false;
     }
 };

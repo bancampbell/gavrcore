@@ -59,6 +59,7 @@
                             <label class="admin-form-label whitespace-nowrap">Алиас</label>
                             <input
                                 v-model="form.alias"
+                                @input="aliasEdited = true"
                                 type="text"
                                 class="admin-form-input"
                                 style="width: 256px;"
@@ -135,6 +136,11 @@ const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
 let notificationTimeout: number | null = null;
 
+// Образец — Groups/Edit.vue: алиас перегенерируется из названия, пока
+// пользователь его не отредактировал. После успешного сохранения флаг
+// сбрасывается — следующая создаваемая группа снова получает алиас автоматически.
+const aliasEdited = ref(false);
+
 const form = ref({
     name: '',
     alias: '',
@@ -163,6 +169,8 @@ const transliterate = (text: string): string => {
 };
 
 const updateAlias = () => {
+    if (aliasEdited.value) return;
+
     if (!form.value.name) {
         form.value.alias = '';
         return;
@@ -190,6 +198,7 @@ const save = async () => {
         await groupsApi.create(form.value);
         showNotification('Группа сохранена', 'success');
         form.value = { name: '', alias: '', description: '', status: true, ordering: 0 };
+        aliasEdited.value = false;
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
     } finally {
@@ -223,6 +232,7 @@ const saveAndCreate = async () => {
     try {
         await groupsApi.create(form.value);
         form.value = { name: '', alias: '', description: '', status: true, ordering: 0 };
+        aliasEdited.value = false;
         showNotification('Группа создана. Можете создать следующую', 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
