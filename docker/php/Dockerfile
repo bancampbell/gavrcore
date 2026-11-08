@@ -1,4 +1,6 @@
 FROM php:8.4-fpm
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # Установка системных зависимостей + Node.js
 RUN apt-get update && apt-get install -y \
