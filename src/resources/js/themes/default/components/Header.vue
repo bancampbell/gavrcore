@@ -82,9 +82,7 @@ const mobileMenuOpen = ref(false);
 
 const getLinkUrl = (item) => {
     if (item.link_type === 'url') return item.link_value || '/';
-    if (item.link_type === 'material') return `/${item.link_value}`;
-    if (item.link_type === 'category') return `/category/${item.link_value}`;
-    return '#';
+    return item.url || '#';
 };
 
 const logout = () => {

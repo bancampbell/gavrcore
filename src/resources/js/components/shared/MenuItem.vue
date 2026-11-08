@@ -54,10 +54,8 @@ const isLink = computed(() =>
 const linkUrl = computed(() => {
     const item = props.item;
     if (item.link_type === 'url') return item.link_value || '/';
-    if (item.link_type === 'material') return `/${item.link_value}`;
-    if (item.link_type === 'category') return `/category/${item.link_value}`;
     if (item.link_type === 'external') return item.link_value;
-    return '#';
+    return item.url || '#';
 });
 
 const hasChildren = computed(() =>
