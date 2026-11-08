@@ -63,7 +63,7 @@ class AdminGalleryQueryControllerTest extends TestCase
             );
     }
 
-    public function test_list_returns_galleries_as_json(): void
+    public function test_list_returns_paginator_json(): void
     {
         $gallery = (new GalleryModelFactory)->create(['title' => 'Test Gallery']);
         (new GalleryImageModelFactory)->count(2)->create(['gallery_id' => $gallery->id]);
@@ -74,7 +74,13 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->withHeader('X-Requested-With', 'XMLHttpRequest')
             ->get(route('admin.galleries.list'))
             ->assertOk()
-            ->assertJsonCount(1)
+            ->assertJsonPath('total', 1)
+            ->assertJsonPath('per_page', 10)
+            ->assertJsonPath('current_page', 1)
+            ->assertJsonPath('last_page', 1)
+            ->assertJsonPath('from', 1)
+            ->assertJsonPath('to', 1)
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'title' => 'Test Gallery',
                 'type' => 'grid',
@@ -93,7 +99,8 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->withHeader('X-Requested-With', 'XMLHttpRequest')
             ->get(route('admin.galleries.list', ['search' => 'Alpha']))
             ->assertOk()
-            ->assertJsonCount(1)
+            ->assertJsonPath('total', 1)
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['title' => 'Alpha Gallery'])
             ->assertJsonMissing(['title' => 'Beta Gallery']);
     }
@@ -109,7 +116,8 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->withHeader('X-Requested-With', 'XMLHttpRequest')
             ->get(route('admin.galleries.list', ['type' => 'slider']))
             ->assertOk()
-            ->assertJsonCount(1)
+            ->assertJsonPath('total', 1)
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['type' => 'slider']);
     }
 
@@ -124,8 +132,54 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->withHeader('X-Requested-With', 'XMLHttpRequest')
             ->get(route('admin.galleries.list', ['status' => 1]))
             ->assertOk()
-            ->assertJsonCount(1)
+            ->assertJsonPath('total', 1)
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['status' => 1]);
+    }
+
+    public function test_list_paginates_filtered_results(): void
+    {
+        foreach (range(1, 25) as $i) {
+            (new GalleryModelFactory)->create([
+                'type' => 'grid',
+                'created_at' => now()->subMinutes(100 - $i),
+                'updated_at' => now()->subMinutes(100 - $i),
+            ]);
+        }
+        (new GalleryModelFactory)->count(3)->create(['type' => 'slider']);
+
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->withHeader('Accept', 'application/json')
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->get(route('admin.galleries.list', ['type' => 'grid', 'page' => 2]))
+            ->assertOk()
+            ->assertJsonPath('total', 25)
+            ->assertJsonPath('current_page', 2)
+            ->assertJsonPath('last_page', 3)
+            ->assertJsonPath('from', 11)
+            ->assertJsonPath('to', 20)
+            ->assertJsonCount(10, 'data');
+    }
+
+    public function test_list_validates_per_page(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->withHeader('Accept', 'application/json')
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->get(route('admin.galleries.list', ['per_page' => 0]))
+            ->assertUnprocessable();
+    }
+
+    public function test_list_validates_type_enum(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware($this->adminMiddleware())
+            ->withHeader('Accept', 'application/json')
+            ->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->get(route('admin.galleries.list', ['type' => 'bogus']))
+            ->assertUnprocessable();
     }
 
     public function test_edit_returns_inertia_for_existing_gallery(): void

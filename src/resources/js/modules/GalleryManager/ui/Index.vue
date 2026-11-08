@@ -44,7 +44,7 @@
                     </div>
                     <div class="w-40">
                         <label class="admin-filter-label">Тип</label>
-                        <select v-model="filters.type" @change="applyFilters" class="admin-filter-select">
+                        <select v-model="filters.type" @change="applyFilters(1)" class="admin-filter-select">
                             <option value="">Все</option>
                             <option value="grid">Сетка</option>
                             <option value="slideshow">Слайд-шоу</option>
@@ -54,10 +54,23 @@
                     </div>
                     <div class="w-40">
                         <label class="admin-filter-label">Статус</label>
-                        <select v-model="filters.status" @change="applyFilters" class="admin-filter-select">
+                        <select v-model="filters.status" @change="applyFilters(1)" class="admin-filter-select">
                             <option value="">Все</option>
                             <option value="1">Опубликовано</option>
                             <option value="0">Черновик</option>
+                        </select>
+                    </div>
+                    <div class="w-20">
+                        <label class="admin-filter-label">Показывать</label>
+                        <select
+                            v-model="perPage"
+                            @change="changePerPage"
+                            class="admin-filter-select"
+                        >
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
                         </select>
                     </div>
                     <button @click="resetFilters" class="admin-filter-reset">Очистить</button>
@@ -68,7 +81,7 @@
                 <div class="admin-page-card w-full">
                     <!-- Mobile view -->
                     <div class="lg:hidden divide-y divide-slate-100">
-                        <div v-for="gallery in paginatedGalleries" :key="gallery.id" class="p-4 hover:bg-slate-50">
+                        <div v-for="gallery in galleries" :key="gallery.id" class="p-4 hover:bg-slate-50">
                             <div class="flex items-start gap-3">
                                 <input
                                     type="checkbox"
@@ -116,7 +129,7 @@
                             </thead>
                             <tbody>
                             <tr
-                                v-for="gallery in paginatedGalleries"
+                                v-for="gallery in galleries"
                                 :key="gallery.id"
                                 :class="{ 'bg-blue-50/50': selectedIds.includes(gallery.id) }"
                             >
@@ -139,9 +152,9 @@
                                     <span class="stat-badge stat-badge-blue">{{ gallery.images_count || 0 }}</span>
                                 </td>
                                 <td class="col-status" @click.stop="toggleSelect(gallery.id)">
-                                        <span class="status-badge" :class="gallery.status ? 'status-published' : 'status-draft'">
-                                            {{ gallery.status ? 'Опубликовано' : 'Черновик' }}
-                                        </span>
+                                    <span class="status-badge" :class="gallery.status ? 'status-published' : 'status-draft'">
+                                        {{ gallery.status ? 'Опубликовано' : 'Черновик' }}
+                                    </span>
                                 </td>
                                 <td class="col-shortcode" @click.stop="toggleSelect(gallery.id)">
                                     <code class="shortcode">[gallery id="{{ gallery.id }}"]</code>
@@ -153,7 +166,7 @@
                                     {{ gallery.id }}
                                 </td>
                             </tr>
-                            <tr v-if="paginatedGalleries.length === 0">
+                            <tr v-if="!loading && galleries.length === 0">
                                 <td colspan="8" class="text-center py-10 text-slate-400">
                                     Нет галерей
                                     <p class="text-xs mt-1">Создайте первую галерею</p>
@@ -164,7 +177,7 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="filteredGalleries.length > 0" class="admin-pagination">
+                    <div v-if="pagination.total > 0" class="admin-pagination">
                         <div class="admin-pagination-info">
                             Показано {{ pagination.from }} - {{ pagination.to }} из {{ pagination.total }}
                         </div>
@@ -212,7 +225,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import ConfirmModal from '@/components/shared/ConfirmModal.vue';
@@ -224,34 +237,33 @@ import { useGallerySelection } from './composables/useGallerySelection';
 import { useGalleryNotifications } from './composables/useGalleryNotifications';
 import { useGalleryModals } from './composables/useGalleryModals';
 import { galleryApi } from '../infrastructure/api/gallery-api';
-import type { GalleryListItem } from './types';
+import type { GalleryListItem, GalleryListParams } from './types';
 
 const props = defineProps<{ user: any; title: string }>();
 
-const { galleries, loading, loadGalleries } = useGalleries();
-const { filters, filteredGalleries, resetFilters: resetGalleryFilters } = useGalleryFilters(galleries);
-const { selectedIds, allSelected, toggleSelect, clearSelection } = useGallerySelection(filteredGalleries);
+const { galleries, pagination, loading, loadGalleries } = useGalleries();
+const { filters, resetFilters: resetGalleryFilters } = useGalleryFilters();
+const { selectedIds, allSelected, toggleSelect, clearSelection } = useGallerySelection(galleries);
 const { notification, showNotification } = useGalleryNotifications();
 const { createModalOpen, deleteModalOpen, deleteLoading, openCreateModal, closeCreateModal, openDeleteModal, closeDeleteModal } = useGalleryModals();
 
-const perPage = ref(20);
-const currentPage = ref(1);
+const perPage = ref(10);
 const bulkActionLoading = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const pagination = computed(() => {
-    const total = filteredGalleries.value.length;
-    const lastPage = Math.ceil(total / perPage.value) || 1;
-    const from = total === 0 ? 0 : (currentPage.value - 1) * perPage.value + 1;
-    const to = Math.min(currentPage.value * perPage.value, total);
+const currentPage = computed(() => pagination.value.current_page);
 
-    return { current_page: currentPage.value, last_page: lastPage, from, to, total };
+const buildParams = (page: number): GalleryListParams => ({
+    search: filters.value.search || undefined,
+    type: filters.value.type || undefined,
+    status: filters.value.status !== '' ? filters.value.status === '1' : undefined,
+    page,
+    per_page: perPage.value,
 });
 
-const paginatedGalleries = computed(() => {
-    const start = (currentPage.value - 1) * perPage.value;
-    return filteredGalleries.value.slice(start, start + perPage.value);
-});
+const applyFilters = (page?: number) => {
+    loadGalleries(buildParams(page ?? pagination.value.current_page));
+};
 
 const deleteMessage = computed(() => {
     const count = selectedIds.value.length;
@@ -263,18 +275,17 @@ const deleteMessage = computed(() => {
 const debounceSearch = () => {
     if (searchTimeout) clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        currentPage.value = 1;
-        applyFilters();
+        applyFilters(1);
     }, 300);
-};
-
-const applyFilters = () => {
-    currentPage.value = 1;
 };
 
 const resetFilters = () => {
     resetGalleryFilters();
-    currentPage.value = 1;
+    applyFilters(1);
+};
+
+const changePerPage = () => {
+    applyFilters(1);
 };
 
 const formatDate = (date: string | null): string => {
@@ -312,7 +323,7 @@ const confirmDelete = async () => {
         showNotification(`${selectedIds.value.length} галерей удалено`, 'success');
         clearSelection();
         closeDeleteModal();
-        await loadGalleries();
+        applyFilters(1);
     } catch (error) {
         showNotification('Ошибка при удалении', 'error');
     } finally {
@@ -327,7 +338,7 @@ const publishSelected = async () => {
         await Promise.all(selectedIds.value.map(id => galleryApi.publish(id)));
         showNotification('Галереи опубликованы', 'success');
         clearSelection();
-        await loadGalleries();
+        applyFilters();
     } catch (error) {
         showNotification('Ошибка при публикации', 'error');
     } finally {
@@ -342,7 +353,7 @@ const unpublishSelected = async () => {
         await Promise.all(selectedIds.value.map(id => galleryApi.unpublish(id)));
         showNotification('Галереи сняты с публикации', 'success');
         clearSelection();
-        await loadGalleries();
+        applyFilters();
     } catch (error) {
         showNotification('Ошибка при снятии с публикации', 'error');
     } finally {
@@ -351,34 +362,36 @@ const unpublishSelected = async () => {
 };
 
 const prevPage = () => {
-    if (currentPage.value > 1) currentPage.value--;
+    if (pagination.value.current_page > 1) {
+        applyFilters(pagination.value.current_page - 1);
+    }
 };
 
 const nextPage = () => {
-    if (currentPage.value < pagination.value.last_page) currentPage.value++;
+    if (pagination.value.current_page < pagination.value.last_page) {
+        applyFilters(pagination.value.current_page + 1);
+    }
 };
 
-watch([() => filters.search, () => filters.type, () => filters.status], () => {
-    currentPage.value = 1;
-}, { deep: true });
-
 onMounted(() => {
-    loadGalleries();
+    loadGalleries(buildParams(1));
 });
 
 defineExpose({
     galleries,
     loading,
-    filters,
-    filteredGalleries,
-    paginatedGalleries,
     pagination,
+    perPage,
     currentPage,
+    filters,
+    applyFilters,
+    debounceSearch,
+    resetFilters,
+    changePerPage,
     selectedIds,
     allSelected,
     toggleSelect,
     clearSelection,
-    resetFilters,
     createModalOpen,
     deleteModalOpen,
     deleteLoading,

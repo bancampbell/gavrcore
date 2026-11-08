@@ -8,8 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Modules\GalleryManager\Application\DTO\GalleryFiltersData;
 use App\Modules\GalleryManager\Application\UseCases\GetGalleryForEditUseCase;
 use App\Modules\GalleryManager\Application\UseCases\GetGalleryListUseCase;
+use App\Modules\GalleryManager\Domain\Entities\Gallery;
+use App\Modules\GalleryManager\Infrastructure\Http\Requests\GalleryIndexRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,21 +37,28 @@ class AdminGalleryQueryController extends Controller
         ]);
     }
 
-    public function list(Request $request): JsonResponse
+    public function list(GalleryIndexRequest $request): JsonResponse
     {
         $filters = GalleryFiltersData::fromRequest($request);
-        $galleries = $this->getGalleryListUseCase->execute($filters);
+        $paginator = $this->getGalleryListUseCase->execute($filters);
 
-        return response()->json(
-            $galleries->map(fn ($gallery) => [
+        return response()->json([
+            'data' => collect($paginator->items())->map(fn (Gallery $gallery) => [
                 'id' => $gallery->id,
                 'title' => $gallery->title,
                 'type' => $gallery->type->value,
                 'status' => $gallery->status->value,
                 'images_count' => $gallery->imagesCount ?? 0,
                 'created_at' => $gallery->createdAt,
-            ])->values()
-        );
+            ])->values(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'filters' => $filters->toArray(),
+        ]);
     }
 
     public function edit(int $id): Response

@@ -1,5 +1,5 @@
 import { galleryAxios } from './gallery-axios';
-import type { Gallery, GalleryListItem, GalleryImage } from '../../ui/types';
+import type { Gallery, GalleryListResponse, GalleryImage, GalleryListParams } from '../../ui/types';
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -8,8 +8,8 @@ export interface ApiResponse<T> {
 }
 
 export const galleryApi = {
-    list: (params?: { search?: string; type?: string; status?: boolean }) =>
-        galleryAxios.get<GalleryListItem[]>('/admin/galleries/list', { params }),
+    list: (params?: GalleryListParams) =>
+        galleryAxios.get<GalleryListResponse>('/admin/galleries/list', { params }),
 
     store: (data: Pick<Gallery, 'title' | 'type' | 'status' | 'settings'>) =>
         galleryAxios.post<{ success: boolean; message: string; id: number }>('/admin/galleries', data),

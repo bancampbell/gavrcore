@@ -73,3 +73,21 @@ export interface GalleryListItem {
     images_count?: number;
     created_at: string;
 }
+
+export interface GalleryListResponse {
+    data: GalleryListItem[];
+    from: number | null;
+    to: number | null;
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+}
+
+export interface GalleryListParams {
+    search?: string;
+    type?: string;
+    status?: boolean;
+    page?: number;
+    per_page?: number;
+}

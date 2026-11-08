@@ -6,11 +6,8 @@ namespace Tests\Unit\Modules\GalleryManager\Application\UseCases;
 
 use App\Modules\GalleryManager\Application\DTO\GalleryFiltersData;
 use App\Modules\GalleryManager\Application\UseCases\GetGalleryListUseCase;
-use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Repositories\GalleryRepositoryInterface;
-use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
-use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
@@ -22,77 +19,49 @@ class GetGalleryListUseCaseTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_execute_returns_all_galleries_without_filters(): void
+    public function test_execute_paginates_with_given_filters(): void
     {
         $repository = Mockery::mock(GalleryRepositoryInterface::class);
         $useCase = new GetGalleryListUseCase($repository);
+        $paginator = Mockery::mock(LengthAwarePaginator::class);
 
-        $galleries = new Collection([
-            new Gallery(id: 1, title: 'A', type: GalleryType::GRID, settings: [], status: GalleryStatus::PUBLISHED, ordering: 0, imagesCount: 0),
-            new Gallery(id: 2, title: 'B', type: GalleryType::SLIDER, settings: [], status: GalleryStatus::DRAFT, ordering: 0, imagesCount: 0),
-        ]);
+        $filters = new GalleryFiltersData(search: 'Alpha', type: 'grid', status: true, perPage: 25, page: 2);
 
-        $repository->shouldReceive('getAllWithImageCount')->once()->andReturn($galleries);
+        $repository->shouldReceive('paginate')
+            ->once()
+            ->with([
+                'search' => 'Alpha',
+                'type' => 'grid',
+                'status' => true,
+                'per_page' => 25,
+                'page' => 2,
+            ], 25, 2)
+            ->andReturn($paginator);
+
+        $result = $useCase->execute($filters);
+
+        $this->assertSame($paginator, $result);
+    }
+
+    public function test_execute_uses_default_filters_when_null(): void
+    {
+        $repository = Mockery::mock(GalleryRepositoryInterface::class);
+        $useCase = new GetGalleryListUseCase($repository);
+        $paginator = Mockery::mock(LengthAwarePaginator::class);
+
+        $repository->shouldReceive('paginate')
+            ->once()
+            ->with([
+                'search' => null,
+                'type' => null,
+                'status' => null,
+                'per_page' => 10,
+                'page' => 1,
+            ], 10, 1)
+            ->andReturn($paginator);
 
         $result = $useCase->execute();
 
-        $this->assertCount(2, $result);
-    }
-
-    public function test_execute_filters_by_search_term(): void
-    {
-        $repository = Mockery::mock(GalleryRepositoryInterface::class);
-        $useCase = new GetGalleryListUseCase($repository);
-
-        $galleries = new Collection([
-            new Gallery(id: 1, title: 'Alpha', type: GalleryType::GRID, settings: [], status: GalleryStatus::PUBLISHED, ordering: 0, imagesCount: 0),
-            new Gallery(id: 2, title: 'Beta', type: GalleryType::GRID, settings: [], status: GalleryStatus::PUBLISHED, ordering: 0, imagesCount: 0),
-        ]);
-
-        $repository->shouldReceive('getAllWithImageCount')->once()->andReturn($galleries);
-
-        $filters = new GalleryFiltersData(search: 'Alpha');
-        $result = $useCase->execute($filters);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals('Alpha', $result->first()->title);
-    }
-
-    public function test_execute_filters_by_type(): void
-    {
-        $repository = Mockery::mock(GalleryRepositoryInterface::class);
-        $useCase = new GetGalleryListUseCase($repository);
-
-        $galleries = new Collection([
-            new Gallery(id: 1, title: 'A', type: GalleryType::GRID, settings: [], status: GalleryStatus::PUBLISHED, ordering: 0, imagesCount: 0),
-            new Gallery(id: 2, title: 'B', type: GalleryType::SLIDER, settings: [], status: GalleryStatus::PUBLISHED, ordering: 0, imagesCount: 0),
-        ]);
-
-        $repository->shouldReceive('getAllWithImageCount')->once()->andReturn($galleries);
-
-        $filters = new GalleryFiltersData(type: 'slider');
-        $result = $useCase->execute($filters);
-
-        $this->assertCount(1, $result);
-        $this->assertEquals(GalleryType::SLIDER, $result->first()->type);
-    }
-
-    public function test_execute_filters_by_status(): void
-    {
-        $repository = Mockery::mock(GalleryRepositoryInterface::class);
-        $useCase = new GetGalleryListUseCase($repository);
-
-        $galleries = new Collection([
-            new Gallery(id: 1, title: 'A', type: GalleryType::GRID, settings: [], status: GalleryStatus::PUBLISHED, ordering: 0, imagesCount: 0),
-            new Gallery(id: 2, title: 'B', type: GalleryType::GRID, settings: [], status: GalleryStatus::DRAFT, ordering: 0, imagesCount: 0),
-        ]);
-
-        $repository->shouldReceive('getAllWithImageCount')->once()->andReturn($galleries);
-
-        $filters = new GalleryFiltersData(status: true);
-        $result = $useCase->execute($filters);
-
-        $this->assertCount(1, $result);
-        $this->assertTrue($result->first()->isPublished());
+        $this->assertSame($paginator, $result);
     }
 }

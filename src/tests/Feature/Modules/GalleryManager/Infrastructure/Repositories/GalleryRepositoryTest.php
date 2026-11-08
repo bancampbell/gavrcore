@@ -11,6 +11,7 @@ use App\Modules\GalleryManager\Domain\Events\GalleryUpdated;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
 use App\Modules\GalleryManager\Infrastructure\Repositories\GalleryRepository;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\Feature\Modules\GalleryManager\Infrastructure\Models\GalleryImageModelFactory;
@@ -77,16 +78,96 @@ class GalleryRepositoryTest extends TestCase
         $this->assertContainsOnlyInstancesOf(Gallery::class, $galleries);
     }
 
-    public function test_get_all_with_image_count_includes_count(): void
+    public function test_paginate_returns_paginator_with_entities_and_image_count(): void
     {
         $gallery = (new GalleryModelFactory)->create();
         (new GalleryImageModelFactory)->count(5)->create(['gallery_id' => $gallery->id]);
 
-        $galleries = $this->repository->getAllWithImageCount();
+        $result = $this->repository->paginate([]);
 
-        $found = $galleries->first(fn (Gallery $g) => $g->id === $gallery->id);
-        $this->assertNotNull($found);
-        $this->assertEquals(5, $found->imagesCount);
+        $this->assertInstanceOf(LengthAwarePaginator::class, $result);
+        $this->assertEquals(1, $result->total());
+        $item = $result->items()[0];
+        $this->assertInstanceOf(Gallery::class, $item);
+        $this->assertEquals(5, $item->imagesCount);
+    }
+
+    public function test_paginate_filters_by_type(): void
+    {
+        (new GalleryModelFactory)->create(['type' => 'grid']);
+        $slider = (new GalleryModelFactory)->create(['type' => 'slider']);
+
+        $result = $this->repository->paginate(['type' => 'slider']);
+
+        $this->assertEquals(1, $result->total());
+        $this->assertEquals($slider->id, $result->items()[0]->id);
+        $this->assertEquals(GalleryType::SLIDER, $result->items()[0]->type);
+    }
+
+    public function test_paginate_filters_by_status(): void
+    {
+        $published = (new GalleryModelFactory)->create(['status' => true]);
+        $draft = (new GalleryModelFactory)->create(['status' => false]);
+
+        $publishedResult = $this->repository->paginate(['status' => true]);
+        $this->assertEquals(1, $publishedResult->total());
+        $this->assertEquals($published->id, $publishedResult->items()[0]->id);
+        $this->assertTrue($publishedResult->items()[0]->isPublished());
+
+        $draftResult = $this->repository->paginate(['status' => false]);
+        $this->assertEquals(1, $draftResult->total());
+        $this->assertEquals($draft->id, $draftResult->items()[0]->id);
+        $this->assertFalse($draftResult->items()[0]->isPublished());
+    }
+
+    public function test_paginate_filters_by_search_substring_of_title(): void
+    {
+        (new GalleryModelFactory)->create(['title' => 'Alpha Gallery']);
+        (new GalleryModelFactory)->create(['title' => 'Beta Gallery']);
+
+        $result = $this->repository->paginate(['search' => 'Alpha']);
+
+        $this->assertEquals(1, $result->total());
+        $this->assertEquals('Alpha Gallery', $result->items()[0]->title);
+
+        $lowerResult = $this->repository->paginate(['search' => 'alpha']);
+        $this->assertEquals(1, $lowerResult->total());
+    }
+
+    public function test_paginate_splits_into_pages(): void
+    {
+        $models = collect(range(1, 25))->map(fn (int $i) => (new GalleryModelFactory)->create([
+            'title' => 'Gallery '.$i,
+            'created_at' => now()->subMinutes(25 - $i),
+            'updated_at' => now()->subMinutes(25 - $i),
+        ]));
+
+        $firstPage = $this->repository->paginate([], 10);
+        $this->assertEquals(25, $firstPage->total());
+        $this->assertEquals(3, $firstPage->lastPage());
+        $this->assertEquals(1, $firstPage->currentPage());
+        $this->assertCount(10, $firstPage->items());
+
+        // created_at desc — ожидаемый порядок id выводим из созданных моделей
+        $expectedIds = $models
+            ->sortByDesc(fn ($model) => $model->created_at->toDateTimeString())
+            ->pluck('id')
+            ->values();
+
+        $secondPage = $this->repository->paginate([], 10, 2);
+        $this->assertEquals(2, $secondPage->currentPage());
+        $this->assertEquals(11, $secondPage->firstItem());
+        $this->assertEquals(20, $secondPage->lastItem());
+        $this->assertEquals(
+            $expectedIds->slice(10, 10)->values()->all(),
+            collect($secondPage->items())->map(fn (Gallery $g) => $g->id)->values()->all()
+        );
+
+        $thirdPage = $this->repository->paginate([], 10, 3);
+        $this->assertEquals(
+            $expectedIds->slice(20)->values()->all(),
+            collect($thirdPage->items())->map(fn (Gallery $g) => $g->id)->values()->all()
+        );
     }
 
     public function test_create_persists_gallery_and_dispatches_event(): void

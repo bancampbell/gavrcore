@@ -125,8 +125,8 @@ const filteredGalleries = computed(() => {
 const loadGalleries = async () => {
     loading.value = true;
     try {
-        const response = await axios.get('/admin/galleries/list');
-        galleries.value = response.data;
+        const response = await axios.get('/admin/galleries/list', { params: { per_page: 100 } });
+        galleries.value = response.data.data;
     } catch (error) {
         console.error('Error loading galleries:', error);
     } finally {

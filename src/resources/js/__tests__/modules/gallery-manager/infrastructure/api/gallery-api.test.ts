@@ -18,10 +18,18 @@ describe('galleryApi', () => {
   });
 
   describe('list', () => {
-    it('fetches galleries without filters', async () => {
-      const mockData = [
-        { id: 1, title: 'Gallery 1', type: 'grid', status: true, images_count: 5, created_at: '2024-01-01' },
-      ];
+    it('fetches galleries without params', async () => {
+      const mockData = {
+        data: [
+          { id: 1, title: 'Gallery 1', type: 'grid', status: true, images_count: 5, created_at: '2024-01-01' },
+        ],
+        from: 1,
+        to: 1,
+        total: 1,
+        per_page: 10,
+        current_page: 1,
+        last_page: 1,
+      };
       vi.mocked(galleryAxios.get).mockResolvedValueOnce({ data: mockData });
 
       const result = await galleryApi.list();
@@ -31,14 +39,22 @@ describe('galleryApi', () => {
       expect(result.data).toEqual(mockData);
     });
 
-    it('fetches galleries with filters', async () => {
-      const mockData = [];
+    it('fetches galleries with filters and pagination', async () => {
+      const mockData = {
+        data: [],
+        from: null,
+        to: null,
+        total: 0,
+        per_page: 25,
+        current_page: 2,
+        last_page: 1,
+      };
       vi.mocked(galleryAxios.get).mockResolvedValueOnce({ data: mockData });
 
-      await galleryApi.list({ search: 'test', type: 'grid', status: true });
+      await galleryApi.list({ search: 'test', type: 'grid', status: true, page: 2, per_page: 25 });
 
       expect(galleryAxios.get).toHaveBeenCalledWith('/admin/galleries/list', {
-        params: { search: 'test', type: 'grid', status: true },
+        params: { search: 'test', type: 'grid', status: true, page: 2, per_page: 25 },
       });
     });
   });

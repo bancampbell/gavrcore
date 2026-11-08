@@ -12,6 +12,7 @@ use App\Modules\GalleryManager\Domain\ValueObjects\GalleryStatus;
 use App\Modules\GalleryManager\Domain\ValueObjects\GalleryType;
 use App\Modules\GalleryManager\Infrastructure\Models\GalleryImageModel;
 use App\Modules\GalleryManager\Infrastructure\Models\GalleryModel;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -50,12 +51,28 @@ class GalleryRepository implements GalleryRepositoryInterface
         return GalleryModel::orderBy('created_at', 'desc')->get()->map(fn ($m) => $this->toEntity($m));
     }
 
-    public function getAllWithImageCount(): Collection
+    public function paginate(array $filters, int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
-        return GalleryModel::withCount('images')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn ($m) => $this->toEntity($m));
+        $query = GalleryModel::withCount('images');
+
+        if (($filters['search'] ?? null) !== null && $filters['search'] !== '') {
+            $search = '%'.$filters['search'].'%';
+            $query->whereRaw('LOWER(title) LIKE LOWER(?)', [$search]);
+        }
+
+        if (($filters['type'] ?? null) !== null && $filters['type'] !== '') {
+            $query->where('type', $filters['type']);
+        }
+
+        if (($filters['status'] ?? null) !== null) {
+            $query->where('status', $filters['status']
+                ? GalleryStatus::PUBLISHED->value
+                : GalleryStatus::DRAFT->value);
+        }
+
+        return $query->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page)
+            ->through(fn (GalleryModel $model) => $this->toEntity($model));
     }
 
     public function create(Gallery $gallery): Gallery

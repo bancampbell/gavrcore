@@ -100,8 +100,8 @@ const filteredGalleries = computed(() => {
 const loadGalleries = async () => {
     loading.value = true;
     try {
-        const response = await galleryApi.list();
-        galleries.value = response.data;
+        const response = await galleryApi.list({ per_page: 100 });
+        galleries.value = response.data.data;
     } catch (error) {
         console.error('Error loading galleries:', error);
     } finally {

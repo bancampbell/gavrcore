@@ -6,6 +6,7 @@ namespace App\Modules\GalleryManager\Domain\Repositories;
 
 use App\Modules\GalleryManager\Domain\Entities\Gallery;
 use App\Modules\GalleryManager\Domain\Entities\GalleryImage;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 interface GalleryRepositoryInterface
@@ -20,7 +21,7 @@ interface GalleryRepositoryInterface
 
     public function getAll(): Collection;
 
-    public function getAllWithImageCount(): Collection;
+    public function paginate(array $filters, int $perPage = 10, int $page = 1): LengthAwarePaginator;
 
     public function create(Gallery $gallery): Gallery;
 
