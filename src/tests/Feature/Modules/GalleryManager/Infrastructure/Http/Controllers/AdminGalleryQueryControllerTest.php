@@ -45,7 +45,11 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('GalleryManager/Index', false)
-                ->has('user')
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
                 ->where('title', 'Галереи')
             );
     }
@@ -58,7 +62,11 @@ class AdminGalleryQueryControllerTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('GalleryManager/Create', false)
-                ->has('user')
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
                 ->where('title', 'Создать галерею')
             );
     }

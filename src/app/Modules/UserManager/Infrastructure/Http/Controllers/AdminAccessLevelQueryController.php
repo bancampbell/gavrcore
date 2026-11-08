@@ -42,7 +42,7 @@ final class AdminAccessLevelQueryController extends Controller
             'accessLevels' => AccessLevelResource::collection($accessLevels)->resolve(),
             'groups' => GroupResource::collection($this->getAllGroups->execute())->resolve(),
             'filters' => $request->only(['search', 'status']),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Уровни доступа',
         ]);
     }
@@ -53,7 +53,7 @@ final class AdminAccessLevelQueryController extends Controller
 
         return Inertia::render('UserManager/AccessLevels/Create', [
             'groups' => GroupResource::collection($this->getAllGroups->execute())->resolve(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Создать уровень доступа',
         ]);
     }
@@ -68,7 +68,7 @@ final class AdminAccessLevelQueryController extends Controller
         return Inertia::render('UserManager/AccessLevels/Edit', [
             'editAccessLevel' => (new AccessLevelResource($accessLevel))->resolve(),
             'groups' => GroupResource::collection($this->getAllGroups->execute())->resolve(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Редактировать уровень доступа',
         ]);
     }

@@ -48,7 +48,7 @@ class AdminMaterialQueryController
             'authors' => UserModel::select('id', 'name')->orderBy('name')->get(),
             'filters' => $filters->toArray(),
             'perPage' => $filters->perPage,
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Менеджер материалов',
             'isLanding' => $this->themeService->isLandingTheme(),
         ]);
@@ -66,7 +66,7 @@ class AdminMaterialQueryController
 
         return Inertia::render('MaterialManager/Trash', [
             'materials' => $paginated,
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Корзина',
         ]);
     }
@@ -77,7 +77,7 @@ class AdminMaterialQueryController
 
         return Inertia::render('MaterialManager/Create', [
             'categories' => $this->categoryService->getAll(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Создать материал',
         ]);
     }
@@ -95,7 +95,7 @@ class AdminMaterialQueryController
         return Inertia::render('MaterialManager/Edit', [
             'material' => $materialArray,
             'categories' => $this->categoryService->getAll(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Редактировать материал',
         ]);
     }

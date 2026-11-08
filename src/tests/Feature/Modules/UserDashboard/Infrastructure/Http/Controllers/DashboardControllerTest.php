@@ -41,6 +41,11 @@ class DashboardControllerTest extends TestCase
                 ->where('totalTickets', 4)
                 ->where('inProgressTickets', 1)
                 ->where('completedTickets', 1)
+                ->where('user.id', $user->id)
+                ->where('user.name', $user->name)
+                ->where('user.email', $user->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
             );
     }
 

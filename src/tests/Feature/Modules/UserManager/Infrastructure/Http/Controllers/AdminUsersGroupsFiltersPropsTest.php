@@ -37,6 +37,11 @@ class AdminUsersGroupsFiltersPropsTest extends TestCase
                 ->component('UserManager/Users/Index', false)
                 ->where('filters.blocked', fn ($value) => $value === true)
                 ->where('filters.activated', fn ($value) => $value === false)
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
             );
     }
 
@@ -49,6 +54,27 @@ class AdminUsersGroupsFiltersPropsTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('UserManager/Groups/Index', false)
                 ->where('filters.status', fn ($value) => $value === false)
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
+            );
+    }
+
+    public function test_access_levels_index_exposes_only_safe_user_fields(): void
+    {
+        $this->actingAs($this->admin)
+            ->withoutMiddleware(AdminMiddleware::class)
+            ->get(route('admin.access-levels.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('UserManager/AccessLevels/Index', false)
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
             );
     }
 }

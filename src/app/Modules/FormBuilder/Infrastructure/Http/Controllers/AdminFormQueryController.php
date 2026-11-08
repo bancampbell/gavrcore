@@ -29,7 +29,7 @@ class AdminFormQueryController
         $forms = $this->getFormsUseCase->execute($filters, $perPage);
 
         return Inertia::render('FormBuilder/FormIndex', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'forms' => $forms,
             'filters' => [
                 'search' => $filters->search,
@@ -43,7 +43,7 @@ class AdminFormQueryController
     public function create(): Response
     {
         return Inertia::render('FormBuilder/Create', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Создать форму',
         ]);
     }
@@ -56,7 +56,7 @@ class AdminFormQueryController
         }
 
         return Inertia::render('FormBuilder/Edit', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'form' => [
                 'id' => $form->id,
                 'title' => $form->title,
@@ -83,7 +83,7 @@ class AdminFormQueryController
         }
 
         return Inertia::render('FormBuilder/Builder', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'form' => [
                 'id' => $form->id,
                 'title' => $form->title,

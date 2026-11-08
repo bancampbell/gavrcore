@@ -38,7 +38,7 @@ final class AdminUserQueryController extends Controller
             'users' => UserResource::collection($this->getUserList->execute($filters)),
             'groups' => GroupResource::collection($this->getAllGroups->execute())->resolve(),
             'filters' => $request->only(['search', 'blocked', 'activated']),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Пользователи',
         ]);
     }
@@ -49,7 +49,7 @@ final class AdminUserQueryController extends Controller
 
         return Inertia::render('UserManager/Users/Create', [
             'groups' => GroupResource::collection($this->getAllGroups->execute())->resolve(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Создать пользователя',
         ]);
     }
@@ -64,7 +64,7 @@ final class AdminUserQueryController extends Controller
         return Inertia::render('UserManager/Users/Edit', [
             'editUser' => (new UserResource($user))->resolve(),
             'groups' => GroupResource::collection($this->getAllGroups->execute())->resolve(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Редактировать пользователя',
         ]);
     }

@@ -40,7 +40,7 @@ class AdminCategoryQueryController extends Controller
             'categories' => $categories,
             'parentOptions' => $parentOptions,
             'filters' => $request->validated(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Категории',
         ]);
     }

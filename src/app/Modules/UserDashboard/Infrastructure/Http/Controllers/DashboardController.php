@@ -34,7 +34,7 @@ class DashboardController extends Controller
         $stats = $this->getUserSubmissionStatsUseCase->execute((int) auth()->id());
 
         return Inertia::render('UserDashboard/Index', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
             'totalTickets' => $stats['total'],
             'inProgressTickets' => $stats['in_progress'],
@@ -45,7 +45,7 @@ class DashboardController extends Controller
     public function profile(): Response
     {
         return Inertia::render('UserDashboard/Profile', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
         ]);
     }
@@ -53,7 +53,7 @@ class DashboardController extends Controller
     public function settings(): Response
     {
         return Inertia::render('UserDashboard/Settings', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
         ]);
     }
@@ -69,7 +69,7 @@ class DashboardController extends Controller
         );
 
         return Inertia::render('UserDashboard/TicketsIndex', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
             'submissions' => $submissions,
         ]);
@@ -90,7 +90,7 @@ class DashboardController extends Controller
         $form = $this->getFormByIdUseCase->execute($submission->formId);
 
         return Inertia::render('UserDashboard/TicketsShow', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
             'submission' => (new SubmissionResource($submission))->toArray(request()),
             'formTitle' => $form?->title,
@@ -103,7 +103,7 @@ class DashboardController extends Controller
     public function ticketsCreate(): Response
     {
         return Inertia::render('UserDashboard/TicketsCreate', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
             'forms' => $this->getActiveFormsUseCase->execute(),
         ]);

@@ -48,6 +48,11 @@ class AdminMaterialControllerTest extends TestCase
                 ->has('materials')
                 ->has('categories')
                 ->has('authors')
+                ->where('user.id', $this->admin->id)
+                ->where('user.name', $this->admin->name)
+                ->where('user.email', $this->admin->email)
+                ->missing('user.password')
+                ->missing('user.remember_token')
             );
     }
 

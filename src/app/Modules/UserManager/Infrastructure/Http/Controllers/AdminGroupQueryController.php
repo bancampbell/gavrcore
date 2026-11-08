@@ -42,7 +42,7 @@ final class AdminGroupQueryController extends Controller
         return Inertia::render('UserManager/Groups/Index', [
             'groups' => GroupResource::collection($groups),
             'filters' => $request->only(['search', 'status']),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Группы пользователей',
         ]);
     }
@@ -53,7 +53,7 @@ final class AdminGroupQueryController extends Controller
 
         return Inertia::render('UserManager/Groups/Create', [
             'permissions' => PermissionResource::collection($this->getPermissionList->execute())->resolve(),
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Создать группу',
         ]);
     }
@@ -69,7 +69,7 @@ final class AdminGroupQueryController extends Controller
             'editGroup' => (new GroupResource($group))->resolve(),
             'permissions' => PermissionResource::collection($this->getPermissionList->execute())->resolve(),
             'groupPermissions' => $group->permissionIds,
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Редактировать группу',
         ]);
     }

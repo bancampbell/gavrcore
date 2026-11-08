@@ -24,7 +24,7 @@ class AdminGalleryQueryController extends Controller
     public function index(): Response
     {
         return Inertia::render('GalleryManager/Index', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Галереи',
         ]);
     }
@@ -32,7 +32,7 @@ class AdminGalleryQueryController extends Controller
     public function create(): Response
     {
         return Inertia::render('GalleryManager/Create', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Создать галерею',
         ]);
     }
@@ -70,7 +70,7 @@ class AdminGalleryQueryController extends Controller
         }
 
         return Inertia::render('GalleryManager/Edit', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'gallery' => $gallery,
             'title' => "Редактировать галерею: {$gallery['title']}",
         ]);

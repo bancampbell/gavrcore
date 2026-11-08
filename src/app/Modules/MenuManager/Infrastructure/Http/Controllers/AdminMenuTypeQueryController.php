@@ -37,7 +37,7 @@ class AdminMenuTypeQueryController extends Controller
         }
 
         return Inertia::render('MenuManager/Index', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'menuTypes' => [
                 'data' => $menuTypes->items(),
                 'current_page' => $menuTypes->currentPage(),

@@ -17,6 +17,7 @@ use Modules\MediaManager\Application\UseCases\GetFoldersUseCase;
 use Modules\MediaManager\Application\UseCases\GetPaginatedContentsUseCase;
 use Modules\MediaManager\Application\UseCases\RenameItemUseCase;
 use Modules\MediaManager\Application\UseCases\UploadFileUseCase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class MediaControllerTest extends TestCase
@@ -46,6 +47,32 @@ class MediaControllerTest extends TestCase
     {
         $response = $this->get('/admin/media');
         $response->assertStatus(200);
+    }
+
+    public function test_index_exposes_only_safe_user_fields(): void
+    {
+        // Мок из setUp не имеет атрибутов — логинимся реальной (несохранённой) моделью:
+        // пароль/remember_token обязаны отсутствовать в пропе 'user' (TECHDEBT п.38)
+        $user = new UserModel();
+        $user->forceFill([
+            'id' => 42,
+            'name' => 'Media Admin',
+            'email' => 'media.admin@example.com',
+            'password' => 'hashed-password',
+            'remember_token' => 'remember-token',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/admin/media')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MediaManager/Index', false)
+                ->where('user.id', 42)
+                ->where('user.name', 'Media Admin')
+                ->where('user.email', 'media.admin@example.com')
+                ->missing('user.password')
+                ->missing('user.remember_token')
+            );
     }
 
     public function test_get_contents_returns_json(): void

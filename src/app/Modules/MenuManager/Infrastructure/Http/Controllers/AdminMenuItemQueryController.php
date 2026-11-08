@@ -47,7 +47,7 @@ class AdminMenuItemQueryController extends Controller
         $menuType = MenuTypeModel::findOrFail($menuTypeId);
 
         return Inertia::render('MenuManager/MenuItems', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'menuTypeId' => $menuTypeId,
             'menuTypeTitle' => $menuType->title,
             'menuItems' => [
@@ -92,7 +92,7 @@ class AdminMenuItemQueryController extends Controller
         $menuItems = $this->getAllUseCase->execute($filters, $perPage, $page);
 
         return Inertia::render('MenuManager/MenuItems', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'menuTypeId' => null,
             'menuTypeTitle' => 'Все пункты',
             'menuItems' => [
@@ -134,7 +134,7 @@ class AdminMenuItemQueryController extends Controller
         $menuType = MenuTypeModel::findOrFail($menuTypeId);
 
         return Inertia::render('MenuManager/Create', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => "Менеджер меню: Создать пункт меню — {$menuType->title}",
             'menuTypeId' => $menuTypeId,
         ]);
@@ -146,7 +146,7 @@ class AdminMenuItemQueryController extends Controller
         $this->authorize('update', $menuItem);
 
         return Inertia::render('MenuManager/Edit', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'title' => 'Менеджер меню: Редактировать пункт меню',
             'menuItem' => $menuItem,
             'menuTypeId' => $menuItem->menu_type_id,

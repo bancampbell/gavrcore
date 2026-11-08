@@ -33,7 +33,7 @@ class AdminSubmissionQueryController
         $submissions = $this->getSubmissionsUseCase->execute($filters, $perPage);
 
         return Inertia::render('FormBuilder/Submissions', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'submissions' => $submissions,
             'forms' => FormModel::select('id', 'title', 'alias')->orderBy('title')->get(),
             'filters' => [

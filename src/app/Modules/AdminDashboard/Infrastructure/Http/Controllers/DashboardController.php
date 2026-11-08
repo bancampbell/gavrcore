@@ -24,7 +24,7 @@ class DashboardController extends Controller
             ->paginate(20);
 
         return Inertia::render('AdminDashboard/Dashboard', [
-            'user' => auth()->user(),
+            'user' => auth()->user()->only(['id', 'name', 'email']),
             'stats' => [
                 'materials' => $totalMaterials,
                 'categories' => $totalCategories,
