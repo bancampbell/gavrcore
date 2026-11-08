@@ -37,5 +37,7 @@ interface MenuItemRepositoryInterface
 
     public function lockByMenuType(int $menuTypeId): void;
 
+    public function lockScopeParent(int $menuTypeId, ?int $parentId): void;
+
     public function isDescendant(int $ancestorId, int $descendantId): bool;
 }

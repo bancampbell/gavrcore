@@ -4,6 +4,7 @@ namespace App\Modules\MenuManager\Infrastructure\Repositories;
 
 use App\Modules\MenuManager\Domain\Repositories\MenuItemRepositoryInterface;
 use App\Modules\MenuManager\Infrastructure\Models\MenuItemModel;
+use App\Modules\MenuManager\Infrastructure\Models\MenuTypeModel;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -136,6 +137,20 @@ class MenuItemRepository implements MenuItemRepositoryInterface
         MenuItemModel::where('menu_type_id', $menuTypeId)
             ->lockForUpdate()
             ->get();
+    }
+
+    public function lockScopeParent(int $menuTypeId, ?int $parentId): void
+    {
+        // Сериализуем конкурентные create в одном scope (menu_type_id + parent_id)
+        // даже когда в нём ещё нет записей: блокируем "родителя" scope, который
+        // существует всегда (пункт либо тип меню) — по образцу
+        // GalleryRepository::addImage. Блокировка записей самого scope
+        // (lockByParent) пустой scope не захватывает.
+        if ($parentId !== null) {
+            MenuItemModel::where('id', $parentId)->lockForUpdate()->first();
+        } else {
+            MenuTypeModel::where('id', $menuTypeId)->lockForUpdate()->first();
+        }
     }
 
     public function isDescendant(int $ancestorId, int $descendantId): bool

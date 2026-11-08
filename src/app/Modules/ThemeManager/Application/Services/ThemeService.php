@@ -3,6 +3,7 @@
 namespace App\Modules\ThemeManager\Application\Services;
 
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
+use Illuminate\Database\QueryException;
 
 class ThemeService
 {
@@ -61,10 +62,27 @@ class ThemeService
      */
     public function setCurrentTheme(string $theme): void
     {
-        Setting::updateOrCreate(
-            ['key' => 'theme'],
-            ['value' => $theme]
-        );
+        // Паттерн SettingService::updateSettings: find → update, lazy-create
+        // с догоном значением при гонке на unique settings.key (иначе
+        // одновременное переключение темы давало бы 500 вместо сохранения).
+        $setting = Setting::where('key', 'theme')->first();
+
+        if ($setting) {
+            $setting->update(['value' => $theme]);
+
+            return;
+        }
+
+        try {
+            Setting::create(['key' => 'theme', 'value' => $theme]);
+        } catch (QueryException $e) {
+            // Ключ успел появиться между first() и create() — догоняем значением.
+            if (! $this->isUniqueViolation($e)) {
+                throw $e;
+            }
+
+            Setting::where('key', 'theme')->update(['value' => $theme]);
+        }
     }
 
     /**
@@ -74,4 +92,18 @@ class ThemeService
     {
         return $this->getCurrentTheme() === 'landing';
     }
+
+    private function isUniqueViolation(QueryException $e): bool
+    {
+        // MySQL: 1062, PostgreSQL: 23505, SQLite: 8/19/1555/2067 (SQLITE_CONSTRAINT*).
+        // Драйвер pgsql кладёт в errorInfo[1] свой код (7), а не SQLSTATE —
+        // 23505 ищем в errorInfo[0]/getCode() (эталон — UserManager).
+        $codes = array_filter([
+            (string) ($e->errorInfo[0] ?? ''),
+            (string) $e->getCode(),
+        ]);
+
+        return count(array_intersect($codes, ['1062', '23505', '8', '19', '1555', '2067'])) > 0;
+    }
 }
+

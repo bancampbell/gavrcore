@@ -56,7 +56,12 @@ class SettingService
                         'order' => 0,
                     ]);
                 } catch (QueryException $e) {
-                    // Ключ успел появиться между first() и create() — догоняем значением
+                    // Ключ успел появиться между first() и create() — догоняем значением.
+                    // Ловим только unique-нарушение, всё остальное пробрасываем.
+                    if (! $this->isUniqueViolation($e)) {
+                        throw $e;
+                    }
+
                     Setting::where('key', $key)->update(['value' => $value]);
                 }
             }
@@ -100,5 +105,18 @@ class SettingService
                 $default
             );
         }
+    }
+
+    private function isUniqueViolation(QueryException $e): bool
+    {
+        // MySQL: 1062, PostgreSQL: 23505, SQLite: 8/19/1555/2067 (SQLITE_CONSTRAINT*).
+        // Драйвер pgsql кладёт в errorInfo[1] свой код (7), а не SQLSTATE —
+        // 23505 ищем в errorInfo[0]/getCode() (эталон — UserManager).
+        $codes = array_filter([
+            (string) ($e->errorInfo[0] ?? ''),
+            (string) $e->getCode(),
+        ]);
+
+        return count(array_intersect($codes, ['1062', '23505', '8', '19', '1555', '2067'])) > 0;
     }
 }

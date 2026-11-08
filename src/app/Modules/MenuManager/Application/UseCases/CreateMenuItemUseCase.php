@@ -16,6 +16,11 @@ class CreateMenuItemUseCase
     public function execute(CreateMenuItemData $data): MenuItemModel
     {
         return DB::transaction(function () use ($data) {
+            // Блокировка "родителя" scope — сериализует конкурентные create
+            // даже в пустом scope, где lockByMenuType/lockByParent не захватывают
+            // ни одной строки (у PG нет gap locks).
+            $this->repository->lockScopeParent($data->menuTypeId, $data->parentId);
+
             $this->repository->lockByMenuType($data->menuTypeId);
 
             $insertData = [
