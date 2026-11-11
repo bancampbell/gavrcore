@@ -13,7 +13,7 @@
 // Модульный скоуп: скрипт Turnstile грузим один раз на страницу,
 // повторные виджеты дожидаются того же промиса; счётчик даёт
 // уникальные имена глобальных колбэков для нескольких форм на странице.
-const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v1/api.js';
+const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
 
 interface TurnstileApi {
     render: (container: HTMLElement, params: Record<string, unknown>) => number;

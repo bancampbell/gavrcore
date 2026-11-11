@@ -98,7 +98,7 @@ class SettingService
             ['key' => 'cache_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'cache', 'label' => 'Кэшировать страницы', 'order' => 1],
             ['key' => 'cache_ttl', 'value' => '60', 'type' => 'number', 'group' => 'cache', 'label' => 'Время кэша (минуты)', 'order' => 2],
             ['key' => 'captcha_driver', 'value' => 'turnstile', 'type' => 'string', 'group' => 'captcha', 'label' => 'Драйвер капчи', 'order' => 1],
-            ['key' => 'captcha_site_key', 'value' => '1x0000000000000000000000000000000AA', 'type' => 'string', 'group' => 'captcha', 'label' => 'Site Key капчи', 'order' => 2],
+            ['key' => 'captcha_site_key', 'value' => '1x00000000000000000000AA', 'type' => 'string', 'group' => 'captcha', 'label' => 'Site Key капчи', 'order' => 2],
             ['key' => 'captcha_secret', 'value' => '1x0000000000000000000000000000000AA', 'type' => 'string', 'group' => 'captcha', 'label' => 'Secret Key капчи', 'order' => 3],
         ];
 
