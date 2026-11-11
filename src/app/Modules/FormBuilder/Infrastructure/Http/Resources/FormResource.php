@@ -22,6 +22,7 @@ class FormResource extends JsonResource
             'notification_emails' => $form->notificationEmails,
             'status' => $form->status->value(),
             'is_dynamic' => $form->isDynamic,
+            'captcha_enabled' => $form->captchaEnabled,
             'submissions_count' => $form->submissionsCount,
             'created_at' => $form->createdAt?->format('Y-m-d H:i:s'),
             'updated_at' => $form->updatedAt?->format('Y-m-d H:i:s'),

@@ -42,6 +42,7 @@ class AdminFormCommandController
             notificationEmails: $request->validated('notification_emails', []),
             status: $request->validated('status', true),
             isDynamic: $request->validated('is_dynamic', false),
+            captchaEnabled: $request->validated('captcha_enabled', false),
         );
 
         $form = $this->createFormUseCase->execute($data);
@@ -63,6 +64,7 @@ class AdminFormCommandController
             notificationEmails: $request->validated('notification_emails', []),
             status: $request->validated('status', true),
             isDynamic: $request->validated('is_dynamic'),
+            captchaEnabled: $request->validated('captcha_enabled'),
         );
 
         $form = $this->updateFormUseCase->execute($id, $data);

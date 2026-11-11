@@ -41,7 +41,7 @@ class FormManagerServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../../Infrastructure/views', 'form-manager');
 
         RateLimiter::for('form-submit', function ($request) {
-            return Limit::perMinute(10)->by($request->ip());
+            return Limit::perMinute(5)->by($request->ip());
         });
     }
 }

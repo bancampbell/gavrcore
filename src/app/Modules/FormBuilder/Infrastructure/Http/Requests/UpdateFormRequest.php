@@ -21,6 +21,7 @@ class UpdateFormRequest extends FormRequest
             'description' => 'nullable|string',
             'status' => 'nullable|boolean',
             'is_dynamic' => 'nullable|boolean',
+            'captcha_enabled' => 'nullable|boolean',
             'fields' => 'nullable|array',
             'settings' => 'nullable|array',
             'notification_emails' => 'nullable|array',

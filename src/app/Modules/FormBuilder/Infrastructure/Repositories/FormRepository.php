@@ -63,6 +63,7 @@ class FormRepository implements FormRepositoryInterface
             'status' => $form->status->value(),
             'is_dynamic' => $form->isDynamic,
             'submissions_count' => $form->submissionsCount,
+            'captcha_enabled' => $form->captchaEnabled,
         ]);
 
         $model->save();
@@ -90,7 +91,7 @@ class FormRepository implements FormRepositoryInterface
      */
     public function listActiveForSelect(): array
     {
-        return FormModel::select('id', 'title', 'alias', 'status', 'fields')
+        return FormModel::select('id', 'title', 'alias', 'status', 'fields', 'captcha_enabled')
             ->where('status', true)
             ->orderBy('title')
             ->get()
@@ -115,6 +116,7 @@ class FormRepository implements FormRepositoryInterface
             notificationEmails: $model->notification_emails ?? [],
             status: new FormStatus($model->status),
             isDynamic: $model->is_dynamic,
+            captchaEnabled: (bool) $model->captcha_enabled,
             submissionsCount: $model->submissions_count,
             createdAt: $model->created_at ? new \DateTimeImmutable($model->created_at) : null,
             updatedAt: $model->updated_at ? new \DateTimeImmutable($model->updated_at) : null,

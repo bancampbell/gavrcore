@@ -38,6 +38,19 @@
                 <option :value="false">Черновик</option>
               </select>
             </div>
+            <div>
+              <label class="admin-form-label">Защита от спама</label>
+              <button
+                @click="form.captchaEnabled = !form.captchaEnabled"
+                type="button"
+                class="admin-toggle"
+                :class="form.captchaEnabled ? 'admin-toggle-on' : 'admin-toggle-off'"
+              >
+                <span class="admin-toggle-slider" :class="form.captchaEnabled ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+              </button>
+              <span class="admin-toggle-label">Защита от спама</span>
+              <p class="text-xs text-slate-400 mt-1">Капча на публичной форме. Требует выбранного драйвера капчи в настройках сайта («Защита от спама»).</p>
+            </div>
           </div>
         </div>
       </div>
@@ -56,7 +69,7 @@ import Toast from '@/components/shared/Toast.vue';
 const props = defineProps<{ user: any; title: string; }>();
 const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
-const form = ref({ title: '', alias: '', description: '', status: true, notificationEmailsInput: '' });
+const form = ref({ title: '', alias: '', description: '', status: true, captchaEnabled: false, notificationEmailsInput: '' });
 const isAliasManuallyEdited = ref(false);
 
 const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
@@ -76,7 +89,7 @@ const onAliasInput = () => { if (form.value.alias.trim() !== '') isAliasManually
 watch(() => form.value.alias, (newVal) => { if (newVal === '') isAliasManuallyEdited.value = false; });
 
 const buildPayload = () => {
-  const payload: Record<string, any> = { title: form.value.title, status: form.value.status };
+  const payload: Record<string, any> = { title: form.value.title, status: form.value.status, captcha_enabled: form.value.captchaEnabled };
   if (form.value.alias?.trim()) payload.alias = form.value.alias.trim();
   if (form.value.description?.trim()) payload.description = form.value.description.trim();
   if (form.value.notificationEmailsInput?.trim()) payload.notification_emails = form.value.notificationEmailsInput.split(',').map(e => e.trim()).filter(e => e);
@@ -90,7 +103,7 @@ const save = async () => {
   try {
     await axios.post('/admin/forms', buildPayload());
     showNotification('Форма создана', 'success');
-    form.value = { title: '', alias: '', description: '', status: true, notificationEmailsInput: '' };
+    form.value = { title: '', alias: '', description: '', status: true, captchaEnabled: false, notificationEmailsInput: '' };
     isAliasManuallyEdited.value = false;
   } catch (error: any) { showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error'); }
   finally { loading.value = false; }

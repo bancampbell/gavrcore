@@ -18,6 +18,7 @@ class Form
         public array $notificationEmails,
         public FormStatus $status,
         public bool $isDynamic,
+        public bool $captchaEnabled,
         public int $submissionsCount,
         public readonly ?\DateTimeImmutable $createdAt = null,
         public readonly ?\DateTimeImmutable $updatedAt = null,
@@ -48,6 +49,9 @@ class Form
         }
         if (isset($data['is_dynamic'])) {
             $this->isDynamic = $data['is_dynamic'];
+        }
+        if (isset($data['captcha_enabled'])) {
+            $this->captchaEnabled = $data['captcha_enabled'];
         }
     }
 

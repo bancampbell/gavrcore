@@ -2,6 +2,7 @@
 
 namespace App\Modules\FormBuilder\Infrastructure\Http\Controllers;
 
+use App\Modules\CaptchaManager\Application\CaptchaManager;
 use App\Modules\FormBuilder\Application\DTO\CreateSubmissionData;
 use App\Modules\FormBuilder\Application\UseCases\CreateSubmissionUseCase;
 use App\Modules\FormBuilder\Application\UseCases\GetFormByIdUseCase;
@@ -28,6 +29,7 @@ class WebFormController
         protected GetFormByIdUseCase $getFormByIdUseCase,
         protected CreateSubmissionUseCase $createSubmissionUseCase,
         protected SendSubmissionNotificationUseCase $sendSubmissionNotificationUseCase,
+        protected CaptchaManager $captchaManager,
     ) {}
 
     public function show(int $id): JsonResponse
@@ -42,11 +44,20 @@ class WebFormController
             return response()->json(['message' => 'Форма не активна'], 403);
         }
 
-        return response()->json([
+        $data = [
             'id' => $form->id,
             'title' => $form->title,
             'fields' => $form->fields->toArray(),
-        ]);
+            'captcha_enabled' => $form->captchaEnabled,
+        ];
+
+        // Виджет отдаём только когда тумблер формы включён; фронт сам
+        // не рендерит ничего для driver=none.
+        if ($form->captchaEnabled) {
+            $data['captcha'] = $this->captchaManager->getWidgetConfig();
+        }
+
+        return response()->json($data);
     }
 
     public function submit(Request $request, int $id): JsonResponse
@@ -59,6 +70,20 @@ class WebFormController
 
         if (! $form->status->isPublished()) {
             return response()->json(['message' => 'Форма не активна'], 403);
+        }
+
+        // Капча обязательна только когда тумблер формы включён И выбран
+        // рабочий драйвер (driver=none — токен не требуем даже при включённом
+        // тумблере). Проверяем до валидации полей и сохранения вложений.
+        if ($form->captchaEnabled && $this->captchaManager->driver()->getDriverName() !== 'none') {
+            $token = $request->input('captcha_token');
+
+            if (! is_string($token) || $token === '' || ! $this->captchaManager->verify($token, $request->ip())) {
+                return response()->json([
+                    'message' => 'Проверка капчи не пройдена. Обновите страницу и попробуйте отправить форму ещё раз.',
+                    'errors' => ['captcha_token' => ['Проверка капчи не пройдена. Обновите страницу и попробуйте ещё раз.']],
+                ], 422);
+            }
         }
 
         $rules = [];
@@ -86,7 +111,8 @@ class WebFormController
             ], 422);
         }
 
-        $data = $request->except('_token');
+        // Токен капчи — служебное поле, в заявке не храним.
+        $data = $request->except(['_token', 'captcha_token']);
 
         foreach ($request->allFiles() as $key => $file) {
             if (is_array($file)) {

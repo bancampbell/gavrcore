@@ -13,5 +13,6 @@ class CreateFormData
         public readonly array $notificationEmails,
         public readonly bool $status,
         public readonly bool $isDynamic,
+        public readonly bool $captchaEnabled = false,
     ) {}
 }

@@ -15,6 +15,7 @@ class FormModel extends Model
     protected $fillable = [
         'title', 'alias', 'description', 'fields', 'settings',
         'notification_emails', 'status', 'is_dynamic', 'submissions_count',
+        'captcha_enabled',
     ];
 
     protected $casts = [
@@ -24,6 +25,7 @@ class FormModel extends Model
         'status' => 'boolean',
         'is_dynamic' => 'boolean',
         'submissions_count' => 'integer',
+        'captcha_enabled' => 'boolean',
     ];
 
     public function submissions(): HasMany

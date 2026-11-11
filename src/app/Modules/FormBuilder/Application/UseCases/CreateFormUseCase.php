@@ -43,6 +43,7 @@ class CreateFormUseCase
                     notificationEmails: $data->notificationEmails,
                     status: new FormStatus($data->status),
                     isDynamic: $data->isDynamic,
+                    captchaEnabled: $data->captchaEnabled,
                     submissionsCount: 0,
                 );
 

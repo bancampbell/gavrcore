@@ -40,6 +40,9 @@ class UpdateFormUseCase
         if ($data->isDynamic !== null) {
             $updateData['is_dynamic'] = $data->isDynamic;
         }
+        if ($data->captchaEnabled !== null) {
+            $updateData['captcha_enabled'] = $data->captchaEnabled;
+        }
 
         // baseAlias !== null только когда alias генерируем сами —
         // только в этом случае конфликт уникального индекса разрешим перегенерацией.

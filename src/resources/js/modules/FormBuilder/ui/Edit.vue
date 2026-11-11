@@ -39,6 +39,19 @@
                                 <option :value="false">Черновик</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="admin-form-label">Защита от спама</label>
+                            <button
+                                @click="form.captchaEnabled = !form.captchaEnabled"
+                                type="button"
+                                class="admin-toggle"
+                                :class="form.captchaEnabled ? 'admin-toggle-on' : 'admin-toggle-off'"
+                            >
+                                <span class="admin-toggle-slider" :class="form.captchaEnabled ? 'admin-toggle-slider-on' : 'admin-toggle-slider-off'" />
+                            </button>
+                            <span class="admin-toggle-label">Защита от спама</span>
+                            <p class="text-xs text-slate-400 mt-1">Капча на публичной форме. Требует выбранного драйвера капчи в настройках сайта («Защита от спама»).</p>
+                        </div>
                         <div class="pt-4 border-t border-slate-200">
                             <label class="admin-form-label">Шорткод</label>
                             <div class="bg-slate-50 p-3 rounded-md font-mono text-sm text-slate-700">[form id="{{ props.form.id }}"]</div>
@@ -59,11 +72,11 @@ import axios from 'axios';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import Toast from '@/components/shared/Toast.vue';
 
-interface Form { id: number; title: string; alias: string; description: string | null; status: boolean; fields: any[]; notification_emails?: string[] | null; }
+interface Form { id: number; title: string; alias: string; description: string | null; status: boolean; fields: any[]; captcha_enabled?: boolean; notification_emails?: string[] | null; }
 const props = defineProps<{ user: any; form: Form; title: string; }>();
 const loading = ref(false);
 const notification = ref({ show: false, message: '', type: 'success' as 'success' | 'error' });
-const form = ref({ title: props.form.title, alias: props.form.alias || '', description: props.form.description || '', status: props.form.status, notificationEmailsInput: '' });
+const form = ref({ title: props.form.title, alias: props.form.alias || '', description: props.form.description || '', status: props.form.status, captchaEnabled: !!props.form.captcha_enabled, notificationEmailsInput: '' });
 const isAliasManuallyEdited = ref(!!props.form.alias);
 
 onMounted(() => { if (props.form.notification_emails && Array.isArray(props.form.notification_emails)) form.value.notificationEmailsInput = props.form.notification_emails.join(', '); });
@@ -81,7 +94,7 @@ const onAliasInput = () => { if (form.value.alias.trim() !== '') isAliasManually
 watch(() => form.value.alias, (newVal) => { if (newVal === '') isAliasManuallyEdited.value = false; });
 
 const buildPayload = () => {
-    const payload: Record<string, any> = { title: form.value.title, status: form.value.status };
+    const payload: Record<string, any> = { title: form.value.title, status: form.value.status, captcha_enabled: form.value.captchaEnabled };
     if (form.value.alias?.trim()) payload.alias = form.value.alias.trim();
     if (form.value.description?.trim()) payload.description = form.value.description.trim();
     if (form.value.notificationEmailsInput?.trim()) payload.notification_emails = form.value.notificationEmailsInput.split(',').map(e => e.trim()).filter(e => e);
