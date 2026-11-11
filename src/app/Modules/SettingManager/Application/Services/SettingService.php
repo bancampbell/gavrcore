@@ -17,8 +17,10 @@ class SettingService
 
             if ($setting->type === 'boolean') {
                 $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-            } elseif ($setting->type === 'number') {
-                $value = is_numeric($value) ? (float) $value : 0;
+            } elseif ($setting->type === 'number' && is_numeric($value)) {
+                // Нечисловое значение (например, тестовый ключ капчи '1x0000...AA')
+                // отдаём как есть — иначе админка/фронт получали 0 вместо ключа.
+                $value = (float) $value;
             }
 
             $result[$setting->key] = $value;

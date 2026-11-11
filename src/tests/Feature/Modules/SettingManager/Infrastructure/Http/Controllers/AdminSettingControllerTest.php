@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Modules\SettingManager\Infrastructure\Http\Controllers;
 
+use App\Modules\SettingManager\Application\Services\SettingService;
 use App\Modules\SettingManager\Infrastructure\Models\Setting;
 use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
 use App\Modules\UserManager\Infrastructure\Models\UserModel as User;
@@ -118,5 +119,40 @@ class AdminSettingControllerTest extends TestCase
         $this->assertDatabaseHas('settings', ['key' => 'homepage_type', 'value' => 'default']);
         $this->assertDatabaseHas('materials', ['id' => $second->id, 'show_on_homepage' => false]);
         $this->assertDatabaseHas('materials', ['id' => $first->id, 'show_on_homepage' => false]);
+    }
+
+    // Регрессия после инцидента с капчей (2026-11-11): type='number' с нечисловым
+    // значением обнулялся в getAllSettings() (тестовый ключ Turnstile '1x0000...AA' → 0).
+    public function test_get_all_settings_keeps_raw_non_numeric_value_for_number_type(): void
+    {
+        Setting::updateOrCreate(
+            ['key' => 'captcha_secret'],
+            ['value' => '1x0000000000000000000000000000000AA', 'type' => 'number', 'group' => 'captcha', 'label' => 'Secret Key капчи', 'order' => 3]
+        );
+
+        $settings = app(SettingService::class)->getAllSettings();
+
+        $this->assertSame('1x0000000000000000000000000000000AA', $settings['captcha_secret']);
+    }
+
+    // type определяется только при создании записи: save админки не должен его перезаписывать
+    // (инцидент: значение '0' давало type='number'/'boolean' при is_numeric-детекте).
+    public function test_update_does_not_overwrite_type_of_existing_setting(): void
+    {
+        Setting::updateOrCreate(
+            ['key' => 'captcha_site_key'],
+            ['value' => 'old-key', 'type' => 'string', 'group' => 'captcha', 'label' => 'Site Key капчи', 'order' => 2]
+        );
+
+        $response = $this->actingAs($this->admin)
+            ->withoutMiddleware(AdminMiddleware::class)
+            ->post('/admin/settings', ['captcha_site_key' => '0']);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('settings', [
+            'key' => 'captcha_site_key',
+            'value' => '0',
+            'type' => 'string',
+        ]);
     }
 }
