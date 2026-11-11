@@ -68,6 +68,15 @@
                     </div>
                 </template>
 
+                <div v-if="form && form.captcha_enabled && form.captcha && form.captcha.driver !== 'none'" class="form-group">
+                    <CaptchaWidget
+                        ref="captchaWidget"
+                        :driver="form.captcha.driver"
+                        :site-key="form.captcha.site_key"
+                        @update:token="captchaToken = $event"
+                    />
+                </div>
+
                 <button type="submit" class="form-submit-btn" :disabled="submitting">{{ submitting ? 'Отправка...' : 'Отправить' }}</button>
             </form>
 
@@ -82,16 +91,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
+import CaptchaWidget from '@/components/shared/CaptchaWidget.vue';
 
 const page = usePage();
 const user = page.props.auth?.user;
 
 interface Condition { field: string; operator: 'equals' | 'not_equals'; value?: string; }
 interface FormField { id?: string; type: string; label?: string; name: string; placeholder?: string; required?: boolean; options?: string[]; min_value?: number; max_value?: number; conditions?: Condition[]; conditions_logic?: 'and' | 'or'; }
-interface Form { id: number; title: string; description?: string; fields: FormField[]; }
+interface FormCaptchaConfig { driver: string; site_key: string; }
+interface Form { id: number; title: string; description?: string; fields: FormField[]; captcha_enabled?: boolean; captcha?: FormCaptchaConfig; }
 
 const props = defineProps<{ formId: number; centered?: boolean; }>();
 const form = ref<Form | null>(null);
@@ -102,6 +113,10 @@ const errorMessage = ref('');
 const loading = ref(true);
 const error = ref('');
 const successMessage = ref('Спасибо! Форма успешно отправлена.');
+const captchaToken = ref('');
+const captchaWidget = ref<InstanceType<typeof CaptchaWidget> | null>(null);
+
+const captchaRequired = computed(() => Boolean(form.value?.captcha_enabled && form.value.captcha && form.value.captcha.driver !== 'none'));
 
 const getFieldName = (field: FormField, index: number): string => {
     return field.name?.trim() || field.id || 'field_' + index;
@@ -156,6 +171,7 @@ const submitForm = async () => {
             else if (Array.isArray(value)) value.forEach(item => formDataToSend.append(key + '[]', item));
             else formDataToSend.append(key, value);
         });
+        if (captchaRequired.value && captchaToken.value) formDataToSend.append('captcha_token', captchaToken.value);
         await axios.post(`/api/forms/${props.formId}/submit`, formDataToSend, { headers: { 'Content-Type': 'multipart/form-data' } });
         success.value = true;
         if (form.value?.fields) {
@@ -167,7 +183,13 @@ const submitForm = async () => {
             });
         }
     } catch (err: any) { errorMessage.value = err.response?.data?.message || 'Ошибка отправки формы'; }
-    finally { submitting.value = false; }
+    finally {
+        submitting.value = false;
+        // Токен капчи одноразовый — сбрасываем виджет и после успеха, и после
+        // 422/429/сетевой ошибки, чтобы следующий submit шёл с новым токеном.
+        captchaToken.value = '';
+        captchaWidget.value?.reset();
+    }
 };
 
 onMounted(() => { loadForm(); });
