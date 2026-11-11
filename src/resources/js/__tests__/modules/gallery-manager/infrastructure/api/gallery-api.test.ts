@@ -36,6 +36,8 @@ describe('galleryApi', () => {
 
       expect(galleryAxios.get).toHaveBeenCalledTimes(1);
       expect(galleryAxios.get).toHaveBeenCalledWith('/admin/galleries/list', { params: undefined });
+      const requestConfig = vi.mocked(galleryAxios.get).mock.calls[0][1];
+      expect(requestConfig?.headers?.Authorization ?? null).toBeNull();
       expect(result.data).toEqual(mockData);
     });
 
@@ -176,18 +178,6 @@ describe('galleryApi', () => {
 
       expect(galleryAxios.delete).toHaveBeenCalledWith('/admin/galleries/10/images/5');
       expect(result.data.success).toBe(true);
-    });
-  });
-
-  describe('getPublic', () => {
-    it('fetches public gallery by id', async () => {
-      const mockGallery = { id: 1, title: 'Public', type: 'grid', status: true, settings: {}, images: [] };
-      vi.mocked(galleryAxios.get).mockResolvedValueOnce({ data: mockGallery });
-
-      const result = await galleryApi.getPublic(1);
-
-      expect(galleryAxios.get).toHaveBeenCalledWith('/galleries/1');
-      expect(result.data).toEqual(mockGallery);
     });
   });
 });

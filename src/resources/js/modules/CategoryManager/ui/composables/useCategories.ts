@@ -123,26 +123,6 @@ export function useCategories(props: UseCategoriesProps) {
         }
     };
 
-    const submitForm = async () => {
-        loading.value = true;
-
-        try {
-            if (editingId.value) {
-                await categoryApi.update(editingId.value, form.value);
-                showNotification('Категория обновлена', 'success');
-            } else {
-                await categoryApi.create(form.value);
-                showNotification('Категория создана', 'success');
-            }
-            modalOpen.value = false;
-            applyFilters();
-        } catch (error: any) {
-            showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');
-        } finally {
-            loading.value = false;
-        }
-    };
-
     const openDeleteModal = (category: Category) => {
         categoryToDelete.value = category;
         deleteModalOpen.value = true;
@@ -217,7 +197,6 @@ export function useCategories(props: UseCategoriesProps) {
         openCreateModal,
         openEditModal,
         openEditSelectedModal,
-        submitForm,
         openDeleteModal,
         bulkDelete,
         confirmDeleteHandler,

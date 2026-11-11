@@ -1,9 +1,6 @@
 import axios from 'axios';
 
 export const submissionApi = {
-    getSubmissions(params?: Record<string, any>) {
-        return axios.get('/admin/submissions', { params });
-    },
     showSubmission(id: number) {
         return axios.get(`/admin/submissions/${id}`);
     },

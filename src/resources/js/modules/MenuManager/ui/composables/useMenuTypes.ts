@@ -120,31 +120,6 @@ export function useMenuTypes(props: { menuTypes: MenuTypesData; filters?: Filter
         }
     };
 
-    const submitForm = async () => {
-        loading.value = true;
-        try {
-            const submitData: Record<string, unknown> = {
-                title: form.value.title,
-                description: form.value.description,
-                status: form.value.status,
-            };
-            if (form.value.alias && form.value.alias.trim() !== '') submitData.alias = form.value.alias;
-            if (editingId.value) {
-                await menuTypesApi.update(editingId.value, submitData as Partial<MenuType>);
-                showNotification('Тип меню обновлен');
-            } else {
-                await menuTypesApi.create(submitData as Partial<MenuType>);
-                showNotification('Тип меню создан');
-            }
-            modalOpen.value = false;
-            applyFilters();
-        } catch (error: any) {
-            showNotification(error.response?.data?.message || 'Ошибка', 'error');
-        } finally {
-            loading.value = false;
-        }
-    };
-
     const openDeleteModal = (type: MenuType) => {
         categoryToDelete.value = type;
         deleteMessage.value = `Вы уверены, что хотите удалить тип меню "${type.title}"? Все пункты меню также будут удалены.`;
@@ -269,7 +244,6 @@ export function useMenuTypes(props: { menuTypes: MenuTypesData; filters?: Filter
         openCreateModal,
         openEditModal,
         openEditSelectedModal,
-        submitForm,
         openDeleteModal,
         bulkDelete,
         bulkPublish,

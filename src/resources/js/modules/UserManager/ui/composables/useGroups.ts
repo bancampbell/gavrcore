@@ -24,8 +24,6 @@ export function useGroups(props: any) {
     });
 
     const notification = ref({ show: false, message: '', type: 'success' });
-    const modalOpen = ref(false);
-    const editingId = ref<number | null>(null);
     const loading = ref(false);
     const deleteModalOpen = ref(false);
     const deleteLoading = ref(false);
@@ -36,14 +34,6 @@ export function useGroups(props: any) {
     const bulkModalTitle = ref('');
     const bulkModalMessage = ref('');
     const bulkAction = ref<null | (() => Promise<void>)>(null);
-
-    const form = ref({
-        name: '',
-        alias: '',
-        description: '',
-        status: true,
-        ordering: 0,
-    });
 
     let searchTimeout: any = null;
 
@@ -119,64 +109,9 @@ export function useGroups(props: any) {
         }
     };
 
-    const openCreateModal = () => {
-        editingId.value = null;
-        form.value = { name: '', alias: '', description: '', status: true, ordering: 0 };
-        modalOpen.value = true;
-    };
-
-    const openEditModal = (group: any) => {
-        editingId.value = group.id;
-        form.value = {
-            name: group.name,
-            alias: group.alias || '',
-            description: group.description || '',
-            status: group.status,
-            ordering: group.ordering || 0,
-        };
-        modalOpen.value = true;
-    };
-
-    const openEditSelectedModal = () => {
-        if (selectedGroups.value.length === 1) {
-            const group = props.groups.data.find((g: any) => g.id === selectedGroups.value[0]);
-            if (group) openEditModal(group);
-        }
-    };
-
     const editSelected = () => {
         if (selectedGroups.value.length === 1) {
             router.visit(`/admin/groups/${selectedGroups.value[0]}/edit`);
-        }
-    };
-
-    const submitForm = async () => {
-        loading.value = true;
-        try {
-            const submitData: any = {
-                name: form.value.name,
-                description: form.value.description,
-                status: form.value.status,
-                ordering: form.value.ordering,
-            };
-
-            if (form.value.alias && form.value.alias.trim() !== '') {
-                submitData.alias = form.value.alias;
-            }
-
-            if (editingId.value) {
-                await groupsApi.update(editingId.value, submitData);
-                showNotification('Группа обновлена');
-            } else {
-                await groupsApi.create(submitData);
-                showNotification('Группа создана');
-            }
-            modalOpen.value = false;
-            applyFilters();
-        } catch (error: any) {
-            showNotification(error.response?.data?.message || 'Ошибка', 'error');
-        } finally {
-            loading.value = false;
         }
     };
 
@@ -304,12 +239,9 @@ export function useGroups(props: any) {
         selectedGroups,
         allSelected,
         notification,
-        modalOpen,
-        editingId,
         loading,
         deleteModalOpen,
         deleteLoading,
-        form,
         deleteMessage,
         bulkModalOpen,
         bulkModalTitle,
@@ -319,11 +251,7 @@ export function useGroups(props: any) {
         resetFilters,
         prevPage,
         nextPage,
-        openCreateModal,
-        openEditModal,
-        openEditSelectedModal,
         editSelected,
-        submitForm,
         openDeleteModal,
         openDeleteModalForSelected,
         bulkDelete,

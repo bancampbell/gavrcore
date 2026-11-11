@@ -21,7 +21,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import axios from 'axios';
 import TopNav from '../components/Admin/TopNav.vue';
 import Sidebar from '../components/Admin/Sidebar.vue';
 import ToastContainer from '@/components/shared/ToastContainer.vue';
@@ -32,14 +31,7 @@ defineProps({
 
 const sidebarOpen = ref(false);
 
-const handleLogout = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        await axios.post('/api/logout', {}, {
-            headers: {Authorization: `Bearer ${token}`}
-        });
-    }
-    localStorage.removeItem('token');
+const handleLogout = () => {
     router.visit('/admin/login');
 };
 </script>

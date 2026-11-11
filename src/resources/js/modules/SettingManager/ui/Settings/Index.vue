@@ -473,9 +473,7 @@ const cancel = () => {
 const save = async () => {
     loading.value = true;
     try {
-        await axios.post('/admin/settings', settings.value, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
+        await axios.post('/admin/settings', settings.value);
         showNotification('Настройки сохранены', 'success');
     } catch (error: any) {
         showNotification(error.response?.data?.message || 'Ошибка при сохранении', 'error');

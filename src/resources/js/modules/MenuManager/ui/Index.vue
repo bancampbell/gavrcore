@@ -134,7 +134,7 @@ const toggleSelect = (id: number) => {
     else selectedMenuTypes.value.splice(index, 1);
 };
 
-const { filters, selectedMenuTypes, allSelected, notification, modalOpen, editingId, editingMenuType, loading, applyFilters, debounceSearch, resetFilters, prevPage, nextPage, openCreateModal, openEditModal, openEditSelectedModal, submitForm, showNotification } = useMenuTypes(props);
+const { filters, selectedMenuTypes, allSelected, notification, modalOpen, editingId, editingMenuType, loading, applyFilters, debounceSearch, resetFilters, prevPage, nextPage, openCreateModal, openEditModal, openEditSelectedModal, showNotification } = useMenuTypes(props);
 
 const openDeleteModal = () => {
     if (selectedMenuTypes.value.length === 0) return;

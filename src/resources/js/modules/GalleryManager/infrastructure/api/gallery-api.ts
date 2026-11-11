@@ -43,7 +43,4 @@ export const galleryApi = {
         galleryAxios.delete<{ success: boolean; message: string }>(
             `/admin/galleries/${galleryId}/images/${imageId}`
         ),
-
-    getPublic: (id: number) =>
-        galleryAxios.get<Gallery>(`/galleries/${id}`),
 };

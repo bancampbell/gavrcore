@@ -1,5 +1,5 @@
 import materialAxios from './material-axios';
-import type { MaterialFilters, BulkResponse, CreateMaterialData, UpdateMaterialData, MaterialsData, Material } from '../types';
+import type { MaterialFilters, BulkResponse, MaterialsData } from '../types';
 
 let searchAbortController: AbortController | null = null;
 
@@ -15,31 +15,6 @@ export const materialApi = {
             params,
             signal: searchAbortController.signal,
         });
-        return response.data;
-    },
-
-    getTrash: async (page?: number): Promise<MaterialsData> => {
-        const response = await materialAxios.get('/trash', { params: { page } });
-        return response.data;
-    },
-
-    getForEdit: async (id: number): Promise<{ material: Material; categories: unknown[]; user: unknown; title: string }> => {
-        const response = await materialAxios.get(`/${id}/edit`);
-        return response.data;
-    },
-
-    getList: async (): Promise<unknown[]> => {
-        const response = await materialAxios.get('/list');
-        return response.data;
-    },
-
-    create: async (data: CreateMaterialData): Promise<{ success: boolean; message: string; id: number }> => {
-        const response = await materialAxios.post('/', data);
-        return response.data;
-    },
-
-    update: async (id: number, data: UpdateMaterialData): Promise<{ success: boolean; message: string }> => {
-        const response = await materialAxios.put(`/${id}`, data);
         return response.data;
     },
 

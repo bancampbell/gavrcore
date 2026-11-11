@@ -27,9 +27,6 @@ export function useUsers(props: any) {
     });
 
     const notification = ref({ show: false, message: '', type: 'success' });
-    const modalOpen = ref(false);
-    const editingId = ref<number | null>(null);
-    const editingUser = ref<any>(null);
     const loading = ref(false);
     const deleteModalOpen = ref(false);
     const deleteLoading = ref(false);
@@ -40,16 +37,6 @@ export function useUsers(props: any) {
     const bulkModalTitle = ref('');
     const bulkModalMessage = ref('');
     const bulkAction = ref<null | (() => Promise<void>)>(null);
-
-    const form = ref({
-        name: '',
-        username: '',
-        email: '',
-        password: '',
-        blocked: false,
-        activated: true,
-        groups: [] as number[],
-    });
 
     let searchTimeout: any = null;
 
@@ -113,70 +100,9 @@ export function useUsers(props: any) {
         }
     };
 
-    const openCreateModal = () => {
-        editingId.value = null;
-        editingUser.value = null;
-        form.value = { name: '', username: '', email: '', password: '', blocked: false, activated: true, groups: [] };
-        modalOpen.value = true;
-    };
-
-    const openEditModal = (user: any) => {
-        editingId.value = user.id;
-        editingUser.value = user;
-        form.value = {
-            name: user.name,
-            username: user.username,
-            email: user.email,
-            password: '',
-            blocked: user.blocked,
-            activated: user.activated,
-            groups: user.groups?.map((g: any) => g.id) || [],
-        };
-        modalOpen.value = true;
-    };
-
-    const openEditSelectedModal = () => {
-        if (selectedUsers.value.length === 1) {
-            const user = props.users.data.find((u: any) => u.id === selectedUsers.value[0]);
-            if (user) openEditModal(user);
-        }
-    };
-
     const editSelected = () => {
         if (selectedUsers.value.length === 1) {
             router.visit(`/admin/users/${selectedUsers.value[0]}/edit`);
-        }
-    };
-
-    const submitForm = async () => {
-        loading.value = true;
-        try {
-            const submitData: any = {
-                name: form.value.name,
-                username: form.value.username,
-                email: form.value.email,
-                blocked: form.value.blocked,
-                activated: form.value.activated,
-                groups: form.value.groups,
-            };
-
-            if (form.value.password && form.value.password.trim() !== '') {
-                submitData.password = form.value.password;
-            }
-
-            if (editingId.value) {
-                await usersApi.update(editingId.value, submitData);
-                showNotification('Пользователь обновлён');
-            } else {
-                await usersApi.create(submitData);
-                showNotification('Пользователь создан');
-            }
-            modalOpen.value = false;
-            applyFilters();
-        } catch (error: any) {
-            showNotification(error.response?.data?.message || 'Ошибка', 'error');
-        } finally {
-            loading.value = false;
         }
     };
 
@@ -308,13 +234,9 @@ export function useUsers(props: any) {
         selectedUsers,
         allSelected,
         notification,
-        modalOpen,
-        editingId,
-        editingUser,
         loading,
         deleteModalOpen,
         deleteLoading,
-        form,
         deleteMessage,
         bulkModalOpen,
         bulkModalTitle,
@@ -324,11 +246,7 @@ export function useUsers(props: any) {
         resetFilters,
         prevPage,
         nextPage,
-        openCreateModal,
-        openEditModal,
-        openEditSelectedModal,
         editSelected,
-        submitForm,
         openDeleteModal,
         bulkBlock,
         bulkUnblock,
