@@ -58,6 +58,9 @@ class AdminSettingController extends Controller
             'yandex_metrika_id' => 'nullable|string',
             'cache_enabled' => 'nullable|boolean',
             'cache_ttl' => 'nullable|integer|min:1|max:1440',
+            'captcha_driver' => 'nullable|string|max:255',
+            'captcha_site_key' => 'nullable|string|max:255',
+            'captcha_secret' => 'nullable|string|max:255',
         ]);
 
         $this->settingService->updateSettings($validated);

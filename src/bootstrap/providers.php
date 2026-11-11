@@ -2,6 +2,7 @@
 
 use App\Modules\AdminDashboard\Infrastructure\Providers\AdminDashboardServiceProvider;
 use App\Modules\CategoryManager\Infrastructure\Providers\CategoryManagerServiceProvider;
+use App\Modules\CaptchaManager\Infrastructure\Providers\CaptchaManagerServiceProvider;
 use App\Modules\CookieConsent\Infrastructure\Providers\CookieConsentServiceProvider;
 use App\Modules\FormBuilder\Infrastructure\Providers\FormManagerServiceProvider;
 use App\Modules\GalleryManager\Infrastructure\Providers\GalleryManagerServiceProvider;
@@ -23,6 +24,7 @@ return [
     MaterialManagerServiceProvider::class,
     GalleryManagerServiceProvider::class,
     CategoryManagerServiceProvider::class,
+    CaptchaManagerServiceProvider::class,
     UserManagerServiceProvider::class,
     SettingManagerServiceProvider::class,
     ThemeManagerServiceProvider::class,

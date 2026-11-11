@@ -316,6 +316,47 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Защита от спама -->
+                        <div id="captcha" ref="captchaSection" class="admin-form-section">
+                            <h2 class="admin-form-section-title">Защита от спама</h2>
+                            <div class="admin-form-grid">
+                                <div class="admin-form-row">
+                                    <label class="admin-form-label w-48">Капча</label>
+                                    <select v-model="settings.captcha_driver" class="admin-form-select w-64">
+                                        <option value="none">Выключено</option>
+                                        <option value="turnstile">Cloudflare Turnstile</option>
+                                    </select>
+                                </div>
+                                <template v-if="settings.captcha_driver === 'turnstile'">
+                                    <div class="admin-form-row">
+                                        <label class="admin-form-label w-48">Site Key</label>
+                                        <input
+                                            v-model="settings.captcha_site_key"
+                                            type="text"
+                                            class="admin-form-input flex-1 max-w-md"
+                                            placeholder="1x0000000000000000000000000000000AA"
+                                        />
+                                    </div>
+                                    <div class="admin-form-row">
+                                        <label class="admin-form-label w-48">Secret Key</label>
+                                        <input
+                                            v-model="settings.captcha_secret"
+                                            type="text"
+                                            class="admin-form-input flex-1 max-w-md"
+                                            placeholder="1x0000000000000000000000000000000AA"
+                                        />
+                                    </div>
+                                    <div class="admin-form-row">
+                                        <span class="admin-form-label w-48"></span>
+                                        <p class="text-sm text-gray-500 flex-1 max-w-md">
+                                            Сейчас вставлены тестовые ключи — они всегда проходят проверку.
+                                            Боевые ключи бесплатно выдаются на dash.cloudflare.com.
+                                        </p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -372,6 +413,7 @@ const navItems = [
     { id: 'system', label: 'Системные' },
     { id: 'seo', label: 'SEO' },
     { id: 'cache', label: 'Кэш' },
+    { id: 'captcha', label: 'Защита от спама' },
 ];
 
 const contentContainer = ref<HTMLElement | null>(null);
@@ -382,6 +424,7 @@ const mediaSection = ref<HTMLElement | null>(null);
 const systemSection = ref<HTMLElement | null>(null);
 const seoSection = ref<HTMLElement | null>(null);
 const cacheSection = ref<HTMLElement | null>(null);
+const captchaSection = ref<HTMLElement | null>(null);
 
 const sectionRefs: Record<string, any> = {
     basic: basicSection,
@@ -391,6 +434,7 @@ const sectionRefs: Record<string, any> = {
     system: systemSection,
     seo: seoSection,
     cache: cacheSection,
+    captcha: captchaSection,
 };
 
 const settings = ref({
@@ -417,6 +461,9 @@ const settings = ref({
     yandex_metrika_id: props.settings.yandex_metrika_id ?? '',
     cache_enabled: props.settings.cache_enabled === undefined || props.settings.cache_enabled === null ? false : !!props.settings.cache_enabled,
     cache_ttl: props.settings.cache_ttl ?? 60,
+    captcha_driver: props.settings.captcha_driver ?? 'turnstile',
+    captcha_site_key: props.settings.captcha_site_key ?? '',
+    captcha_secret: props.settings.captcha_secret ?? '',
 });
 
 const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
