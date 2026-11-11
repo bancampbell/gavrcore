@@ -72,6 +72,17 @@ const loading = ref(false);
 const message = ref('');
 const error = ref('');
 
+// Образец — UserManager Users/Edit.vue: onError Inertia получает баг ошибок
+// валидации {поле: [сообщения]}, err.message всегда undefined.
+const validationErrorMessage = (errors) => {
+    for (const field of ['current_password', 'password']) {
+        if (Array.isArray(errors?.[field]) && errors[field][0]) {
+            return errors[field][0];
+        }
+    }
+    return 'Ошибка изменения пароля';
+};
+
 const updatePassword = async () => {
     loading.value = true;
     message.value = '';
@@ -85,8 +96,8 @@ const updatePassword = async () => {
                 form.value.password = '';
                 form.value.password_confirmation = '';
             },
-            onError: (err) => {
-                error.value = err.message || 'Ошибка изменения пароля';
+            onError: (errors) => {
+                error.value = validationErrorMessage(errors);
             },
             onFinish: () => {
                 loading.value = false;

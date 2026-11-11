@@ -98,7 +98,7 @@ class MaterialModel extends Model
             category: $this->relationLoaded('category') && $this->category ? new CategorySummaryVO(
                 id: (int) $this->category->id,
                 name: (string) $this->category->name,
-                slug: (string) $this->category->alias,
+                alias: (string) $this->category->alias,
             ) : null,
             user: $this->relationLoaded('user') && $this->user ? new AuthorSummaryVO(
                 id: (int) $this->user->id,

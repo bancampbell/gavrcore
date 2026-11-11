@@ -128,6 +128,6 @@ const formatDate = (date) => {
 
 const materialUrl = (material) => {
     const slug = material.slug || material.alias;
-    return material.category ? `/${material.category.slug}/${slug}` : `/${slug}`;
+    return material.category ? `/${material.category.alias}/${slug}` : `/${slug}`;
 };
 </script>

@@ -58,6 +58,17 @@ const loading = ref(false);
 const message = ref('');
 const error = ref('');
 
+// Образец — UserManager Users/Edit.vue: onError Inertia получает баг ошибок
+// валидации {поле: [сообщения]}, err.message всегда undefined.
+const validationErrorMessage = (errors) => {
+    for (const field of ['name', 'email']) {
+        if (Array.isArray(errors?.[field]) && errors[field][0]) {
+            return errors[field][0];
+        }
+    }
+    return 'Ошибка обновления';
+};
+
 const updateProfile = async () => {
     loading.value = true;
     message.value = '';
@@ -68,8 +79,8 @@ const updateProfile = async () => {
             onSuccess: () => {
                 message.value = 'Профиль обновлён';
             },
-            onError: (err) => {
-                error.value = err.message || 'Ошибка обновления';
+            onError: (errors) => {
+                error.value = validationErrorMessage(errors);
             },
             onFinish: () => {
                 loading.value = false;

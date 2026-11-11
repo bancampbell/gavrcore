@@ -20,8 +20,7 @@ class MaterialBreadcrumbService
         if ($material->category) {
             $breadcrumbs[] = [
                 'title' => $material->category->name,
-                // VO-поле slug исторически хранит alias категории (см. MaterialModel::toDomain)
-                'url' => route('category.show', ['slug' => $material->category->slug]),
+                'url' => route('category.show', ['slug' => $material->category->alias]),
             ];
         }
 

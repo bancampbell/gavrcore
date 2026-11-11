@@ -120,6 +120,48 @@ class WebMaterialControllerTest extends TestCase
             );
     }
 
+    public function test_public_material_json_exposes_category_alias_not_slug(): void
+    {
+        // TECHDEBT-43: CategorySummaryVO переименован slug → alias — публичный JSON
+        // материала обязан отдавать category.alias и не содержать category.slug.
+        $category = CategoryModel::factory()->create(['alias' => 'novosti', 'name' => 'Новости']);
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => $category->id,
+            'slug' => 'strategiia-razvitiia',
+        ]);
+
+        $this->get('/novosti/strategiia-razvitiia')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Show', false)
+                ->where('material.category.id', $category->id)
+                ->where('material.category.name', 'Новости')
+                ->where('material.category.alias', 'novosti')
+                ->missing('material.category.slug')
+            );
+    }
+
+    public function test_public_material_json_category_is_null_without_category(): void
+    {
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => null,
+            'slug' => 'contacts',
+        ]);
+
+        $this->get('/contacts')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MaterialManager/Show', false)
+                ->where('material.category', null)
+            );
+    }
+
     public function test_category_slug_url_returns_404_when_category_mismatch(): void
     {
         $category = CategoryModel::factory()->create(['alias' => 'novosti']);
