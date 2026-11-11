@@ -26,3 +26,5 @@ docker exec -it gavrcore_app php artisan db:seed --class=DemoSeeder
 Сайт: http://localhost, админка: http://localhost/admin.
 
 Полный прогон тестов: `docker exec gavrcore_app php artisan test`, сборка фронтенда: `docker exec gavrcore_app npm run build`.
+
+Ежедневные команды: docs/COMMANDS.md
