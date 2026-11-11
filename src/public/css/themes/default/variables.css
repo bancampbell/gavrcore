@@ -5,14 +5,16 @@
     --color-secondary: #7c3aed;
     --color-bg: #f9fafb;
     --color-surface: #ffffff;
-    --color-text: #1f2937;
+    --color-text: #202020;
     --color-text-muted: #6b7280;
     --color-border: #e5e7eb;
     --color-white: #ffffff;
 
     /* Шрифты */
-    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-size-base: 16px;
+    --font-family: 'Barlow', 'PF DinText Pro', 'Arial Narrow', 'Segoe UI', system-ui, sans-serif;
+    --font-family-headings: 'Barlow', 'PF DinText Pro', 'Arial Narrow', 'Segoe UI', system-ui, sans-serif;
+    --font-size-base: 18px;
+
 
     /* Отступы */
     --spacing-sm: 0.5rem;

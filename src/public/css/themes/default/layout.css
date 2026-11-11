@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    width: 100%;
     background: var(--color-bg);
     font-family: var(--font-family);
     font-size: var(--font-size-base);
@@ -11,11 +12,13 @@
 
 .site-main {
     flex: 1;
+    width: 100%;
     padding: var(--spacing-lg) 0;
 }
 
 .container {
-    max-width: 1280px;
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 var(--spacing-md);
 }
@@ -37,7 +40,8 @@
 }
 
 .cookie-container {
-    max-width: 1200px;
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto;
 }
 
