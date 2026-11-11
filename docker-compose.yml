@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./src:/var/www
-      - /var/www/node_modules
+      - ./src/node_modules:/var/www/node_modules
       - /var/www/.vite
     networks:
       - gavrcore-network
