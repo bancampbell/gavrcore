@@ -66,4 +66,30 @@ class AdminAuthControllerTest extends TestCase
         $response->assertRedirect('/admin/dashboard');
         $this->assertAuthenticatedAs($admin);
     }
+
+    /**
+     * TECHDEBT-45: POST /admin/logout должен инвалидировать серверную сессию —
+     * возврат «назад» после выхода не должен оставлять доступ в админку.
+     */
+    public function test_logout_invalidates_session_and_blocks_admin_area(): void
+    {
+        $admin = User::factory()->create(['email' => 'admin@example.com']);
+        $admin->permissions()->attach(
+            PermissionModel::create(['name' => 'Доступ к админке', 'key' => 'admin.access', 'group' => 'system'])->id
+        );
+
+        $this->post('/admin/login', [
+            'email' => 'admin@example.com',
+            'password' => 'password',
+        ]);
+        $this->assertAuthenticatedAs($admin);
+
+        $response = $this->post('/admin/logout');
+
+        $response->assertRedirect('/admin/login');
+        $this->assertGuest();
+
+        // Сессия инвалидирована: повторный заход в защищённую зону редиректит на логин
+        $this->get('/admin/dashboard')->assertRedirect('/login');
+    }
 }

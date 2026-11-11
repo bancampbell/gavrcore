@@ -32,6 +32,10 @@ defineProps({
 const sidebarOpen = ref(false);
 
 const handleLogout = () => {
-    router.visit('/admin/login');
+    router.post('/admin/logout', {}, {
+        onSuccess: () => router.visit('/admin/login'),
+        // Сессия могла истечь — в любом случае оставляем пользователя на форме входа
+        onError: () => router.visit('/admin/login'),
+    });
 };
 </script>
