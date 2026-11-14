@@ -4,6 +4,7 @@ namespace App\Modules\FormBuilder\Application\UseCases;
 
 use App\Modules\FormBuilder\Application\DTO\CreateFormData;
 use App\Modules\FormBuilder\Domain\Entities\Form;
+use App\Modules\FormBuilder\Domain\Events\FormCreated;
 use App\Modules\FormBuilder\Domain\Repositories\FormRepositoryInterface;
 use App\Modules\FormBuilder\Domain\Services\SlugGeneratorInterface;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormFieldCollection;
@@ -47,7 +48,10 @@ class CreateFormUseCase
                     submissionsCount: 0,
                 );
 
-                return $this->repository->save($form);
+                $saved = $this->repository->save($form);
+                event(new FormCreated($saved));
+
+                return $saved;
             } catch (QueryException $e) {
                 // Если alias был передан явно — это не race condition, а валидационная ошибка клиента
                 if ($data->alias) {

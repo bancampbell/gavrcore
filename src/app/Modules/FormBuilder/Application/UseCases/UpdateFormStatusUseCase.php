@@ -2,6 +2,7 @@
 
 namespace App\Modules\FormBuilder\Application\UseCases;
 
+use App\Modules\FormBuilder\Domain\Events\FormUpdated;
 use App\Modules\FormBuilder\Domain\Repositories\FormRepositoryInterface;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormStatus;
 
@@ -17,7 +18,7 @@ class UpdateFormStatusUseCase
         }
 
         $form->update(['status' => new FormStatus($status)]);
-        $this->repository->save($form);
+        event(new FormUpdated($this->repository->save($form)));
 
         return true;
     }

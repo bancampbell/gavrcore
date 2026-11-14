@@ -2,6 +2,7 @@
 
 namespace App\Modules\FormBuilder\Application\UseCases;
 
+use App\Modules\FormBuilder\Domain\Events\FormDeleted;
 use App\Modules\FormBuilder\Domain\Repositories\FormRepositoryInterface;
 
 class DeleteFormUseCase
@@ -10,6 +11,12 @@ class DeleteFormUseCase
 
     public function execute(int $id): bool
     {
-        return $this->repository->delete($id);
+        $deleted = $this->repository->delete($id);
+
+        if ($deleted) {
+            event(new FormDeleted($id));
+        }
+
+        return $deleted;
     }
 }

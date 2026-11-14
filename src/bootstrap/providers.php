@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\AdminAudit\Infrastructure\Providers\AdminAuditServiceProvider;
 use App\Modules\AdminDashboard\Infrastructure\Providers\AdminDashboardServiceProvider;
 use App\Modules\CategoryManager\Infrastructure\Providers\CategoryManagerServiceProvider;
 use App\Modules\CaptchaManager\Infrastructure\Providers\CaptchaManagerServiceProvider;
@@ -18,6 +19,7 @@ use Modules\MediaManager\Infrastructure\Providers\MediaManagerServiceProvider;
 
 return [
     AppServiceProvider::class,
+    AdminAuditServiceProvider::class,
     FormManagerServiceProvider::class,
     MenuManagerServiceProvider::class,
     MediaManagerServiceProvider::class,

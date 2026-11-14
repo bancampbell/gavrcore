@@ -4,6 +4,7 @@ namespace App\Modules\FormBuilder\Application\UseCases;
 
 use App\Modules\FormBuilder\Application\DTO\UpdateFormData;
 use App\Modules\FormBuilder\Domain\Entities\Form;
+use App\Modules\FormBuilder\Domain\Events\FormUpdated;
 use App\Modules\FormBuilder\Domain\Repositories\FormRepositoryInterface;
 use App\Modules\FormBuilder\Domain\Services\SlugGeneratorInterface;
 use App\Modules\FormBuilder\Domain\ValueObjects\FormFieldCollection;
@@ -66,7 +67,10 @@ class UpdateFormUseCase
             $form->update($updateData);
 
             try {
-                return $this->repository->save($form);
+                $saved = $this->repository->save($form);
+                event(new FormUpdated($saved));
+
+                return $saved;
             } catch (QueryException $e) {
                 // alias передан явно клиентом — это валидационный конфликт,
                 // гонку перегенерацией не разрешить; прокидываем как 422/500 на валидации.
