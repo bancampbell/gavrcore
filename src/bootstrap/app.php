@@ -2,6 +2,7 @@
 
 use App\Console\Commands\GavrInstallCommand;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SessionIdleTimeout;
 use App\Modules\CookieConsent\Infrastructure\Http\Middleware\CheckCookieConsent;
 use App\Modules\MenuManager\Infrastructure\Http\Middleware\ShareMenuMiddleware;
 use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
@@ -38,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareMenuMiddleware::class,
             CheckCookieConsent::class,
             SecurityHeaders::class,
+            SessionIdleTimeout::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
