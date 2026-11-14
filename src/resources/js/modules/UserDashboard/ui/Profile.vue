@@ -36,6 +36,8 @@
                 <p v-if="error" class="text-sm text-red-600 dark:text-red-400">{{ error }}</p>
             </form>
         </div>
+
+        <TwoFactorSection :enabled="totpEnabled" />
     </DashboardLayout>
 </template>
 
@@ -43,10 +45,15 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import DashboardLayout from '@/modules/UserDashboard/ui/layouts/DashboardLayout.vue';
+import TwoFactorSection from '@/modules/UserManager/ui/Profile/TwoFactorSection.vue';
 
 const props = defineProps({
     user: Object,
     currentTheme: String,
+    totpEnabled: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const form = ref({

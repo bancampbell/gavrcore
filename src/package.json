@@ -14,6 +14,7 @@
         "@tailwindcss/vite": "^4.0.0",
         "@testing-library/vue": "^8.0.1",
         "@types/node": "^26.0.1",
+        "@types/qrcode": "^1.5.6",
         "@vitejs/plugin-vue": "^6.0.7",
         "@vue/test-utils": "^2.4.0-alpha.2",
         "autoprefixer": "^10.5.0",
@@ -45,6 +46,7 @@
         "dompurify": "^3.4.12",
         "inversify": "^8.2.3",
         "prettier": "^3.9.5",
+        "qrcode": "^1.5.4",
         "reflect-metadata": "^0.2.2",
         "vuedraggable": "^4.1.0"
     }

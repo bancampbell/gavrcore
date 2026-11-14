@@ -55,3 +55,15 @@ export const accessLevelsApi = {
     updateStatus: (id: number, status: boolean) =>
         axios.patch(`/admin/access-levels/${id}/status`, { status }),
 };
+
+// ===== Двухфакторная аутентификация профиля =====
+export const twoFactorApi = {
+    enable: () =>
+        axios.post<{ success: boolean; data: { otpauth_url: string } }>('/profile/2fa/enable'),
+
+    confirm: (code: string) =>
+        axios.post<{ success: boolean; data: { recovery_codes: string[] } }>('/profile/2fa/confirm', { code }),
+
+    disable: (current_password: string) =>
+        axios.post<{ success: boolean; message: string }>('/profile/2fa/disable', { current_password }),
+};

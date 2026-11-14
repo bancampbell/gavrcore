@@ -47,6 +47,8 @@ class DashboardController extends Controller
         return Inertia::render('UserDashboard/Profile', [
             'user' => auth()->user()->only(['id', 'name', 'email']),
             'currentTheme' => $this->settingService->getTheme(),
+            // Флаг 2FA для секции управления TOTP на странице профиля
+            'totpEnabled' => (bool) auth()->user()->totp_enabled,
         ]);
     }
 
