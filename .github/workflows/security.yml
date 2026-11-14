@@ -1,0 +1,121 @@
+name: Security
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  composer-audit:
+    name: Composer audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pgsql, pdo_pgsql
+          coverage: none
+          cache: composer
+          cache-dependency-path: src/composer.lock
+
+      - name: Install Composer dependencies
+        working-directory: src
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run composer audit
+        working-directory: src
+        run: composer audit
+
+  npm-audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install npm dependencies
+        working-directory: src
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: src
+        run: npm audit --audit-level=high
+
+  tests:
+    name: Tests (PHPUnit + Vitest)
+    runs-on: ubuntu-latest
+    services:
+      database:
+        image: postgres:15
+        env:
+          POSTGRES_DB: gavrcore_test
+          POSTGRES_USER: gavrcore
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U gavrcore -d gavrcore_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      # phpunit.xml pins DB_HOST=database (docker-compose service name); PHPUnit <env>
+      # does not override real environment variables, so CI points tests at the
+      # Postgres service through the mapped localhost port instead.
+      DB_HOST: 127.0.0.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pgsql, pdo_pgsql
+          coverage: none
+          cache: composer
+          cache-dependency-path: src/composer.lock
+
+      - name: Install Composer dependencies
+        working-directory: src
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare application environment
+        working-directory: src
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Run PHPUnit tests
+        working-directory: src
+        run: php artisan test
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+
+      - name: Install npm dependencies
+        working-directory: src
+        run: npm ci
+
+      - name: Run Vitest tests
+        working-directory: src
+        run: npx vitest run resources/js/__tests__

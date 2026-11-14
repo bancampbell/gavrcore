@@ -38,7 +38,7 @@
 - [ ] **P3** Антивирусная проверка загрузок (ClamAV) для клиентских сайтов с приёмом документов
 
 ## E. Зависимости и процесс
-- [ ] **P1** composer audit + npm audit в CI (GitHub Actions, по расписанию и в PR)
+- [x] 2026-11-14 **P1** composer audit + npm audit в CI: .github/workflows/security.yml — job composer-audit, npm-audit и tests (PHPUnit с postgres:15 по phpunit.xml + vitest) на push/PR в develop, секреты не нужны
 - [ ] **P2** Dependabot/Renovate: автоматические PR с обновлениями + прогоны тестов
 - [ ] **P2** Документированный деплой-скрипт: тесты → бэкап → migrate → build → дымок
 - [ ] **P3** Staging-среда, идентичная проду (вторая копия docker-compose)
