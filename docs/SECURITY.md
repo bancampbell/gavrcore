@@ -25,7 +25,7 @@
 - [x] Загрузки: whitelist расширений, лимиты размера
 - [x] Гонки и уникальность — эталонные паттерны (пп.2, 4, 5, 41)
 - [ ] **P1** APP_DEBUG=false, APP_ENV=production на всех живых сайтах
-- [ ] **P1** .env вне веб-корня / доступ запрещён (проверить: curl https://site/.env → 403/404)
+- [x] 2026-11-14 .env вне веб-корня: GET /.env → 404 (feature-тест DotEnvAccessTest); secure-cookie env-driven (SESSION_SECURE_COOKIE, дефолт false), APP_URL со схемой — вопросом gavr:install
 - [ ] **P2** Проверка CSRF на всех кастомных axios-эндпоинтах (grep X-XSRF-TOKEN)
 - [ ] **P2** Публичные POST-эндпоинты: аудит throttle (кроме форм — проверить остальные)
 - [ ] **P3** Ошибки: убедиться, что prod не отдаёт stack trace (кастомные 404/500 уже есть)

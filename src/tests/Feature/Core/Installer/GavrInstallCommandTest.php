@@ -95,4 +95,46 @@ class GavrInstallCommandTest extends TestCase
         $this->assertDatabaseCount('form_submissions', 4);
         $this->assertDatabaseCount('galleries', 3);
     }
+
+    public function test_install_with_https_writes_secure_env_values(): void
+    {
+        $this->runInteractiveInstall('yes', 'example.org', 'APP_URL=https://example.org', 'SESSION_SECURE_COOKIE=true');
+    }
+
+    public function test_install_without_https_uses_http_and_insecure_cookie(): void
+    {
+        // Домен не задан (Enter) — fallback на localhost, пустой ответ на HTTPS-вопрос.
+        $this->runInteractiveInstall('no', '', 'APP_URL=http://localhost', 'SESSION_SECURE_COOKIE=false');
+    }
+
+    /**
+     * Интерактивный прогон gavr:install с бэкапом/восстановлением .env.
+     */
+    private function runInteractiveInstall(string $httpsAnswer, string $domain, string $expectedUrl, string $expectedSecure): void
+    {
+        $envPath = base_path('.env');
+        $original = is_file($envPath) ? (string) file_get_contents($envPath) : null;
+
+        try {
+            $this->artisan('gavr:install')
+                ->expectsQuestion('Email администратора', 'boss@example.com')
+                ->expectsQuestion('Имя администратора', 'Boss')
+                ->expectsQuestion('Пароль администратора (Enter — взять из ADMIN_PASSWORD или сгенерировать)', 'Install-pass#1')
+                ->expectsQuestion('Повторите пароль', 'Install-pass#1')
+                ->expectsQuestion('Название сайта (Enter — пропустить)', '')
+                ->expectsConfirmation('Сайт будет работать по HTTPS?', $httpsAnswer)
+                ->expectsQuestion('Домен сайта (без http/https)', $domain)
+                ->expectsOutputToContain('APP_URL и SESSION_SECURE_COOKIE записаны в .env')
+                ->assertExitCode(0);
+
+            $env = (string) file_get_contents($envPath);
+
+            $this->assertStringContainsString($expectedUrl, $env);
+            $this->assertStringContainsString($expectedSecure, $env);
+        } finally {
+            if ($original !== null) {
+                file_put_contents($envPath, $original);
+            }
+        }
+    }
 }

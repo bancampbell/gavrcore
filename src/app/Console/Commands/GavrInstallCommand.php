@@ -50,6 +50,7 @@ class GavrInstallCommand extends Command
         }
 
         $siteName = $this->resolveSiteName();
+        $siteUrl = $this->resolveSiteUrl();
 
         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->error("Некорректный email: {$email}");
@@ -113,6 +114,15 @@ class GavrInstallCommand extends Command
 
         $this->newLine();
         $this->info('Установка завершена.');
+
+        if ($siteUrl !== null) {
+            $secure = $siteUrl['scheme'] === 'https';
+
+            $this->writeEnvValue('APP_URL', "{$siteUrl['scheme']}://{$siteUrl['domain']}");
+            $this->writeEnvValue('SESSION_SECURE_COOKIE', $secure ? 'true' : 'false');
+            $this->line("APP_URL и SESSION_SECURE_COOKIE записаны в .env ({$siteUrl['scheme']}://{$siteUrl['domain']}).");
+        }
+
         $this->line("Вход в админку: {$email} (пароль — заданный выше или сгенерированный, см. вывод команды).");
         $this->warn('Смените пароль после первого входа.');
 
@@ -168,6 +178,46 @@ class GavrInstallCommand extends Command
         }
 
         return $siteName;
+    }
+
+    /**
+     * HTTPS-домен для .env: спрашиваем только интерактивно, иначе не трогаем .env.
+     *
+     * @return ?array{scheme: string, domain: string}
+     */
+    private function resolveSiteUrl(): ?array
+    {
+        if (! $this->isInteractive()) {
+            return null;
+        }
+
+        $https = $this->confirm('Сайт будет работать по HTTPS?', true);
+        $domain = trim((string) $this->ask('Домен сайта (без http/https)', 'localhost'));
+        $domain = preg_replace('#^https?://#', '', $domain) ?? $domain;
+
+        if ($domain === '') {
+            $domain = 'localhost';
+        }
+
+        return [
+            'scheme' => $https ? 'https' : 'http',
+            'domain' => $domain,
+        ];
+    }
+
+    private function writeEnvValue(string $key, string $value): void
+    {
+        $path = base_path('.env');
+        $contents = is_file($path) ? (string) file_get_contents($path) : '';
+        $pattern = '/^'.preg_quote($key, '/').'=.*$/m';
+
+        if (preg_match($pattern, $contents)) {
+            $contents = (string) preg_replace($pattern, $key.'='.$value, $contents);
+        } else {
+            $contents = rtrim($contents)."\n".$key.'='.$value."\n";
+        }
+
+        file_put_contents($path, $contents);
     }
 
     private function isInteractive(): bool
