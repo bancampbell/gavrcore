@@ -124,8 +124,14 @@ class WebMaterialControllerTest extends TestCase
     {
         // TECHDEBT-43: CategorySummaryVO переименован slug → alias — публичный JSON
         // материала обязан отдавать category.alias и не содержать category.slug.
-        $category = CategoryModel::factory()->create(['alias' => 'novosti', 'name' => 'Новости']);
-        (new MaterialModelFactory)->create([
+        // Расширено: иерархия — category.parentName/parentAlias + родитель в крошках.
+        $parent = CategoryModel::factory()->create(['alias' => 'peredacha', 'name' => 'Передача электрической энергии']);
+        $category = CategoryModel::factory()->create([
+            'alias' => 'novosti',
+            'name' => 'Новости',
+            'parent_id' => $parent->id,
+        ]);
+        $material = (new MaterialModelFactory)->create([
             'state' => 'published',
             'published_at' => now()->subDay(),
             'access' => 'public',
@@ -140,7 +146,12 @@ class WebMaterialControllerTest extends TestCase
                 ->where('material.category.id', $category->id)
                 ->where('material.category.name', 'Новости')
                 ->where('material.category.alias', 'novosti')
+                ->where('material.category.parentName', 'Передача электрической энергии')
+                ->where('material.category.parentAlias', 'peredacha')
                 ->missing('material.category.slug')
+                ->where('breadcrumbs.1.title', 'Передача электрической энергии')
+                ->where('breadcrumbs.2.title', 'Новости')
+                ->where('breadcrumbs.3.title', $material->title)
             );
     }
 

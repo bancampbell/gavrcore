@@ -16,6 +16,14 @@ class MaterialBreadcrumbService
             ],
         ];
 
+        // Добавляем родительскую категорию, если есть (иерархия раздела)
+        if ($material->category && $material->category->parentAlias) {
+            $breadcrumbs[] = [
+                'title' => $material->category->parentName,
+                'url' => route('category.show', ['slug' => $material->category->parentAlias]),
+            ];
+        }
+
         // Добавляем категорию, если есть
         if ($material->category) {
             $breadcrumbs[] = [

@@ -64,7 +64,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function paginate(array $filters, int $perPage = 10): PaginatedResult
     {
-        $query = MaterialModel::with(['category', 'user'])
+        $query = MaterialModel::with(['category.parent', 'user'])
             ->where('state', '!=', 'trash');
 
         if (($filters['search'] ?? null) !== null && $filters['search'] !== '') {
@@ -118,7 +118,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function getTrashPaginated(int $perPage = 10): PaginatedResult
     {
-        $paginated = MaterialModel::with(['category', 'user'])
+        $paginated = MaterialModel::with(['category.parent', 'user'])
             ->where('state', 'trash')
             ->orderBy('id', 'desc')
             ->paginate($perPage);
@@ -144,7 +144,7 @@ class MaterialRepository implements MaterialRepositoryInterface
     public function findById(int $id): ?Material
     {
         if (! $this->cacheEnabled()) {
-            $model = MaterialModel::with(['category', 'user'])->find($id);
+            $model = MaterialModel::with(['category.parent', 'user'])->find($id);
 
             return $model ? $model->toDomain() : null;
         }
@@ -153,7 +153,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             $this->cacheKey('find', $id),
             $this->cacheTtl(),
             function () use ($id) {
-                $model = MaterialModel::with(['category', 'user'])->find($id);
+                $model = MaterialModel::with(['category.parent', 'user'])->find($id);
 
                 return $model ? $model->toDomain() : null;
             }
@@ -162,7 +162,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function findByIdWithLock(int $id): ?Material
     {
-        $model = MaterialModel::with(['category', 'user'])->lockForUpdate()->find($id);
+        $model = MaterialModel::with(['category.parent', 'user'])->lockForUpdate()->find($id);
 
         return $model ? $model->toDomain() : null;
     }
@@ -173,7 +173,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             return [];
         }
 
-        $models = MaterialModel::with(['category', 'user'])
+        $models = MaterialModel::with(['category.parent', 'user'])
             ->whereIn('id', $ids)
             ->get();
 
@@ -185,7 +185,7 @@ class MaterialRepository implements MaterialRepositoryInterface
         $model = MaterialModel::where('slug', $slug)
             ->where('state', 'published')
             ->where('published_at', '<=', now())
-            ->with(['category', 'user'])
+            ->with(['category.parent', 'user'])
             ->first();
 
         return $model ? $model->toDomain() : null;
@@ -197,7 +197,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             ->where('category_id', $categoryId)
             ->where('state', 'published')
             ->where('published_at', '<=', now())
-            ->with(['category', 'user'])
+            ->with(['category.parent', 'user'])
             ->first();
 
         return $model ? $model->toDomain() : null;
@@ -209,7 +209,7 @@ class MaterialRepository implements MaterialRepositoryInterface
             ->whereNull('category_id')
             ->where('state', 'published')
             ->where('published_at', '<=', now())
-            ->with(['category', 'user'])
+            ->with(['category.parent', 'user'])
             ->first();
 
         return $model ? $model->toDomain() : null;
@@ -251,7 +251,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
     public function findForEdit(int $id): ?Material
     {
-        $model = MaterialModel::with(['category', 'user'])->find($id);
+        $model = MaterialModel::with(['category.parent', 'user'])->find($id);
 
         return $model ? $model->toDomain() : null;
     }
@@ -276,7 +276,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
         $this->clearCache($material, $oldSlug);
 
-        $fresh = $mapped->fresh(['category', 'user']);
+        $fresh = $mapped->fresh(['category.parent', 'user']);
 
         return $fresh->toDomain();
     }
@@ -348,7 +348,7 @@ class MaterialRepository implements MaterialRepositoryInterface
 
         $this->clearCache($material);
 
-        return $model->fresh(['category', 'user'])->toDomain();
+        return $model->fresh(['category.parent', 'user'])->toDomain();
     }
 
     public function bulkRestore(array $ids): int

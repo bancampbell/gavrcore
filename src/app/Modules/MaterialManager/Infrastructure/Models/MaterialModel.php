@@ -99,6 +99,14 @@ class MaterialModel extends Model
                 id: (int) $this->category->id,
                 name: (string) $this->category->name,
                 alias: (string) $this->category->alias,
+                // Родитель подгружается как category.parent — только тогда
+                // VO получает parentName/parentAlias (хлебные крошки).
+                parentName: $this->category->relationLoaded('parent') && $this->category->parent
+                    ? (string) $this->category->parent->name
+                    : null,
+                parentAlias: $this->category->relationLoaded('parent') && $this->category->parent
+                    ? (string) $this->category->parent->alias
+                    : null,
             ) : null,
             user: $this->relationLoaded('user') && $this->user ? new AuthorSummaryVO(
                 id: (int) $this->user->id,
