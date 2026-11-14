@@ -308,4 +308,40 @@ class WebMaterialControllerTest extends TestCase
             'form_id' => $form->id,
         ]);
     }
+
+    public function test_category_page_lists_only_children_with_published_materials(): void
+    {
+        $parent = CategoryModel::factory()->create(['alias' => 'raskrytie', 'is_active' => true]);
+        $childWith = CategoryModel::factory()->create([
+            'alias' => 'otchety', 'name' => 'ОТЧЕТЫ', 'parent_id' => $parent->id, 'is_active' => true,
+        ]);
+        $childEmpty = CategoryModel::factory()->create([
+            'alias' => 'pusto', 'parent_id' => $parent->id, 'is_active' => true,
+        ]);
+
+        (new MaterialModelFactory)->create([
+            'state' => 'published',
+            'published_at' => now()->subDay(),
+            'access' => 'public',
+            'category_id' => $childWith->id,
+            'slug' => '2026-god',
+        ]);
+        (new MaterialModelFactory)->create([
+            'state' => 'draft',
+            'access' => 'public',
+            'category_id' => $childEmpty->id,
+            'slug' => 'chernovik',
+        ]);
+
+        $this->get('/category/raskrytie')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Site/Category/Show', false)
+                ->has('children', 1)
+                ->where('children.0.alias', 'otchety')
+                ->where('children.0.name', 'ОТЧЕТЫ')
+            );
+    }
+
+
 }

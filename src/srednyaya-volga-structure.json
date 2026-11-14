@@ -1,0 +1,854 @@
+{
+  "source": "Joomla 3 — srednyayavolga.ru (перенос структуры без контента)",
+  "categories": [
+    {
+      "title": "Технологическое присоединение",
+      "alias": "tekhnologicheskoe-prisoedinenie"
+    },
+    {
+      "title": "Передача электрической энергии",
+      "alias": "peredacha-elektricheskoj-energii"
+    },
+    {
+      "title": "Коммерческий учет электрической энергии",
+      "alias": "kommercheskij-uchet-elektricheskoj-energii"
+    },
+    {
+      "title": "Техническое состояние сетей",
+      "alias": "tekhnicheskoe-sostoyanie-setej"
+    },
+    {
+      "title": "Раскрытие информации",
+      "alias": "raskrytie-informatsii"
+    },
+    {
+      "title": "Тарифы на услуги по передаче электрической энергии",
+      "alias": "tarify-na-uslugi-po-peredache-elektricheskoj-energii"
+    },
+    {
+      "title": "Баланс электрической энергии и мощности",
+      "alias": "balans-elektricheskoj-energii-i-moshchnosti"
+    },
+    {
+      "title": "Затраты на оплату потерь",
+      "alias": "zatraty-na-oplatu-poter"
+    },
+    {
+      "title": "Раскрытие информации за 2023",
+      "alias": "raskrytie-informatsii-za-2023"
+    },
+    {
+      "title": "Раскрытие информации за 2024",
+      "alias": "raskrytie-informatsii-za-2024"
+    },
+    {
+      "title": "Раскрытие информации за 2025",
+      "alias": "raskrytie-informatsii-za-2025"
+    },
+    {
+      "title": "Раскрытие информации за 2026",
+      "alias": "raskrytie-informatsii-za-2026"
+    }
+  ],
+  "materials": [
+    {
+      "title": "Российская энергетическая неделя",
+      "alias": "rossijskaya-energeticheskaya-nedelya",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Инструкции для собственников по управлению недвижимостью",
+      "alias": "instruktsii-dlya-sobstvennikov-po-upravleniyu-nedvizhimostyu",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Программа долгосрочных сбережений (ПДС)",
+      "alias": "programma-dolgosrochnykh-sberezhenij",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "2026 год",
+      "alias": "2026-god",
+      "category": "Тарифы на услуги по передаче электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Финансовая (бухгалтерская) отчетность",
+      "alias": "finansovaya-bukhgalterskaya-otchetnost",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Предложение о размере цен (тарифов), долгосрочных параметров регулирования",
+      "alias": "predlozhenie-o-razmere-tsen-tarifov-dolgosrochnykh-parametrov-regulirovaniya",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Структура и объем затрат на производство и реализацию товаров (работ, услуг)",
+      "alias": "struktura-i-ob-em-zatrat-na-proizvodstvo-i-realizatsiyu-tovarov-rabot-uslug",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Метод доходности инвестированного капитала",
+      "alias": "metod-dokhodnosti-investirovannogo-kapitala",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "О качестве обслуживания потребителей услуг сетевой организации",
+      "alias": "o-kachestve-obsluzhivaniya-potrebitelej-uslug-setevoj-organizatsii",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Об инвестиционной программе (о проекте инвестиционной программы и (или) проекте изменений, вносимых в инвестиционную программу и обосновывающих ее материалах",
+      "alias": "ob-investitsionnoj-programme-o-proekte-investitsionnoj-programmy-i-ili-proekte-izmenenij-vnosimykh-v-investitsionnuyu-programmu-i-obosnovyvayushchikh-ee-materialakh",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "О расходах, связанных с осуществлением технологического присоединения, не включаемых в плату за технологическое присоединение",
+      "alias": "o-raskhodakh-svyazannykh-s-osushchestvleniem-tekhnologicheskogo-prisoedineniya-ne-vklyuchaemykh-v-platu-za-tekhnologicheskoe-prisoedinenie",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Информация о расходах на строительство введенных в эксплуатацию объектов электросетевого хозяйства",
+      "alias": "informatsiya-o-raskhodakh-na-stroitelstvo-vvedennykh-v-ekspluatatsiyu-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "О наличии (об отсутствии) технической возможности доступа к регулируемым товарам (работам, услугам) и о регистрации и ходе реализации заявок на технологическое присоединение к электрическим сетям",
+      "alias": "o-nalichii-ob-otsutstvii-tekhnicheskoj-vozmozhnosti-dostupa-k-reguliruemym-tovaram-rabotam-uslugam-i-o-registratsii-i-khode-realizatsii-zayavok-na-tekhnologicheskoe-prisoedinenie-k-elektricheskim-setyam",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "О величине резервируемой максимальной мощности",
+      "alias": "o-velichine-rezerviruemoj-maksimalnoj-moshchnosti",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "О результатах контрольных замеров электрических параметров режимов работы оборудования объектов электросетевого хозяйства",
+      "alias": "o-rezultatakh-kontrolnykh-zamerov-elektricheskikh-parametrov-rezhimov-raboty-oborudovaniya-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "О способах приобретения, стоимости и объемах товаров, необходимых для оказания услуг по передаче электроэнергии",
+      "alias": "o-sposobakh-priobreteniya-stoimosti-i-ob-emakh-tovarov-neobkhodimykh-dlya-okazaniya-uslug-po-peredache-elektroenergii",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Об объеме и стоимости электрической энергии",
+      "alias": "ob-ob-eme-i-stoimosti-elektricheskoj-energii",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Информация о соглашение об условиях осуществления регулируемых видов деятельности",
+      "alias": "informatsiya-o-soglashenie-ob-usloviyakh-osushchestvleniya-reguliruemykh-vidov-deyatelnosti",
+      "category": "Раскрытие информации за 2026",
+      "access": "public"
+    },
+    {
+      "title": "Раскрытие информации за 2026",
+      "alias": "raskrytie-informatsii-za-2026",
+      "category": "Раскрытие информации",
+      "access": "public"
+    },
+    {
+      "title": "2026 год",
+      "alias": "2026-god",
+      "category": "Затраты на оплату потерь",
+      "access": "public"
+    },
+    {
+      "title": "2026 год",
+      "alias": "2026-god",
+      "category": "Баланс электрической энергии и мощности",
+      "access": "public"
+    },
+    {
+      "title": "2026 год",
+      "alias": "2026-god",
+      "category": "Техническое состояние сетей",
+      "access": "public"
+    },
+    {
+      "title": "Документы",
+      "alias": "dokumenty",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Финансовая (бухгалтерская) отчетность",
+      "alias": "finansovaya-bukhgalterskaya-otchetnost",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Предложение о размере цен (тарифов), долгосрочных параметров регулирования",
+      "alias": "predlozhenie-o-razmere-tsen-tarifov-dolgosrochnykh-parametrov-regulirovaniya",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Структура и объем затрат на производство и реализацию товаров (работ, услуг)",
+      "alias": "struktura-i-ob-em-zatrat-na-proizvodstvo-i-realizatsiyu-tovarov-rabot-uslug",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Метод доходности инвестированного капитала",
+      "alias": "metod-dokhodnosti-investirovannogo-kapitala",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "О качестве обслуживания потребителей услуг сетевой организации",
+      "alias": "o-kachestve-obsluzhivaniya-potrebitelej-uslug-setevoj-organizatsii",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Об инвестиционной программе (о проекте инвестиционной программы и (или) проекте изменений, вносимых в инвестиционную программу и обосновывающих ее материалах",
+      "alias": "ob-investitsionnoj-programme-o-proekte-investitsionnoj-programmy-i-ili-proekte-izmenenij-vnosimykh-v-investitsionnuyu-programmu-i-obosnovyvayushchikh-ee-materialakh",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "О расходах, связанных с осуществлением технологического присоединения, не включаемых в плату за технологическое присоединение",
+      "alias": "o-raskhodakh-svyazannykh-s-osushchestvleniem-tekhnologicheskogo-prisoedineniya-ne-vklyuchaemykh-v-platu-za-tekhnologicheskoe-prisoedinenie",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Информация о расходах на строительство введенных в эксплуатацию объектов электросетевого хозяйства",
+      "alias": "informatsiya-o-raskhodakh-na-stroitelstvo-vvedennykh-v-ekspluatatsiyu-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "О наличии (об отсутствии) технической возможности доступа к регулируемым товарам (работам, услугам) и о регистрации и ходе реализации заявок на технологическое присоединение к электрическим сетям",
+      "alias": "o-nalichii-ob-otsutstvii-tekhnicheskoj-vozmozhnosti-dostupa-k-reguliruemym-tovaram-rabotam-uslugam-i-o-registratsii-i-khode-realizatsii-zayavok-na-tekhnologicheskoe-prisoedinenie-k-elektricheskim-setyam",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "О величине резервируемой максимальной мощности",
+      "alias": "o-velichine-rezerviruemoj-maksimalnoj-moshchnosti",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "О результатах контрольных замеров электрических параметров режимов работы оборудования объектов электросетевого хозяйства",
+      "alias": "o-rezultatakh-kontrolnykh-zamerov-elektricheskikh-parametrov-rezhimov-raboty-oborudovaniya-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "О способах приобретения, стоимости и объемах товаров, необходимых для оказания услуг по передаче электроэнергии",
+      "alias": "o-sposobakh-priobreteniya-stoimosti-i-ob-emakh-tovarov-neobkhodimykh-dlya-okazaniya-uslug-po-peredache-elektroenergii",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Об объеме и стоимости электрической энергии",
+      "alias": "ob-ob-eme-i-stoimosti-elektricheskoj-energii",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Информация о соглашение об условиях осуществления регулируемых видов деятельности",
+      "alias": "informatsiya-o-soglashenie-ob-usloviyakh-osushchestvleniya-reguliruemykh-vidov-deyatelnosti",
+      "category": "Раскрытие информации за 2025",
+      "access": "public"
+    },
+    {
+      "title": "Раскрытие информации за 2025",
+      "alias": "raskrytie-informatsii-za-2025",
+      "category": "Раскрытие информации",
+      "access": "public"
+    },
+    {
+      "title": "2025 год",
+      "alias": "2025-god",
+      "category": "Затраты на оплату потерь",
+      "access": "public"
+    },
+    {
+      "title": "2025 год",
+      "alias": "2025-god",
+      "category": "Баланс электрической энергии и мощности",
+      "access": "public"
+    },
+    {
+      "title": "2025 год",
+      "alias": "2025-god",
+      "category": "Тарифы на услуги по передаче электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "2025 год",
+      "alias": "2025-god",
+      "category": "Техническое состояние сетей",
+      "access": "public"
+    },
+    {
+      "title": "Информация о соглашение об условиях осуществления регулируемых видов деятельности",
+      "alias": "informatsiya-o-soglashenie-ob-usloviyakh-osushchestvleniya-reguliruemykh-vidov-deyatelnosti",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Об объеме и стоимости электрической энергии",
+      "alias": "ob-ob-eme-i-stoimosti-elektricheskoj-energii",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "О способах приобретения, стоимости и объемах товаров, необходимых для оказания услуг по передаче электроэнергии",
+      "alias": "o-sposobakh-priobreteniya-stoimosti-i-ob-emakh-tovarov-neobkhodimykh-dlya-okazaniya-uslug-po-peredache-elektroenergii",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "О результатах контрольных замеров электрических параметров режимов работы оборудования объектов электросетевого хозяйства",
+      "alias": "o-rezultatakh-kontrolnykh-zamerov-elektricheskikh-parametrov-rezhimov-raboty-oborudovaniya-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "О величине резервируемой максимальной мощности",
+      "alias": "o-velichine-rezerviruemoj-maksimalnoj-moshchnosti",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "О наличии (об отсутствии) технической возможности доступа к регулируемым товарам (работам, услугам) и о регистрации и ходе реализации заявок на технологическое присоединение к электрическим сетям",
+      "alias": "o-nalichii-ob-otsutstvii-tekhnicheskoj-vozmozhnosti-dostupa-k-reguliruemym-tovaram-rabotam-uslugam-i-o-registratsii-i-khode-realizatsii-zayavok-na-tekhnologicheskoe-prisoedinenie-k-elektricheskim-setyam",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Об инвестиционной программе (о проекте инвестиционной программы и (или) проекте изменений, вносимых в инвестиционную программу и обосновывающих ее материалах",
+      "alias": "ob-investitsionnoj-programme-o-proekte-investitsionnoj-programmy-i-ili-proekte-izmenenij-vnosimykh-v-investitsionnuyu-programmu-i-obosnovyvayushchikh-ee-materialakh",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "О качестве обслуживания потребителей услуг сетевой организации",
+      "alias": "o-kachestve-obsluzhivaniya-potrebitelej-uslug-setevoj-organizatsii",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Метод доходности инвестированного капитала",
+      "alias": "metod-dokhodnosti-investirovannogo-kapitala",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Структура и объем затрат на производство и реализацию товаров (работ, услуг)",
+      "alias": "struktura-i-ob-em-zatrat-na-proizvodstvo-i-realizatsiyu-tovarov-rabot-uslug",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Предложение о размере цен (тарифов), долгосрочных параметров регулирования",
+      "alias": "predlozhenie-o-razmere-tsen-tarifov-dolgosrochnykh-parametrov-regulirovaniya",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Финансовая (бухгалтерская) отчетность",
+      "alias": "finansovaya-bukhgalterskaya-otchetnost",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "Раскрытие информации за 2024",
+      "alias": "raskrytie-informatsii-za-2024",
+      "category": "Раскрытие информации",
+      "access": "public"
+    },
+    {
+      "title": "2024 год",
+      "alias": "2024-god",
+      "category": "Затраты на оплату потерь",
+      "access": "public"
+    },
+    {
+      "title": "2024 год",
+      "alias": "2024-god",
+      "category": "Баланс электрической энергии и мощности",
+      "access": "public"
+    },
+    {
+      "title": "2024 год",
+      "alias": "2024-god",
+      "category": "Тарифы на услуги по передаче электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "2024 год",
+      "alias": "2024-god",
+      "category": "Техническое состояние сетей",
+      "access": "public"
+    },
+    {
+      "title": "Финансовая (бухгалтерская) отчетность",
+      "alias": "finansovaya-bukhgalterskaya-otchetnost",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Предложение о размере цен (тарифов), долгосрочных параметров регулирования",
+      "alias": "predlozhenie-o-razmere-tsen-tarifov-dolgosrochnykh-parametrov-regulirovaniya",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Структура и объем затрат на производство и реализацию товаров (работ, услуг)",
+      "alias": "struktura-i-ob-em-zatrat-na-proizvodstvo-i-realizatsiyu-tovarov-rabot-uslug",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Метод доходности инвестированного капитала",
+      "alias": "metod-dokhodnosti-investirovannogo-kapitala",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "О качестве обслуживания потребителей услуг сетевой организации",
+      "alias": "o-kachestve-obsluzhivaniya-potrebitelej-uslug-setevoj-organizatsii",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Об инвестиционной программе (о проекте инвестиционной программы и (или) проекте изменений, вносимых в инвестиционную программу и обосновывающих ее материалах",
+      "alias": "ob-investitsionnoj-programme-o-proekte-investitsionnoj-programmy-i-ili-proekte-izmenenij-vnosimykh-v-investitsionnuyu-programmu-i-obosnovyvayushchikh-ee-materialakh",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "О расходах, связанных с осуществлением технологического присоединения, не включаемых в плату за технологическое присоединение",
+      "alias": "o-raskhodakh-svyazannykh-s-osushchestvleniem-tekhnologicheskogo-prisoedineniya-ne-vklyuchaemykh-v-platu-za-tekhnologicheskoe-prisoedinenie",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Информация о расходах на строительство введенных в эксплуатацию объектов электросетевого хозяйства",
+      "alias": "informatsiya-o-raskhodakh-na-stroitelstvo-vvedennykh-v-ekspluatatsiyu-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2024",
+      "access": "public"
+    },
+    {
+      "title": "О наличии (об отсутствии) технической возможности доступа к регулируемым товарам (работам, услугам) и о регистрации и ходе реализации заявок на технологическое присоединение к электрическим сетям",
+      "alias": "o-nalichii-ob-otsutstvii-tekhnicheskoj-vozmozhnosti-dostupa-k-reguliruemym-tovaram-rabotam-uslugam-i-o-registratsii-i-khode-realizatsii-zayavok-na-tekhnologicheskoe-prisoedinenie-k-elektricheskim-setyam",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "О величине резервируемой максимальной мощности",
+      "alias": "o-velichine-rezerviruemoj-maksimalnoj-moshchnosti",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "О результатах контрольных замеров электрических параметров режимов работы оборудования объектов электросетевого хозяйства",
+      "alias": "o-rezultatakh-kontrolnykh-zamerov-elektricheskikh-parametrov-rezhimov-raboty-oborudovaniya-ob-ektov-elektrosetevogo-khozyajstva",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "О способах приобретения, стоимости и объемах товаров, необходимых для оказания услуг по передаче электроэнергии",
+      "alias": "o-sposobakh-priobreteniya-stoimosti-i-ob-emakh-tovarov-neobkhodimykh-dlya-okazaniya-uslug-po-peredache-elektroenergii",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Об объеме и стоимости электрической энергии",
+      "alias": "ob-ob-eme-i-stoimosti-elektricheskoj-energii",
+      "category": "Раскрытие информации за 2023",
+      "access": "public"
+    },
+    {
+      "title": "Раскрытие информации за 2023",
+      "alias": "raskrytie-informatsii-za-2023",
+      "category": "Раскрытие информации",
+      "access": "public"
+    },
+    {
+      "title": "2023 год",
+      "alias": "2023-god",
+      "category": "Затраты на оплату потерь",
+      "access": "public"
+    },
+    {
+      "title": "2023 год",
+      "alias": "2023-god",
+      "category": "Баланс электрической энергии и мощности",
+      "access": "public"
+    },
+    {
+      "title": "2023 год",
+      "alias": "2023-god",
+      "category": "Тарифы на услуги по передаче электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "2023 год",
+      "alias": "2023-god",
+      "category": "Техническое состояние сетей",
+      "access": "public"
+    },
+    {
+      "title": "Подать заявку на технологическое присоединение",
+      "alias": "podat-zayavku-na-tekhnologicheskoe-prisoedinenie",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Интерактивный опрос",
+      "alias": "interaktivnyj-opros",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Вопросы и ответы",
+      "alias": "voprosy-i-otvety",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Статус отправленной заявки (обращения)",
+      "alias": "status-otpravlennoj-zayavki-obrashcheniya",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Нормативные документы",
+      "alias": "normativnye-dokumenty",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Интерактивная обратная связь",
+      "alias": "interaktivnaya-obratnaya-svyaz",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Заочное обслуживание посредством телефонной связи",
+      "alias": "zaochnoe-obsluzhivanie-posredstvom-telefonnoj-svyazi",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Форма записи на очный прием в офис обслуживания",
+      "alias": "forma-zapisi-na-ochnyj-priem-v-ofis-obsluzhivaniya",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Требования к местам установки приборов учета",
+      "alias": "trebovaniya-k-mestam-ustanovki-priborov-ucheta",
+      "category": "Коммерческий учет электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Типовые формы документов",
+      "alias": "tipovye-formy-dokumentov",
+      "category": "Коммерческий учет электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Паспорта процессов",
+      "alias": "pasporta-protsessov",
+      "category": "Коммерческий учет электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Нормативные документы",
+      "alias": "normativnye-dokumenty",
+      "category": "Коммерческий учет электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Общая информация",
+      "alias": "obshchaya-informatsiya",
+      "category": "Коммерческий учет электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Сведения о поданных заявках на технологическое присоединение, заключенных договорах и выполненных присоединениях",
+      "alias": "svedeniya-o-podannykh-zayavkakh-na-tekhnologicheskoe-prisoedinenie-zaklyuchennykh-dogovorakh-i-vypolnennykh-prisoedineniyakh",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Сведения о наличии мощности, свободной для технологического присоединения",
+      "alias": "svedeniya-o-nalichii-moshchnosti-svobodnoj-dlya-tekhnologicheskogo-prisoedineniya",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Паспорта услуг (процессов)",
+      "alias": "pasporta-uslug-protsessov",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Нормативные документы",
+      "alias": "normativnye-dokumenty",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Общая информация о технологическом присоединении",
+      "alias": "obshchaya-informatsiya-o-tekhnologicheskom-prisoedinenii",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Тарифы на технологическое присоединение",
+      "alias": "tarify-na-tekhnologicheskoe-prisoedinenie",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Типовые формы документов",
+      "alias": "tipovye-formy-dokumentov",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Общая информация о передаче электрической энергии",
+      "alias": "obshchaya-informatsiya-o-peredache-elektricheskoj-energii",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Нормативные документы",
+      "alias": "normativnye-dokumenty",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Техническое состояние сетей",
+      "alias": "o-tekhnicheskom-sostoyanii-setej",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Затраты на оплату потерь",
+      "alias": "o-zatratakh-na-oplatu-poter",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Баланс электрической энергии и мощности",
+      "alias": "o-balanse-elektricheskoj-energii-i-moshchnosti",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Тарифы на услуги по передаче электрической энергии",
+      "alias": "o-tsenakh-tarifakh-na-tovary-raboty-uslugi",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Паспорта услуг (процесса)",
+      "alias": "pasporta-uslug-protsessa",
+      "category": "Передача электрической энергии",
+      "access": "public"
+    },
+    {
+      "title": "Типовые формы документов",
+      "alias": "zayavki-na-osushchestvlenie-tekhnologicheskogo-prisoedineniya",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Основные этапы и сроки рассмотрения заявок на технологическое присоединение к электрическим сетям сетевой организации",
+      "alias": "osnovnye-etapy-i-sroki-rassmotreniya-zayavok-na-tekhnologicheskoe-prisoedinenie-k-elektricheskim-setyam-setevoj-organizatsii",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "О порядке выполнения технологических, технических и других мероприятий, связанных с технологическим присоединением к электрическим сетям, включая перечень мероприятий, необходимых для осуществления технологического присоединения к электрическим сетям",
+      "alias": "o-poryadke-vypolneniya-tekhnologicheskikh-tekhnicheskikh-i-drugikh-meropriyatij-svyazannykh-s-tekhnologicheskim-prisoedineniem-k-elektricheskim-setyam-vklyuchaya-perechen-meropriyatij-neobkhodimykh-dlya-osushchestvleniya-tekhnologicheskogo-prisoedineniya-k-elektricheskim-setyam",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Порядок подачи заявки на технологическое присоединение",
+      "alias": "poryadok-podachi-zayavki-na-tekhnologicheskoe-prisoedinenie",
+      "category": "Технологическое присоединение",
+      "access": "public"
+    },
+    {
+      "title": "Обслуживание потребителей",
+      "alias": "obsluzhivanie-potrebitelej",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Перечень зон деятельности",
+      "alias": "perechen-zon-deyatelnosti",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Вакансии",
+      "alias": "vakansii",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Реквизиты",
+      "alias": "rekvizity",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Контакты",
+      "alias": "kontakty",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "Раскрытие информации",
+      "alias": "raskrytie-informatsii",
+      "category": null,
+      "access": "public"
+    },
+    {
+      "title": "О компании",
+      "alias": "glavnaya-stranitsa",
+      "category": null,
+      "access": "public"
+    }
+  ],
+  "menu": {
+    "title": "Main Menu",
+    "alias": "main-menu",
+    "items": [
+      {
+        "title": "О компании",
+        "type": "external",
+        "url": "https://srednyayavolga.ru",
+        "children": [
+          {
+            "title": "Контакты",
+            "type": "material",
+            "material_alias": "kontakty"
+          },
+          {
+            "title": "Реквизиты",
+            "type": "material",
+            "material_alias": "rekvizity"
+          },
+          {
+            "title": "Вакансии",
+            "type": "material",
+            "material_alias": "vakansii",
+            "children": [
+              {
+                "title": "Отсутствуют",
+                "type": "external",
+                "url": "#",
+                "note": "заглушка"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Потребителям",
+        "type": "group",
+        "note": "некликабельный родитель (бывший separator)",
+        "children": [
+          {
+            "title": "Перечень зон деятельности",
+            "type": "material",
+            "material_alias": "perechen-zon-deyatelnosti"
+          },
+          {
+            "title": "Техническое состояние сетей",
+            "type": "category",
+            "category_alias": "tekhnicheskoe-sostoyanie-setej"
+          },
+          {
+            "title": "Передача электрической энергии",
+            "type": "category",
+            "category_alias": "peredacha-elektricheskoj-energii"
+          },
+          {
+            "title": "Обслуживание потребителей",
+            "type": "material",
+            "material_alias": "obsluzhivanie-potrebitelej"
+          },
+          {
+            "title": "Технологическое присоединение",
+            "type": "category",
+            "category_alias": "tekhnologicheskoe-prisoedinenie"
+          },
+          {
+            "title": "Коммерческий учет электрической энергии",
+            "type": "category",
+            "category_alias": "kommercheskij-uchet-elektricheskoj-energii"
+          }
+        ]
+      },
+      {
+        "title": "Раскрытие информации",
+        "type": "category",
+        "category_alias": "raskrytie-informatsii"
+      },
+      {
+        "title": "Документы",
+        "type": "material",
+        "material_alias": "dokumenty"
+      },
+      {
+        "title": "Тарифы",
+        "type": "material",
+        "material_alias": "o-tsenakh-tarifakh-na-tovary-raboty-uslugi",
+        "note": "alias материала 'Тарифы на услуги по передаче электрической энергии' (кат. Передача электрической энергии)"
+      },
+      {
+        "title": "Контакты",
+        "type": "material",
+        "material_alias": "kontakty",
+        "note": "дубликат пункта в корне, как на старом сайте"
+      }
+    ],
+    "skipped": [
+      {
+        "title": "Личный кабинет",
+        "reason": "внешний URL на старом сайте; на новом — отдельный функционал, не пункт меню-заглушка"
+      }
+    ]
+  },
+  "notes": [
+    "Alias'и сохранены со старого сайта для SEO и будущих редиректов.",
+    "Материалы-заглушки: пустой текст, статус опубликован, access как у оригинала (registered отмечен).",
+    "Материалы категории 'Раскрытие информации за 2021' НЕ переносятся (категория удалена по решению пользователя).",
+    "24 материала были в Uncategorised Joomla — у них category=null, положить в корневую/без категории по конвенциям GavrCore.",
+    "Категории плоские (без вложенности).",
+    "Всё, что связано с личным кабинетом, не переносится (кабинет — отдельный функционал): удалены 3 registered-материала и 'Порядок работы в личном кабинете потребителя'."
+  ]
+}

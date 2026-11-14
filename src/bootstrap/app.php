@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\GavrInstallCommand;
+use App\Console\Commands\SeedJoomlaStructureCommand;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SessionIdleTimeout;
 use App\Modules\CookieConsent\Infrastructure\Http\Middleware\CheckCookieConsent;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         GavrInstallCommand::class,
+        SeedJoomlaStructureCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [

@@ -240,6 +240,13 @@ class WebMaterialController
 
         $materials = $this->getMaterials->execute($filters);
 
+        // Дочерние категории с опубликованными материалами — пункты списка.
+        // Пустые (без материалов) не выводятся (фильтр внутри сервиса).
+        $children = $this->categoryService->findVisibleChildrenWithMaterials(
+            (int) $category->id,
+            $this->allowedAccessLevels()
+        );
+
         $settings = $this->settingService->getAllSettings();
         $currentTheme = $this->settingService->getTheme();
 
@@ -249,6 +256,7 @@ class WebMaterialController
         return Inertia::render('Site/Category/Show', [
             'category' => $category,
             'materials' => $materials->toArray(),
+            'children' => $children,
             'categories' => $this->categoryService->getAll(),
             'filters' => $filters->toArray(),
             'mainMenu' => $this->getMenuTree->execute('main-menu'),

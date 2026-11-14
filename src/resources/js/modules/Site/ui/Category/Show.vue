@@ -25,8 +25,17 @@
                     <p v-if="category?.description" class="mt-2 text-gray-600">{{ category.description }}</p>
                 </div>
 
-                <template v-if="materialsList.length">
+                <template v-if="childrenList.length || materialsList.length">
                     <div class="divide-y divide-gray-100">
+                        <div
+                            v-for="child in childrenList"
+                            :key="'cat-' + child.id"
+                            class="px-6 py-3 hover:bg-blue-50 transition-colors"
+                        >
+                            <Link :href="`/category/${child.alias}`" class="font-medium text-gray-900 hover:text-indigo-600">
+                                {{ child.name }}
+                            </Link>
+                        </div>
                         <div
                             v-for="material in materialsList"
                             :key="material.id"
@@ -85,6 +94,10 @@ const props = defineProps({
         type: Object,
         default: () => ({data: []}),
     },
+    children: {
+        type: Array,
+        default: () => [],
+    },
     meta: {
         type: Object,
         default: () => ({}),
@@ -99,6 +112,7 @@ const siteDescription = appSettings.site_description || '';
 const siteKeywords = appSettings.seo_keywords || '';
 
 const materialsList = props.materials?.data || [];
+const childrenList = props.children || [];
 
 const materialUrl = (material) => {
     const slug = material.slug || material.alias;

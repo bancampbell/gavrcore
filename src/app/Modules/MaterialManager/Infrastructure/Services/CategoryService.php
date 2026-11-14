@@ -21,4 +21,22 @@ class CategoryService implements CategoryServiceInterface
     {
         return CategoryModel::all()->toArray();
     }
+
+    public function findVisibleChildrenWithMaterials(int $parentId, array $accessLevels): array
+    {
+        // Пункты списка публичной страницы категории: только активные дочерние,
+        // в которых есть хотя бы один опубликованный материал с разрешённым
+        // уровнем доступа. Пустые (и «только черновики») не выводятся.
+        // Один запрос с EXISTS-подзапросом — без N+1.
+        return CategoryModel::query()
+            ->where('parent_id', $parentId)
+            ->where('is_active', true)
+            ->whereHas('materials', function ($query) use ($accessLevels) {
+                $query->where('state', 'published')
+                    ->whereIn('access', $accessLevels);
+            })
+            ->orderBy('lft')
+            ->get(['id', 'name', 'alias', 'description'])
+            ->toArray();
+    }
 }
