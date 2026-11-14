@@ -63,27 +63,50 @@ final class WebAuthController extends Controller
                 'last_login_ip' => $request->ip(),
             ]);
 
-            $request->session()->regenerate();
+            // Пароль верный, но включён TOTP: сессию не выдаём. Кладём метку
+            // ожидания второго фактора и ведём на страницу ввода кода (общая
+            // для админки и кабинета — см. TwoFactorChallengeController).
+            if ($user->totp_enabled) {
+                Auth::logout();
+                $request->session()->regenerate();
 
-            // Проверяем, откуда пришёл пользователь
-            $referer = $request->headers->get('referer');
+                $request->session()->put(TwoFactorChallengeController::SESSION_KEY, [
+                    'user_id' => $user->id,
+                    'guard' => 'web',
+                    'remember' => $request->boolean('remember'),
+                    'redirect' => $this->redirectAfterLoginUrl($request),
+                ]);
 
-            // Если пришёл со страницы логина или с главной — редирект на главную
-            if ($referer && (
-                str_contains($referer, '/login') ||
-                str_contains($referer, '/register') ||
-                $referer === route('home')
-            )) {
-                return redirect()->route('home');
+                return redirect()->route('2fa.verify');
             }
 
-            // Иначе — туда, куда пытался попасть (или в дашборд)
-            return redirect()->intended('/dashboard');
+            $request->session()->regenerate();
+
+            return redirect($this->redirectAfterLoginUrl($request));
         }
 
         return back()->withErrors([
             'email' => 'Неверный email или пароль',
         ]);
+    }
+
+    /**
+     * Куда вести после успешного логина: со страницы логина/регистрации
+     * или с главной — на главную, иначе — туда, куда пытался попасть (или в кабинет)
+     */
+    private function redirectAfterLoginUrl(Request $request): string
+    {
+        $referer = $request->headers->get('referer');
+
+        if ($referer && (
+            str_contains($referer, '/login') ||
+            str_contains($referer, '/register') ||
+            $referer === route('home')
+        )) {
+            return route('home');
+        }
+
+        return redirect()->intended('/dashboard')->getTargetUrl();
     }
 
     /**

@@ -49,6 +49,23 @@ final class AdminAuthController extends Controller
                 ]);
             }
 
+            // Пароль верный, но включён TOTP: сессию не выдаём. Кладём метку
+            // ожидания второго фактора и ведём на страницу ввода кода (общая
+            // для админки и кабинета — см. TwoFactorChallengeController).
+            if ($user->totp_enabled) {
+                Auth::logout();
+                $request->session()->regenerate();
+
+                $request->session()->put(TwoFactorChallengeController::SESSION_KEY, [
+                    'user_id' => $user->id,
+                    'guard' => 'web',
+                    'remember' => $request->boolean('remember'),
+                    'redirect' => '/admin/dashboard',
+                ]);
+
+                return redirect()->route('2fa.verify');
+            }
+
             $request->session()->regenerate();
 
             activity()

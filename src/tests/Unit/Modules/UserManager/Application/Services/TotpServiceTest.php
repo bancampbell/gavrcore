@@ -57,7 +57,7 @@ class TotpServiceTest extends TestCase
         $this->assertStringContainsString(rawurlencode('Тестовый сайт').':'.rawurlencode('user@example.com'), $url);
     }
 
-    public function test_recovery_codes_are_8_unique_normalised_codes(): void
+    public function test_recovery_codes_are_8_unique_64bit_codes_in_readable_format(): void
     {
         $codes = $this->service->generateRecoveryCodes();
 
@@ -65,8 +65,26 @@ class TotpServiceTest extends TestCase
         $this->assertCount(8, array_unique($codes));
 
         foreach ($codes as $code) {
-            $this->assertMatchesRegularExpression('/^[0-9A-F]{4}-[0-9A-F]{4}$/', $code);
+            // 64 бита энтропии: 16 hex-символов в читаемом формате XXXX-XXXX-XXXX-XXXX
+            $this->assertMatchesRegularExpression('/^[0-9A-F]{4}(-[0-9A-F]{4}){3}$/', $code);
+            $this->assertSame(16, strlen(str_replace('-', '', $code)));
         }
+    }
+
+    public function test_generated_recovery_codes_pass_hash_match_and_burn(): void
+    {
+        $codes = $this->service->generateRecoveryCodes();
+        $hashes = array_map(fn (string $code) => $this->service->hashRecoveryCode($code), $codes);
+
+        foreach ($codes as $code) {
+            $this->assertTrue($this->service->recoveryCodeMatches($code, $hashes));
+        }
+
+        $remaining = $this->service->burnRecoveryCode($codes[0], $hashes);
+
+        $this->assertNotNull($remaining);
+        $this->assertCount(7, $remaining);
+        $this->assertFalse($this->service->recoveryCodeMatches($codes[0], $remaining));
     }
 
     public function test_recovery_code_matches_by_hash_regardless_of_case_and_dashes(): void

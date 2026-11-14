@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\UserManager\Infrastructure\Http\Controllers\AdminAuthController;
+use App\Modules\UserManager\Infrastructure\Http\Controllers\TwoFactorChallengeController;
 use App\Modules\UserManager\Infrastructure\Http\Controllers\WebAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,3 +27,10 @@ Route::post('/register', [WebAuthController::class, 'register']);
 Route::get('/admin/login', [AdminAuthController::class, 'create'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+
+// ===== 2FA: ВТОРОЙ ФАКТОР ПОСЛЕ ПАРОЛЯ =====
+// Общие для админки и кабинета: метка ожидания в сессии (TwoFactorChallengeController).
+Route::get('/2fa/verify', [TwoFactorChallengeController::class, 'create'])->name('2fa.verify');
+Route::post('/2fa/verify', [TwoFactorChallengeController::class, 'store'])
+    ->middleware('throttle:two-factor-verify')
+    ->name('2fa.verify.store');

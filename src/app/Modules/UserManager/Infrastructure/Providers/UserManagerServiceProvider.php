@@ -10,6 +10,7 @@ use App\Modules\UserManager\Domain\Repositories\GroupRepositoryInterface;
 use App\Modules\UserManager\Domain\Repositories\PermissionRepositoryInterface;
 use App\Modules\UserManager\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\UserManager\Domain\Services\SlugGeneratorInterface;
+use App\Modules\UserManager\Infrastructure\Http\Controllers\TwoFactorChallengeController;
 use App\Modules\UserManager\Infrastructure\Policies\AccessLevelPolicy;
 use App\Modules\UserManager\Infrastructure\Policies\GroupPolicy;
 use App\Modules\UserManager\Infrastructure\Policies\UserPolicy;
@@ -59,6 +60,15 @@ final class UserManagerServiceProvider extends ServiceProvider
 
         RateLimiter::for('register', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('two-factor-verify', function (Request $request) {
+            // Ключ по образцу лимитера логина (идентификатор|ip): вместо email —
+            // id пользователя из сессионной метки ожидания 2FA. Без метки
+            // бакет общий на 'guest'.
+            $userId = $request->session()->get(TwoFactorChallengeController::SESSION_KEY)['user_id'] ?? 'guest';
+
+            return Limit::perMinute(5)->by($userId.'|'.$request->ip());
         });
 
         // Миграции модуля

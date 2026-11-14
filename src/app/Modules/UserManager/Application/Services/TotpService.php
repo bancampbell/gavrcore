@@ -91,9 +91,12 @@ final class TotpService
     }
 
     /**
-     * 8 резервных кодов в открытом виде (вида "A1B2-C3D4").
+     * 8 резервных кодов в открытом виде (вида "A1B2-C3D4-E5F6-A7B8").
      * Возвращаются пользователю ровно один раз — при confirm; хранятся
      * на модели только хеши (см. hashRecoveryCode()).
+     *
+     * 16 hex-символов = 64 бита энтропии: хеши несолёные sha256,
+     * при утечке БД 32 бита перебираются тривиально, 64 — ещё нет.
      *
      * @return array<int, string>
      */
@@ -102,8 +105,8 @@ final class TotpService
         $codes = [];
 
         for ($i = 0; $i < self::RECOVERY_CODES_COUNT; $i++) {
-            $hex = strtoupper(bin2hex(random_bytes(4))); // 8 hex-символов
-            $codes[] = substr($hex, 0, 4).'-'.substr($hex, 4);
+            $hex = strtoupper(bin2hex(random_bytes(8))); // 16 hex-символов (64 бита)
+            $codes[] = implode('-', str_split($hex, 4));
         }
 
         return $codes;
