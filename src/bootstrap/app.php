@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\GavrInstallCommand;
+use App\Http\Middleware\SecurityHeaders;
 use App\Modules\CookieConsent\Infrastructure\Http\Middleware\CheckCookieConsent;
 use App\Modules\MenuManager\Infrastructure\Http\Middleware\ShareMenuMiddleware;
 use App\Modules\UserManager\Infrastructure\Http\Middleware\AdminMiddleware;
@@ -36,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleCors::class,
             ShareMenuMiddleware::class,
             CheckCookieConsent::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
