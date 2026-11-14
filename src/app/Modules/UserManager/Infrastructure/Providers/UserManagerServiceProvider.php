@@ -67,6 +67,7 @@ final class UserManagerServiceProvider extends ServiceProvider
         // Роуты модуля
         Route::middleware('web')->group(__DIR__.'/../../Routes/web.php');
         Route::middleware('web')->group(__DIR__.'/../../Routes/admin.php');
+        Route::middleware('web')->group(__DIR__.'/../../Routes/profile.php');
         Route::middleware('api')->prefix('api')->group(__DIR__.'/../../Routes/api.php');
 
         // Политики (привязаны к доменным сущностям)

@@ -21,6 +21,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $activated
  * @property Carbon|null $last_login_at
  * @property string|null $last_login_ip
+ * @property string|null $totp_secret
+ * @property bool $totp_enabled
+ * @property array<int, string>|null $totp_recovery_codes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, GroupModel> $groups
@@ -46,6 +49,8 @@ class UserModel extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'totp_secret',
+        'totp_recovery_codes',
     ];
 
     protected $casts = [
@@ -54,6 +59,9 @@ class UserModel extends Authenticatable
         'blocked' => 'boolean',
         'activated' => 'boolean',
         'last_login_at' => 'datetime',
+        'totp_secret' => 'encrypted',
+        'totp_enabled' => 'boolean',
+        'totp_recovery_codes' => 'array',
     ];
 
     /**
