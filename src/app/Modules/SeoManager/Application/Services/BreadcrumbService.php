@@ -18,6 +18,14 @@ class BreadcrumbService
             ],
         ];
 
+        // Родительская категория (уровень раздела), если есть
+        if ($category->parent_id !== null && ($parent = $category->parent) !== null) {
+            $breadcrumbs[] = [
+                'title' => $parent->name,
+                'url' => route('category.show', ['slug' => $parent->alias]),
+            ];
+        }
+
         // Текущая категория (без ссылки)
         $breadcrumbs[] = [
             'title' => $category->name,

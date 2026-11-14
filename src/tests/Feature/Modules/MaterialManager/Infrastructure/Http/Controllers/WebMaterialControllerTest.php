@@ -355,4 +355,25 @@ class WebMaterialControllerTest extends TestCase
     }
 
 
+    public function test_category_page_breadcrumbs_include_parent_category(): void
+    {
+        $parent = CategoryModel::factory()->create(['alias' => 'peredacha', 'name' => 'Передача электрической энергии']);
+        $category = CategoryModel::factory()->create([
+            'alias' => 'zatraty',
+            'name' => 'Затраты на оплату потерь',
+            'parent_id' => $parent->id,
+        ]);
+
+        $this->get('/category/zatraty')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Site/Category/Show', false)
+                ->where('breadcrumbs.0.title', 'Главная')
+                ->where('breadcrumbs.1.title', 'Передача электрической энергии')
+                ->where('breadcrumbs.1.url', route('category.show', ['slug' => 'peredacha']))
+                ->where('breadcrumbs.2.title', 'Затраты на оплату потерь')
+                ->where('breadcrumbs.2.url', null)
+            );
+    }
+
 }
