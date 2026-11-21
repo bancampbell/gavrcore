@@ -44,7 +44,7 @@ final class UserManagerServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Именованные лимитеры для throttle:login / throttle:register.
+        // Именованные лимитеры для throttle:login / throttle:two-factor-verify.
         // Роуты модуля ссылаются на эти имена — если лимитер не зарегистрирован,
         // ThrottleRequests бросает RuntimeException и весь auth падает с 500.
         // Регистрируем здесь, а не в bootstrap приложения: модуль должен быть
@@ -56,10 +56,6 @@ final class UserManagerServiceProvider extends ServiceProvider
             $email = mb_strtolower(trim((string) $request->input('email')));
 
             return Limit::perMinute(5)->by($email.'|'.$request->ip());
-        });
-
-        RateLimiter::for('register', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
         });
 
         RateLimiter::for('two-factor-verify', function (Request $request) {
@@ -78,7 +74,6 @@ final class UserManagerServiceProvider extends ServiceProvider
         Route::middleware('web')->group(__DIR__.'/../../Routes/web.php');
         Route::middleware('web')->group(__DIR__.'/../../Routes/admin.php');
         Route::middleware('web')->group(__DIR__.'/../../Routes/profile.php');
-        Route::middleware('api')->prefix('api')->group(__DIR__.'/../../Routes/api.php');
 
         // Политики (привязаны к доменным сущностям)
         Gate::policy(User::class, UserPolicy::class);
