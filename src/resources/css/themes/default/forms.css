@@ -1,90 +1,89 @@
 /* ========================================
-   СТИЛИ ФОРМ ДЛЯ ТЕМЫ DEFAULT
-   FormWrapper — дизайн с левым блоком
+   СТИЛИ ФОРМ — ТЕМА DEFAULT
+   Современный стиль для сайта госструктуры
+   (без левой панели)
    ======================================== */
 
+:root {
+    --gov-primary: #1B4F8A;      /* глубокий синий */
+    --gov-primary-dark: #123A66; /* наведение */
+    --gov-accent: #F5B301;       /* жёлтый акцент */
+    --gov-bg: #F2F5F9;
+    --gov-text: #1F2937;
+    --gov-text-muted: #5B6B7C;
+    --gov-border: #D7DEE7;
+    --gov-focus: rgba(27, 79, 138, 0.12);
+    --gov-success-bg: #EAF7F0;
+    --gov-success-border: #9AD8B8;
+    --gov-success-text: #156B45;
+    --gov-error-bg: #FDF0EF;
+    --gov-error-border: #F2B8B5;
+    --gov-error-text: #9B2C26;
+}
+
+/* ----- Обёртка ----- */
 .form-wrapper {
     display: flex;
-    gap: 0;
     background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    margin: 20px auto;
-    max-width: 820px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--gov-border);
+    border-radius: 16px;
+    margin: 24px auto;
+    max-width: 640px; /* одна колонка — уже */
+    box-shadow: 0 2px 6px rgba(16, 42, 74, 0.05),
+    0 12px 32px rgba(16, 42, 74, 0.08);
     overflow: hidden;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.25s ease;
 }
 
 .form-wrapper:hover {
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 10px rgba(16, 42, 74, 0.07),
+    0 18px 44px rgba(16, 42, 74, 0.11);
 }
 
-/* ----- Левый блок ----- */
+/* ----- Левая панель скрыта полностью ----- */
 .form-sidebar {
-    flex: 0 0 200px;
-    background: linear-gradient(145deg, #f8fafc, #f1f5f9);
-    padding: 32px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    border-right: 1px solid #e5e7eb;
+    display: none;
 }
 
-.form-sidebar .form-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-}
-
-.form-sidebar .form-icon-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin-bottom: 4px;
-}
-
-.form-sidebar .form-icon-sub {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-/* ----- Правый блок (рендерер) ----- */
+/* ----- Правый блок ----- */
 .form-content {
     flex: 1;
-    padding: 32px 36px 36px 36px;
+    padding: 40px 44px 44px;
+    background: #ffffff;
 }
 
-/* Стили для FormRenderer внутри FormWrapper */
 .form-content .form-renderer h3 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin-bottom: 4px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gov-text);
+    margin-bottom: 6px;
+    line-height: 1.3;
 }
 
 .form-content .form-renderer .form-subtitle {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 20px;
+    font-size: 16px;
+    color: var(--gov-text-muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
 }
 
+/* ----- Поля ----- */
 .form-content .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .form-content .form-group label {
     display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #1a1a2e;
-    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gov-text);
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
 }
 
 .form-content .form-group label .required {
-    color: #e11d48;
-    margin-left: 2px;
+    color: #C62828;
+    margin-left: 3px;
 }
 
 .form-content .form-group input[type="text"],
@@ -98,80 +97,121 @@
 .form-content .form-group select,
 .form-content .form-group textarea {
     width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
-    background: #ffffff;
-    color: #1a1a2e;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 14px 16px;
+    border: 1.5px solid var(--gov-border);
+    border-radius: 10px;
+    font-size: 16px;
+    line-height: 1.4;
+    background: #FAFBFD;
+    color: var(--gov-text);
     font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.form-content .form-group input:hover,
+.form-content .form-group select:hover,
+.form-content .form-group textarea:hover {
+    border-color: #B9C5D2;
 }
 
 .form-content .form-group input:focus,
 .form-content .form-group select:focus,
 .form-content .form-group textarea:focus {
     outline: none;
-    border-color: #1a1a2e;
-    box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.06);
+    border-color: var(--gov-primary);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px var(--gov-focus);
 }
 
 .form-content .form-group textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 110px;
 }
 
-/* Кнопка отправки */
+.form-content .form-group input::placeholder,
+.form-content .form-group textarea::placeholder {
+    color: #9AA7B4;
+}
+
+/* ----- Кнопка отправки ----- */
 .form-content .form-submit-btn {
-    width: auto;
-    min-width: 160px;
-    padding: 12px 32px;
+    position: relative;
+    min-width: 220px;
+    height: 56px;
+    padding: 0 40px;
     border: none;
-    border-radius: 6px;
-    background: #290596;
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--gov-primary), var(--gov-primary-dark));
     color: #ffffff;
-    font-size: 14px;
+    font-size: 16.5px;
     font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 8px;
-    height: 48px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    gap: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(27, 79, 138, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+/* жёлтая полоса снизу кнопки */
+.form-content .form-submit-btn::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: var(--gov-accent);
+    border-radius: 0 0 10px 10px;
 }
 
 .form-content .form-submit-btn:hover {
-    background: #047857;
-    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(27, 79, 138, 0.36);
+}
+
+.form-content .form-submit-btn:active {
+    transform: translateY(0);
 }
 
 .form-content .form-submit-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.55;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-/* Сообщения */
+/* ----- Сообщения ----- */
+.form-content .form-success,
+.form-content .form-error {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 15.5px;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.form-content .form-success::before { content: "✓"; font-weight: 700; }
+.form-content .form-error::before   { content: "✕"; font-weight: 700; }
+
 .form-content .form-success {
-    margin-top: 16px;
-    padding: 12px 16px;
-    background: #f0fdf4;
-    border: 1px solid #d1fae5;
-    border-radius: 6px;
-    color: #065f46;
-    font-size: 14px;
+    background: var(--gov-success-bg);
+    border: 1px solid var(--gov-success-border);
+    color: var(--gov-success-text);
 }
 
 .form-content .form-error {
-    margin-top: 16px;
-    padding: 12px 16px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
-    color: #991b1b;
-    font-size: 14px;
+    background: var(--gov-error-bg);
+    border: 1px solid var(--gov-error-border);
+    color: var(--gov-error-text);
 }
 
 /* ========================================
@@ -180,44 +220,38 @@
 
 @media (max-width: 768px) {
     .form-wrapper {
-        flex-direction: column;
         max-width: 100%;
-        border-radius: 10px;
-    }
-
-    .form-sidebar {
-        flex: none;
-        padding: 20px 24px;
-        border-right: none;
-        border-bottom: 1px solid #e5e7eb;
-        flex-direction: row;
-        gap: 16px;
-        justify-content: flex-start;
-        text-align: left;
-    }
-
-    .form-sidebar .form-icon {
-        font-size: 32px;
-        margin-bottom: 0;
+        margin: 16px;
+        border-radius: 14px;
     }
 
     .form-content {
-        padding: 24px 20px;
+        padding: 28px 24px 32px;
+    }
+
+    .form-content .form-renderer h3 {
+        font-size: 21px;
     }
 }
 
 @media (max-width: 480px) {
     .form-content {
-        padding: 20px 16px;
+        padding: 24px 18px 28px;
+    }
+
+    .form-content .form-group label {
+        font-size: 15.5px;
+    }
+
+    .form-content .form-group input,
+    .form-content .form-group select,
+    .form-content .form-group textarea {
+        padding: 13px 14px;
+        font-size: 16px; /* iOS: при <16px увеличивает зум при фокусе */
     }
 
     .form-content .form-submit-btn {
         width: 100%;
         min-width: unset;
-        justify-content: center;
-    }
-
-    .form-sidebar {
-        padding: 16px 20px;
     }
 }

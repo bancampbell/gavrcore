@@ -1,219 +1,383 @@
+/* ========================================
+   СТИЛИ ШАПКИ — ТЕМА DEFAULT
+   Стиль для сетевой компании (энергетика)
+   (все стили Header.vue и MenuItem.vue
+   перенесены сюда из scoped-блоков)
+   ======================================== */
+
 /* ===== Header ===== */
 .site-header {
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    padding: var(--spacing-md) 0;
+    background: #506779;
+    border-top: 3px solid #F5B301; /* фирменная жёлтая полоса сверху */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 12px 0;
     position: sticky;
     top: 0;
     z-index: 50;
-    backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.8);
 }
 
 .site-header .header-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
 }
 
-/* Логотип */
+/* ===== Логотип: бейдж + текст ===== */
 .site-header .logo {
-    font-size: 1.5rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    transition: transform var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    flex-shrink: 0;
 }
 
-.site-header .logo:hover {
-    transform: scale(1.05);
+.site-header .logo-badge,
+.site-header .logo-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #F5B301;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    flex-shrink: 0;
 }
 
-/* Меню */
+.site-header .logo-img {
+    object-fit: contain;
+    background: #ffffff;
+    padding: 6px;
+}
+
+.site-header .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.site-header .logo-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.site-header .logo-desc {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* ===== Меню ===== */
 .site-header .menu {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
 }
 
 .site-header .menu a {
-    padding: var(--spacing-sm) var(--spacing-md);
-    color: var(--color-text);
-    font-weight: 500;
-    border-radius: var(--radius-md);
-    transition: all var(--transition);
+    padding: 10px 14px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    font-size: 17px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    text-decoration: none;
+    letter-spacing: 0.02em;
 }
 
 .site-header .menu a:hover {
-    color: var(--color-primary);
-    background: rgba(79, 70, 229, 0.08);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .site-header .menu a.active {
-    color: var(--color-primary);
-    background: rgba(79, 70, 229, 0.12);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* ===== Аутентификация ===== */
+.site-header .auth-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 20px;
+    flex-shrink: 0;
+}
+
+.site-header .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.site-header .login-link {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.site-header .login-link:hover {
+    color: #ffffff;
+}
+
+.site-header .register-link {
+    font-size: 14px;
+    font-weight: 600;
+    background: #F5B301;
+    color: #123A66;
+    padding: 6px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.site-header .register-link:hover {
+    background: #D99A00;
+}
+
+.site-header .logout-btn {
+    font-size: 14px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.site-header .logout-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 /* Бургер */
 .site-header .burger {
     display: none;
+    flex-direction: column;
+    gap: 4px;
     background: none;
     border: none;
-    font-size: 1.5rem;
-    padding: var(--spacing-sm);
     cursor: pointer;
-    color: var(--color-text);
+    padding: 4px;
+}
+
+.site-header .burger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #ffffff;
+    border-radius: 2px;
 }
 
 /* Мобильное меню */
 .site-header .mobile-menu {
     display: none;
     flex-direction: column;
-    gap: var(--spacing-sm);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--color-border);
-    margin-top: var(--spacing-md);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
+    gap: 8px;
+    padding: 16px 0 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: 12px;
 }
 
 .site-header .mobile-menu.open {
-    max-height: 500px;
-    opacity: 1;
+    display: flex;
 }
 
 .site-header .mobile-menu a {
-    padding: var(--spacing-sm) var(--spacing-md);
-    color: var(--color-text);
-    border-radius: var(--radius-md);
-    transition: all var(--transition);
+    padding: 10px 0;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 .site-header .mobile-menu a:hover {
-    background: rgba(79, 70, 229, 0.08);
-    color: var(--color-primary);
+    color: #ffffff;
 }
 
-/* Адаптив */
-@media (max-width: 768px) {
-    .site-header .menu {
-        display: none;
-    }
-    .site-header .burger {
-        display: block;
-    }
-    .site-header .mobile-menu {
-        display: flex;
-    }
+/* Мобильная аутентификация */
+.site-header .mobile-auth {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-/* ===== MenuItem ===== */
+.site-header .mobile-user {
+    font-size: 15px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.site-header .mobile-login,
+.site-header .mobile-register {
+    font-size: 15px;
+    text-decoration: none;
+    padding: 8px 0;
+}
+
+.site-header .mobile-login {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.site-header .mobile-login:hover {
+    color: #ffffff;
+}
+
+.site-header .mobile-register {
+    color: #F5B301;
+    font-weight: 600;
+}
+
+.site-header .mobile-logout {
+    font-size: 15px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    text-align: left;
+}
+
+.site-header .mobile-logout:hover {
+    color: #fecaca;
+}
+
+/* ===== MenuItem (пункты меню) ===== */
 .menu-item {
     position: relative;
 }
 
-.menu-link {
+/* Верхний уровень — светлые ссылки в тёмной шапке */
+.menu-link,
+.menu-text {
     display: block;
-    padding: var(--spacing-sm) var(--spacing-md);
-    color: var(--color-text);
-    font-weight: 500;
-    border-radius: var(--radius-md);
-    transition: all var(--transition);
+    padding: 10px 14px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.02em;
+    border-radius: 8px;
     text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.menu-link:hover {
-    color: var(--color-primary);
-    background: rgba(79, 70, 229, 0.08);
+.menu-link:hover,
+.menu-text:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .menu-link.active {
-    color: var(--color-primary);
-    background: rgba(79, 70, 229, 0.12);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.18);
 }
 
-/* Пункты подменю */
-.menu-subitem {
-    position: relative;
-}
-
-.menu-subitem .menu-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    color: var(--color-text);
-    border-radius: var(--radius-sm);
-    transition: all var(--transition);
-}
-
-.menu-subitem .menu-link:hover {
-    background: rgba(79, 70, 229, 0.08);
-    color: var(--color-primary);
-}
-
-.menu-subitem .menu-link.active {
-    background: rgba(79, 70, 229, 0.12);
-    color: var(--color-primary);
-}
-
-.menu-arrow {
-    width: 1rem;
-    height: 1rem;
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-}
-
-/* ===== Выпадающие меню ===== */
-
-/* Подменю для 1 уровня (вниз) */
-.menu-dropdown {
+/* ===== Выпадающие подменю (классы из MenuItem.vue) ===== */
+.menu-children {
+    display: none;
     position: absolute;
     top: 100%;
     left: 0;
-    padding-top: var(--spacing-sm);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition);
+    min-width: 220px;
+    background: #ffffff;
+    border: 1px solid #D7DEE7;
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(30, 45, 58, 0.22);
+    padding: 8px 0;
     z-index: 100;
 }
 
-/* Подменю для 2+ уровня (вправо) */
-.menu-subdropdown {
-    position: absolute;
+/* Видимость управляется классом из JS (isHovered) */
+.menu-children-visible {
+    display: block;
+}
+
+/* Вложенные подменю (2+ уровень) — открываются сбоку */
+.menu-children .menu-children {
     top: 0;
     left: 100%;
-    padding-left: var(--spacing-sm);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition);
-    z-index: 100;
+    margin-left: 2px;
 }
 
-.menu-item:hover .menu-dropdown,
-.menu-subitem:hover .menu-subdropdown {
-    opacity: 1;
-    visibility: visible;
+/* Пункты внутри подменю — тёмные, с разделителями.
+   Селекторы с .site-header .menu перебивают правило
+   .site-header .menu a (белый цвет верхнего уровня) */
+.menu-children .menu-item {
+    border-bottom: 1px solid #EDF1F5;
 }
 
-.menu-dropdown-inner {
-    background: var(--color-surface);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--color-border);
-    min-width: 200px;
-    padding: var(--spacing-sm) 0;
+.menu-children .menu-item:last-child {
+    border-bottom: none;
 }
 
-.menu-dropdown-inner .menu-link {
-    padding: var(--spacing-sm) var(--spacing-md);
+.site-header .menu .menu-children .menu-link,
+.site-header .menu .menu-children .menu-text {
+    color: #000000;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0;
+    padding: 10px 16px;
+    border-radius: 0;
+    background: none;
 }
 
-.menu-dropdown-inner .menu-subitem .menu-link {
-    padding: var(--spacing-sm) var(--spacing-md);
+.site-header .menu .menu-children .menu-link:hover,
+.site-header .menu .menu-children .menu-text:hover {
+    background: rgba(80, 103, 121, 0.08);
+    color: #506779;
+}
+
+.site-header .menu .menu-children .menu-link.active {
+    background: rgba(80, 103, 121, 0.12);
+    color: #506779;
+    font-weight: 600;
+}
+
+/* ===== Адаптив ===== */
+@media (max-width: 768px) {
+    .site-header .menu {
+        display: none;
+    }
+    .site-header .auth-block {
+        display: none;
+    }
+    .site-header .burger {
+        display: flex;
+    }
+    .site-header .mobile-auth {
+        display: flex;
+    }
+
+    .site-header .logo-desc {
+        display: none;
+    }
+    .site-header .logo-badge,
+    .site-header .logo-img {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+}
+
+@media (min-width: 769px) {
+    .site-header .mobile-menu {
+        display: none !important;
+    }
+    .site-header .mobile-auth {
+        display: none !important;
+    }
 }
