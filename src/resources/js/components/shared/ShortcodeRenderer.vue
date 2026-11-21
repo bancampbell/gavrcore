@@ -8,8 +8,8 @@ import { createApp, h } from 'vue';
 import FormWrapper from '@/themes/default/components/FormWrapper.vue';
 import GalleryRenderer from '@/modules/GalleryManager/ui/components/GalleryRenderer.vue';
 import { lightboxService } from '@/services/LightboxService';
+import { sanitizeHtml } from './htmlSanitize';
 import axios from 'axios';
-import DOMPurify from 'dompurify';
 
 const props = defineProps<{
     content: string;
@@ -100,7 +100,7 @@ const renderContent = () => {
         }
     );
 
-    const sanitizedHtml = DOMPurify.sanitize(html, {
+    const sanitizedHtml = sanitizeHtml(html, {
         ALLOWED_TAGS: [
             'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6',

@@ -67,7 +67,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import { TableKit } from '@tiptap/extension-table';
 import Toolbar from './Toolbar.vue';
-import { ResizableImage } from './extensions';
+import { ResizableImage, Iframe } from './extensions';
 import { CustomDiv } from './extensions/CustomDiv';
 import { PreserveAttributes } from './extensions/PreserveAttributes';
 import { CleanPaste } from './extensions/CleanPaste';
@@ -77,7 +77,7 @@ import FormSelectModal from './modals/FormSelectModal.vue';
 import ImageModal from '@/modules/MaterialManager/ui/components/ImageModal.vue';
 import RawHtmlEditor from './RawHtmlEditor.vue';
 import { buildGalleryShortcode, buildFormShortcode } from './shortcodes';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '@/components/shared/htmlSanitize';
 import { useEditor } from './composables/useEditor';
 import { useEditorSelection } from './composables/useEditorSelection';
 import { useEditorCommands } from './composables/useEditorCommands';
@@ -269,7 +269,7 @@ function getCursorPosition(): number {
 function insertContent(html: string, position?: number): void {
     if (typeof html !== 'string') return;
 
-    const sanitizedHtml = DOMPurify.sanitize(html, {
+    const sanitizedHtml = sanitizeHtml(html, {
         ALLOWED_TAGS: [
             'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -325,6 +325,7 @@ onMounted(async () => {
             PreserveAttributes,
             CustomDiv,
             ResizableImage,
+            Iframe,
             Link.configure({
                 openOnClick: false,
                 HTMLAttributes: { class: 'text-blue-600 underline' },
