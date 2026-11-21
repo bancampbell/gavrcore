@@ -4,12 +4,13 @@ ENV LC_ALL=C.UTF-8
 
 # Установка системных зависимостей + Node.js
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev unzip \
+    git curl libpng-dev libjpeg-dev libonig-dev libxml2-dev libzip-dev libpq-dev unzip \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip opcache
+RUN docker-php-ext-configure gd --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip opcache
 
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 
