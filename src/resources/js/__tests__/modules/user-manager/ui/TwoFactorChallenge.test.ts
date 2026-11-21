@@ -28,7 +28,7 @@ describe('TwoFactorChallenge.vue (страница ввода кода 2FA)', ()
     it('рендерит подзаголовок, подсказку и поле кода', () => {
         const wrapper = mountPage();
 
-        // AuthCard title/subtitle держит в пропсах (в DOM не рендерит)
+        // AuthCard получает title/subtitle пропсами и рендерит их в шапке карточки
         const card = wrapper.getComponent(AuthCard);
         expect(card.props('title')).toBe('GavrCore CMS');
         expect(card.props('subtitle')).toBe('Двухфакторная аутентификация');
