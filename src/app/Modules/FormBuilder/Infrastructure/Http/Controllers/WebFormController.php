@@ -86,9 +86,15 @@ class WebFormController
             }
         }
 
+        $submittedData = $request->all();
+
         $rules = [];
         foreach ($form->fields->toArray() as $field) {
-            if ($field['required'] ?? false) {
+            // Скрытое условиями поле не валидируем как required: на клиенте
+            // оно скрыто и не отправляется — иначе форма с условиями падает
+            // с 422 на полях, которые пользователь физически не заполнял.
+            // Логика видимости зеркалит checkFieldVisibility на фронте.
+            if (($field['required'] ?? false) && $this->isFieldVisible($field, $submittedData)) {
                 $rules[$field['name']] = 'required';
             }
         }
@@ -151,5 +157,43 @@ class WebFormController
             'message' => 'Форма успешно отправлена',
             'submission_id' => $submission->id,
         ]);
+    }
+
+    /**
+     * Видимость поля по его условиям (зеркало checkFieldVisibility во
+     * фронтовом FormRenderer): поле без условий всегда видимо, иначе
+     * результат по условиям объединяется по conditions_logic (and по умолчанию).
+     */
+    private function isFieldVisible(array $field, array $data): bool
+    {
+        $conditions = $field['conditions'] ?? [];
+
+        if (count($conditions) === 0) {
+            return true;
+        }
+
+        $results = [];
+
+        foreach ($conditions as $condition) {
+            if (empty($condition['field'])) {
+                $results[] = true;
+                continue;
+            }
+
+            $value = $data[$condition['field']] ?? '';
+            $expected = $condition['value'] ?? '';
+
+            $results[] = match ($condition['operator'] ?? null) {
+                'equals' => (string) $value === (string) $expected,
+                'not_equals' => (string) $value !== (string) $expected,
+                default => true,
+            };
+        }
+
+        if (($field['conditions_logic'] ?? 'and') === 'or') {
+            return in_array(true, $results, true);
+        }
+
+        return ! in_array(false, $results, true);
     }
 }

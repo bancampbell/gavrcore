@@ -12,7 +12,7 @@
         <div v-else-if="form && form.fields && form.fields.length > 0">
             <form @submit.prevent="submitForm">
                 <template v-for="(field, index) in form.fields" :key="field.id || index">
-                    <div v-if="checkFieldVisibility(field)" class="form-group">
+                    <div v-if="checkFieldVisibility(field)" class="form-group" :class="{ 'has-error': fieldErrors[getFieldName(field, index)] }">
                         <label :for="getFieldName(field, index)">
                             {{ field.label || field.name || 'Поле' }}
                             <span v-if="field.required" class="required">*</span>
@@ -65,6 +65,8 @@
                             </label>
                         </div>
                         <input v-else-if="field.type === 'file'" :id="getFieldName(field, index)" type="file" @change="handleFileUpload($event, getFieldName(field, index))" :required="field.required || false" />
+
+                        <p v-if="fieldErrors[getFieldName(field, index)]" class="form-field-error" role="alert">{{ fieldErrors[getFieldName(field, index)] }}</p>
                     </div>
                 </template>
 
@@ -91,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import CaptchaWidget from '@/components/shared/CaptchaWidget.vue';
@@ -107,6 +109,7 @@ interface Form { id: number; title: string; description?: string; fields: FormFi
 const props = defineProps<{ formId: number; centered?: boolean; }>();
 const form = ref<Form | null>(null);
 const formData = reactive<Record<string, any>>({});
+const fieldErrors = reactive<Record<string, string>>({});
 const submitting = ref(false);
 const success = ref(false);
 const errorMessage = ref('');
@@ -159,13 +162,28 @@ const loadForm = async () => {
 const handleFileUpload = (event: Event, fieldName: string) => {
     const target = event.target as HTMLInputElement;
     if (target.files) formData[fieldName] = target.files[0];
+    // Файл перезаписан вручную — снимаем полевую ошибку (снапшот-вотчер
+    // JSON-сериализацией файлы не различает).
+    delete fieldErrors[fieldName];
 };
+
+// Имена полей, видимых прямо сейчас: ошибки показываем только под полями,
+// присутствующими в разметке; payload сериализуем тем же списком.
+const getFieldMeta = (): { name: string; visible: boolean }[] =>
+    (form.value?.fields || []).map((field, index) => ({
+        name: getFieldName(field, index),
+        visible: checkFieldVisibility(field),
+    }));
 
 const submitForm = async () => {
     submitting.value = true; errorMessage.value = ''; success.value = false;
     try {
         const formDataToSend = new FormData();
+        const fieldMeta = getFieldMeta();
         Object.keys(formData).forEach(key => {
+            // Скрытое условиями поле не отправляем: бэкенд зеркально
+            // снимает с него required (isFieldVisible).
+            if (fieldMeta.some(meta => meta.name === key && !meta.visible)) return;
             const value = formData[key];
             if (value instanceof File) formDataToSend.append(key, value);
             else if (Array.isArray(value)) value.forEach(item => formDataToSend.append(key + '[]', item));
@@ -174,6 +192,7 @@ const submitForm = async () => {
         if (captchaRequired.value && captchaToken.value) formDataToSend.append('captcha_token', captchaToken.value);
         await axios.post(`/api/forms/${props.formId}/submit`, formDataToSend, { headers: { 'Content-Type': 'multipart/form-data' } });
         success.value = true;
+        Object.keys(fieldErrors).forEach(key => delete fieldErrors[key]);
         if (form.value?.fields) {
             form.value.fields.forEach((field, index) => {
                 const name = getFieldName(field, index);
@@ -182,7 +201,24 @@ const submitForm = async () => {
                 else formData[name] = '';
             });
         }
-    } catch (err: any) { errorMessage.value = err.response?.data?.message || 'Ошибка отправки формы'; }
+    } catch (err: any) {
+        // 422: разбираем полевые ошибки бэкенда — текст под конкретным
+        // полем + подсветка (.has-error); баннер — только для ошибок без
+        // поля в разметке (captcha_token и пр.), найденные поля не дублируем.
+        const errors: Record<string, string[]> = err.response?.data?.errors ?? {};
+        const visibleNames = new Set(getFieldMeta().filter(meta => meta.visible).map(meta => meta.name));
+        const unmapped: string[] = [];
+        Object.keys(fieldErrors).forEach(key => delete fieldErrors[key]);
+        Object.entries(errors).forEach(([key, messages]) => {
+            const text = Array.isArray(messages) ? messages[0] : String(messages);
+            if (!text) return;
+            if (visibleNames.has(key)) fieldErrors[key] = text;
+            else unmapped.push(text);
+        });
+        errorMessage.value = unmapped.length > 0
+            ? unmapped.join(' ')
+            : (Object.keys(errors).length === 0 ? (err.response?.data?.message || 'Ошибка отправки формы') : '');
+    }
     finally {
         submitting.value = false;
         // Токен капчи одноразовый — сбрасываем виджет и после успеха, и после
@@ -192,9 +228,42 @@ const submitForm = async () => {
     }
 };
 
+// Повторный ввод в поле снимает его полевую ошибку (по образцу админ-форм).
+// Deep-watch мутируемого reactive даёт newVal === oldVal, поэтому сравниваем
+// с предыдущим снапшотом (JSON — чтобы ловить и мутации массивов чекбоксов).
+let formDataSnapshot: Record<string, any> = {};
+
+watch(formData, () => {
+    Object.keys(formData).forEach(key => {
+        if (JSON.stringify(formData[key]) !== JSON.stringify(formDataSnapshot[key]) && fieldErrors[key]) {
+            delete fieldErrors[key];
+        }
+    });
+    formDataSnapshot = JSON.parse(JSON.stringify(formData));
+}, { deep: true });
+
 onMounted(() => { loadForm(); });
 </script>
 
 <style scoped>
 .form-hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+    border-color: var(--gov-error-border, #F2B8B5);
+    background: var(--gov-error-bg, #FDF0EF);
+}
+
+.form-field-error {
+    margin-top: 6px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--gov-error-text, #9B2C26);
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.form-field-error::before { content: "✕"; font-weight: 700; }
 </style>
