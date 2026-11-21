@@ -105,6 +105,44 @@ describe('FormRenderer.vue (полевые ошибки 422)', () => {
         expect(wrapper.find('input#email').element.closest('.form-group')!.classList.contains('has-error')).toBe(true);
     });
 
+    it('при 422 показывает ВСЕ сообщения поля, а не только первое', async () => {
+        const wrapper = await mountRenderer(makeForm());
+        vi.mocked(axios.post).mockRejectedValue(validationError({
+            email: [
+                'Поле «Email» обязательно для заполнения.',
+                'Поле «Email» должно содержать корректный email-адрес.',
+            ],
+        }));
+
+        await submit(wrapper);
+
+        const emailGroup = wrapper.find('input#email').element.closest('.form-group')!;
+        const errorParas = emailGroup.querySelectorAll('.form-field-error');
+        expect(errorParas).toHaveLength(2);
+        expect(errorParas[0].textContent).toContain('обязательно для заполнения');
+        expect(errorParas[1].textContent).toContain('корректный email-адрес');
+    });
+
+    it('несколько полей с ошибками подсвечены и показаны одновременно', async () => {
+        const wrapper = await mountRenderer(makeForm());
+        vi.mocked(axios.post).mockRejectedValue(validationError({
+            'ФИО': ['Поле «ФИО» обязательно для заполнения.', 'Вторая ошибка ФИО'],
+            phone: ['Поле «Телефон» обязательно для заполнения.'],
+            email: ['Поле «Email» должно содержать корректный email-адрес.'],
+        }));
+
+        await submit(wrapper);
+
+        // Все три поля подсвечены одним проходом.
+        expect(wrapper.findAll('.form-group.has-error')).toHaveLength(3);
+        // Все четыре сообщения в DOM одновременно (2 под ФИО + 1 + 1).
+        expect(wrapper.findAll('.form-field-error')).toHaveLength(4);
+        expect(wrapper.text()).toContain('Вторая ошибка ФИО');
+        expect(wrapper.text()).toContain('корректный email-адрес');
+        expect(wrapper.text()).toContain('обязательно для заполнения');
+        expect(wrapper.find('.form-error').exists()).toBe(false);
+    });
+
     it('ошибки без поля в разметке (captcha_token и пр.) уходят в generic-баннер', async () => {
         const wrapper = await mountRenderer(makeForm());
         vi.mocked(axios.post).mockRejectedValue(validationError({

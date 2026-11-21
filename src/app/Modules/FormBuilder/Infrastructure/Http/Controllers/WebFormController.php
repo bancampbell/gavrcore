@@ -89,13 +89,52 @@ class WebFormController
         $submittedData = $request->all();
 
         $rules = [];
+        $attributes = [];
+        $messages = [
+            'required' => 'Поле «:attribute» обязательно для заполнения.',
+            'email' => 'Поле «:attribute» должно содержать корректный email-адрес.',
+            'file' => 'Поле «:attribute» должно содержать файл.',
+            'mimes' => 'Файл «:attribute» имеет недопустимый формат. Разрешённые форматы: :values.',
+            'max' => 'Файл «:attribute» слишком большой: максимум :max КБ.',
+            'numeric' => 'Поле «:attribute» должно быть числом.',
+            'min' => 'Поле «:attribute» не должно быть меньше :min.',
+        ];
+
         foreach ($form->fields->toArray() as $field) {
+            // В текстах ошибок поле называется по метке из конфигурации;
+            // метки нет — fallback на техническое имя.
+            $attributes[$field['name']] = ! empty($field['label']) ? $field['label'] : $field['name'];
+
+            $fieldRules = [];
+
             // Скрытое условиями поле не валидируем как required: на клиенте
             // оно скрыто и не отправляется — иначе форма с условиями падает
             // с 422 на полях, которые пользователь физически не заполнял.
             // Логика видимости зеркалит checkFieldVisibility на фронте.
             if (($field['required'] ?? false) && $this->isFieldVisible($field, $submittedData)) {
-                $rules[$field['name']] = 'required';
+                $fieldRules[] = 'required';
+            }
+
+            // Присланное значение должно соответствовать типу поля.
+            switch ($field['type'] ?? null) {
+                case 'email':
+                    $fieldRules[] = 'email';
+                    break;
+                case 'number':
+                    $fieldRules[] = 'numeric';
+                    if (isset($field['min_value']) && $field['min_value'] !== '' && $field['min_value'] !== null) {
+                        $fieldRules[] = 'min:'.$field['min_value'];
+                    }
+                    if (isset($field['max_value']) && $field['max_value'] !== '' && $field['max_value'] !== null) {
+                        $fieldRules[] = 'max:'.$field['max_value'];
+                        // Для числового поля max — значение, а не размер файла.
+                        $messages['max.'.$field['name']] = 'Поле «:attribute» не должно быть больше :max.';
+                    }
+                    break;
+            }
+
+            if (count($fieldRules) > 0) {
+                $rules[$field['name']] = $fieldRules;
             }
         }
 
@@ -108,7 +147,7 @@ class WebFormController
                 : $fileRules;
         }
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules, $messages, $attributes);
 
         if ($validator->fails()) {
             return response()->json([

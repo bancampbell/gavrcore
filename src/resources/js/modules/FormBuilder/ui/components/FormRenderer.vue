@@ -66,7 +66,7 @@
                         </div>
                         <input v-else-if="field.type === 'file'" :id="getFieldName(field, index)" type="file" @change="handleFileUpload($event, getFieldName(field, index))" :required="field.required || false" />
 
-                        <p v-if="fieldErrors[getFieldName(field, index)]" class="form-field-error" role="alert">{{ fieldErrors[getFieldName(field, index)] }}</p>
+                        <p v-for="(errorText, errorIdx) in fieldErrors[getFieldName(field, index)]" :key="errorIdx" class="form-field-error" role="alert">{{ errorText }}</p>
                     </div>
                 </template>
 
@@ -109,7 +109,7 @@ interface Form { id: number; title: string; description?: string; fields: FormFi
 const props = defineProps<{ formId: number; centered?: boolean; }>();
 const form = ref<Form | null>(null);
 const formData = reactive<Record<string, any>>({});
-const fieldErrors = reactive<Record<string, string>>({});
+const fieldErrors = reactive<Record<string, string[]>>({});
 const submitting = ref(false);
 const success = ref(false);
 const errorMessage = ref('');
@@ -202,18 +202,19 @@ const submitForm = async () => {
             });
         }
     } catch (err: any) {
-        // 422: разбираем полевые ошибки бэкенда — текст под конкретным
-        // полем + подсветка (.has-error); баннер — только для ошибок без
-        // поля в разметке (captcha_token и пр.), найденные поля не дублируем.
+        // 422: разбираем полевые ошибки бэкенда — ВСЕ сообщения каждого
+        // поля под самим полем + подсветка (.has-error); баннер — только
+        // для ошибок без поля в разметке (captcha_token и пр.), найденные
+        // поля не дублируем.
         const errors: Record<string, string[]> = err.response?.data?.errors ?? {};
         const visibleNames = new Set(getFieldMeta().filter(meta => meta.visible).map(meta => meta.name));
         const unmapped: string[] = [];
         Object.keys(fieldErrors).forEach(key => delete fieldErrors[key]);
         Object.entries(errors).forEach(([key, messages]) => {
-            const text = Array.isArray(messages) ? messages[0] : String(messages);
-            if (!text) return;
-            if (visibleNames.has(key)) fieldErrors[key] = text;
-            else unmapped.push(text);
+            const list = (Array.isArray(messages) ? messages : [String(messages)]).filter(Boolean);
+            if (list.length === 0) return;
+            if (visibleNames.has(key)) fieldErrors[key] = list;
+            else unmapped.push(...list);
         });
         errorMessage.value = unmapped.length > 0
             ? unmapped.join(' ')
