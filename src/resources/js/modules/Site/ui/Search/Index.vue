@@ -1,20 +1,6 @@
 <template>
     <LayoutSwitcher>
-        <Head>
-            <title>{{ title || 'Поиск' }}</title>
-            <meta name="description" :content="description || siteDescription" />
-            <meta name="keywords" :content="keywords || siteKeywords" />
-
-            <!-- Open Graph -->
-            <meta property="og:title" :content="meta?.og_title || title || 'Поиск'" />
-            <meta property="og:description" :content="meta?.og_description || description || siteDescription" />
-            <meta property="og:url" :content="meta?.canonical || currentUrl" />
-            <meta property="og:type" content="website" />
-            <meta property="og:site_name" :content="appSettings?.site_name || 'GavrCore CMS'" />
-
-            <!-- Canonical -->
-            <link rel="canonical" :href="meta?.canonical || currentUrl" />
-        </Head>
+        <SeoHead :title="title" :description="description" :keywords="keywords" :meta="meta" />
 
         <div class="container mx-auto px-4">
             <Breadcrumbs :items="breadcrumbs || []" />
@@ -103,13 +89,10 @@
 </template>
 
 <script setup>
-import {Link, Head, usePage} from '@inertiajs/vue3';
+import {Link} from '@inertiajs/vue3';
 import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
+import SeoHead from '@/components/shared/SeoHead.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
-
-const page = usePage();
-const appSettings = page.props.appSettings || {};
-const currentUrl = window.location.origin + page.url;
 
 const props = defineProps({
     materials: {
@@ -141,9 +124,6 @@ const props = defineProps({
         default: () => [],
     },
 });
-
-const siteDescription = appSettings.site_description || '';
-const siteKeywords = appSettings.seo_keywords || '';
 
 const materialsList = props.materials?.data || [];
 

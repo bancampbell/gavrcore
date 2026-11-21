@@ -1,20 +1,6 @@
 <template>
     <LayoutSwitcher>
-        <Head>
-            <title>{{ meta?.title || category?.name || 'Категория' }}</title>
-            <meta name="description" :content="meta?.description || category?.description || siteDescription" />
-            <meta name="keywords" :content="meta?.keywords || siteKeywords" />
-
-            <!-- Open Graph -->
-            <meta property="og:title" :content="meta?.og_title || meta?.title || category?.name || ''" />
-            <meta property="og:description" :content="meta?.og_description || meta?.description || category?.description || siteDescription" />
-            <meta property="og:url" :content="meta?.canonical || currentUrl" />
-            <meta property="og:type" :content="meta?.og_type || 'website'" />
-            <meta property="og:site_name" :content="appSettings?.site_name || 'GavrCore CMS'" />
-
-            <!-- Canonical -->
-            <link rel="canonical" :href="meta?.canonical || currentUrl" />
-        </Head>
+        <SeoHead :title="category?.name || 'Категория'" :description="category?.description || ''" :meta="meta" />
 
         <div class="container mx-auto px-4">
             <Breadcrumbs :items="breadcrumbs || []" />
@@ -78,13 +64,10 @@
 </template>
 
 <script setup>
-import {Link, Head, usePage} from '@inertiajs/vue3';
+import {Link} from '@inertiajs/vue3';
 import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
+import SeoHead from '@/components/shared/SeoHead.vue';
 import Breadcrumbs from '../components/Breadcrumbs.vue';
-
-const page = usePage();
-const appSettings = page.props.appSettings || {};
-const currentUrl = window.location.origin + page.url;
 
 const props = defineProps({
     category: {
@@ -108,9 +91,6 @@ const props = defineProps({
         default: () => [],
     },
 });
-
-const siteDescription = appSettings.site_description || '';
-const siteKeywords = appSettings.seo_keywords || '';
 
 const materialsList = props.materials?.data || [];
 const childrenList = props.children || [];

@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import Home from '@/modules/Site/ui/Home.vue';
+import CategoryShow from '@/modules/Site/ui/Category/Show.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { template: '<div><slot /></div>' },
@@ -66,22 +67,55 @@ describe('Site/Home — SEO-мета из page.url (TECHDEBT 71)', () => {
     });
 });
 
-// Факт-чек TECHDEBT 71: баг был одинаковым во всех четырёх публичных страницах —
-// фиксим представителя (Home) поведенческим тестом выше, остальные три контролируем
-// паттерном: ни одного window.location.href в шаблоне, URL собирается в script setup.
-describe('TECHDEBT 71 — паттерн фикса идентичен в остальных публичных страницах', () => {
+// Регрессия TECHDEBT 79: страница категории через общий SeoHead отдаёт
+// twitter:* и og:image (раньше блок <Head> был усечённой копией без них).
+describe('Site/Category — twitter:* и og:image через shared SeoHead (TECHDEBT 79)', () => {
+    it('рендерит twitter:card и og:image', () => {
+        const wrapper = mount(CategoryShow, {
+            props: {
+                category: { name: 'Новости', description: 'Лента новостей' },
+            },
+        });
+
+        const twitterCard = wrapper.find('meta[name="twitter:card"]');
+        expect(twitterCard.exists()).toBe(true);
+        expect(twitterCard.attributes('content')).toBe('summary_large_image');
+
+        expect(wrapper.find('meta[name="twitter:title"]').exists()).toBe(true);
+        expect(wrapper.find('meta[name="twitter:description"]').exists()).toBe(true);
+        expect(wrapper.find('meta[name="twitter:image"]').exists()).toBe(true);
+        expect(wrapper.find('meta[property="og:image"]').exists()).toBe(true);
+    });
+});
+
+// Факт-чек TECHDEBT 71/79: блок <Head> продублирован был на четырёх публичных
+// страницах — все четверо ходят через shared SeoHead, инлайн-меты в страницах нет,
+// currentUrl собирается внутри SeoHead (эталон 416c579).
+describe('TECHDEBT 79 — все четыре публичные страницы на shared SeoHead', () => {
     const modulesDir = resolve(process.cwd(), 'resources/js/modules');
-    const siblings = [
+    const pages = [
+        'Site/ui/Home.vue',
         'MaterialManager/ui/Show.vue',
         'Site/ui/Category/Show.vue',
         'Site/ui/Search/Index.vue',
     ];
 
-    it.each(siblings)('%s собирает URL в script setup, не в шаблоне', (rel) => {
+    it.each(pages)('%s использует SeoHead, инлайн-<Head> и currentUrl отсутствуют', (rel) => {
         const src = readFileSync(`${modulesDir}/${rel}`, 'utf-8');
 
-        expect(src).not.toContain('window.location.href');
+        expect(src).toContain('<SeoHead');
+        expect(src).not.toContain('<Head>');
+        expect(src).not.toContain('window.location.origin + page.url');
+        expect(src).not.toContain('og:site_name');
+    });
+
+    it('SeoHead собирает currentUrl из window.location.origin + page.url', () => {
+        const src = readFileSync(
+            resolve(process.cwd(), 'resources/js/components/shared/SeoHead.vue'),
+            'utf-8',
+        );
+
         expect(src).toContain('const currentUrl = window.location.origin + page.url;');
-        expect(src.match(/meta\?\.canonical \|\| currentUrl/g)).toHaveLength(2);
+        expect(src).not.toContain('window.location.href');
     });
 });

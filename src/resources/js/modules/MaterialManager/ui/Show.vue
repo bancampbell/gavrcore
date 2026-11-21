@@ -1,27 +1,6 @@
 <template>
     <LayoutSwitcher>
-        <Head>
-            <title>{{ meta?.title || title }}</title>
-            <meta name="description" :content="meta?.description || description || siteDescription" />
-            <meta name="keywords" :content="meta?.keywords || keywords || siteKeywords" />
-
-            <!-- Open Graph -->
-            <meta property="og:title" :content="meta?.og_title || meta?.title || title" />
-            <meta property="og:description" :content="meta?.og_description || meta?.description || description || siteDescription" />
-            <meta property="og:url" :content="meta?.canonical || currentUrl" />
-            <meta property="og:type" :content="meta?.og_type || 'article'" />
-            <meta property="og:image" :content="meta?.og_image || ''" />
-            <meta property="og:site_name" :content="appSettings?.site_name || 'GavrCore CMS'" />
-
-            <!-- Twitter Cards -->
-            <meta name="twitter:card" :content="meta?.twitter_card || 'summary_large_image'" />
-            <meta name="twitter:title" :content="meta?.og_title || meta?.title || title" />
-            <meta name="twitter:description" :content="meta?.og_description || meta?.description || description || siteDescription" />
-            <meta name="twitter:image" :content="meta?.og_image || ''" />
-
-            <!-- Canonical -->
-            <link rel="canonical" :href="meta?.canonical || currentUrl" />
-        </Head>
+        <SeoHead :title="title" :description="description" :keywords="keywords" :meta="meta" og-type="article" />
 
         <div class="container mx-auto px-4">
             <!-- Хлебные крошки -->
@@ -58,14 +37,14 @@
 </template>
 
 <script setup>
-import {Head, usePage} from '@inertiajs/vue3';
+import {usePage} from '@inertiajs/vue3';
 import LayoutSwitcher from '@/layouts/LayoutSwitcher.vue';
 import ShortcodeRenderer from '@/components/shared/ShortcodeRenderer.vue';
+import SeoHead from '@/components/shared/SeoHead.vue';
 import Breadcrumbs from '@/modules/Site/ui/components/Breadcrumbs.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
-const currentUrl = window.location.origin + page.url;
 
 const props = defineProps({
     material: Object,
@@ -89,9 +68,6 @@ const props = defineProps({
         default: () => [],
     },
 });
-
-const siteDescription = appSettings.site_description || '';
-const siteKeywords = appSettings.seo_keywords || '';
 
 const useGlobal = props.material.use_global_settings ?? true;
 
