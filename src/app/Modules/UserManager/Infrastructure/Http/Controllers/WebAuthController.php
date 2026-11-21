@@ -97,9 +97,14 @@ final class WebAuthController extends Controller
     private function redirectAfterLoginUrl(Request $request): string
     {
         $referer = $request->headers->get('referer');
+        $refererHost = $referer ? parse_url($referer, PHP_URL_HOST) : null;
+        $refererPath = $referer ? parse_url($referer, PHP_URL_PATH) : null;
 
+        // Точный матч пути '/login' (трейлинг-слэш ок): '/admin/login',
+        // '/login/...' и чужие хосты страницей логина не считаются
         if ($referer && (
-            str_contains($referer, '/login') ||
+            (is_string($refererPath) && $refererHost === $request->getHost()
+                && rtrim($refererPath, '/') === '/login') ||
             str_contains($referer, '/register') ||
             $referer === route('home')
         )) {
