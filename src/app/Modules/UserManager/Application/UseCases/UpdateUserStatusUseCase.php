@@ -3,6 +3,7 @@
 namespace App\Modules\UserManager\Application\UseCases;
 
 use App\Modules\UserManager\Domain\Events\UserStatusChanged;
+use App\Modules\UserManager\Domain\Events\UserUpdated;
 use App\Modules\UserManager\Domain\Repositories\UserRepositoryInterface;
 use App\Modules\UserManager\Domain\ValueObjects\UserId;
 use App\Modules\UserManager\Infrastructure\Models\UserModel;
@@ -50,6 +51,10 @@ final class UpdateUserStatusUseCase
                     UserModel::whereKey($userId->value)->first()?->tokens()->delete();
                 }
 
+                // UserUpdated в дополнение к UserStatusChanged: массовая
+                // блокировка/разблокировка должна попадать в admin_audit_logs
+                // (TECHDEBT п.60) — слушатель аудита подписан на UserUpdated.
+                event(new UserUpdated($user));
                 event(new UserStatusChanged($user, $blocked));
             }
         }
