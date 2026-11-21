@@ -25,6 +25,14 @@ class WebFormController
 
     private const MAX_UPLOAD_KB = 10240;
 
+    /**
+     * Телефонный формат: «+», цифры, скобки, тире, пробелы; хотя бы одна
+     * цифра, длина 7–20 символов. Клиентской маски нет (FormRenderer рендерит
+     * голый <input type="tel">, который буквы не режет), поэтому формат
+     * держит серверное правило.
+     */
+    private const PHONE_PATTERN = '/^\+?(?=[\d\s\-()]*\d)[\d\s\-()]{7,20}$/';
+
     public function __construct(
         protected GetFormByIdUseCase $getFormByIdUseCase,
         protected CreateSubmissionUseCase $createSubmissionUseCase,
@@ -98,6 +106,9 @@ class WebFormController
             'max' => 'Файл «:attribute» слишком большой: максимум :max КБ.',
             'numeric' => 'Поле «:attribute» должно быть числом.',
             'min' => 'Поле «:attribute» не должно быть меньше :min.',
+            'regex' => 'Поле «:attribute» должно содержать корректный номер телефона.',
+            'url' => 'Поле «:attribute» должно содержать корректный URL-адрес.',
+            'date_format' => 'Поле «:attribute» имеет неверный формат даты или времени.',
         ];
 
         foreach ($form->fields->toArray() as $field) {
@@ -115,10 +126,21 @@ class WebFormController
                 $fieldRules[] = 'required';
             }
 
-            // Присланное значение должно соответствовать типу поля.
+            // Присланное значение должно соответствовать типу поля, а не его
+            // имени: поля называются свободно («e-mail», «telefon»), тип —
+            // из реестра конструктора. Флаги validate_email/validate_phone —
+            // тумблеры «Проверять формат» из конструктора; без флага
+            // поведение прежнее — формат проверяем.
             switch ($field['type'] ?? null) {
                 case 'email':
-                    $fieldRules[] = 'email';
+                    if ($field['validate_email'] ?? true) {
+                        $fieldRules[] = 'email';
+                    }
+                    break;
+                case 'phone':
+                    if ($field['validate_phone'] ?? true) {
+                        $fieldRules[] = 'regex:'.self::PHONE_PATTERN;
+                    }
                     break;
                 case 'number':
                     $fieldRules[] = 'numeric';
@@ -130,6 +152,19 @@ class WebFormController
                         // Для числового поля max — значение, а не размер файла.
                         $messages['max.'.$field['name']] = 'Поле «:attribute» не должно быть больше :max.';
                     }
+                    break;
+                case 'url':
+                    $fieldRules[] = 'url';
+                    break;
+                case 'date':
+                    $fieldRules[] = 'date_format:Y-m-d';
+                    break;
+                case 'time':
+                    $fieldRules[] = 'date_format:H:i,H:i:s';
+                    break;
+                case 'datetime':
+                    // <input type="datetime-local"> отдаёт «2026-11-21T14:30».
+                    $fieldRules[] = 'date_format:Y-m-d\TH:i,Y-m-d\TH:i:s';
                     break;
             }
 
