@@ -1,5 +1,5 @@
 <template>
-    <div v-if="localField" class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+    <div v-if="localField" class="bg-slate-50 rounded-lg p-3 border border-slate-200 max-h-[500px] overflow-y-auto">
         <h3 class="text-sm font-medium text-slate-700 mb-3">Настройки поля</h3>
         <div class="space-y-3">
             <div>

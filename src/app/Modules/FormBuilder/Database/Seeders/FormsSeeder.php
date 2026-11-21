@@ -35,7 +35,7 @@ class FormsSeeder extends Seeder
                 'description' => 'Черновик формы для заявок в техническую поддержку',
                 'fields' => [
                     ['name' => 'name', 'label' => 'Ваше имя', 'type' => 'text', 'required' => true],
-                    ['name' => 'phone', 'label' => 'Телефон', 'type' => 'tel', 'required' => false],
+                    ['name' => 'phone', 'label' => 'Телефон', 'type' => 'phone', 'required' => false],
                     ['name' => 'message', 'label' => 'Описание проблемы', 'type' => 'textarea', 'required' => true],
                 ],
                 'settings' => [],

@@ -8,12 +8,12 @@
             <!-- Open Graph -->
             <meta property="og:title" :content="meta?.og_title || title || 'Поиск'" />
             <meta property="og:description" :content="meta?.og_description || description || siteDescription" />
-            <meta property="og:url" :content="meta?.canonical || window.location.href" />
+            <meta property="og:url" :content="meta?.canonical || currentUrl" />
             <meta property="og:type" content="website" />
             <meta property="og:site_name" :content="appSettings?.site_name || 'GavrCore CMS'" />
 
             <!-- Canonical -->
-            <link rel="canonical" :href="meta?.canonical || window.location.href" />
+            <link rel="canonical" :href="meta?.canonical || currentUrl" />
         </Head>
 
         <div class="container mx-auto px-4">
@@ -109,6 +109,7 @@ import Breadcrumbs from '../components/Breadcrumbs.vue';
 
 const page = usePage();
 const appSettings = page.props.appSettings || {};
+const currentUrl = window.location.origin + page.url;
 
 const props = defineProps({
     materials: {
