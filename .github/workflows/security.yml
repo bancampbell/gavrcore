@@ -86,7 +86,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, pgsql, pdo_pgsql
+          # Контракт проекта — docker/php/Dockerfile: docker-php-ext-install ... gd.
+          # Без gd GallerySeeder (imagecreatetruecolor) падает в WebGalleryControllerTest.
+          extensions: mbstring, pgsql, pdo_pgsql, gd
           coverage: none
           cache: composer
           cache-dependency-path: src/composer.lock
@@ -108,7 +110,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Контракт проекта — docker/php/Dockerfile: Node.js 20.x (nodesource setup_20.x).
+          node-version: 20
           cache: npm
           cache-dependency-path: src/package-lock.json
 
