@@ -45,7 +45,7 @@
                                     <p class="text-sm">Нет полей</p>
                                     <p class="text-xs">Перетащите поле из левой панели</p>
                                 </div>
-                                <div v-else class="space-y-2">
+                                <div v-else class="space-y-2 max-h-[500px] overflow-y-auto">
                                     <div
                                         v-for="(field, index) in fields"
                                         :key="field.id"
