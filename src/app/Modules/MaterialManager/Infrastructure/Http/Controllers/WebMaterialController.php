@@ -234,7 +234,7 @@ class WebMaterialController
             'search' => $request->get('search'),
             'category_id' => $category->id,
             'state' => 'published',
-            'per_page' => 10,
+            'per_page' => 15,
             'access_levels' => $this->allowedAccessLevels(),
         ]);
 
